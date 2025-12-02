@@ -1,0 +1,277 @@
+:root {
+  --page-bg: #e5edf7;
+  --card-bg: #f9fbff;
+  --card-shadow-soft: 0 20px 50px rgba(15, 23, 42, 0.1);
+  --card-shadow-light: 0 14px 35px rgba(15, 23, 42, 0.08);
+  --accent: #2563eb;
+  --accent-dark: #1d4ed8;
+  --accent-soft: #dbeafe;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+}
+
+/* Layout-Wrapper */
+
+.page {
+  min-height: 100vh;
+  background: radial-gradient(circle at top left, #eef2ff 0, #e2e8f0 32%, #e5edf7 100%);
+  color: var(--text-main);
+  padding: 3.5rem 1.5rem 3rem;
+}
+
+.page > section,
+.footer {
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+/* Hero */
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2.4fr);
+  gap: 3rem;
+  align-items: center;
+  margin-bottom: 4rem;
+}
+
+.heroText {
+  max-width: 540px;
+}
+
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.25em;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-bottom: 0.9rem;
+}
+
+.title {
+  font-size: clamp(2.3rem, 3.3vw + 1.5rem, 3.4rem);
+  line-height: 1.1;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  margin-bottom: 1.1rem;
+  color: var(--text-main);
+}
+
+.lead {
+  font-size: 0.98rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+  max-width: 32rem;
+  margin-bottom: 1.8rem;
+}
+
+.heroActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.9rem;
+}
+
+/* Buttons */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 0.7rem 1.6rem;
+  font-size: 0.93rem;
+  font-weight: 500;
+  text-decoration: none;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease,
+    transform 0.16s ease;
+  white-space: nowrap;
+}
+
+.btnPrimary {
+  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+  color: #ffffff;
+  box-shadow: 0 18px 45px rgba(37, 99, 235, 0.4);
+}
+
+.btnPrimary:hover {
+  box-shadow: 0 24px 60px rgba(37, 99, 235, 0.5);
+  transform: translateY(-1px);
+}
+
+.btnGhost {
+  background: rgba(255, 255, 255, 0.96);
+  color: var(--text-main);
+  border-color: rgba(148, 163, 184, 0.35);
+}
+
+.btnGhost:hover {
+  background: #ffffff;
+  box-shadow: 0 16px 38px rgba(15, 23, 42, 0.08);
+  transform: translateY(-1px);
+}
+
+/* Hero Card */
+
+.heroCard {
+  background: var(--card-bg);
+  border-radius: 1.7rem;
+  box-shadow: var(--card-shadow-soft);
+  padding: 1.8rem 2.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.4rem;
+}
+
+.cardLabel {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--text-muted);
+  margin-bottom: 0.3rem;
+}
+
+.cardRow {
+  padding: 0.6rem 0;
+  border-top: 1px solid rgba(148, 163, 184, 0.32);
+}
+
+.cardRow:first-of-type {
+  border-top: none;
+  padding-top: 0;
+}
+
+.cardCaption {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--text-muted);
+  margin-bottom: 0.3rem;
+}
+
+.cardValue {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin-bottom: 0.1rem;
+}
+
+.cardHint {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* Beliebte Produkte */
+
+.popularSection {
+  margin-bottom: 4rem;
+}
+
+.popularHeader {
+  margin-bottom: 1.8rem;
+}
+
+.sectionTitle {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text-main);
+  max-width: 30rem;
+}
+
+.productGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.4rem;
+}
+
+.productCard {
+  background: #f9fbff;
+  border-radius: 1.4rem;
+  padding: 1.3rem 1.4rem;
+  box-shadow: var(--card-shadow-light);
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.productType {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--text-muted);
+}
+
+.productTitle {
+  font-size: 1.02rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.productMeta {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+/* About / Claim */
+
+.aboutSection {
+  padding-top: 1.5rem;
+  padding-bottom: 2rem;
+}
+
+.aboutInner {
+  max-width: 720px;
+}
+
+.bodyText {
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: var(--text-muted);
+  margin-top: 0.9rem;
+}
+
+/* Footer */
+
+.footer {
+  margin-top: 1.5rem;
+  padding-top: 1.2rem;
+  border-top: 1px solid rgba(148, 163, 184, 0.4);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* Responsive */
+
+@media (max-width: 900px) {
+  .hero {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
+
+  .heroCard {
+    max-width: 420px;
+    margin: 0 auto;
+  }
+
+  .productGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .page {
+    padding: 2.4rem 1.1rem 2.2rem;
+  }
+
+  .hero {
+    gap: 2rem;
+  }
+
+  .productGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .productCard {
+    border-radius: 1.2rem;
+  }
+}

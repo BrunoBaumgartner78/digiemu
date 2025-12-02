@@ -1,0 +1,39 @@
+version: 1
+project: Windsurf-UI-Finalization
+description: "Finalisiert alle UI-Features für das Vendor-Dashboard und die Produktverwaltung."
+tasks:
+  - id: ui-01-product-thumbnails
+    title: "Produkt-Thumbnails in der Tabelle"
+    description: >
+      Zeige Vorschaubilder in der Produktliste. Fallback-Bild, wenn kein Thumbnail vorhanden ist.
+    files:
+      - path: src/app/dashboard/products/page.tsx
+    acceptance:
+      - Produktliste zeigt Vorschaubilder.
+      - Fallback-Bild bei fehlendem Thumbnail.
+  - id: ui-02-filter-and-search
+    title: "Filter & Search für Produkte"
+    description: >
+      Füge Suchfeld (Titel) und Status-Filter (ALL, ACTIVE, INACTIVE) zur Produktliste hinzu.
+    files:
+      - path: src/app/dashboard/products/page.tsx
+    acceptance:
+      - Liste reagiert auf Filter/Suche.
+      - UI bleibt performant.
+  - id: ui-03-action-feedback
+    title: "Action Feedback (Bearbeiten/Löschen)"
+    description: >
+      Zeile highlighten und Badge-Farbe nach Statuswechsel direkt updaten.
+    files:
+      - path: src/app/dashboard/products/page.tsx
+    acceptance:
+      - Nach Aktion wird Zeile kurz hervorgehoben.
+      - Badge-Farbe ändert sich direkt.
+  - id: ui-04-buttons-and-table-polish
+    title: "Buttons & Tabellen-Styling optimieren"
+    description: >
+      Verbessere Buttons mit Icons, Hover, Responsive und Tabellen-Layout.
+    files:
+      - path: src/app/dashboard/products/page.tsx
+    acceptance:
+      - Dashboard wirkt modern und professionell.

@@ -1,0 +1,21 @@
+.card {
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(18px);
+  border-radius: 2rem;
+  padding: 2rem;
+  box-shadow: 0 30px 60px rgba(15, 23, 42, 0.25);
+}
+.input {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border-radius: 1rem;
+  border: 1px solid #cbd5e1;
+  background: white;
+}
+.button {
+  padding: 0.8rem 1.6rem;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #2563eb, #4f46e5);
+  color: white;
+  font-weight: 600;
+}

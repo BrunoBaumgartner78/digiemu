@@ -1,0 +1,647 @@
+/* === DIGIEMU DESIGN SYSTEM: LIGHT & DARK === */
+/* === DIGIEMU DESIGN SYSTEM – AUTO LIGHT / DARK PER BROWSER === */
+
+/* Standard: LIGHT THEME */
+:root {
+  color-scheme: light;
+
+  /* Grundfarben */
+  --bg-page: #eef2f7;
+  --bg-soft: #f7f9fc;
+  --bg-card: #ffffff;
+
+  --text-main: #0f172a;
+  --text-subtle: #475569;
+  --text-muted: #64748b;
+
+  --primary-bg: #2563eb;
+  --primary-bg-soft: #dbeafe;
+  --primary-text: #ffffff;
+
+  --danger-bg: #ef4444;
+  --danger-text: #ffffff;
+  --success-bg: #10b981;
+  --success-text: #ffffff;
+
+  /* Header */
+  --header-bg: linear-gradient(135deg, #0b1020, #111827);
+  --header-border: rgba(15, 23, 42, 0.8);
+  --header-shadow: 0 18px 45px rgba(15, 23, 42, 0.6);
+
+  /* Pills / Buttons im Header */
+  --nav-pill-bg: rgba(255, 255, 255, 0.9);
+  --nav-pill-border: rgba(148, 163, 184, 0.35);
+  --nav-pill-hover: rgba(255, 255, 255, 1);
+  --nav-pill-active-bg: #2563eb;
+  --nav-pill-active-text: #ffffff;
+
+  /* Cards */
+  --card-bg: rgba(255, 255, 255, 0.94);
+  --card-shadow-soft: 0 18px 45px rgba(15, 23, 42, 0.12);
+
+  /* Mobile Menü */
+  --mobile-menu-bg: rgba(15, 23, 42, 0.92);
+  --mobile-menu-border: rgba(31, 41, 55, 0.8);
+  --mobile-menu-shadow: 0 18px 45px rgba(0, 0, 0, 0.8);
+}
+
+/* Browser-DARK-Mode überschreibt die Variablen automatisch */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+
+    --bg-page: #020617;
+    --bg-soft: #02081e;
+    --bg-card: #020b2f;
+
+    --text-main: #e5f1ff;
+    --text-subtle: #cbd5f5;
+    --text-muted: #9ca3af;
+
+    --primary-bg: #2563eb;
+    --primary-bg-soft: #1d3a7a;
+    --primary-text: #ffffff;
+
+    --danger-bg: #ef4444;
+    --danger-text: #ffffff;
+    --success-bg: #10b981;
+    --success-text: #ffffff;
+
+    --header-bg: rgba(9, 16, 35, 0.98);
+    --header-border: rgba(51, 65, 85, 0.8);
+    --header-shadow: 0 18px 45px rgba(0, 0, 0, 0.8);
+
+    --nav-pill-bg: rgba(15, 23, 42, 0.95);
+    --nav-pill-border: rgba(51, 65, 85, 0.9);
+    --nav-pill-hover: rgba(15, 23, 42, 1);
+    --nav-pill-active-bg: #2563eb;
+    --nav-pill-active-text: #ffffff;
+
+    --card-bg: rgba(7, 12, 29, 0.98);
+    --card-shadow-soft: 0 18px 45px rgba(0, 0, 0, 0.85);
+
+    --mobile-menu-bg: rgba(7, 12, 29, 0.98);
+    --mobile-menu-border: rgba(31, 41, 55, 0.9);
+    --mobile-menu-shadow: 0 18px 45px rgba(0, 0, 0, 0.9);
+  }
+}
+
+/* === GLOBAL === */
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: var(--bg-page);
+  color: var(--text-main);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.18s ease, color 0.18s ease;
+}
+
+/* Header-Styling */
+
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  backdrop-filter: blur(18px);
+  background: var(--header-bg);
+  box-shadow: var(--header-shadow);
+  border-bottom: 1px solid var(--header-border);
+}
+
+.app-header-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0.75rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+/* Logo */
+
+.app-logo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  text-decoration: none;
+  user-select: none;
+}
+
+.app-logo-main {
+  font-weight: 800;
+  font-size: 1.05rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #e5e7eb;
+}
+
+.app-logo-sub {
+  font-size: 0.68rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  opacity: 0.8;
+  color: #a5b4fc;
+}
+
+/* Desktop Navigation */
+
+.app-nav-desktop {
+  display: none;
+  align-items: center;
+  gap: 1.5rem;
+  margin-left: 2rem;
+}
+
+@media (min-width: 768px) {
+  .app-nav-desktop {
+    display: flex;
+  }
+}
+
+.app-nav-link {
+  position: relative;
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-decoration: none;
+  padding-bottom: 0.35rem;
+  border-bottom: 2px solid transparent;
+  transition: color 0.18s ease, border-color 0.18s ease, opacity 0.18s ease;
+  opacity: 0.9;
+}
+
+.app-nav-link:hover,
+.app-nav-link:focus-visible {
+  opacity: 1;
+  border-color: rgba(148, 163, 184, 0.8);
+}
+
+/* Header-Rechts (Buttons + Mobile-Icon) */
+
+.app-header-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* Pill-Buttons */
+
+.nav-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.55rem 1.3rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: 1px solid var(--nav-pill-border);
+  background: var(--nav-pill-bg);
+  color: var(--text-main);
+  box-shadow: 0 5px 16px rgba(15, 23, 42, 0.18);
+  transition: transform 0.16s ease, box-shadow 0.16s ease,
+    background-color 0.16s ease, color 0.16s ease;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.nav-pill:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.25);
+  background: var(--nav-pill-hover);
+}
+
+.nav-pill-primary {
+  background: var(--primary-bg);
+  color: var(--primary-text);
+  border-color: transparent;
+}
+
+.nav-pill-primary:hover {
+  background: #1d4ed8;
+}
+
+.nav-pill-active {
+  background: var(--nav-pill-active-bg);
+  color: var(--nav-pill-active-text);
+  border-color: transparent;
+}
+
+/* Desktop: Auth-Buttons sichtbar, Hamburger verstecken */
+
+@media (min-width: 768px) {
+  .app-header-auth-desktop {
+    display: flex;
+  }
+  .menu-button {
+    display: none;
+  }
+}
+
+@media (max-width: 767px) {
+  .app-header-auth-desktop {
+    display: none;
+  }
+}
+
+/* Mobile Menü (Hamburger + Drawer) */
+
+.menu-button {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 999px;
+  border: 1px solid var(--nav-pill-border);
+  background: var(--nav-pill-bg);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.25);
+  cursor: pointer;
+  transition: transform 0.16s ease, box-shadow 0.16s ease,
+    background-color 0.16s ease;
+}
+
+.menu-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.35);
+}
+
+.menu-icon,
+.menu-icon::before,
+.menu-icon::after {
+  display: block;
+  width: 16px;
+  height: 2px;
+  border-radius: 999px;
+  background: #111827;
+  position: relative;
+  transition: transform 0.18s ease, opacity 0.18s ease;
+}
+
+.menu-icon::before,
+.menu-icon::after {
+  content: "";
+  position: absolute;
+  left: 0;
+}
+
+.menu-icon::before {
+  top: -5px;
+}
+
+.menu-icon::after {
+  top: 5px;
+}
+
+.mobile-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(8px);
+}
+
+.mobile-drawer {
+  position: fixed;
+  top: 0.75rem;
+  left: 0.75rem;
+  bottom: 0.75rem;
+  width: 78vw;
+  max-width: 360px;
+  border-radius: 24px;
+  background: var(--mobile-menu-bg);
+  border: 1px solid var(--mobile-menu-border);
+  box-shadow: var(--mobile-menu-shadow);
+  padding: 1.25rem 1.3rem 1.5rem;
+  z-index: 41;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.mobile-nav-link {
+  display: block;
+  width: 100%;
+  border-radius: 999px;
+  padding: 0.6rem 1.1rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-align: left;
+  border: 1px solid var(--nav-pill-border);
+  background: var(--nav-pill-bg);
+  color: var(--text-main);
+  text-decoration: none;
+  box-shadow: 3px 3px 8px rgba(15, 23, 42, 0.25),
+    -3px -3px 8px rgba(255, 255, 255, 0.6);
+  transition: transform 0.16s ease, box-shadow 0.16s ease,
+    background-color 0.16s ease;
+}
+
+.mobile-nav-link:hover {
+  transform: translateY(-1px);
+  box-shadow: 5px 5px 14px rgba(15, 23, 42, 0.35),
+    -4px -4px 12px rgba(255, 255, 255, 0.7);
+}
+
+/* Cards / Dashboard / Produktkarten – Grundstil */
+
+.neo-card {
+  border-radius: 24px;
+  background: var(--card-bg);
+  box-shadow: var(--card-shadow-soft);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  border-bottom: 1px solid var(--header-border);
+}
+
+.app-header-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0.75rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+/* Logo */
+
+.app-logo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  text-decoration: none;
+  user-select: none;
+}
+
+.app-logo-main {
+  font-weight: 800;
+  font-size: 1.05rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.app-logo-sub {
+  font-size: 0.68rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+/* Desktop-Navigation */
+
+.app-nav-desktop {
+  display: none;
+  align-items: center;
+  gap: 1.5rem;
+  margin-left: 2rem;
+}
+
+@media (min-width: 768px) {
+  .app-nav-desktop {
+    display: flex;
+  }
+}
+
+.app-nav-link {
+  position: relative;
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-decoration: none;
+  padding-bottom: 0.35rem;
+  border-bottom: 2px solid transparent;
+  transition: color 0.18s ease, border-color 0.18s ease, opacity 0.18s ease;
+  opacity: 0.9;
+}
+
+.app-nav-link:hover,
+.app-nav-link:focus-visible {
+  opacity: 1;
+  border-color: rgba(148, 163, 184, 0.8);
+}
+
+/* === Pill-Buttons im Header === */
+
+.nav-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.55rem 1.3rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: 1px solid var(--nav-pill-border);
+  background: var(--nav-pill-bg);
+  color: var(--text-main);
+  box-shadow: 0 5px 16px rgba(15, 23, 42, 0.15);
+  transition: transform 0.16s ease, box-shadow 0.16s ease,
+    background-color 0.16s ease, color 0.16s ease;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.nav-pill:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.25);
+  background: var(--nav-pill-hover);
+}
+
+.nav-pill-primary {
+  background: var(--primary-bg);
+  color: #ffffff;
+  border-color: transparent;
+}
+
+.nav-pill-primary:hover {
+  background: var(--primary-strong);
+}
+
+.nav-pill-danger {
+  background: var(--btn-danger-bg);
+  color: #ffffff;
+  border-color: transparent;
+}
+
+.nav-pill-danger:hover {
+  background: var(--btn-danger-hover);
+}
+
+.nav-pill-ghost {
+  background: var(--btn-ghost-bg);
+  border-color: var(--btn-ghost-border);
+  color: var(--btn-ghost-text);
+}
+
+.nav-pill-ghost:hover {
+  background: var(--btn-ghost-hover);
+}
+
+.nav-pill-active {
+  background: var(--nav-pill-active-bg);
+  color: var(--nav-pill-active-text);
+  border-color: transparent;
+}
+
+/* === Theme Toggle === */
+
+.theme-toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.25rem;
+  width: 3.1rem;
+  height: 1.6rem;
+  border-radius: 999px;
+  padding: 0.12rem;
+  background: var(--toggle-bg);
+  border: 1px solid rgba(148, 163, 184, 0.65);
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.25);
+}
+
+.theme-toggle-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 1.2rem;
+  height: 1.2rem;
+  border-radius: 999px;
+  background: var(--toggle-thumb);
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.35);
+  transition: transform 0.22s ease;
+}
+
+/* === Mobile Header-Controls === */
+
+.app-header-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+@media (max-width: 767px) {
+  .app-header-auth-desktop {
+    display: none;
+  }
+}
+
+/* Hamburger Button */
+
+.menu-button {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 999px;
+  border: 1px solid var(--nav-pill-border);
+  background: var(--nav-pill-bg);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.25);
+  cursor: pointer;
+  transition: transform 0.16s ease, box-shadow 0.16s ease,
+    background-color 0.16s ease;
+}
+
+.menu-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.35);
+}
+
+.menu-icon,
+.menu-icon::before,
+.menu-icon::after {
+  display: block;
+  width: 16px;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--text-main);
+  position: relative;
+  transition: transform 0.18s ease, opacity 0.18s ease;
+}
+
+.menu-icon::before,
+.menu-icon::after {
+  content: "";
+  position: absolute;
+  left: 0;
+}
+
+.menu-icon::before {
+  top: -5px;
+}
+
+.menu-icon::after {
+  top: 5px;
+}
+
+/* === Mobile Drawer === */
+
+.mobile-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(8px);
+}
+
+.mobile-drawer {
+  position: fixed;
+  top: 0.75rem;
+  left: 0.75rem;
+  bottom: 0.75rem;
+  width: 78vw;
+  max-width: 360px;
+  border-radius: 24px;
+  background: var(--mobile-menu-bg);
+  border: 1px solid var(--mobile-menu-border);
+  box-shadow: var(--mobile-menu-shadow);
+  padding: 1.25rem 1.3rem 1.5rem;
+  z-index: 41;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* Neo-Buttons im mobilen Menü */
+
+.mobile-nav-link {
+  display: block;
+  width: 100%;
+  border-radius: 999px;
+  padding: 0.6rem 1.1rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-align: left;
+  border: 1px solid var(--nav-pill-border);
+  background: var(--nav-pill-bg);
+  color: var(--text-main);
+  text-decoration: none;
+  box-shadow: 3px 3px 8px rgba(15, 23, 42, 0.25),
+    -3px -3px 8px rgba(255, 255, 255, 0.6);
+  transition: transform 0.16s ease, box-shadow 0.16s ease,
+    background-color 0.16s ease;
+}
+
+.mobile-nav-link:hover {
+  transform: translateY(-1px);
+  box-shadow: 5px 5px 14px rgba(15, 23, 42, 0.35),
+    -4px -4px 12px rgba(255, 255, 255, 0.7);
+}
+
+/* Utility für Platzhalter / Cards */
+
+.neo-card {
+  border-radius: 24px;
+  background: var(--card-bg);
+  box-shadow: var(--card-shadow-soft);
+}

@@ -1,0 +1,252 @@
+/* Seite allgemein */
+.page {
+  min-height: 100vh;
+  background: #e5e7eb; /* dein helles Grau / var(--page-bg) */
+  color: #020617;
+}
+
+/* Container: gleiche Breite für Hero & Dashboard */
+.hero,
+.dashboardWrapper {
+  padding: 6rem 1.5rem 0;
+}
+
+.heroInner,
+.dashboardInner {
+  max-width: 960px;       /* HIER definieren wir die gemeinsame Breite */
+  margin: 0 auto;         /* Zentriert */
+}
+
+/* Hero-Typo */
+.kicker {
+  font-size: 0.75rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: #6b7280;
+  margin-bottom: 1.5rem;
+}
+
+.title {
+  font-size: 3rem;
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  margin-bottom: 1.5rem;
+}
+
+.subtitle {
+  max-width: 40rem;
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: #4b5563;
+  margin-bottom: 2.5rem;
+}
+
+/* Buttons */
+.buttons {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.btnPrimary,
+.btnSecondary {
+  border-radius: 999px;
+  padding: 0.9rem 1.8rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.18);
+  transition: transform 0.15s ease, box-shadow 0.15s ease,
+    background-color 0.15s ease, color 0.15s ease;
+}
+
+.btnPrimary {
+  background: #020617;
+  color: #f9fafb;
+}
+
+.btnPrimary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 24px 50px rgba(15, 23, 42, 0.24);
+}
+
+.btnSecondary {
+  background: #f9fafb;
+  color: #020617;
+}
+
+.btnSecondary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 24px 50px rgba(148, 163, 184, 0.35);
+}
+
+/* Dashboard */
+.dashboardWrapper {
+  padding: 4rem 1.5rem 5rem;
+}
+
+.dashboardInner {
+  background: #f9fafb;
+  border-radius: 24px;
+  padding: 2.5rem 2rem;
+  box-shadow:
+    0 24px 60px rgba(15, 23, 42, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.dashboardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.dashboardLabel {
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #9ca3af;
+}
+
+/* Drei Spalten für die KPIs */
+.dashboardGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 2rem;
+}
+
+.metricLabel {
+  display: block;
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #9ca3af;
+  margin-bottom: 0.75rem;
+}
+
+.metricValue {
+  display: block;
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.metricSmall {
+  display: block;
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+/* Mobile: alles untereinander */
+@media (max-width: 768px) {
+  .hero,
+  .dashboardWrapper {
+    padding-top: 3rem;
+  }
+
+  .title {
+    font-size: 2.2rem;
+  }
+
+  .dashboardInner {
+    padding: 1.75rem 1.5rem;
+  }
+
+  .dashboardGrid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .buttons {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .btnPrimary,
+  .btnSecondary {
+    width: 100%;
+    justify-content: center;
+  }
+}
+/* ---------- BELIEBTE PRODUKTE ---------- */
+
+.popularSection {
+  padding: 4rem 1.5rem 5rem;
+}
+
+.popularInner {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.popularHeader {
+  margin-bottom: 2.5rem;
+}
+
+.popularTitle {
+  font-size: 1.4rem;
+  font-weight: 500;
+  color: #111827;
+  max-width: 32rem;
+  line-height: 1.5;
+}
+
+/* Grid mit 3 Spalten auf Desktop, 2/1 auf kleineren Screens */
+.popularGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.5rem;
+}
+
+.productCard {
+  background: #f9fafb;
+  border-radius: 18px;
+  padding: 1.5rem 1.4rem;
+  box-shadow:
+    0 18px 40px rgba(15, 23, 42, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(209, 213, 219, 0.7);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 132px;
+}
+
+.productCategory {
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #9ca3af;
+  margin-bottom: 0.5rem;
+}
+
+.productTitle {
+  font-size: 0.98rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 0.75rem;
+}
+
+.productRevenue {
+  font-size: 0.8rem;
+  color: #4b5563;
+}
+
+/* Responsive Anpassungen */
+@media (max-width: 1024px) {
+  .popularGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .popularGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .popularSection {
+    padding-top: 3rem;
+  }
+}

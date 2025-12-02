@@ -1,0 +1,99 @@
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.subtitle {
+  color: #475569;
+  margin-bottom: 2rem;
+}
+
+.cardGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1.2rem;
+  margin-bottom: 2.5rem;
+}
+
+.card {
+  background: #f8fbff;
+  border-radius: 20px;
+  padding: 1.5rem;
+  box-shadow:
+    0 10px 30px rgba(15, 23, 42, 0.1),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.7);
+}
+
+.cardLabel {
+  color: #64748b;
+  font-size: 0.8rem;
+  margin-bottom: 0.3rem;
+}
+
+.cardValue {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.chartBox {
+  background: #f8fbff;
+  padding: 2rem;
+  border-radius: 22px;
+  box-shadow:
+    0 10px 30px rgba(15, 23, 42, 0.1),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.7);
+  margin-bottom: 3rem;
+}
+
+.section {
+  margin-top: 2rem;
+}
+
+.sectionTitle {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.productGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.3rem;
+}
+
+.productCard {
+  background: #f8fbff;
+  padding: 1.2rem;
+  border-radius: 18px;
+  box-shadow:
+    0 10px 30px rgba(15, 23, 42, 0.1),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+}
+
+.productTitle {
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+}
+
+.productRevenue {
+  color: #0f172a;
+  font-weight: 700;
+}
+
+.productSales {
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+.loading {
+  padding: 2rem;
+  font-size: 1.2rem;
+  color: #475569;
+}

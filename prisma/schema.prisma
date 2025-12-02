@@ -1,0 +1,207 @@
+// ------------------------------------------------------
+// DigiEmu Prisma Schema – Fixed & Stable Version
+// ------------------------------------------------------
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ------------------------------------------------------
+// Enums
+// ------------------------------------------------------
+
+enum Role {
+  BUYER
+  VENDOR
+  ADMIN
+}
+
+// ------------------------------------------------------
+// User
+// ------------------------------------------------------
+
+model User {
+  id        String  @id @default(cuid())
+  email     String  @unique
+  name      String?
+  password  String?
+  role      Role    @default(BUYER)
+  isBlocked Boolean @default(false)
+
+  // Vendor-Produkte, wenn role=VENDOR
+  products Product[] @relation("VendorProducts")
+
+  // Orders (Käufer)
+  orders Order[]
+
+  // Payouts (nur für Vendor)
+  payouts Payout[]
+
+  // Community features
+  likes    Like[]
+  comments Comment[]
+  reviews  Review[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  vendorProfile VendorProfile?
+}
+
+// ------------------------------------------------------
+// Vendor Profile
+// ------------------------------------------------------
+
+model VendorProfile {
+  id String @id @default(cuid())
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String @unique
+
+  // Add/ensure these basic profile fields:
+  displayName String? @db.VarChar(120)
+  bio         String? @db.Text
+
+  avatarUrl String? @db.VarChar(500)
+  bannerUrl String? @db.VarChar(500)
+
+  websiteUrl   String? @db.VarChar(500)
+  twitterUrl   String? @db.VarChar(500)
+  instagramUrl String? @db.VarChar(500)
+  tiktokUrl    String? @db.VarChar(500)
+  facebookUrl  String? @db.VarChar(500)
+  slug         String? @unique
+  isPublic     Boolean @default(true)
+
+  products Product[] @relation("VendorProfileProducts")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ------------------------------------------------------
+// Product
+// ------------------------------------------------------
+
+model Product {
+  id          String  @id @default(cuid())
+  title       String
+  description String
+  priceCents  Int
+  fileUrl     String
+  thumbnail   String?
+  category    String
+
+  isActive    Boolean @default(true)
+  status      String  @default("DRAFT") // TODO: Run `npx prisma migrate dev --name add-product-status` and `npx prisma generate` after this schema change.
+
+  vendorId String
+  vendor   User   @relation("VendorProducts", fields: [vendorId], references: [id])
+
+  vendorProfileId String?
+  vendorProfile   VendorProfile? @relation("VendorProfileProducts", fields: [vendorProfileId], references: [id])
+
+  // Bestellungen dieses Produkts
+  orders Order[]
+
+  // Community features
+  likes    Like[]
+  comments Comment[]
+  reviews  Review[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Like {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  product   Product  @relation(fields: [productId], references: [id])
+  productId String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, productId])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  product   Product  @relation(fields: [productId], references: [id])
+  productId String
+  content   String
+  createdAt DateTime @default(now())
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  product   Product  @relation(fields: [productId], references: [id])
+  productId String
+  rating    Int // 1–5 stars
+  content   String?
+  createdAt DateTime @default(now())
+
+  @@unique([userId, productId])
+}
+
+// ------------------------------------------------------
+// Order
+// ------------------------------------------------------
+
+model Order {
+  id String @id @default(cuid())
+
+  buyer   User   @relation(fields: [buyerId], references: [id])
+  buyerId String
+
+  product   Product @relation(fields: [productId], references: [id])
+  productId String
+
+  stripeSessionId String @unique
+  amountCents     Int
+  status          String
+
+  downloadLink DownloadLink?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ------------------------------------------------------
+// Download Link (ein Download per Order)
+// ------------------------------------------------------
+
+model DownloadLink {
+  id      String @id @default(cuid())
+  order   Order  @relation(fields: [orderId], references: [id])
+  orderId String @unique
+
+  fileUrl   String
+  expiresAt DateTime
+
+  createdAt DateTime @default(now())
+}
+
+// ------------------------------------------------------
+// Payouts
+// ------------------------------------------------------
+
+model Payout {
+  id String @id @default(cuid())
+
+  vendor   User   @relation(fields: [vendorId], references: [id])
+  vendorId String
+
+  amountCents Int
+  status      String
+  paidAt      DateTime?
+  createdAt   DateTime  @default(now())
+}

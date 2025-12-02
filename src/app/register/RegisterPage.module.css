@@ -1,0 +1,184 @@
+
+
+/* Seite zentrieren */
+.page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 1.5rem;
+}
+
+/* Card / Formular-Container */
+.card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--card);
+  border-radius: 1.8rem;
+  padding: 2.25rem 2rem;
+  box-shadow: 0 30px 80px rgba(15, 23, 42, 0.2);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+/* Branding-Zeile oben */
+.brand {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--text-muted);
+  margin-bottom: 0.75rem;
+}
+
+/* Titel & Untertitel */
+.title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+  color: var(--text-main);
+}
+
+.subtitle {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-bottom: 1.75rem;
+}
+
+/* Formular-Layout */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Form-Felder */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.labelRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-main);
+}
+
+/* Input-Felder */
+.input,
+.select {
+  width: 100%;
+  padding: 0.7rem 0.9rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(148, 163, 184, 0.6);
+  background: rgba(255, 255, 255, 0.95);
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease,
+    background-color 0.18s ease;
+}
+
+.input:focus,
+.select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.3),
+    0 16px 40px rgba(15, 23, 42, 0.15);
+  background: #ffffff;
+}
+
+/* Rollen-Auswahl (z.B. Käufer / Verkäufer) */
+.roleRow {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.roleButton {
+  flex: 1;
+  padding: 0.45rem 0.6rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(148, 163, 184, 0.7);
+  background: #ffffff;
+  font-size: 0.8rem;
+  text-align: center;
+  cursor: pointer;
+  transition: 0.18s ease;
+}
+
+.roleButtonActive {
+  border-color: var(--accent);
+  background: linear-gradient(90deg, #2563eb, #4f46e5);
+  color: #ffffff;
+  box-shadow: 0 14px 35px rgba(37, 99, 235, 0.45);
+}
+
+/* Haupt-Button */
+.button {
+  margin-top: 0.75rem;
+  width: 100%;
+  padding: 0.8rem;
+  border-radius: 9999px;
+  border: none;
+  background: linear-gradient(90deg, #2563eb, #4f46e5);
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  box-shadow: 0 18px 40px rgba(37, 99, 235, 0.55);
+  transition: transform 0.14s ease, box-shadow 0.14s ease,
+    opacity 0.14s ease;
+}
+
+.button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 20px 55px rgba(30, 64, 175, 0.6);
+}
+
+.buttonDisabled {
+  opacity: 0.65;
+  cursor: default;
+  box-shadow: none;
+  transform: none;
+}
+
+/* Meta-Text & Links unten */
+.meta {
+  margin-top: 1rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.link {
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+/* kleiner Hilfetext */
+.helper {
+  margin-top: 0.6rem;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-align: center;
+  line-height: 1.4;
+}
+
+/* Mobile Anpassungen */
+@media (max-width: 640px) {
+  .page {
+    padding: 3.5rem 1.25rem;
+  }
+
+  .card {
+    padding: 1.9rem 1.6rem;
+    border-radius: 1.5rem;
+  }
+}
