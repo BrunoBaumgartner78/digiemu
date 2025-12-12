@@ -3,13 +3,14 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/authOptions";
 import { prisma } from "@/lib/prisma";
 
-const ALLOWED_STATUSES = ["DRAFT", "ACTIVE, "BLOCKED"] as const;
+const ALLOWED_STATUSES = ["DRAFT", "ACTIVE", "BLOCKED"] as const;
 type AllowedStatus = (typeof ALLOWED_STATUSES)[number];
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
+  const params = await context.params;
   const session = await getServerSession(authOptions);
 
   if (!session || session.user.role !== "ADMIN") {

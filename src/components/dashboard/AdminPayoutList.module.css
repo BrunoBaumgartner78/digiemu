@@ -15,7 +15,8 @@
   overflow: hidden;
   box-shadow: 0 25px 55px rgba(15,23,42,0.2);
 }
-th, td {
+.table th,
+.table td {
   padding: 0.8rem 1rem;
   border-bottom: 1px solid rgba(0,0,0,0.05);
 }

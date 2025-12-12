@@ -32,7 +32,7 @@ export default async function EarningsDashboard() {
     }
   );
 
-  const { daily, topProducts, totalEarnings } = await res.json();
+  const { daily, totalEarnings } = await res.json();
 
   return (
     <div className="px-6 py-8 max-w-4xl mx-auto space-y-6">
@@ -50,7 +50,7 @@ export default async function EarningsDashboard() {
         </p>
       </div>
 
-      <EarningsChart daily={daily} topProducts={topProducts} />
+      <EarningsChart data={daily} />
     </div>
   );
 }
