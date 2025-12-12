@@ -1,27 +1,57 @@
-import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { NextResponse, type NextRequest } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/authOptions";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 
-export async function POST(req: Request, { params }: { params: { productId: string } }) {
+export const dynamic = "force-dynamic";
+
+type Ctx = {
+  params: Promise<{
+    id: string;        // kommt von /dashboard/edit/[id] (kannst du ignorieren)
+    productId: string; // wichtig fürs Löschen
+  }>;
+};
+
+export async function POST(_req: NextRequest, context: Ctx) {
   const session = await getServerSession(authOptions);
-  if (!session || session.user.role !== "VENDOR") {
-    return NextResponse.json({ error: "Nicht berechtigt." }, { status: 403 });
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const productId = params.productId;
-  // Check ownership
-  const product = await prisma.product.findUnique({ where: { id: productId } });
-  if (!product || product.vendorId !== session.user.id) {
-    return NextResponse.json({ error: "Produkt nicht gefunden oder nicht berechtigt." }, { status: 404 });
+
+  const { productId } = await context.params;
+  const userId = session.user.id;
+
+  // (optional aber empfehlenswert) Nur Owner oder Admin darf löschen:
+  const isAdmin = session.user.role === "ADMIN";
+
+  const product = await prisma.product.findUnique({
+    where: { id: productId },
+    select: { id: true, vendorId: true },
+  });
+
+  if (!product) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
+
+  if (!isAdmin && product.vendorId !== userId) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   try {
-    // TODO: Decide if product should be deleted or just hidden
-    const updated = await prisma.product.update({
-      where: { id: productId },
-      data: { status: "HIDDEN" },
-    });
-    return NextResponse.json({ success: true, product: updated });
+    // Falls du Relationen hast, die Delete blockieren, ggf. vorher dependent rows löschen.
+    // Beispiel (nur falls vorhanden):
+    // await prisma.like.deleteMany({ where: { productId } });
+    // await prisma.comment.deleteMany({ where: { productId } });
+    // await prisma.productView.deleteMany({ where: { productId } });
+
+    const deleted = await prisma.product.delete({ where: { id: productId } });
+
+    return NextResponse.json({ success: true, product: deleted });
   } catch (err: any) {
-    return NextResponse.json({ error: err.message || "Fehler beim Löschen." }, { status: 500 });
+    console.error("DELETE PRODUCT ERROR:", err);
+    return NextResponse.json(
+      { error: err?.message ?? "Delete failed" },
+      { status: 500 }
+    );
   }
 }
