@@ -1,160 +1,185 @@
+// src/app/dashboard/new/NewProductForm.tsx
 "use client";
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import styles from "./NewProductForm.module.css";
 
-// TODO: Import Firebase upload helpers
-// import { uploadFileToFirebase, uploadThumbnailToFirebase } from "@/lib/firebase";
-
-interface NewProductFormProps {
-  vendorId: string;
-}
-
-export default function NewProductForm({ vendorId }: NewProductFormProps) {
+/**
+ * Wichtig:
+ * Passe den Fetch-Pfad /api/vendor/products an deinen bestehenden
+ * API-Endpoint an, falls er anders heisst.
+ */
+export default function NewProductForm() {
   const router = useRouter();
+
   const [title, setTitle] = useState("");
+  const [priceChf, setPriceChf] = useState<string>("9.90");
   const [description, setDescription] = useState("");
-  const [shortDescription, setShortDescription] = useState("");
-  const [category, setCategory] = useState("");
-  const [price, setPrice] = useState("");
-  const [status, setStatus] = useState("DRAFT");
-  const [file, setFile] = useState<File | null>(null);
-  const [thumbnail, setThumbnail] = useState<File | null>(null);
-  const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [thumbnail, setThumbnail] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError(null);
-    if (!title || !description || !category || !price || !file) {
-      setError("Bitte fülle alle Pflichtfelder aus und lade eine Datei hoch.");
+    setErrorMsg(null);
+    setSuccessMsg(null);
+
+    if (!title.trim()) {
+      setErrorMsg("Bitte gib einen Titel ein.");
       return;
     }
-    if (Number(price) < 0) {
-      setError("Der Preis muss positiv sein.");
+
+    const numericPrice = parseFloat(priceChf.replace(",", "."));
+    if (Number.isNaN(numericPrice) || numericPrice < 0) {
+      setErrorMsg("Bitte gib einen gültigen Preis an.");
       return;
     }
-    setUploading(true);
-    let fileUrl = "";
-    let thumbnailUrl = "";
+
+    const priceCents = Math.round(numericPrice * 100);
+
+    setIsSubmitting(true);
+
     try {
-      // TODO: Upload file to Firebase Storage
-      // fileUrl = await uploadFileToFirebase(file);
-      // if (thumbnail) thumbnailUrl = await uploadThumbnailToFirebase(thumbnail);
-      // For now, use placeholder URLs
-      fileUrl = "https://firebase.example.com/file";
-      if (thumbnail) thumbnailUrl = "https://firebase.example.com/thumb";
-      // Call API route or server action to create product
-      const res = await fetch("/api/products/new", {
+      const res = await fetch("/api/vendor/products", {
+        // ⬅️ HIER ggf. den Pfad anpassen
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          title,
-          description,
-          shortDescription,
-          category,
-          priceCents: Math.round(Number(price) * 100), // TODO: Confirm price mapping
-          fileUrl,
-          thumbnail: thumbnailUrl,
-          status,
-          vendorId,
+          title: title.trim(),
+          description: description.trim(),
+          priceCents,
+          thumbnail: thumbnail.trim() || null,
         }),
       });
-      if (!res.ok) throw new Error("Produkt konnte nicht erstellt werden.");
-      setUploading(false);
-      router.push("/dashboard/products");
-      // TODO: Show success toast
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Produkt konnte nicht angelegt werden.");
+      }
+
+      setSuccessMsg("Produkt wurde angelegt.");
+      // kurz anzeigen, dann zur Übersicht
+      setTimeout(() => {
+        router.push("/dashboard/products");
+        router.refresh();
+      }, 700);
     } catch (err: any) {
-      setError(err.message || "Fehler beim Erstellen des Produkts.");
-      setUploading(false);
+      console.error(err);
+      setErrorMsg(err.message ?? "Unbekannter Fehler.");
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
   return (
-    <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="flex flex-col gap-4">
-          <input
-            type="text"
-            className="rounded-xl border px-3 py-2 text-sm"
-            placeholder="Titel des Produkts"
-            value={title}
-            onChange={e => setTitle(e.target.value)}
-            required
-          />
-          <textarea
-            className="rounded-xl border px-3 py-2 text-sm"
-            placeholder="Beschreibung"
-            value={description}
-            onChange={e => setDescription(e.target.value)}
-            required
-            rows={4}
-          />
-          <input
-            type="text"
-            className="rounded-xl border px-3 py-2 text-sm"
-            placeholder="Kurze Beschreibung"
-            value={shortDescription}
-            onChange={e => setShortDescription(e.target.value)}
-          />
-          <input
-            type="text"
-            className="rounded-xl border px-3 py-2 text-sm"
-            placeholder="Kategorie"
-            value={category}
-            onChange={e => setCategory(e.target.value)}
-            required
-          />
+    <section className={styles.wrapper}>
+      <form onSubmit={handleSubmit} className={styles.form}>
+        {/* Linke Spalte */}
+        <div className={styles.colMain}>
+          <div className={styles.fieldGroup}>
+            <label className={styles.label} htmlFor="title">
+              Titel
+            </label>
+            <input
+              id="title"
+              className={styles.input}
+              type="text"
+              placeholder="Z. B. ‚Workbook: DigiEmu Launch Guide‘"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
+          </div>
+
+          <div className={styles.fieldGroup}>
+            <label className={styles.label} htmlFor="description">
+              Beschreibung
+            </label>
+            <textarea
+              id="description"
+              className={styles.textarea}
+              rows={6}
+              placeholder="Beschreibe kurz den Inhalt deines digitalen Produkts, Zielgruppe und Nutzen."
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+          </div>
         </div>
-        <div className="flex flex-col gap-4">
-          <input
-            type="number"
-            className="rounded-xl border px-3 py-2 text-sm"
-            placeholder="Preis (CHF)"
-            value={price}
-            onChange={e => setPrice(e.target.value)}
-            min={0}
-            required
-          />
-          <select
-            className="rounded-xl border px-3 py-2 text-sm"
-            value={status}
-            onChange={e => setStatus(e.target.value)}
-          >
-            <option value="DRAFT">Entwurf</option>
-            <option value="PUBLISHED">Veröffentlicht</option>
-            <option value="HIDDEN">Versteckt</option>
-          </select>
+
+        {/* Rechte Spalte */}
+        <div className={styles.colSide}>
+          <div className={styles.fieldGroup}>
+            <label className={styles.label} htmlFor="price">
+              Preis (CHF)
+            </label>
+            <div className={styles.priceRow}>
+              <input
+                id="price"
+                className={styles.input}
+                type="number"
+                step="0.05"
+                min="0"
+                value={priceChf}
+                onChange={(e) => setPriceChf(e.target.value)}
+              />
+              <span className={styles.priceHint}>inkl. MwSt. / Sofort-Download</span>
+            </div>
+          </div>
+
+          <div className={styles.fieldGroup}>
+            <label className={styles.label} htmlFor="thumbnail">
+              Thumbnail-URL (optional)
+            </label>
+            <input
+              id="thumbnail"
+              className={styles.input}
+              type="url"
+              placeholder="https://…/dein-thumbnail.png"
+              value={thumbnail}
+              onChange={(e) => setThumbnail(e.target.value)}
+            />
+            <p className={styles.helpText}>
+              Später kannst du hier dein Bild aus Firebase / Storage eintragen
+              oder automatisch setzen lassen.
+            </p>
+          </div>
+
+          {/* Status / Info */}
+          <div className={styles.infoBox}>
+            <div className={styles.infoTitle}>Veröffentlichung</div>
+            <p className={styles.infoText}>
+              Neue Produkte starten standardmäßig als <strong>aktiv</strong>{" "}
+              (sichtbar im Marketplace), sobald Preis und Download-Datei
+              korrekt hinterlegt sind. Du kannst den Status später jederzeit in
+              der Produkt-Bearbeitung anpassen.
+            </p>
+          </div>
+
+          {/* Messages */}
+          {errorMsg && <p className={styles.error}>{errorMsg}</p>}
+          {successMsg && <p className={styles.success}>{successMsg}</p>}
+
+          {/* Aktionen */}
+          <div className={styles.actionsRow}>
+            <button
+              type="submit"
+              className={styles.primaryBtn}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Speichere …" : "Produkt anlegen"}
+            </button>
+           <button
+  type="button"
+  className={styles.secondaryBtn}
+  onClick={() => router.push("/dashboard/products")}
+>
+  Abbrechen
+</button>
+
+          </div>
         </div>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="flex flex-col gap-2">
-          <label className="text-xs text-slate-500">Produktdatei (PDF, ZIP, etc.)</label>
-          <input
-            type="file"
-            accept=".pdf,.zip,.docx,.xlsx,.pptx,.jpg,.png"
-            onChange={e => setFile(e.target.files?.[0] || null)}
-            required
-            className="rounded-xl border px-3 py-2 text-sm"
-          />
-        </div>
-        <div className="flex flex-col gap-2">
-          <label className="text-xs text-slate-500">Thumbnail (optional)</label>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={e => setThumbnail(e.target.files?.[0] || null)}
-            className="rounded-xl border px-3 py-2 text-sm"
-          />
-        </div>
-      </div>
-      {error && <div className="text-red-500 text-sm text-center">{error}</div>}
-      <button
-        type="submit"
-        className="inline-flex items-center justify-center rounded-full bg-slate-900 px-6 py-2 text-sm font-medium text-white shadow-md shadow-slate-400/60 hover:bg-slate-800 transition disabled:opacity-60"
-        disabled={uploading}
-      >
-        {uploading ? "Wird erstellt…" : "Produkt erstellen"}
-      </button>
-    </form>
+      </form>
+    </section>
   );
 }

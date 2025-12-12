@@ -1,0 +1,20 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // DEV: Upload/Download für Produktdateien erlauben
+    match /products/{allPaths=**} {
+      allow read, write: if true;
+    }
+
+    // DEV: Upload/Download für Thumbnails erlauben
+    match /thumbnails/{allPaths=**} {
+      allow read, write: if true;
+    }
+
+    // Optional: übrige Pfade nur lesbar machen
+    match /{allPaths=**} {
+      allow read: if true;
+    }
+  }
+}

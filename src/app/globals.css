@@ -1,647 +1,2179 @@
-/* === DIGIEMU DESIGN SYSTEM: LIGHT & DARK === */
-/* === DIGIEMU DESIGN SYSTEM – AUTO LIGHT / DARK PER BROWSER === */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-/* Standard: LIGHT THEME */
+/* ===== Design Tokens – Light (default) ===== */
+
 :root {
-  color-scheme: light;
+  /* Neumorph-Basis */
+  --bg: #e5ecf5;
+  --bg-soft: #eef3fb;
+  --fg: #111111; /* harte Schrift in Komponenten */
+  --accent: #4a7cff;
+  --accent-soft: #dbe6ff;
+  --border-soft: rgba(0, 0, 0, 0.06);
 
-  /* Grundfarben */
-  --bg-page: #eef2f7;
-  --bg-soft: #f7f9fc;
-  --bg-card: #ffffff;
+  --shadow-light: rgba(255, 255, 255, 0.9);
+  --shadow-dark: rgba(163, 177, 198, 0.9);
 
-  --text-main: #0f172a;
-  --text-subtle: #475569;
+  --radius-xl: 1.4rem;
+  --radius-lg: 1rem;
+  --radius-md: 0.8rem;
+
+  --transition-fast: 150ms ease-out;
+  --transition: 200ms ease-out;
+
+  /* App-Background & Cards */
+  --page-bg: #e5edf7;
+  --card-bg: #f9fbff;
+  --card-shadow-soft: 0 20px 50px rgba(148, 180, 248, 0.35);
+  --card-shadow-light: 0 14px 35px rgba(148, 180, 248, 0.25);
+
+  /* Text-Tokens (Light) */
+  --text-main: #111111; /* wirklich schwarz */
   --text-muted: #64748b;
+  --color-text-primary: var(--text-main);
+  --color-text-muted: var(--text-muted);
 
-  --primary-bg: #2563eb;
-  --primary-bg-soft: #dbeafe;
-  --primary-text: #ffffff;
+  /* Accent / Blau */
+  --accent-strong: #2563eb;
+  --accent-dark: #1d4ed8;
+  --accent-subtle: rgba(37, 99, 235, 0.14);
 
-  --danger-bg: #ef4444;
-  --danger-text: #ffffff;
-  --success-bg: #10b981;
-  --success-text: #ffffff;
+  /* Header & Nav */
+  --header-bg: linear-gradient(135deg, #94a3b8, #bfdbfe);
+  --header-border: rgba(148, 163, 184, 0.65);
+  --header-shadow: 0 12px 32px rgba(148, 163, 184, 0.35);
 
-  /* Header */
-  --header-bg: linear-gradient(135deg, #0b1020, #111827);
-  --header-border: rgba(15, 23, 42, 0.8);
-  --header-shadow: 0 18px 45px rgba(15, 23, 42, 0.6);
+  --nav-pill-bg: #ffffff;
+  --nav-pill-border: rgba(148, 163, 184, 0.4);
+  --nav-pill-shadow: 0 16px 40px rgba(148, 163, 184, 0.35);
+  --nav-pill-hover: #f1f5f9;
+  --nav-pill-text: #0f172a;
 
-  /* Pills / Buttons im Header */
-  --nav-pill-bg: rgba(255, 255, 255, 0.9);
-  --nav-pill-border: rgba(148, 163, 184, 0.35);
-  --nav-pill-hover: rgba(255, 255, 255, 1);
-  --nav-pill-active-bg: #2563eb;
-  --nav-pill-active-text: #ffffff;
+  --mobile-menu-border: rgba(148, 163, 184, 0.55);
+  --mobile-menu-shadow: 0 22px 60px rgba(148, 163, 184, 0.75);
 
-  /* Cards */
-  --card-bg: rgba(255, 255, 255, 0.94);
-  --card-shadow-soft: 0 18px 45px rgba(15, 23, 42, 0.12);
+  --mobile-item-bg: rgba(255, 255, 255, 0.78);
+  --mobile-item-hover: rgba(248, 250, 252, 0.96);
 
-  /* Mobile Menü */
-  --mobile-menu-bg: rgba(15, 23, 42, 0.92);
-  --mobile-menu-border: rgba(31, 41, 55, 0.8);
-  --mobile-menu-shadow: 0 18px 45px rgba(0, 0, 0, 0.8);
+  /* Neo-Dashboard-Karten */
+  --neo-card-bg-soft: radial-gradient(
+    circle at 0% 0%,
+    rgba(248, 250, 252, 0.98),
+    rgba(226, 232, 240, 0.96)
+  );
+  --neo-card-bg-strong: radial-gradient(
+    circle at 0% 0%,
+    rgba(248, 250, 252, 0.98),
+    rgba(229, 231, 235, 0.96)
+  );
+  --neo-card-border: rgba(148, 163, 184, 0.5);
+  --neo-card-shadow-soft: 0 18px 40px rgba(15, 23, 42, 0.14);
+  --neo-card-shadow-strong: 0 22px 55px rgba(15, 23, 42, 0.16);
+
+  /* Admin Table – Light Mode Tokens */
+  --admin-table-header-bg: linear-gradient(
+    135deg,
+    rgba(148, 163, 184, 0.55),
+    rgba(226, 232, 240, 0.98)
+  );
+  --admin-table-row-bg: linear-gradient(
+    135deg,
+    rgba(248, 250, 252, 0.98),
+    rgba(226, 232, 240, 0.96)
+  );
+  --admin-table-row-alt-bg: linear-gradient(
+    135deg,
+    rgba(241, 245, 249, 0.98),
+    rgba(226, 232, 240, 0.96)
+  );
+  --admin-table-hover-bg: radial-gradient(
+    circle at 0% 0%,
+    rgba(148, 180, 248, 0.25),
+    rgba(226, 232, 240, 1)
+  );
+
+  --admin-table-header-text: rgba(71, 85, 105, 0.95);
+  --admin-table-body-text: #0f172a;
+  --admin-table-border-header: rgba(148, 163, 184, 0.6);
+  --admin-table-border-row: rgba(148, 163, 184, 0.28);
 }
 
-/* Browser-DARK-Mode überschreibt die Variablen automatisch */
+/* ===== Dark Mode – automatisch über System-Setting ===== */
+
 @media (prefers-color-scheme: dark) {
   :root {
-    color-scheme: dark;
+    --bg: #050712;
+    --bg-soft: #0b1020;
+    --fg: #f9fafb; /* helle Schrift in Komponenten */
 
-    --bg-page: #020617;
-    --bg-soft: #02081e;
-    --bg-card: #020b2f;
+    --accent: #70a0ff;
+    --accent-soft: #17254a;
+    --border-soft: rgba(255, 255, 255, 0.08);
 
-    --text-main: #e5f1ff;
-    --text-subtle: #cbd5f5;
-    --text-muted: #9ca3af;
+    --shadow-light: rgba(40, 50, 80, 0.95);
+    --shadow-dark: rgba(0, 0, 0, 0.95);
 
-    --primary-bg: #2563eb;
-    --primary-bg-soft: #1d3a7a;
-    --primary-text: #ffffff;
+    --page-bg: #020617;
+    --card-bg: #020817;
+    --card-shadow-soft: 0 20px 50px rgba(15, 23, 42, 0.9);
+    --card-shadow-light: 0 14px 35px rgba(15, 23, 42, 0.85);
 
-    --danger-bg: #ef4444;
-    --danger-text: #ffffff;
-    --success-bg: #10b981;
-    --success-text: #ffffff;
+    --text-main: #f9fafb;
+    --text-muted: #e5e7eb99;
+    --color-text-primary: var(--text-main);
+    --color-text-muted: var(--text-muted);
 
-    --header-bg: rgba(9, 16, 35, 0.98);
-    --header-border: rgba(51, 65, 85, 0.8);
-    --header-shadow: 0 18px 45px rgba(0, 0, 0, 0.8);
+    --accent-strong: #3b82f6;
+    --accent-dark: #1d4ed8;
+    --accent-subtle: rgba(37, 99, 235, 0.26);
 
-    --nav-pill-bg: rgba(15, 23, 42, 0.95);
-    --nav-pill-border: rgba(51, 65, 85, 0.9);
-    --nav-pill-hover: rgba(15, 23, 42, 1);
-    --nav-pill-active-bg: #2563eb;
-    --nav-pill-active-text: #ffffff;
+    --header-bg: linear-gradient(135deg, #0b1120, #020617);
+    --header-border: rgba(15, 23, 42, 0.85);
+    --header-shadow: 0 18px 45px rgba(0, 0, 0, 0.95);
 
-    --card-bg: rgba(7, 12, 29, 0.98);
-    --card-shadow-soft: 0 18px 45px rgba(0, 0, 0, 0.85);
+    --nav-pill-bg: rgba(15, 23, 42, 0.92);
+    --nav-pill-border: rgba(30, 64, 175, 0.7);
+    --nav-pill-shadow: 0 18px 45px rgba(15, 23, 42, 0.95);
+    --nav-pill-hover: rgba(30, 64, 175, 0.96);
+    --nav-pill-text: #e5edf7;
 
-    --mobile-menu-bg: rgba(7, 12, 29, 0.98);
-    --mobile-menu-border: rgba(31, 41, 55, 0.9);
-    --mobile-menu-shadow: 0 18px 45px rgba(0, 0, 0, 0.9);
+    --mobile-menu-border: rgba(15, 23, 42, 0.9);
+    --mobile-menu-shadow: 0 24px 70px rgba(0, 0, 0, 0.9);
+
+    --mobile-item-bg: rgba(15, 23, 42, 0.9);
+    --mobile-item-hover: rgba(30, 64, 175, 0.96);
+
+    --neo-card-bg-soft: radial-gradient(
+      circle at 0% 0%,
+      rgba(37, 99, 235, 0.22),
+      rgba(15, 23, 42, 0.97)
+    );
+    --neo-card-bg-strong: radial-gradient(
+      circle at 0% 0%,
+      rgba(37, 99, 235, 0.2),
+      rgba(3, 7, 18, 0.98)
+    );
+    --neo-card-border: rgba(129, 140, 248, 0.7);
+    --neo-card-shadow-soft: 0 24px 55px rgba(0, 0, 0, 0.85);
+    --neo-card-shadow-strong: 0 28px 70px rgba(0, 0, 0, 0.9);
+
+    /* Admin Table – Dark Mode Tokens (bestehender Look) */
+    --admin-table-header-bg: radial-gradient(
+      circle at top left,
+      rgba(70, 90, 160, 0.4),
+      rgba(7, 10, 25, 0.95)
+    );
+    --admin-table-row-bg: linear-gradient(
+      135deg,
+      rgba(4, 7, 18, 0.98),
+      rgba(7, 11, 26, 0.98)
+    );
+    --admin-table-row-alt-bg: linear-gradient(
+      135deg,
+      rgba(7, 10, 23, 0.98),
+      rgba(10, 14, 30, 0.98)
+    );
+    --admin-table-hover-bg: radial-gradient(
+      circle at top left,
+      rgba(74, 124, 255, 0.18),
+      rgba(7, 10, 23, 1)
+    );
+
+    --admin-table-header-text: rgba(226, 232, 255, 0.9);
+    --admin-table-body-text: #e5e7eb;
+    --admin-table-border-header: rgba(110, 130, 200, 0.35);
+    --admin-table-border-row: rgba(15, 23, 42, 0.8);
   }
 }
 
-/* === GLOBAL === */
+/* ===== Global Page Styling ===== */
+
+* {
+  box-sizing: border-box;
+}
 
 html,
 body {
   height: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 body {
-  margin: 0;
-  background-color: var(--bg-page);
-  color: var(--text-main);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, Inter,
+    "SF Pro Text", "Segoe UI", sans-serif;
+  background: var(--page-bg);
   -webkit-font-smoothing: antialiased;
-  transition: background-color 0.18s ease, color 0.18s ease;
+  text-rendering: optimizeLegibility;
+  transition:
+    background-color 0.18s ease,
+    color 0.18s ease;
+  color: var(--color-text-primary);
 }
 
-/* Header-Styling */
-
-.app-header {
-  position: sticky;
-  top: 0;
-  z-index: 50;
-  backdrop-filter: blur(18px);
-  background: var(--header-bg);
-  box-shadow: var(--header-shadow);
-  border-bottom: 1px solid var(--header-border);
+a {
+  color: inherit;
+  text-decoration: none;
 }
 
-.app-header-inner {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0.75rem 1.5rem;
-  display: flex;
-  align-items: center;
-  gap: 1.25rem;
+button {
+  font: inherit;
 }
 
-/* Logo */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
 
-.app-logo {
+/* Layout Helpers */
+
+.page-shell {
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  gap: 0.1rem;
+}
+
+.page-main {
+  flex: 1;
+  padding: 1.5rem 1rem;
+}
+
+@media (min-width: 768px) {
+  .page-main {
+    padding: 2.5rem 1.5rem;
+  }
+}
+
+.page-shell-wide {
+  max-width: 1160px;
+  margin: 0 auto;
+  padding-inline: 2.4rem;
+  padding-block: 2.5rem;
+}
+
+/* Mobile: Inhalt nicht breiter als Viewport machen */
+@media (max-width: 900px) {
+  .page-shell-wide {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+    padding-inline: 0.9rem;
+    padding-block: 1.4rem 2.6rem;
+  }
+}
+
+/* ===== Neumorph Card ===== */
+
+.neumorph-card {
+  border-radius: var(--radius-xl);
+  background: var(--bg-soft);
+  box-shadow: 12px 12px 24px var(--shadow-dark),
+    -12px -12px 24px var(--shadow-light);
+  border: 1px solid var(--border-soft);
+  transition:
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast),
+    background var(--transition);
+}
+
+.neumorph-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 16px 16px 32px var(--shadow-dark),
+    -16px -16px 32px var(--shadow-light);
+}
+
+.neumorph-card.flat {
+  box-shadow: 6px 6px 12px var(--shadow-dark),
+    -6px -6px 12px var(--shadow-light);
+}
+
+/* Inputs */
+
+.input-neu {
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-soft);
+  background: var(--bg-soft);
+  color: var(--fg);
+  box-shadow:
+    inset 4px 4px 8px rgba(0, 0, 0, 0.04),
+    inset -4px -4px 8px var(--shadow-light);
+  outline: none;
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    background var(--transition);
+  font-size: 0.95rem;
+}
+
+.input-neu::placeholder {
+  color: rgba(0, 0, 0, 0.35);
+}
+
+@media (prefers-color-scheme: dark) {
+  .input-neu::placeholder {
+    color: rgba(255, 255, 255, 0.35);
+  }
+}
+
+.input-neu:focus {
+  border-color: var(--accent-strong);
+  box-shadow:
+    0 0 0 1px var(--accent-soft),
+    6px 6px 12px var(--shadow-dark),
+    -6px -6px 12px var(--shadow-light);
+}
+
+textarea.input-neu {
+  resize: vertical;
+  min-height: 120px;
+}
+
+/* Buttons – Neumorph */
+
+.neobtn,
+.neobtn-sm {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: linear-gradient(145deg, var(--bg-soft), #ffffff);
+  color: var(--fg);
+  cursor: pointer;
+  white-space: nowrap;
   text-decoration: none;
   user-select: none;
+  box-shadow:
+    8px 8px 16px var(--shadow-dark),
+    -8px -8px 16px var(--shadow-light);
+  transition:
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast),
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast);
 }
 
-.app-logo-main {
-  font-weight: 800;
-  font-size: 1.05rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: #e5e7eb;
-}
-
-.app-logo-sub {
-  font-size: 0.68rem;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  opacity: 0.8;
-  color: #a5b4fc;
-}
-
-/* Desktop Navigation */
-
-.app-nav-desktop {
-  display: none;
-  align-items: center;
-  gap: 1.5rem;
-  margin-left: 2rem;
-}
-
-@media (min-width: 768px) {
-  .app-nav-desktop {
-    display: flex;
+@media (prefers-color-scheme: dark) {
+  .neobtn,
+  .neobtn-sm {
+    border-color: rgba(255, 255, 255, 0.06);
+    background: radial-gradient(circle at top left, #1f2743, #0b1020);
   }
 }
 
-.app-nav-link {
-  position: relative;
-  font-size: 0.92rem;
+.neobtn {
+  padding: 0.6rem 1.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.neobtn-sm {
+  padding: 0.35rem 0.9rem;
+  font-size: 0.85rem;
   font-weight: 500;
+}
+
+.neobtn:hover,
+.neobtn-sm:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    10px 10px 20px var(--shadow-dark),
+    -10px -10px 20px var(--shadow-light);
+}
+
+.neobtn:active,
+.neobtn-sm:active {
+  transform: translateY(0);
+  box-shadow:
+    4px 4px 10px var(--shadow-dark),
+    -4px -4px 10px var(--shadow-light);
+}
+
+.neobtn.primary,
+.neobtn-sm.primary {
+  background: linear-gradient(145deg, var(--accent-strong), #8faeff);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.8);
+}
+
+.neobtn.primary:hover,
+.neobtn-sm.primary:hover {
+  box-shadow:
+    10px 10px 22px rgba(0, 0, 0, 0.35),
+    -10px -10px 22px rgba(255, 255, 255, 0.2);
+}
+
+.neobtn.ghost,
+.neobtn-sm.ghost {
+  background: transparent;
+  border-color: var(--border-soft);
+  box-shadow: none;
+}
+
+.neobtn.ghost:hover,
+.neobtn-sm.ghost:hover {
+  background: rgba(255, 255, 255, 0.45);
+  box-shadow:
+    4px 4px 10px var(--shadow-dark),
+    -4px -4px 10px var(--shadow-light);
+}
+
+.neobtn-sm.danger {
+  background: linear-gradient(145deg, #ff6b6b, #ff8787);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.8);
+}
+
+.neobtn-sm.danger:hover {
+  box-shadow:
+    10px 10px 22px rgba(0, 0, 0, 0.4),
+    -10px -10px 22px rgba(255, 255, 255, 0.2);
+}
+
+/* Navigation Links */
+
+.nav-link {
+  position: relative;
+  font-size: 0.9rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 999px;
+  color: var(--color-text-primary);
+  transition:
+    color var(--transition-fast),
+    background var(--transition-fast);
+}
+
+.nav-link:hover {
+  background: rgba(255, 255, 255, 0.65);
+  color: var(--fg);
+}
+
+.nav-link.active {
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
+/* Utility */
+
+.text-muted {
+  color: rgba(0, 0, 0, 0.6);
+}
+
+/* Sections */
+
+.section {
+  margin-bottom: 2rem;
+}
+
+.section-header {
+  margin-bottom: 1rem;
+}
+
+.section-header h1,
+.section-header h2 {
+  margin: 0;
+}
+
+/* Scrollbars (dezent) */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 999px;
+}
+
+@media (prefers-color-scheme: dark) {
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.14);
+  }
+}
+
+/* einfache Neumorph-Karte & Button (falls irgendwo benutzt) */
+
+.neocard {
+  background: var(--card-bg);
+  border-radius: 24px;
+  padding: 14px;
+  box-shadow:
+    6px 6px 14px var(--shadow-dark),
+    -6px -6px 14px var(--shadow-light);
+  transition: all 0.25s ease;
+}
+
+.neocard:hover {
+  box-shadow:
+    inset 2px 2px 6px var(--shadow-dark),
+    inset -2px -2px 6px var(--shadow-light);
+}
+
+.neobutton {
+  display: inline-block;
+  padding: 10px 0;
+  border-radius: 16px;
+  font-size: 14px;
+  font-weight: 500;
+  background: var(--card-bg);
+  color: var(--text-main);
+  box-shadow:
+    4px 4px 10px var(--shadow-dark),
+    -4px -4px 10px var(--shadow-light);
+  transition: all 0.2s ease;
+}
+
+.neobutton:hover {
+  box-shadow:
+    inset 2px 2px 6px var(--shadow-dark),
+    inset -2px -2px 6px var(--shadow-light);
+}
+
+
+/* === Admin UI – Shell, Cards, Header, Badges (Light default) === */
+
+.admin-shell {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 1.75rem 1.25rem 2.5rem;
+}
+
+@media (min-width: 768px) {
+  .admin-shell {
+    padding: 2.25rem 1.5rem 3rem;
+  }
+}
+
+.admin-header {
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.7rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.22);
+}
+
+.admin-kicker {
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 600;
   color: var(--text-muted);
-  text-decoration: none;
-  padding-bottom: 0.35rem;
-  border-bottom: 2px solid transparent;
-  transition: color 0.18s ease, border-color 0.18s ease, opacity 0.18s ease;
-  opacity: 0.9;
+  margin-bottom: 0.3rem;
 }
 
-.app-nav-link:hover,
-.app-nav-link:focus-visible {
-  opacity: 1;
-  border-color: rgba(148, 163, 184, 0.8);
+.admin-title {
+  font-size: 1.55rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 0.18rem;
 }
 
-/* Header-Rechts (Buttons + Mobile-Icon) */
-
-.app-header-right {
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
+.admin-subtitle {
+  font-size: 0.85rem;
+  color: var(--text-muted);
 }
 
-/* Pill-Buttons */
+/* ===== Karten / Sektionen – LIGHT ===== */
 
-.nav-pill {
+.admin-card {
+  border-radius: 1.2rem;
+  background: var(--neo-card-bg-soft);
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  box-shadow: 0 10px 28px rgba(148, 163, 184, 0.13);
+  padding: 1.25rem 1.1rem;
+  color: var(--text-main);
+}
+
+@media (min-width: 768px) {
+  .admin-card {
+    padding: 1.5rem 1.5rem;
+  }
+}
+
+/* Stat-Kacheln */
+
+.admin-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+
+@media (min-width: 640px) {
+  .admin-stat-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.admin-stat-card {
+  border-radius: 0.9rem;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.98),
+    rgba(226, 232, 240, 0.96)
+  );
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  padding: 0.8rem 0.9rem;
+}
+
+.admin-stat-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--text-muted);
+  margin-bottom: 0.15rem;
+}
+
+.admin-stat-value {
+  font-size: 1.02rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+/* ===== Breadcrumb-Leiste (LIGHT) ===== */
+
+.admin-breadcrumbs {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  padding: 0.55rem 1.3rem;
+  gap: 0.32rem;
+  font-size: 0.71rem;
+  padding: 0.32rem 0.65rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(148, 163, 184, 0.32);
+  color: var(--text-muted);
+  box-shadow: 0 6px 14px rgba(148, 163, 184, 0.18);
+}
+
+.admin-breadcrumbs-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: radial-gradient(circle, #7ea7ff, #3654ff);
+  box-shadow: 0 0 8px rgba(120, 170, 255, 0.4);
+}
+
+.admin-breadcrumbs-link {
+  position: relative;
+}
+
+.admin-breadcrumbs-link:hover {
+  color: var(--accent, #4a7cff);
+}
+
+/* ===== Glow Tabs / Nav (LIGHT) ===== */
+
+.admin-nav-shell {
+  border-radius: 999px;
+  padding: 0.32rem 0.6rem;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.98),
+    rgba(226, 232, 240, 0.96)
+  );
+  box-shadow:
+    0 8px 18px rgba(148, 163, 184, 0.18),
+    0 0 10px rgba(148, 163, 184, 0.12);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+}
+
+.admin-nav-pill {
+  padding: 0.45rem 0.95rem;
   border-radius: 999px;
   font-size: 0.85rem;
-  font-weight: 600;
-  border: 1px solid var(--nav-pill-border);
-  background: var(--nav-pill-bg);
-  color: var(--text-main);
-  box-shadow: 0 5px 16px rgba(15, 23, 42, 0.18);
-  transition: transform 0.16s ease, box-shadow 0.16s ease,
-    background-color 0.16s ease, color 0.16s ease;
-  text-decoration: none;
-  white-space: nowrap;
-}
-
-.nav-pill:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.25);
-  background: var(--nav-pill-hover);
-}
-
-.nav-pill-primary {
-  background: var(--primary-bg);
-  color: var(--primary-text);
-  border-color: transparent;
-}
-
-.nav-pill-primary:hover {
-  background: #1d4ed8;
-}
-
-.nav-pill-active {
-  background: var(--nav-pill-active-bg);
-  color: var(--nav-pill-active-text);
-  border-color: transparent;
-}
-
-/* Desktop: Auth-Buttons sichtbar, Hamburger verstecken */
-
-@media (min-width: 768px) {
-  .app-header-auth-desktop {
-    display: flex;
-  }
-  .menu-button {
-    display: none;
-  }
-}
-
-@media (max-width: 767px) {
-  .app-header-auth-desktop {
-    display: none;
-  }
-}
-
-/* Mobile Menü (Hamburger + Drawer) */
-
-.menu-button {
-  width: 2.25rem;
-  height: 2.25rem;
-  border-radius: 999px;
-  border: 1px solid var(--nav-pill-border);
-  background: var(--nav-pill-bg);
+  letter-spacing: 0.02em;
+  font-weight: 500;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.25);
-  cursor: pointer;
-  transition: transform 0.16s ease, box-shadow 0.16s ease,
-    background-color 0.16s ease;
+  gap: 0.22rem;
+
+  background: #fff;
+  border: 1px solid rgba(148, 163, 184, 0.32);
+  color: var(--text-muted);
+
+  box-shadow:
+    0 2px 6px rgba(148, 163, 184, 0.13),
+    inset 1px 1px 0 rgba(255, 255, 255, 0.5);
+  transition: all 0.18s ease;
 }
 
-.menu-button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.35);
-}
-
-.menu-icon,
-.menu-icon::before,
-.menu-icon::after {
-  display: block;
-  width: 16px;
-  height: 2px;
-  border-radius: 999px;
-  background: #111827;
-  position: relative;
-  transition: transform 0.18s ease, opacity 0.18s ease;
-}
-
-.menu-icon::before,
-.menu-icon::after {
-  content: "";
-  position: absolute;
-  left: 0;
-}
-
-.menu-icon::before {
-  top: -5px;
-}
-
-.menu-icon::after {
-  top: 5px;
-}
-
-.mobile-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 40;
-  background: rgba(15, 23, 42, 0.65);
-  backdrop-filter: blur(8px);
-}
-
-.mobile-drawer {
-  position: fixed;
-  top: 0.75rem;
-  left: 0.75rem;
-  bottom: 0.75rem;
-  width: 78vw;
-  max-width: 360px;
-  border-radius: 24px;
-  background: var(--mobile-menu-bg);
-  border: 1px solid var(--mobile-menu-border);
-  box-shadow: var(--mobile-menu-shadow);
-  padding: 1.25rem 1.3rem 1.5rem;
-  z-index: 41;
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
-
-.mobile-nav-link {
-  display: block;
-  width: 100%;
-  border-radius: 999px;
-  padding: 0.6rem 1.1rem;
-  font-size: 0.9rem;
-  font-weight: 500;
-  text-align: left;
-  border: 1px solid var(--nav-pill-border);
-  background: var(--nav-pill-bg);
+.admin-nav-pill:hover {
   color: var(--text-main);
+  background: #f1f5f9;
+  box-shadow:
+    0 4px 10px rgba(148, 163, 184, 0.18),
+    inset 1px 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.admin-nav-pill.active {
+  color: #fff;
+  background: radial-gradient(circle at 0% 0%, #4a7cff, #2563eb);
+  border-color: rgba(37, 99, 235, 0.9);
+  box-shadow:
+    0 8px 18px rgba(37, 99, 235, 0.38),
+    0 0 16px rgba(37, 99, 235, 0.38);
+}
+
+/* ===== Tabellen (LIGHT) ===== */
+
+.admin-table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.admin-table thead tr {
+  background: rgba(226, 232, 240, 0.98);
+}
+
+.admin-table thead th {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  padding: 0.65rem 0.9rem;
+  color: #64748b;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.7);
+}
+
+.admin-table tbody tr {
+  background: #f9fbff;
+}
+
+.admin-table tbody tr:nth-child(even) {
+  background: #eef3fb;
+}
+
+.admin-table tbody tr:hover {
+  background: #e5edf7;
+}
+
+.admin-table td {
+  padding: 0.65rem 0.9rem;
+  font-size: 0.8rem;
+  border-bottom: 1px solid rgba(203, 213, 225, 0.9);
+}
+
+/* Admin: Filter-Card und Tabellen-Card optisch verbinden */
+.neumorph-card.admin-filter-card {
+  border-bottom-left-radius: 0.8rem;
+  border-bottom-right-radius: 0.8rem;
+  margin-bottom: 0;
+}
+
+.neumorph-card.admin-table-card {
+  border-top-left-radius: 0.8rem;
+  border-top-right-radius: 0.8rem;
+  margin-top: 0;
+  border-top: 1px solid rgba(0,0,0,0.02);
+}
+
+/* =======================
+   DARK MODE OVERRIDES für Admin
+   ======================= */
+
+@media (prefers-color-scheme: dark) {
+  /* ===== Design Tokens – Dark (automatisch) ===== */
+
+  :root {
+    --bg: #050712;
+    --bg-soft: #0b1020;
+    --fg: #f9fafb; /* helle Schrift in Komponenten */
+
+    --accent: #70a0ff;
+    --accent-soft: #17254a;
+    --border-soft: rgba(255, 255, 255, 0.08);
+
+    --shadow-light: rgba(40, 50, 80, 0.95);
+    --shadow-dark: rgba(0, 0, 0, 0.95);
+
+    --page-bg: #020617;
+    --card-bg: #020817;
+    --card-shadow-soft: 0 20px 50px rgba(15, 23, 42, 0.9);
+    --card-shadow-light: 0 14px 35px rgba(15, 23, 42, 0.85);
+
+    --text-main: #f9fafb;
+    --text-muted: #e5e7eb99;
+    --color-text-primary: var(--text-main);
+    --color-text-muted: var(--text-muted);
+
+    --accent-strong: #3b82f6;
+    --accent-dark: #1d4ed8;
+    --accent-subtle: rgba(37, 99, 235, 0.26);
+
+    --header-bg: linear-gradient(135deg, #0b1120, #020617);
+    --header-border: rgba(15, 23, 42, 0.85);
+    --header-shadow: 0 18px 45px rgba(0, 0, 0, 0.95);
+
+    --nav-pill-bg: rgba(15, 23, 42, 0.92);
+    --nav-pill-border: rgba(30, 64, 175, 0.7);
+    --nav-pill-shadow: 0 18px 45px rgba(15, 23, 42, 0.95);
+    --nav-pill-hover: rgba(30, 64, 175, 0.96);
+    --nav-pill-text: #e5edf7;
+
+    --mobile-menu-border: rgba(15, 23, 42, 0.9);
+    --mobile-menu-shadow: 0 24px 70px rgba(0, 0, 0, 0.9);
+
+    --mobile-item-bg: rgba(15, 23, 42, 0.9);
+    --mobile-item-hover: rgba(30, 64, 175, 0.96);
+
+    --neo-card-bg-soft: radial-gradient(
+      circle at 0% 0%,
+      rgba(37, 99, 235, 0.22),
+      rgba(15, 23, 42, 0.97)
+    );
+    --neo-card-bg-strong: radial-gradient(
+      circle at 0% 0%,
+      rgba(37, 99, 235, 0.2),
+      rgba(3, 7, 18, 0.98)
+    );
+    --neo-card-border: rgba(129, 140, 248, 0.7);
+    --neo-card-shadow-soft: 0 24px 55px rgba(0, 0, 0, 0.85);
+    --neo-card-shadow-strong: 0 28px 70px rgba(0, 0, 0, 0.9);
+
+    /* Admin Table – Dark Mode Tokens (bestehender Look) */
+    --admin-table-header-bg: radial-gradient(
+      circle at top left,
+      rgba(70, 90, 160, 0.4),
+      rgba(7, 10, 25, 0.95)
+    );
+    --admin-table-row-bg: linear-gradient(
+      135deg,
+      rgba(4, 7, 18, 0.98),
+      rgba(7, 11, 26, 0.98)
+    );
+    --admin-table-row-alt-bg: linear-gradient(
+      135deg,
+      rgba(7, 10, 23, 0.98),
+      rgba(10, 14, 30, 0.98)
+    );
+    --admin-table-hover-bg: radial-gradient(
+      circle at top left,
+      rgba(74, 124, 255, 0.18),
+      rgba(7, 10, 23, 1)
+    );
+
+    --admin-table-header-text: rgba(226, 232, 255, 0.9);
+    --admin-table-body-text: #e5e7eb;
+    --admin-table-border-header: rgba(110, 130, 200, 0.35);
+    --admin-table-border-row: rgba(15, 23, 42, 0.8);
+  }
+
+  /* ===== Admin UI – Shell, Cards, Header, Badges (Dark Mode) ===== */
+
+  .admin-shell {
+    /* keine Änderung */
+  }
+
+  .admin-header {
+    margin-bottom: 1.75rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.35);
+  }
+
+  .admin-kicker {
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  .admin-title {
+    color: var(--text-main);
+  }
+
+  .admin-subtitle {
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  /* Karten / Sektionen */
+
+  .admin-card {
+    background: radial-gradient(circle at top left, rgba(148, 163, 255, 0.18), transparent 55%)
+        border-box,
+      var(--neo-card-bg-strong);
+    border: 1px solid var(--neo-card-border);
+    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.6);
+  }
+
+  /* Stat-Kacheln */
+
+  .admin-stat-card {
+    background: linear-gradient(
+      135deg,
+      rgba(15, 23, 42, 0.7),
+      rgba(15, 23, 42, 0.95)
+    );
+    border: 1px solid rgba(148, 163, 184, 0.4);
+  }
+
+  .admin-stat-label {
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  .admin-stat-value {
+    color: var(--text-main);
+  }
+
+  /* Breadcrumb-Leiste oben in Admin (Dashboard | User | Produkte | ...) */
+
+  .admin-breadcrumb {
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  .admin-breadcrumb span {
+    opacity: 0.9;
+  }
+
+  .admin-breadcrumb-dot {
+    background: rgba(148, 163, 184, 0.8);
+  }
+
+  /* Tabellen-Header */
+
+  .admin-table th {
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  .admin-table td {
+    color: var(--admin-table-body-text);
+  }
+}
+
+/* ===== Global Page Styling ===== */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, Inter,
+    "SF Pro Text", "Segoe UI", sans-serif;
+  background: var(--page-bg);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  transition:
+    background-color 0.18s ease,
+    color 0.18s ease;
+  color: var(--color-text-primary);
+}
+
+a {
+  color: inherit;
   text-decoration: none;
-  box-shadow: 3px 3px 8px rgba(15, 23, 42, 0.25),
-    -3px -3px 8px rgba(255, 255, 255, 0.6);
-  transition: transform 0.16s ease, box-shadow 0.16s ease,
-    background-color 0.16s ease;
 }
 
-.mobile-nav-link:hover {
-  transform: translateY(-1px);
-  box-shadow: 5px 5px 14px rgba(15, 23, 42, 0.35),
-    -4px -4px 12px rgba(255, 255, 255, 0.7);
+button {
+  font: inherit;
 }
 
-/* Cards / Dashboard / Produktkarten – Grundstil */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
 
-.neo-card {
-  border-radius: 24px;
-  background: var(--card-bg);
-  box-shadow: var(--card-shadow-soft);
-  padding: 1.5rem;
+/* Layout Helpers */
+
+.page-shell {
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  border-bottom: 1px solid var(--header-border);
 }
 
-.app-header-inner {
-  max-width: 1400px;
+.page-main {
+  flex: 1;
+  padding: 1.5rem 1rem;
+}
+
+@media (min-width: 768px) {
+  .page-main {
+    padding: 2.5rem 1.5rem;
+  }
+}
+
+.page-shell-wide {
+  max-width: 1160px;
   margin: 0 auto;
-  padding: 0.75rem 1.5rem;
-  display: flex;
-  align-items: center;
-  gap: 1.25rem;
+  padding-inline: 2.4rem;
+  padding-block: 2.5rem;
 }
 
-/* Logo */
+/* Mobile: Inhalt nicht breiter als Viewport machen */
+@media (max-width: 900px) {
+  .page-shell-wide {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+    padding-inline: 0.9rem;
+    padding-block: 1.4rem 2.6rem;
+  }
+}
 
-.app-logo {
-  display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
+/* ===== Neumorph Card ===== */
+
+.neumorph-card {
+  border-radius: var(--radius-xl);
+  background: var(--bg-soft);
+  box-shadow: 12px 12px 24px var(--shadow-dark),
+    -12px -12px 24px var(--shadow-light);
+  border: 1px solid var(--border-soft);
+  transition:
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast),
+    background var(--transition);
+}
+
+.neumorph-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 16px 16px 32px var(--shadow-dark),
+    -16px -16px 32px var(--shadow-light);
+}
+
+.neumorph-card.flat {
+  box-shadow: 6px 6px 12px var(--shadow-dark),
+    -6px -6px 12px var(--shadow-light);
+}
+
+/* Inputs */
+
+.input-neu {
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-soft);
+  background: var(--bg-soft);
+  color: var(--fg);
+  box-shadow:
+    inset 4px 4px 8px rgba(0, 0, 0, 0.04),
+    inset -4px -4px 8px var(--shadow-light);
+  outline: none;
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    background var(--transition);
+  font-size: 0.95rem;
+}
+
+.input-neu::placeholder {
+  color: rgba(0, 0, 0, 0.35);
+}
+
+@media (prefers-color-scheme: dark) {
+  .input-neu::placeholder {
+    color: rgba(255, 255, 255, 0.35);
+  }
+}
+
+.input-neu:focus {
+  border-color: var(--accent-strong);
+  box-shadow:
+    0 0 0 1px var(--accent-soft),
+    6px 6px 12px var(--shadow-dark),
+    -6px -6px 12px var(--shadow-light);
+}
+
+textarea.input-neu {
+  resize: vertical;
+  min-height: 120px;
+}
+
+/* Buttons – Neumorph */
+
+.neobtn,
+.neobtn-sm {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: linear-gradient(145deg, var(--bg-soft), #ffffff);
+  color: var(--fg);
+  cursor: pointer;
+  white-space: nowrap;
   text-decoration: none;
   user-select: none;
+  box-shadow:
+    8px 8px 16px var(--shadow-dark),
+    -8px -8px 16px var(--shadow-light);
+  transition:
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast),
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast);
 }
 
-.app-logo-main {
-  font-weight: 800;
-  font-size: 1.05rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+@media (prefers-color-scheme: dark) {
+  .neobtn,
+  .neobtn-sm {
+    border-color: rgba(255, 255, 255, 0.06);
+    background: radial-gradient(circle at top left, #1f2743, #0b1020);
+  }
 }
 
-.app-logo-sub {
-  font-size: 0.68rem;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  opacity: 0.8;
+.neobtn {
+  padding: 0.6rem 1.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
 }
 
-/* Desktop-Navigation */
+.neobtn-sm {
+  padding: 0.35rem 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
 
-.app-nav-desktop {
-  display: none;
-  align-items: center;
-  gap: 1.5rem;
-  margin-left: 2rem;
+.neobtn:hover,
+.neobtn-sm:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    10px 10px 20px var(--shadow-dark),
+    -10px -10px 20px var(--shadow-light);
+}
+
+.neobtn:active,
+.neobtn-sm:active {
+  transform: translateY(0);
+  box-shadow:
+    4px 4px 10px var(--shadow-dark),
+    -4px -4px 10px var(--shadow-light);
+}
+
+.neobtn.primary,
+.neobtn-sm.primary {
+  background: linear-gradient(145deg, var(--accent-strong), #8faeff);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.8);
+}
+
+.neobtn.primary:hover,
+.neobtn-sm.primary:hover {
+  box-shadow:
+    10px 10px 22px rgba(0, 0, 0, 0.35),
+    -10px -10px 22px rgba(255, 255, 255, 0.2);
+}
+
+.neobtn.ghost,
+.neobtn-sm.ghost {
+  background: transparent;
+  border-color: var(--border-soft);
+  box-shadow: none;
+}
+
+.neobtn.ghost:hover,
+.neobtn-sm.ghost:hover {
+  background: rgba(255, 255, 255, 0.45);
+  box-shadow:
+    4px 4px 10px var(--shadow-dark),
+    -4px -4px 10px var(--shadow-light);
+}
+
+.neobtn-sm.danger {
+  background: linear-gradient(145deg, #ff6b6b, #ff8787);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.8);
+}
+
+.neobtn-sm.danger:hover {
+  box-shadow:
+    10px 10px 22px rgba(0, 0, 0, 0.4),
+    -10px -10px 22px rgba(255, 255, 255, 0.2);
+}
+
+/* Navigation Links */
+
+.nav-link {
+  position: relative;
+  font-size: 0.9rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 999px;
+  color: var(--color-text-primary);
+  transition:
+    color var(--transition-fast),
+    background var(--transition-fast);
+}
+
+.nav-link:hover {
+  background: rgba(255, 255, 255, 0.65);
+  color: var(--fg);
+}
+
+.nav-link.active {
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
+/* Utility */
+
+.text-muted {
+  color: rgba(0, 0, 0, 0.6);
+}
+
+/* Sections */
+
+.section {
+  margin-bottom: 2rem;
+}
+
+.section-header {
+  margin-bottom: 1rem;
+}
+
+.section-header h1,
+.section-header h2 {
+  margin: 0;
+}
+
+/* Scrollbars (dezent) */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 999px;
+}
+
+@media (prefers-color-scheme: dark) {
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.14);
+  }
+}
+
+/* einfache Neumorph-Karte & Button (falls irgendwo benutzt) */
+
+.neocard {
+  background: var(--card-bg);
+  border-radius: 24px;
+  padding: 14px;
+  box-shadow:
+    6px 6px 14px var(--shadow-dark),
+    -6px -6px 14px var(--shadow-light);
+  transition: all 0.25s ease;
+}
+
+.neocard:hover {
+  box-shadow:
+    inset 2px 2px 6px var(--shadow-dark),
+    inset -2px -2px 6px var(--shadow-light);
+}
+
+.neobutton {
+  display: inline-block;
+  padding: 10px 0;
+  border-radius: 16px;
+  font-size: 14px;
+  font-weight: 500;
+  background: var(--card-bg);
+  color: var(--text-main);
+  box-shadow:
+    4px 4px 10px var(--shadow-dark),
+    -4px -4px 10px var(--shadow-light);
+  transition: all 0.2s ease;
+}
+
+.neobutton:hover {
+  box-shadow:
+    inset 2px 2px 6px var(--shadow-dark),
+    inset -2px -2px 6px var(--shadow-light);
+}
+
+
+/* === Admin UI – Shell, Cards, Header, Badges (Light default) === */
+
+.admin-shell {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 1.75rem 1.25rem 2.5rem;
 }
 
 @media (min-width: 768px) {
-  .app-nav-desktop {
-    display: flex;
+  .admin-shell {
+    padding: 2.25rem 1.5rem 3rem;
   }
 }
 
-.app-nav-link {
-  position: relative;
-  font-size: 0.92rem;
-  font-weight: 500;
+.admin-header {
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.7rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.22);
+}
+
+.admin-kicker {
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 600;
   color: var(--text-muted);
-  text-decoration: none;
-  padding-bottom: 0.35rem;
-  border-bottom: 2px solid transparent;
-  transition: color 0.18s ease, border-color 0.18s ease, opacity 0.18s ease;
-  opacity: 0.9;
+  margin-bottom: 0.3rem;
 }
 
-.app-nav-link:hover,
-.app-nav-link:focus-visible {
-  opacity: 1;
-  border-color: rgba(148, 163, 184, 0.8);
+.admin-title {
+  font-size: 1.55rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 0.18rem;
 }
 
-/* === Pill-Buttons im Header === */
+.admin-subtitle {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
 
-.nav-pill {
+/* ===== Karten / Sektionen – LIGHT ===== */
+
+.admin-card {
+  border-radius: 1.2rem;
+  background: var(--neo-card-bg-soft);
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  box-shadow: 0 10px 28px rgba(148, 163, 184, 0.13);
+  padding: 1.25rem 1.1rem;
+  color: var(--text-main);
+}
+
+@media (min-width: 768px) {
+  .admin-card {
+    padding: 1.5rem 1.5rem;
+  }
+}
+
+/* Stat-Kacheln */
+
+.admin-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+
+@media (min-width: 640px) {
+  .admin-stat-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.admin-stat-card {
+  border-radius: 0.9rem;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.98),
+    rgba(226, 232, 240, 0.96)
+  );
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  padding: 0.8rem 0.9rem;
+}
+
+.admin-stat-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--text-muted);
+  margin-bottom: 0.15rem;
+}
+
+.admin-stat-value {
+  font-size: 1.02rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+/* ===== Breadcrumb-Leiste (LIGHT) ===== */
+
+.admin-breadcrumbs {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  padding: 0.55rem 1.3rem;
+  gap: 0.32rem;
+  font-size: 0.71rem;
+  padding: 0.32rem 0.65rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(148, 163, 184, 0.32);
+  color: var(--text-muted);
+  box-shadow: 0 6px 14px rgba(148, 163, 184, 0.18);
+}
+
+.admin-breadcrumbs-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: radial-gradient(circle, #7ea7ff, #3654ff);
+  box-shadow: 0 0 8px rgba(120, 170, 255, 0.4);
+}
+
+.admin-breadcrumbs-link {
+  position: relative;
+}
+
+.admin-breadcrumbs-link:hover {
+  color: var(--accent, #4a7cff);
+}
+
+/* ===== Glow Tabs / Nav (LIGHT) ===== */
+
+.admin-nav-shell {
+  border-radius: 999px;
+  padding: 0.32rem 0.6rem;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.98),
+    rgba(226, 232, 240, 0.96)
+  );
+  box-shadow:
+    0 8px 18px rgba(148, 163, 184, 0.18),
+    0 0 10px rgba(148, 163, 184, 0.12);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+}
+
+.admin-nav-pill {
+  padding: 0.45rem 0.95rem;
   border-radius: 999px;
   font-size: 0.85rem;
-  font-weight: 600;
-  border: 1px solid var(--nav-pill-border);
-  background: var(--nav-pill-bg);
-  color: var(--text-main);
-  box-shadow: 0 5px 16px rgba(15, 23, 42, 0.15);
-  transition: transform 0.16s ease, box-shadow 0.16s ease,
-    background-color 0.16s ease, color 0.16s ease;
-  text-decoration: none;
-  white-space: nowrap;
-}
-
-.nav-pill:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.25);
-  background: var(--nav-pill-hover);
-}
-
-.nav-pill-primary {
-  background: var(--primary-bg);
-  color: #ffffff;
-  border-color: transparent;
-}
-
-.nav-pill-primary:hover {
-  background: var(--primary-strong);
-}
-
-.nav-pill-danger {
-  background: var(--btn-danger-bg);
-  color: #ffffff;
-  border-color: transparent;
-}
-
-.nav-pill-danger:hover {
-  background: var(--btn-danger-hover);
-}
-
-.nav-pill-ghost {
-  background: var(--btn-ghost-bg);
-  border-color: var(--btn-ghost-border);
-  color: var(--btn-ghost-text);
-}
-
-.nav-pill-ghost:hover {
-  background: var(--btn-ghost-hover);
-}
-
-.nav-pill-active {
-  background: var(--nav-pill-active-bg);
-  color: var(--nav-pill-active-text);
-  border-color: transparent;
-}
-
-/* === Theme Toggle === */
-
-.theme-toggle {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.25rem;
-  width: 3.1rem;
-  height: 1.6rem;
-  border-radius: 999px;
-  padding: 0.12rem;
-  background: var(--toggle-bg);
-  border: 1px solid rgba(148, 163, 184, 0.65);
-  cursor: pointer;
-  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.25);
-}
-
-.theme-toggle-thumb {
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 1.2rem;
-  height: 1.2rem;
-  border-radius: 999px;
-  background: var(--toggle-thumb);
-  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.35);
-  transition: transform 0.22s ease;
-}
-
-/* === Mobile Header-Controls === */
-
-.app-header-right {
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-@media (max-width: 767px) {
-  .app-header-auth-desktop {
-    display: none;
-  }
-}
-
-/* Hamburger Button */
-
-.menu-button {
-  width: 2.25rem;
-  height: 2.25rem;
-  border-radius: 999px;
-  border: 1px solid var(--nav-pill-border);
-  background: var(--nav-pill-bg);
+  letter-spacing: 0.02em;
+  font-weight: 500;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.25);
-  cursor: pointer;
-  transition: transform 0.16s ease, box-shadow 0.16s ease,
-    background-color 0.16s ease;
+  gap: 0.22rem;
+
+  background: #fff;
+  border: 1px solid rgba(148, 163, 184, 0.32);
+  color: var(--text-muted);
+
+  box-shadow:
+    0 2px 6px rgba(148, 163, 184, 0.13),
+    inset 1px 1px 0 rgba(255, 255, 255, 0.5);
+  transition: all 0.18s ease;
 }
 
-.menu-button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.35);
+.admin-nav-pill:hover {
+  color: var(--text-main);
+  background: #f1f5f9;
+  box-shadow:
+    0 4px 10px rgba(148, 163, 184, 0.18),
+    inset 1px 1px 0 rgba(255, 255, 255, 0.7);
 }
 
-.menu-icon,
-.menu-icon::before,
-.menu-icon::after {
-  display: block;
-  width: 16px;
-  height: 2px;
+.admin-nav-pill.active {
+  color: #fff;
+  background: radial-gradient(circle at 0% 0%, #4a7cff, #2563eb);
+  border-color: rgba(37, 99, 235, 0.9);
+  box-shadow:
+    0 8px 18px rgba(37, 99, 235, 0.38),
+    0 0 16px rgba(37, 99, 235, 0.38);
+}
+
+/* ===== Tabellen (LIGHT) ===== */
+
+.admin-table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.admin-table thead tr {
+  background: rgba(226, 232, 240, 0.98);
+}
+
+.admin-table thead th {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  padding: 0.65rem 0.9rem;
+  color: #64748b;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.7);
+}
+
+.admin-table tbody tr {
+  background: #f9fbff;
+}
+
+.admin-table tbody tr:nth-child(even) {
+  background: #eef3fb;
+}
+
+.admin-table tbody tr:hover {
+  background: #e5edf7;
+}
+
+.admin-table td {
+  padding: 0.65rem 0.9rem;
+  font-size: 0.8rem;
+  border-bottom: 1px solid rgba(203, 213, 225, 0.9);
+}
+
+/* Admin: Filter-Card und Tabellen-Card optisch verbinden */
+.neumorph-card.admin-filter-card {
+  border-bottom-left-radius: 0.8rem;
+  border-bottom-right-radius: 0.8rem;
+  margin-bottom: 0;
+}
+
+.neumorph-card.admin-table-card {
+  border-top-left-radius: 0.8rem;
+  border-top-right-radius: 0.8rem;
+  margin-top: 0;
+  border-top: 1px solid rgba(0,0,0,0.02);
+}
+
+/* =======================
+   DARK MODE OVERRIDES für Admin
+   ======================= */
+
+@media (prefers-color-scheme: dark) {
+  /* ===== Design Tokens – Dark (automatisch) ===== */
+
+  :root {
+    --bg: #050712;
+    --bg-soft: #0b1020;
+    --fg: #f9fafb; /* helle Schrift in Komponenten */
+
+    --accent: #70a0ff;
+    --accent-soft: #17254a;
+    --border-soft: rgba(255, 255, 255, 0.08);
+
+    --shadow-light: rgba(40, 50, 80, 0.95);
+    --shadow-dark: rgba(0, 0, 0, 0.95);
+
+    --page-bg: #020617;
+    --card-bg: #020817;
+    --card-shadow-soft: 0 20px 50px rgba(15, 23, 42, 0.9);
+    --card-shadow-light: 0 14px 35px rgba(15, 23, 42, 0.85);
+
+    --text-main: #f9fafb;
+    --text-muted: #e5e7eb99;
+    --color-text-primary: var(--text-main);
+    --color-text-muted: var(--text-muted);
+
+    --accent-strong: #3b82f6;
+    --accent-dark: #1d4ed8;
+    --accent-subtle: rgba(37, 99, 235, 0.26);
+
+    --header-bg: linear-gradient(135deg, #0b1120, #020617);
+    --header-border: rgba(15, 23, 42, 0.85);
+    --header-shadow: 0 18px 45px rgba(0, 0, 0, 0.95);
+
+    --nav-pill-bg: rgba(15, 23, 42, 0.92);
+    --nav-pill-border: rgba(30, 64, 175, 0.7);
+    --nav-pill-shadow: 0 18px 45px rgba(15, 23, 42, 0.95);
+    --nav-pill-hover: rgba(30, 64, 175, 0.96);
+    --nav-pill-text: #e5edf7;
+
+    --mobile-menu-border: rgba(15, 23, 42, 0.9);
+    --mobile-menu-shadow: 0 24px 70px rgba(0, 0, 0, 0.9);
+
+    --mobile-item-bg: rgba(15, 23, 42, 0.9);
+    --mobile-item-hover: rgba(30, 64, 175, 0.96);
+
+    --neo-card-bg-soft: radial-gradient(
+      circle at 0% 0%,
+      rgba(37, 99, 235, 0.22),
+      rgba(15, 23, 42, 0.97)
+    );
+    --neo-card-bg-strong: radial-gradient(
+      circle at 0% 0%,
+      rgba(37, 99, 235, 0.2),
+      rgba(3, 7, 18, 0.98)
+    );
+    --neo-card-border: rgba(129, 140, 248, 0.7);
+    --neo-card-shadow-soft: 0 24px 55px rgba(0, 0, 0, 0.85);
+    --neo-card-shadow-strong: 0 28px 70px rgba(0, 0, 0, 0.9);
+
+    /* Admin Table – Dark Mode Tokens (bestehender Look) */
+    --admin-table-header-bg: radial-gradient(
+      circle at top left,
+      rgba(70, 90, 160, 0.4),
+      rgba(7, 10, 25, 0.95)
+    );
+    --admin-table-row-bg: linear-gradient(
+      135deg,
+      rgba(4, 7, 18, 0.98),
+      rgba(7, 11, 26, 0.98)
+    );
+    --admin-table-row-alt-bg: linear-gradient(
+      135deg,
+      rgba(7, 10, 23, 0.98),
+      rgba(10, 14, 30, 0.98)
+    );
+    --admin-table-hover-bg: radial-gradient(
+      circle at top left,
+      rgba(74, 124, 255, 0.18),
+      rgba(7, 10, 23, 1)
+    );
+
+    --admin-table-header-text: rgba(226, 232, 255, 0.9);
+    --admin-table-body-text: #e5e7eb;
+    --admin-table-border-header: rgba(110, 130, 200, 0.35);
+    --admin-table-border-row: rgba(15, 23, 42, 0.8);
+  }
+
+  /* ===== Admin UI – Shell, Cards, Header, Badges (Dark Mode) ===== */
+
+  .admin-shell {
+    /* keine Änderung */
+  }
+
+  .admin-header {
+    margin-bottom: 1.75rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.35);
+  }
+
+  .admin-kicker {
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  .admin-title {
+    color: var(--text-main);
+  }
+
+  .admin-subtitle {
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  /* Karten / Sektionen */
+
+  .admin-card {
+    background: radial-gradient(circle at top left, rgba(148, 163, 255, 0.18), transparent 55%)
+        border-box,
+      var(--neo-card-bg-strong);
+    border: 1px solid var(--neo-card-border);
+    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.6);
+  }
+
+  /* Stat-Kacheln */
+
+  .admin-stat-card {
+    background: linear-gradient(
+      135deg,
+      rgba(15, 23, 42, 0.7),
+      rgba(15, 23, 42, 0.95)
+    );
+    border: 1px solid rgba(148, 163, 184, 0.4);
+  }
+
+  .admin-stat-label {
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  .admin-stat-value {
+    color: var(--text-main);
+  }
+
+  /* Breadcrumb-Leiste oben in Admin (Dashboard | User | Produkte | ...) */
+
+  .admin-breadcrumb {
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  .admin-breadcrumb span {
+    opacity: 0.9;
+  }
+
+  .admin-breadcrumb-dot {
+    background: rgba(148, 163, 184, 0.8);
+  }
+
+  /* Tabellen-Header */
+
+  .admin-table th {
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  .admin-table td {
+    color: var(--admin-table-body-text);
+  }
+}
+
+/* =======================
+   Admin – Top-Menü (Tabs)
+   ======================= */
+
+.admin-menu {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  align-items: center;
+
+  padding: 0.45rem 0.7rem;
+  margin-bottom: 1.75rem;
+
   border-radius: 999px;
-  background: var(--text-main);
-  position: relative;
-  transition: transform 0.18s ease, opacity 0.18s ease;
+  background: var(--bg-soft);
+  border: 1px solid var(--border-soft);
+  box-shadow:
+    0 10px 24px rgba(148, 163, 184, 0.35),
+    0 0 20px rgba(148, 163, 184, 0.25);
 }
 
-.menu-icon::before,
-.menu-icon::after {
-  content: "";
-  position: absolute;
-  left: 0;
+/* Light + Dark benutzen dieselben Tokens,
+   sehen aber anders aus, weil --bg-soft usw. im Dark-Block anders sind. */
+
+.admin-menu-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.4rem 0.95rem;
+
+  border-radius: 999px;
+  border: 1px solid transparent;
+
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--text-main);
+
+  box-shadow:
+    4px 4px 10px var(--shadow-dark),
+    -4px -4px 10px var(--shadow-light);
+
+  transition:
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast),
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast);
 }
 
-.menu-icon::before {
-  top: -5px;
+.admin-menu-pill:hover {
+  transform: translateY(-1px);
+  background: #ffffff;
+  border-color: rgba(148, 163, 184, 0.6);
+  box-shadow:
+    6px 6px 14px var(--shadow-dark),
+    -6px -6px 14px var(--shadow-light);
 }
 
-.menu-icon::after {
-  top: 5px;
+.admin-menu-pill:active {
+  transform: translateY(0);
+  box-shadow:
+    3px 3px 8px var(--shadow-dark),
+    -3px -3px 8px var(--shadow-light);
 }
 
-/* === Mobile Drawer === */
-
-.mobile-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 40;
-  background: rgba(15, 23, 42, 0.65);
-  backdrop-filter: blur(8px);
+/* Aktiver Tab im Top-Menü (optional, falls du ihn nutzen willst) */
+.admin-menu-pill.is-active {
+  background: linear-gradient(135deg, var(--accent-strong), #8faeff);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.85);
 }
 
-.mobile-drawer {
-  position: fixed;
-  top: 0.75rem;
-  left: 0.75rem;
-  bottom: 0.75rem;
-  width: 78vw;
-  max-width: 360px;
-  border-radius: 24px;
-  background: var(--mobile-menu-bg);
-  border: 1px solid var(--mobile-menu-border);
-  box-shadow: var(--mobile-menu-shadow);
-  padding: 1.25rem 1.3rem 1.5rem;
-  z-index: 41;
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
+/* =======================
+   Admin – Nav Shell & Tabs
+   ======================= */
+
+/* Light-Mode: schöner Neumorph-Ring, so wie du ihn jetzt magst */
+.admin-nav-shell {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.45rem 0.6rem;
+  border-radius: 999px;
+  background: radial-gradient(
+      circle at 0% 0%,
+      rgba(255, 255, 255, 0.98),
+      rgba(231, 238, 252, 0.96)
+    );
+  border: 1px solid var(--border-soft);
+  box-shadow:
+    10px 10px 20px var(--shadow-dark),
+    -10px -10px 20px var(--shadow-light);
 }
 
-/* Neo-Buttons im mobilen Menü */
+/* einzelner Tab */
+.admin-nav-pill {
+  padding: 0.45rem 1.2rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
 
-.mobile-nav-link {
-  display: block;
+  background: linear-gradient(145deg, var(--bg-soft), #ffffff);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  color: var(--text-main);
+
+  box-shadow:
+    6px 6px 12px var(--shadow-dark),
+    -6px -6px 12px var(--shadow-light);
+
+  transition:
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast),
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.admin-nav-pill:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    8px 8px 16px var(--shadow-dark),
+    -8px -8px 16px var(--shadow-light);
+}
+
+.admin-nav-pill.active {
+  background: linear-gradient(135deg, var(--accent-strong), #8faeff);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.9);
+}
+
+/* ===== Dark Mode Varianten für Admin-Nav ===== */
+
+@media (prefers-color-scheme: dark) {
+  /* Shell im Dark-Mode: kein eigener heller Balken mehr,
+     nur ein dezenter Rahmen – die Pills selbst leuchten. */
+  .admin-nav-shell {
+    padding: 0.35rem 0.4rem;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+  }
+
+  .admin-nav-pill {
+    background: radial-gradient(
+      circle at 0% 0%,
+      rgba(37, 99, 235, 0.35),
+      rgba(15, 23, 42, 0.98)
+    );
+    border-color: rgba(148, 163, 184, 0.8);
+    color: var(--text-muted);
+    box-shadow:
+      inset 1px 1px 3px rgba(255, 255, 255, 0.08),
+      0 0 14px rgba(46, 69, 140, 0.6);
+  }
+
+  .admin-nav-pill:hover {
+    color: var(--text-main);
+    box-shadow:
+      inset 1px 1px 4px rgba(255, 255, 255, 0.12),
+      0 0 22px rgba(96, 165, 250, 0.8);
+  }
+
+  .admin-nav-pill.active {
+    color: #fff;
+    background: radial-gradient(
+      circle at 0% 0%,
+      rgba(129, 140, 248, 0.65),
+      rgba(15, 23, 42, 0.98)
+    );
+    border-color: rgba(191, 219, 254, 0.95);
+    box-shadow:
+      0 0 30px rgba(129, 140, 248, 0.9);
+  }
+}
+@media (prefers-color-scheme: dark) {
+  .admin-breadcrumbs {
+    /* Pille bleibt hell, aber Text wird dunkel */
+    background: rgba(255, 255, 255, 0.96);
+    border-color: rgba(148, 163, 184, 0.45);
+    color: #0f172a;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.8);
+  }
+
+  .admin-breadcrumbs-link {
+    color: #0f172a;
+  }
+
+  .admin-breadcrumbs-link:hover {
+    color: #1d4ed8; /* kleines blaues Highlight beim Hover */
+  }
+}
+/* =============================
+   Admin – Produkt-Tabelle Dark Mode
+   ============================= */
+@media (prefers-color-scheme: dark) {
+  /* Filter-Karte oben */
+  .neumorph-card.admin-filter-card {
+    background: radial-gradient(
+        circle at top left,
+        rgba(37, 99, 235, 0.24),
+        rgba(7, 12, 32, 0.96)
+      );
+    border-color: rgba(129, 140, 248, 0.6);
+    box-shadow:
+      0 18px 40px rgba(0, 0, 0, 0.9),
+      0 0 20px rgba(37, 99, 235, 0.45);
+  }
+
+  /* Tabellen-Card darunter */
+  .neumorph-card.admin-table-card {
+    background: linear-gradient(
+      135deg,
+      rgba(4, 7, 18, 0.98),
+      rgba(10, 16, 36, 0.98)
+    );
+    border-color: rgba(15, 23, 42, 0.9);
+    box-shadow:
+      0 20px 45px rgba(0, 0, 0, 0.9);
+  }
+
+  /* Tabellenkopf */
+  .admin-table thead tr {
+    background: var(--admin-table-header-bg);
+  }
+
+  .admin-table thead th {
+    color: var(--admin-table-header-text);
+    border-bottom: 1px solid var(--admin-table-border-header);
+  }
+
+  /* Tabellenzeilen */
+  .admin-table tbody tr {
+    background: var(--admin-table-row-bg);
+  }
+
+  .admin-table tbody tr:nth-child(even) {
+    background: var(--admin-table-row-alt-bg);
+  }
+
+  .admin-table tbody tr:hover {
+    background: var(--admin-table-hover-bg);
+  }
+
+  .admin-table td {
+    color: var(--admin-table-body-text);
+    border-bottom: 1px solid var(--admin-table-border-row);
+  }
+}
+/* DARK MODE – klare Schriftfarbe im Admin-Menü bei Hover */
+@media (prefers-color-scheme: dark) {
+  .admin-nav-pill:hover {
+    background: rgba(248, 250, 252, 0.96); /* leicht helles Hover */
+    color: #020617 !important;             /* dunkle Schrift */
+    transform: translateY(-1px);
+    box-shadow:
+      0 14px 28px rgba(15, 23, 42, 0.8),
+      0 0 22px rgba(96, 165, 250, 0.85);
+    text-shadow: none;                     /* sicherstellen, dass nix glüht */
+  }
+}
+
+
+/* === Kategorie-Select – Light === */
+
+.categorySelect {
   width: 100%;
   border-radius: 999px;
-  padding: 0.6rem 1.1rem;
+  padding: 0.65rem 1rem;
   font-size: 0.9rem;
-  font-weight: 500;
-  text-align: left;
-  border: 1px solid var(--nav-pill-border);
-  background: var(--nav-pill-bg);
-  color: var(--text-main);
-  text-decoration: none;
-  box-shadow: 3px 3px 8px rgba(15, 23, 42, 0.25),
-    -3px -3px 8px rgba(255, 255, 255, 0.6);
-  transition: transform 0.16s ease, box-shadow 0.16s ease,
-    background-color 0.16s ease;
+  border: 1px solid var(--border-soft);
+  background: linear-gradient(145deg, var(--bg-soft), #ffffff);
+  color: var(--color-text-primary);
+  box-shadow:
+    6px 6px 12px var(--shadow-dark),
+    -6px -6px 12px var(--shadow-light);
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  transition:
+    background var(--transition-fast),
+    box-shadow var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast);
 }
 
-.mobile-nav-link:hover {
-  transform: translateY(-1px);
-  box-shadow: 5px 5px 14px rgba(15, 23, 42, 0.35),
-    -4px -4px 12px rgba(255, 255, 255, 0.7);
+/* kleiner Pfeil rechts innen (optional) */
+.categorySelectWrapper {
+  position: relative;
+}
+.categorySelectWrapper::after {
+  content: "▾";
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.7rem;
+  pointer-events: none;
+  color: var(--color-text-muted);
 }
 
-/* Utility für Platzhalter / Cards */
+.categorySelect:focus {
+  border-color: var(--accent-strong);
+  box-shadow:
+    0 0 0 1px var(--accent-soft),
+    8px 8px 16px var(--shadow-dark),
+    -8px -8px 16px var(--shadow-light);
+}
 
-.neo-card {
-  border-radius: 24px;
-  background: var(--card-bg);
-  box-shadow: var(--card-shadow-soft);
+/* Optionen im Light-Mode */
+.categorySelect option {
+  background: var(--bg-soft);
+  color: var(--color-text-primary);
+}
+
+/* === Dark Mode === */
+@media (prefers-color-scheme: dark) {
+  .categorySelect {
+    background: radial-gradient(
+      circle at 0% 0%,
+      rgba(37, 99, 235, 0.35),
+      rgba(15, 23, 42, 0.98)
+    );
+    border-color: rgba(148, 163, 184, 0.8);
+    color: var(--text-main);
+    box-shadow:
+      inset 1px 1px 3px rgba(255, 255, 255, 0.08),
+      0 0 14px rgba(46, 69, 140, 0.6);
+  }
+
+  .categorySelect:focus {
+    box-shadow:
+      inset 1px 1px 4px rgba(255, 255, 255, 0.12),
+      0 0 22px rgba(96, 165, 250, 0.8);
+  }
+
+  .categorySelect option {
+    background: #020617;          /* dunkler Hintergrund im Dropdown */
+    color: #e5e7eb;               /* helle Schrift */
+  }
+}
+
+/* === Kategorie-Select – Neumorph + Dark-Mode === */
+
+.categorySelectWrapper {
+  position: relative;
+}
+
+.categorySelectWrapper::after {
+  content: "▾";
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.7rem;
+  pointer-events: none;
+  color: var(--color-text-muted);
+}
+
+.categorySelect {
+  width: 100%;
+  border-radius: 999px;
+  padding: 0.65rem 1rem;
+  font-size: 0.9rem;
+  border: 1px solid var(--border-soft);
+  background: linear-gradient(145deg, var(--bg-soft), #ffffff);
+  color: var(--color-text-primary);
+  box-shadow:
+    6px 6px 12px var(--shadow-dark),
+    -6px -6px 12px var(--shadow-light);
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  transition:
+    background var(--transition-fast),
+    box-shadow var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.categorySelect:focus {
+  border-color: var(--accent-strong);
+  box-shadow:
+    0 0 0 1px var(--accent-soft),
+    8px 8px 16px var(--shadow-dark),
+    -8px -8px 16px var(--shadow-light);
+}
+
+.categorySelect option {
+  background: var(--bg-soft);
+  color: var(--color-text-primary);
+}
+
+/* Dark-Mode Varianten */
+@media (prefers-color-scheme: dark) {
+  .categorySelect {
+    background: radial-gradient(
+      circle at 0% 0%,
+      rgba(37, 99, 235, 0.35),
+      rgba(15, 23, 42, 0.98)
+    );
+    border-color: rgba(148, 163, 184, 0.8);
+    color: var(--text-main);
+    box-shadow:
+      inset 1px 1px 3px rgba(255, 255, 255, 0.08),
+      0 0 14px rgba(46, 69, 140, 0.6);
+  }
+
+  .categorySelect:focus {
+    box-shadow:
+      inset 1px 1px 4px rgba(255, 255, 255, 0.12),
+      0 0 22px rgba(96, 165, 250, 0.8);
+  }
+
+  .categorySelect option {
+    background: #020617;
+    color: #e5e7eb;
+  }
+}
+/* Helle Schrift in den Produktkarten, aber nur im Hellmodus */
+html[data-theme="light"] .dashboardProductCard,
+html[data-theme="light"] .dashboardProductCard h2,
+html[data-theme="light"] .dashboardProductCard h3,
+html[data-theme="light"] .dashboardProductCard p,
+html[data-theme="light"] .dashboardProductCard span {
+  color: #e8f1ff;          /* sehr helles Blau-Weiß */
+}
+
+/* Für Dark-Mode kannst du sie leicht abdunkeln, falls nötig */
+html[data-theme="dark"] .dashboardProductCard,
+html[data-theme="dark"] .dashboardProductCard h2,
+html[data-theme="dark"] .dashboardProductCard h3,
+html[data-theme="dark"] .dashboardProductCard p,
+html[data-theme="dark"] .dashboardProductCard span {
+  color: #f9fbff;
+}
+
+
+/* ===========================================
+   DigiEmu – Produktseite Info-Cards (Light Mode)
+   =========================================== */
+
+/* zusätzliche, globale Klasse für Info-Cards */
+html:not([data-theme="dark"]) .digiemu-info-card {
+  background: radial-gradient(
+      circle at 0% 0%,
+      rgba(255, 255, 255, 0.98),
+      rgba(222, 231, 247, 0.98)
+    );
+  border-radius: 22px;
+  border: 1px solid rgba(148, 163, 184, 0.9);
+  box-shadow:
+    10px 10px 26px rgba(148, 163, 184, 0.45),
+    -6px -6px 18px rgba(255, 255, 255, 1);
+}
+
+/* wirklich dunkle Schrift wie im Dashboard */
+html:not([data-theme="dark"]) .digiemu-info-card,
+html:not([data-theme="dark"]) .digiemu-info-card h2,
+html:not([data-theme="dark"]) .digiemu-info-card p,
+html:not([data-theme="dark"]) .digiemu-info-card li {
+  color: #0b1120 !important;   /* fast schwarz */
+  opacity: 1 !important;
+  text-shadow: none !important;
 }

@@ -1,91 +1,60 @@
-// src/app/api/vendor/products/route.ts
+// src/app/api/vendor/products/stats/route.ts
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth";
-import { authOptions } from "../../auth/[...nextauth]/route";
 
-// User aus Session + DB holen
-async function getDbUserFromSession() {
-  const session = await getServerSession(authOptions);
-  if (!session || !session.user || !session.user.email) {
-    return null;
-  }
+type Totals = {
+  revenueCents: number;
+  totalSales: number;
+  totalViews: number;
+  conversionRate: number;
+  vendorEarningsCents: number;
+};
 
-  const dbUser = await prisma.user.findUnique({
-    where: { email: session.user.email },
-  });
+type ProductStat = {
+  id: string;
+  title: string;
+  views: number;
+  sales: number;
+  conversionRate: number;
+  revenueCents: number;
+  vendorEarningsCents: number;
+};
 
-  return dbUser;
+type RevenuePoint = { date: string; revenueCents: number };
+type ComparePoint = { title: string; views: number; sales: number };
+
+type StatsResponse = {
+  totals: Totals;
+  products: ProductStat[];
+  revenueData: RevenuePoint[];
+  compareData: ComparePoint[];
+};
+
+function emptyStats(): StatsResponse {
+  return {
+    totals: {
+      revenueCents: 0,
+      totalSales: 0,
+      totalViews: 0,
+      conversionRate: 0,
+      vendorEarningsCents: 0,
+    },
+    products: [],
+    revenueData: [],
+    compareData: [],
+  };
 }
 
-export async function POST(req: Request) {
-  const dbUser = await getDbUserFromSession();
+export async function GET(request: Request) {
+  console.log(
+    "[DEV] /api/vendor/products/stats HIT",
+    new Date().toISOString()
+  );
 
-  if (!dbUser) {
-    return NextResponse.json(
-      { ok: false, error: "Unauthorized" },
-      { status: 401 }
-    );
-  }
+  const url = new URL(request.url);
+  const rangeDays = url.searchParams.get("range_days") ?? "unknown";
+  console.log("[DEV] range_days =", rangeDays);
 
-  // Nur Vendor oder Admin dürfen Produkte anlegen
-  if (dbUser.role !== "VENDOR" && dbUser.role !== "ADMIN") {
-    return NextResponse.json(
-      { ok: false, error: "Not a vendor" },
-      { status: 403 }
-    );
-  }
-
-  // 🔥 Body robust einlesen: JSON ODER FormData
-  const contentType = req.headers.get("content-type") || "";
-  let payload: Record<string, unknown> = {};
-
-  if (contentType.includes("application/json")) {
-    payload = await req.json();
-  } else {
-    const formData = await req.formData();
-    payload = Object.fromEntries(formData.entries());
-  }
-
-  const title = String(payload.title ?? "").trim();
-  const description = String(payload.description ?? "");
-  const thumbnail = payload.thumbnail ? String(payload.thumbnail) : null;
-  const fileUrl = payload.fileUrl ? String(payload.fileUrl) : ""; // vorerst Placeholder
-
-  // 💰 Preis-Felder flexibel behandeln
-  let priceCents: number | null = null;
-
-  if (payload.priceCents != null && payload.priceCents !== "") {
-    const v = Number(payload.priceCents);
-    if (Number.isFinite(v)) {
-      priceCents = v;
-    }
-  } else if (payload.price != null && payload.price !== "") {
-    const v = Number(payload.price);
-    if (Number.isFinite(v)) {
-      priceCents = Math.round(v * 100); // CHF → Rappen
-    }
-  }
-
-  if (!title || priceCents == null || priceCents <= 0) {
-    return NextResponse.json(
-      { ok: false, error: "Missing or invalid title/price" },
-      { status: 400 }
-    );
-  }
-
-  // 🧾 Produkt anlegen
-  const product = await prisma.product.create({
-    data: {
-      title,
-      description,
-      priceCents,
-      thumbnail,
-      fileUrl,
-      vendorId: dbUser.id,
-      isActive: false, // erstmal inaktiv, z.B. bis Review
-    },
-  });
-
-  return NextResponse.json({ ok: true, product }, { status: 201 });
+  // DEV: immer leere Stats zurückgeben, aber **nie** 401
+  const payload = emptyStats();
+  return NextResponse.json(payload, { status: 200 });
 }

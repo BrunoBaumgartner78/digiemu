@@ -2,99 +2,309 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/authOptions";
 import { redirect } from "next/navigation";
-import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import Link from "next/link";
+import styles from "./ProductsPage.module.css";
 
-export default async function DashboardProductsPage() {
+const STATUS_FILTERS = [
+  { key: "all", label: "Alle" },
+  { key: "active", label: "Aktiv" },
+  { key: "draft", label: "Entwurf" },
+  { key: "blocked", label: "Blockiert" },
+];
+
+type SearchParams = {
+  [key: string]: string | string[] | undefined;
+};
+
+type PageProps = {
+  // Next 15/16: searchParams ist ein Promise
+  searchParams?: Promise<SearchParams>;
+};
+
+export default async function ProductsOverviewPage(props: PageProps) {
   const session = await getServerSession(authOptions);
-  if (!session || session.user.role !== "VENDOR") {
-    redirect("/dashboard");
-  }
-  const vendorId = session.user.id;
-  // Fetch products for vendor, include downloads count
-  const products = await prisma.product.findMany({
+  if (!session) redirect("/login");
+
+  const user = session.user as any;
+  if (user.role !== "VENDOR" && user.role !== "ADMIN") redirect("/login");
+
+  const vendorId = user.id;
+
+  // 🔹 searchParams entpacken
+  const params: SearchParams = props.searchParams
+    ? await props.searchParams
+    : {};
+
+  const rawStatus = params.status;
+  const resolvedStatus =
+    typeof rawStatus === "string"
+      ? rawStatus
+      : Array.isArray(rawStatus)
+      ? rawStatus[0]
+      : undefined;
+
+  const statusFilter: "all" | "active" | "draft" | "blocked" =
+    resolvedStatus && ["all", "active", "draft", "blocked"].includes(resolvedStatus)
+      ? (resolvedStatus as any)
+      : "all";
+
+  // 🔹 Alle Produkte des Vendors holen (für Filter + Counts)
+  const allProducts = await prisma.product.findMany({
     where: { vendorId },
     orderBy: { updatedAt: "desc" },
-    include: {
-      orders: true,
+  });
+
+  // 🔢 Counts pro Status (auf Basis aller Produkte)
+  const statusCounts = {
+    all: allProducts.length,
+    active: allProducts.filter(
+      (p: any) => p.isActive === true && p.status !== "BLOCKED"
+    ).length,
+    draft: allProducts.filter(
+      (p: any) => p.isActive === false || p.status === "DRAFT"
+    ).length,
+    blocked: allProducts.filter((p: any) => p.status === "BLOCKED").length,
+  };
+
+  // 🔹 Produkte entsprechend des Filters für die Liste auswählen
+  let products = allProducts;
+
+  if (statusFilter === "active") {
+    products = allProducts.filter(
+      (p: any) => p.isActive === true && p.status !== "BLOCKED"
+    );
+  } else if (statusFilter === "draft") {
+    products = allProducts.filter(
+      (p: any) => p.isActive === false || p.status === "DRAFT"
+    );
+  } else if (statusFilter === "blocked") {
+    products = allProducts.filter((p: any) => p.status === "BLOCKED");
+  }
+  // "all" → keine zusätzliche Filterung
+
+  // Download-Counts pro Produkt
+  const downloads = await prisma.downloadLink.findMany({
+    where: { order: { product: { vendorId } } },
+    select: {
+      order: { select: { productId: true } },
     },
   });
 
+  const downloadCounts: Record<string, number> = {};
+  for (const d of downloads) {
+    const pid = d.order?.productId;
+    if (!pid) continue;
+    downloadCounts[pid] = (downloadCounts[pid] ?? 0) + 1;
+  }
+
   return (
-    <main className="min-h-[70vh] w-full flex justify-center px-4 py-10 bg-gradient-to-br from-[#edf2ff] to-[#f8f9ff]">
-      <div className="w-full max-w-6xl space-y-8">
-        <header className="flex items-center justify-between mb-6">
+    <main className="page-shell-wide">
+      <section className="neo-surface p-6 md:p-8 space-y-8">
+        {/* Header */}
+        <header className={styles.headerRow}>
           <div>
-            <h1 className="text-2xl font-semibold text-slate-900">Deine Produkte</h1>
-            <p className="text-xs text-slate-500">Verwalte digitale Dateien, Preise & Sichtbarkeit</p>
+            <h1 className={styles.title}>Deine Produkte</h1>
+            <p className={styles.subtitle}>
+              Verwalte hier alle deine digitalen Produkte – Vorschau, Preis,
+              Status und Downloads auf einen Blick.
+            </p>
           </div>
-          <Link
-            href="/dashboard/new"
-            className="inline-flex items-center rounded-full bg-indigo-600 px-5 py-2 text-sm font-medium text-white shadow-md shadow-indigo-200 hover:bg-indigo-500 transition"
-          >
-            <span className="mr-2">+</span> Neues Produkt
-          </Link>
+
+          <div className={styles.headerActions}>
+            <Link href="/dashboard/products/top" className={styles.secondaryBtn}>
+              Beliebteste Produkte
+            </Link>
+            <Link href="/dashboard/new" className={styles.primaryBtn}>
+              Neues Produkt
+            </Link>
+          </div>
         </header>
-        <div className="rounded-3xl bg-white/90 shadow-lg shadow-slate-200/80 p-6 backdrop-blur-sm">
-          <div className="overflow-x-auto">
-            <table className="min-w-full text-sm">
-              <thead>
-                <tr className="bg-slate-50">
-                  <th className="py-2 px-3"></th>
-                  <th className="py-2 px-3 text-left font-semibold text-slate-700">Titel</th>
-                  <th className="py-2 px-3 text-left font-semibold text-slate-700">Preis</th>
-                  <th className="py-2 px-3 text-left font-semibold text-slate-700">Downloads</th>
-                  <th className="py-2 px-3 text-left font-semibold text-slate-700">Status</th>
-                  <th className="py-2 px-3 text-left font-semibold text-slate-700">Zuletzt aktualisiert</th>
-                  <th className="py-2 px-3 text-left font-semibold text-slate-700">Aktionen</th>
-                </tr>
-              </thead>
-              <tbody>
-                {products.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} className="py-8 text-center text-slate-400">
-                      <div className="flex flex-col items-center gap-2">
-                        <span className="text-2xl">📂</span>
-                        <span className="font-semibold">Noch keine Produkte</span>
-                        <span className="text-xs">Lege jetzt dein erstes digitales Produkt an.</span>
-                        <Link href="/dashboard/new" className="mt-2 inline-flex items-center rounded-full bg-indigo-600 px-4 py-1.5 text-xs font-medium text-white shadow-md shadow-indigo-200 hover:bg-indigo-500 transition">Erstes Produkt anlegen</Link>
-                      </div>
-                    </td>
-                  </tr>
-                ) : (
-                  products.map((product) => (
-                    <tr key={product.id} className="border-b border-slate-100">
-                      <td className="py-2 px-3">
-                        {product.thumbnail ? (
-                          <img src={product.thumbnail} alt={product.title} className="w-12 h-12 rounded-xl object-cover" />
-                        ) : (
-                          <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-slate-300">?</div>
-                        )}
-                      </td>
-                      <td className="py-2 px-3 font-medium text-slate-900">{product.title}</td>
-                      <td className="py-2 px-3">{(product.priceCents / 100).toFixed(2)} CHF</td>
-                      <td className="py-2 px-3">{product.orders.length}</td>
-                      <td className="py-2 px-3">
-                        <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${product.status === "PUBLISHED" ? "bg-green-100 text-green-700" : product.status === "DRAFT" ? "bg-gray-100 text-gray-500" : "bg-amber-100 text-amber-700"}`}>
-                          {product.status}
-                        </span>
-                      </td>
-                      <td className="py-2 px-3">{new Date(product.updatedAt).toLocaleDateString("de-CH")}</td>
-                      <td className="py-2 px-3">
-                        <div className="flex gap-2">
-                          <Link href={`/dashboard/products/${product.id}/edit-product`} className="text-xs text-indigo-600 hover:underline">Bearbeiten</Link>
-                          <Link href={`/product/${product.id}`} className="text-xs text-slate-600 hover:underline">Ansehen</Link>
-                          <Link href={`/dashboard/product/${product.id}/stats`} className="text-xs text-slate-600 hover:underline">Stats</Link>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+
+        {/* 🔹 Status-Filter-Zeile mit Badges */}
+        <div className={styles.filterRow}>
+          <span className={styles.filterLabel}>Status</span>
+          <div className={styles.filterChips}>
+            {STATUS_FILTERS.map((f) => {
+              const isActiveFilter = statusFilter === f.key;
+              const count =
+                statusCounts[f.key as keyof typeof statusCounts] ?? 0;
+
+              return (
+                <Link
+                  key={f.key}
+                  href={{
+                    pathname: "/dashboard/products",
+                    query:
+                      f.key === "all"
+                        ? {} // "Alle" → Query ohne status
+                        : { status: f.key },
+                  }}
+                  className={`${styles.filterChip} ${
+                    isActiveFilter ? styles.filterChipActive : ""
+                  }`}
+                >
+                  <span className={styles.filterChipLabel}>{f.label}</span>
+                  <span className={styles.filterChipBadge}>{count}</span>
+                </Link>
+              );
+            })}
           </div>
         </div>
-      </div>
+
+        {/* Empty State */}
+        {products.length === 0 && (
+          <section className={styles.emptyWrapper}>
+            <div className={styles.emptyCard}>
+              <h2 className={styles.emptyTitle}>Keine Produkte im Filter</h2>
+              <p className={styles.emptyText}>
+                Unter diesem Status gibt es aktuell keine Produkte. Ändere den
+                Filter oder lege ein neues Produkt an.
+              </p>
+              <Link href="/dashboard/new" className={styles.emptyBtn}>
+                Neues Produkt anlegen
+              </Link>
+            </div>
+          </section>
+        )}
+
+        {/* Grid mit Produkt-Karten */}
+        {products.length > 0 && (
+          <section className={styles.grid}>
+            {products.map((product) => {
+              const anyProd = product as any;
+              const priceCents: number = anyProd.priceCents ?? 0;
+              const price = priceCents / 100;
+
+              const isBlocked = anyProd.status === "BLOCKED";
+              const isPublished: boolean =
+                anyProd.isActive === true && !isBlocked;
+
+              const downloadsCount = downloadCounts[product.id] ?? 0;
+
+              return (
+                <article
+                  key={product.id}
+                  className={`${styles.card} dashboardProductCard`}
+                >
+                  {/* Thumbnail */}
+                  <div className={styles.thumbWrapper}>
+                    {anyProd.thumbnail ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={anyProd.thumbnail}
+                        alt={product.title}
+                        className={styles.thumbImage}
+                      />
+                    ) : (
+                      <div className={styles.thumbPlaceholder}>
+                        <svg
+                          width="80"
+                          height="60"
+                          className={styles.thumbIcon}
+                        >
+                          <rect
+                            x="4"
+                            y="4"
+                            width="72"
+                            height="52"
+                            rx="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                            fill="none"
+                          />
+                          <circle
+                            cx="56"
+                            cy="18"
+                            r="6"
+                            stroke="currentColor"
+                            strokeWidth="3"
+                            fill="none"
+                          />
+                          <path
+                            d="M18 48 L36 26 L58 48 Z"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                            fill="none"
+                          />
+                        </svg>
+                      </div>
+                    )}
+
+                    <div
+                      className={
+                        isPublished
+                          ? `${styles.statusPill} ${styles.statusLive}`
+                          : isBlocked
+                          ? `${styles.statusPill} ${styles.statusBlocked}`
+                          : `${styles.statusPill} ${styles.statusDraft}`
+                      }
+                    >
+                      {isPublished
+                        ? "Aktiv"
+                        : isBlocked
+                        ? "Blockiert"
+                        : "Entwurf"}
+                    </div>
+                  </div>
+
+                  {/* Textblock */}
+                  <div className={styles.cardBody}>
+                    <h2 className={styles.cardTitle}>{product.title}</h2>
+                    <p className={styles.cardDescription}>
+                      {product.description
+                        ? product.description.slice(0, 120) +
+                          (product.description.length > 120 ? " …" : "")
+                        : "Noch keine Beschreibung hinterlegt."}
+                    </p>
+
+                    <div className={styles.metaRow}>
+                      <div className={styles.metaItem}>
+                        <span className={styles.metaLabel}>Preis</span>
+                        <span className={styles.metaValue}>
+                          {price.toFixed(2)} CHF
+                        </span>
+                      </div>
+                      <div className={styles.metaItem}>
+                        <span className={styles.metaLabel}>Downloads</span>
+                        <span className={styles.metaValue}>
+                          {downloadsCount}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className={styles.metaFoot}>
+                      <span className={styles.metaDateLabel}>Aktualisiert</span>
+                      <span className={styles.metaDate}>
+                        {new Date(
+                          product.updatedAt
+                        ).toLocaleDateString("de-CH")}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Aktionen */}
+                  <div className={styles.actionsRow}>
+                    <Link
+                      href={`/dashboard/products/${product.id}/edit`}
+                      className="neo-btn neo-btn-secondary"
+                    >
+                      Bearbeiten
+                    </Link>
+
+                    <Link
+                      href={`/product/${product.id}`}
+                      className={styles.ghostBtn}
+                    >
+                      Produkt ansehen
+                    </Link>
+                  </div>
+                </article>
+              );
+            })}
+          </section>
+        )}
+      </section>
     </main>
   );
 }

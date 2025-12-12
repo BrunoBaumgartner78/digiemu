@@ -1,0 +1,363 @@
+/* ===========================
+   Layout
+   =========================== */
+
+.page {
+  min-height: 100vh;
+  padding: 4rem 1.5rem 6rem;
+  display: flex;
+  justify-content: center;
+  background: var(--page-bg); /* nutzt Tokens aus globals.css */
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.inner {
+  max-width: 1120px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+
+/* ===========================
+   Headline
+   =========================== */
+
+.heading {
+  font-size: clamp(2.2rem, 3vw, 2.6rem);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.6rem;
+  color: #0b1020;
+}
+
+.subheading {
+  max-width: 640px;
+  font-size: 0.98rem;
+  line-height: 1.6;
+  color: #475569;
+}
+
+/* ===========================
+   Liste & Karten (Shop-Style)
+   =========================== */
+
+.list {
+  margin-top: 2.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.8rem;
+}
+
+/* Eine Card, Light-Mode ähnlich wie Marketplace-Karten */
+.card {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 1.4rem;
+  padding: 1.6rem 1.8rem;
+  border-radius: var(--radius-xl);
+  background: var(--neo-card-bg-soft);       /* Light/Dark kommt über Tokens */
+  border: 1px solid var(--neo-card-border);
+  box-shadow: var(--neo-card-shadow-soft);
+  align-items: center;
+  transition:
+    background var(--transition),
+    box-shadow var(--transition),
+    border-color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--neo-card-shadow-strong);
+}
+
+
+.cardMain {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.titleRow {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+}
+
+.productTitle {
+  font-weight: 600;
+  font-size: 1rem;
+  color: #0f172a;
+}
+
+.orderMeta {
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
+.description {
+  margin-top: 0.25rem;
+  font-size: 0.88rem;
+  color: #4b5563;
+}
+
+/* ===========================
+   Thumbnail
+   =========================== */
+
+.thumbWrapper {
+  position: relative;
+  width: 82px;
+  height: 82px;
+  border-radius: 1.1rem;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: radial-gradient(
+    circle at top left,
+    #e5edff 0%,
+    #dde7ff 40%,
+    #c7d2fe 100%
+  );
+  box-shadow:
+    0 10px 22px rgba(15, 23, 42, 0.24),
+    0 0 0 1px rgba(148, 163, 184, 0.45);
+}
+
+.thumbImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.thumbPlaceholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(
+    circle at top left,
+    #0f172a 0%,
+    #020617 100%
+  );
+}
+
+.thumbInitials {
+  font-size: 0.76rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #e5e7eb;
+}
+
+/* ===========================
+   Status & Actions
+   =========================== */
+
+.status {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.7rem;
+}
+
+.statusBadge {
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  border: 1px solid transparent;
+}
+
+.statusReady {
+  background: radial-gradient(
+    circle at top,
+    #22c55e 0%,
+    #16a34a 55%,
+    #15803d 100%
+  );
+  color: #ecfdf3;
+  box-shadow: 0 10px 24px rgba(22, 163, 74, 0.4);
+}
+
+.statusExpired {
+  background: radial-gradient(
+    circle at top,
+    #fecaca 0%,
+    #fca5a5 45%,
+    #f87171 100%
+  );
+  color: #7f1d1d;
+}
+
+.actions {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.actions :global(.neobtn) {
+  min-width: 170px;
+}
+
+/* ===========================
+   Empty State
+   =========================== */
+
+.empty {
+  margin-top: 3.5rem;
+  padding: 2.6rem 2.2rem;
+  border-radius: 1.8rem;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow:
+    18px 18px 42px rgba(15, 23, 42, 0.16),
+    -14px -14px 34px rgba(255, 255, 255, 0.95);
+  text-align: center;
+}
+
+.emptyTitle {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #0f172a;
+}
+
+.emptyText {
+  font-size: 0.9rem;
+  color: #64748b;
+  margin-bottom: 1.5rem;
+}
+
+/* ===========================
+   DARK MODE – via global .dark
+   =========================== */
+
+/* Hintergrund & Typo */
+:global(.dark) .page {
+  background: radial-gradient(
+    circle at top,
+    #020617 0%,
+    #020617 55%,
+    #020617 100%
+  );
+}
+
+:global(.dark) .heading {
+  color: #e5e7eb;
+}
+
+:global(.dark) .subheading {
+  color: #9ca3af;
+}
+
+/* Karten im Marketplace-Stil (dunkelblau, glowy) */
+:global(.dark) .card {
+  background: radial-gradient(
+    circle at top left,
+    #020617 0%,
+    #020617 35%,
+    #020617 100%
+  );
+  border-color: rgba(30, 64, 175, 0.6);
+  box-shadow:
+    0 18px 38px rgba(0, 0, 0, 0.9),
+    0 0 0 1px rgba(15, 23, 42, 0.9);
+}
+
+:global(.dark) .productTitle {
+  color: #e5e7eb;
+}
+
+:global(.dark) .orderMeta {
+  color: #6b7280;
+}
+
+:global(.dark) .description {
+  color: #9ca3af;
+}
+
+/* Thumbnail in dunklem Stil */
+:global(.dark) .thumbWrapper {
+  background: radial-gradient(
+    circle at top left,
+    #020617 0%,
+    #020617 70%
+  );
+  box-shadow:
+    0 14px 28px rgba(0, 0, 0, 0.9),
+    0 0 0 1px rgba(15, 23, 42, 0.9);
+}
+
+:global(.dark) .thumbPlaceholder {
+  background: radial-gradient(
+    circle at top left,
+    #020617 0%,
+    #000000 100%
+  );
+}
+
+:global(.dark) .thumbInitials {
+  color: #d1d5db;
+}
+
+/* Status / Badges */
+:global(.dark) .statusExpired {
+  color: #fee2e2;
+}
+
+/* Empty State dunkel */
+:global(.dark) .empty {
+  background: radial-gradient(
+    circle at top,
+    #020617 0%,
+    #020617 70%,
+    #020617 100%
+  );
+  box-shadow:
+    20px 20px 46px rgba(0, 0, 0, 0.95),
+    -12px -12px 32px rgba(15, 23, 42, 0.9);
+}
+
+:global(.dark) .emptyTitle {
+  color: #e5e7eb;
+}
+
+:global(.dark) .emptyText {
+  color: #9ca3af;
+}
+
+/* ===========================
+   Responsive
+   =========================== */
+
+@media (max-width: 768px) {
+  .page {
+    padding: 3.4rem 1rem 4.8rem;
+  }
+
+  .card {
+    grid-template-columns: 1fr;
+    align-items: flex-start;
+  }
+
+  .thumbWrapper {
+    width: 76px;
+    height: 76px;
+  }
+
+  .status {
+    align-items: flex-start;
+  }
+
+  .actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .actions :global(.neobtn) {
+    width: 100%;
+    justify-content: center;
+  }
+}

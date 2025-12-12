@@ -63,7 +63,6 @@ model VendorProfile {
   user   User   @relation(fields: [userId], references: [id])
   userId String @unique
 
-  // Add/ensure these basic profile fields:
   displayName String? @db.VarChar(120)
   bio         String? @db.Text
 
@@ -75,8 +74,9 @@ model VendorProfile {
   instagramUrl String? @db.VarChar(500)
   tiktokUrl    String? @db.VarChar(500)
   facebookUrl  String? @db.VarChar(500)
-  slug         String? @unique
-  isPublic     Boolean @default(true)
+
+  slug     String? @unique
+  isPublic Boolean @default(true)
 
   products Product[] @relation("VendorProfileProducts")
 
@@ -97,26 +97,49 @@ model Product {
   thumbnail   String?
   category    String
 
-  isActive    Boolean @default(true)
-  status      String  @default("DRAFT") // TODO: Run `npx prisma migrate dev --name add-product-status` and `npx prisma generate` after this schema change.
+  isActive Boolean @default(true)
+
+  /// Produktstatus für Sichtbarkeit & Moderation.
+  /// Mögliche Werte (Konvention, kein Enum):
+  /// - "DRAFT"   : nur Vendor + Admin sehen das Produkt
+  /// - "ACTIVE"  : Produkt ist im Marketplace sichtbar
+  /// - "BLOCKED" : durch Admin gesperrt, nicht sichtbar für Käufer
+  status String @default("DRAFT")
+
+  /// Interne Moderations-Notiz für Admins (z.B. Sperr-Grund).
+  moderationNote String?
 
   vendorId String
-  vendor   User   @relation("VendorProducts", fields: [vendorId], references: [id])
+  vendor   User @relation("VendorProducts", fields: [vendorId], references: [id])
 
   vendorProfileId String?
   vendorProfile   VendorProfile? @relation("VendorProfileProducts", fields: [vendorProfileId], references: [id])
 
-  // Bestellungen dieses Produkts
-  orders Order[]
-
-  // Community features
+  orders   Order[]
   likes    Like[]
   comments Comment[]
   reviews  Review[]
+  views    ProductView[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+// ------------------------------------------------------
+// ProductView (Tracking Views for Analytics)
+// ------------------------------------------------------
+
+model ProductView {
+  id        String   @id @default(cuid())
+  product   Product  @relation(fields: [productId], references: [id])
+  productId String
+  viewerId  String?
+  createdAt DateTime @default(now())
+}
+
+// ------------------------------------------------------
+// Social: Like, Comment, Review
+// ------------------------------------------------------
 
 model Like {
   id        String   @id @default(cuid())
@@ -145,7 +168,7 @@ model Review {
   userId    String
   product   Product  @relation(fields: [productId], references: [id])
   productId String
-  rating    Int // 1–5 stars
+  rating    Int      // 1–5 Sterne
   content   String?
   createdAt DateTime @default(now())
 
@@ -169,6 +192,9 @@ model Order {
   amountCents     Int
   status          String
 
+  vendorEarningsCents   Int @default(0)
+  platformEarningsCents Int @default(0)
+
   downloadLink DownloadLink?
 
   createdAt DateTime @default(now())
@@ -180,13 +206,13 @@ model Order {
 // ------------------------------------------------------
 
 model DownloadLink {
-  id      String @id @default(cuid())
+  id String @id @default(cuid())
+
   order   Order  @relation(fields: [orderId], references: [id])
   orderId String @unique
 
   fileUrl   String
   expiresAt DateTime
-
   createdAt DateTime @default(now())
 }
 
@@ -195,13 +221,11 @@ model DownloadLink {
 // ------------------------------------------------------
 
 model Payout {
-  id String @id @default(cuid())
-
-  vendor   User   @relation(fields: [vendorId], references: [id])
-  vendorId String
-
+  id          String   @id @default(cuid())
+  vendorId    String
+  vendor      User     @relation(fields: [vendorId], references: [id])
   amountCents Int
-  status      String
-  paidAt      DateTime?
-  createdAt   DateTime  @default(now())
+  status      String   @default("PENDING") // PENDING, PAID
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

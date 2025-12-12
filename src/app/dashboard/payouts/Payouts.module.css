@@ -1,0 +1,104 @@
+.payoutsShell {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 3rem;
+}
+
+.title {
+  font-size: 2.1rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: 0.7rem;
+}
+
+.summaryCard {
+  background: var(--neo-card-bg-soft);
+  border-radius: 1.3rem;
+  box-shadow: var(--neo-card-shadow-soft);
+  padding: 1.3rem 1.1rem 1.1rem 1.1rem;
+  display: flex;
+  gap: 2.2rem;
+  margin-bottom: 2.2rem;
+  flex-wrap: wrap;
+}
+
+.summaryItem {
+  flex: 1 1 180px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.summaryLabel {
+  font-size: 0.98rem;
+  color: var(--color-text-muted);
+}
+
+.summaryValue {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.listCard {
+  background: var(--neo-card-bg-strong);
+  border-radius: 1.5rem;
+  box-shadow: var(--neo-card-shadow-strong);
+  padding: 2rem 1.6rem 1.6rem 1.6rem;
+}
+
+.table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 0.7rem;
+}
+
+.th, .td {
+  text-align: left;
+  padding: 0.7rem 0.6rem;
+  color: var(--color-text-primary);
+  font-size: 0.98rem;
+}
+
+.th {
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.32em 1.1em;
+  border-radius: 999px;
+  font-size: 0.92em;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  background: var(--badge-bg);
+  color: var(--badge-text);
+  border: none;
+}
+
+.badge-pending {
+  --badge-bg: linear-gradient(90deg, #fbbf24 60%, #f59e42 100%);
+  --badge-text: #78350f;
+}
+
+.badge-paid {
+  --badge-bg: linear-gradient(90deg, #34d399 60%, #10b981 100%);
+  --badge-text: #065f46;
+}
+
+.note {
+  font-size: 0.92em;
+  color: var(--color-text-muted);
+  margin-top: 0.2em;
+}
+
+.emptyCard {
+  background: var(--neo-card-bg-soft);
+  border-radius: 1.3rem;
+  box-shadow: var(--neo-card-shadow-soft);
+  padding: 2rem 1.6rem;
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: 1.08rem;
+}

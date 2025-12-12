@@ -1,5 +1,4 @@
 // src/app/admin/products/page.tsx
-
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/authOptions";
 import { redirect } from "next/navigation";
@@ -80,22 +79,25 @@ export default async function AdminProductsPage({
 
   // --- JSX -------------------------------------------------------------------
   return (
-    <div className="min-h-[calc(100vh-6rem)] bg-[var(--bg)] px-4 py-8 transition-colors">
-      <div className="max-w-6xl mx-auto space-y-8">
-        {/* HEADER */}
-        <section className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold text-[var(--text-main)]">
-              Admin – Produkte
-            </h1>
-            <p className="text-sm text-[var(--text-muted)]">
-              Übersicht über alle Produkte auf der Plattform.
-            </p>
-          </div>
-        </section>
+    <div className="admin-shell">
+      {/* Breadcrumb + Header */}
+      <div className="admin-breadcrumb">
+        <span>Admin</span>
+        <span className="admin-breadcrumb-dot" />
+        <span>Produkte</span>
+      </div>
 
+      <header className="admin-header">
+        <div className="admin-kicker">DigiEmu · Admin</div>
+        <h1 className="admin-title">Admin – Produkte</h1>
+        <p className="admin-subtitle">
+          Übersicht über alle Produkte auf der Plattform.
+        </p>
+      </header>
+
+      <div className="space-y-6">
         {/* FILTER / SEARCH */}
-        <section className="rounded-3xl bg-[var(--card-bg)] shadow-[9px_9px_20px_rgba(0,0,0,0.2),-9px_-9px_20px_rgba(255,255,255,0.05)] p-4 md:p-6">
+        <section className="rounded-3xl bg-[var(--neo-card-bg-soft)] border border-[var(--neo-card-border)] shadow-[var(--neo-card-shadow-soft)] p-4 md:p-6">
           <form
             className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between"
             method="GET"
@@ -106,7 +108,7 @@ export default async function AdminProductsPage({
                 name="q"
                 defaultValue={search}
                 placeholder="Suche nach Titel oder Beschreibung…"
-                className="w-full rounded-2xl px-3 py-2 text-sm bg-[var(--input-bg)] text-[var(--text-main)] border border-[var(--border-soft)] outline-none shadow-[inset_2px_2px_4px_rgba(0,0,0,0.2),inset_-2px_-2px_4px_rgba(255,255,255,0.08)]"
+                className="w-full input-neu"
               />
             </div>
 
@@ -114,14 +116,12 @@ export default async function AdminProductsPage({
               <select
                 name="vendor"
                 defaultValue={vendorFilter ?? ""}
-                className="rounded-2xl px-3 py-2 text-sm bg-[var(--input-bg)] text-[var(--text-main)] border border-[var(--border-soft)] outline-none shadow-[inset_2px_2px_4px_rgba(0,0,0,0.2),inset_-2px_-2px_4px_rgba(255,255,255,0.08)]"
+                className="input-neu w-40"
               >
                 <option value="">Alle Vendoren</option>
                 {vendors.map((v) => (
                   <option key={v.id} value={v.id}>
-                    {v.displayName ??
-                      v.user?.email ??
-                      v.id.slice(0, 8) + "…"}
+                    {v.displayName ?? v.user?.email ?? v.id.slice(0, 8) + "…"}
                   </option>
                 ))}
               </select>
@@ -129,17 +129,14 @@ export default async function AdminProductsPage({
               <select
                 name="status"
                 defaultValue={statusFilter ?? ""}
-                className="rounded-2xl px-3 py-2 text-sm bg-[var(--input-bg)] text-[var(--text-main)] border border-[var(--border-soft)] outline-none shadow-[inset_2px_2px_4px_rgba(0,0,0,0.2),inset_-2px_-2px_4px_rgba(255,255,255,0.08)]"
+                className="input-neu w-40"
               >
                 <option value="">Status: alle</option>
                 <option value="ACTIVE">Aktiv</option>
                 <option value="INACTIVE">Inaktiv</option>
               </select>
 
-              <button
-                type="submit"
-                className="rounded-2xl px-4 py-2 text-sm font-medium text-white bg-[var(--primary)] shadow-[inset_2px_2px_4px_rgba(255,255,255,0.3),inset_-2px_-2px_4px_rgba(0,0,0,0.3)]"
-              >
+              <button type="submit" className="neobtn-sm">
                 Filtern
               </button>
             </div>
@@ -147,32 +144,20 @@ export default async function AdminProductsPage({
         </section>
 
         {/* TABLE */}
-        <section className="rounded-3xl bg-[var(--card-bg)] shadow-[9px_9px_20px_rgba(0,0,0,0.2),-9px_-9px_20px_rgba(255,255,255,0.05)] p-4 md:p-6 overflow-x-auto">
+        <section className="rounded-3xl bg-[var(--neo-card-bg-soft)] border border-[var(--neo-card-border)] shadow-[var(--neo-card-shadow-soft)] p-4 md:p-6 overflow-x-auto">
           <div className="mb-3 text-xs text-[var(--text-muted)]">
             {totalProducts} Produkte gefunden
           </div>
 
-          <table className="min-w-full text-sm">
+          <table className="min-w-full text-sm admin-table">
             <thead>
-              <tr className="bg-[var(--table-header-bg)]">
-                <th className="py-2 px-3 text-left text-[11px] uppercase tracking-wide text-[var(--text-muted)]">
-                  Titel
-                </th>
-                <th className="py-2 px-3 text-left text-[11px] uppercase tracking-wide text-[var(--text-muted)]">
-                  Vendor
-                </th>
-                <th className="py-2 px-3 text-left text-[11px] uppercase tracking-wide text-[var(--text-muted)]">
-                  Preis
-                </th>
-                <th className="py-2 px-3 text-left text-[11px] uppercase tracking-wide text-[var(--text-muted)]">
-                  Status
-                </th>
-                <th className="py-2 px-3 text-left text-[11px] uppercase tracking-wide text-[var(--text-muted)]">
-                  Erstellt
-                </th>
-                <th className="py-2 px-3 text-right text-[11px] uppercase tracking-wide text-[var(--text-muted)]">
-                  Aktionen
-                </th>
+              <tr>
+                <th className="py-2 px-3 text-left">Titel</th>
+                <th className="py-2 px-3 text-left">Vendor</th>
+                <th className="py-2 px-3 text-left">Preis</th>
+                <th className="py-2 px-3 text-left">Status</th>
+                <th className="py-2 px-3 text-left">Erstellt</th>
+                <th className="py-2 px-3 text-right">Aktionen</th>
               </tr>
             </thead>
             <tbody>
@@ -186,37 +171,61 @@ export default async function AdminProductsPage({
                   </td>
                 </tr>
               ) : (
-                products.map((p) => (
+                products.map((p: any) => (
                   <tr
                     key={p.id}
-                    className="border-t border-[var(--border-soft)] hover:bg-[var(--table-row-hover-bg)] transition-colors"
+                    className="border-t border-[var(--neo-card-border)] hover:bg-[rgba(148,163,184,0.08)] transition-colors"
                   >
-                    <td className="py-2 px-3 text-[var(--text-main)]">
+                    <td className="py-2 px-3 font-medium text-[var(--text-main)]">
                       {p.title}
-                    </td>
-                    <td className="py-2 px-3 text-[var(--text-muted)] text-xs">
-                      {p.vendor?.email ?? p.vendorId}
+                      {p.description && (
+                        <div className="text-[var(--text-muted)] text-xs line-clamp-2">
+                          {p.description}
+                        </div>
+                      )}
                     </td>
                     <td className="py-2 px-3 text-[var(--text-main)]">
-                      {(p.priceCents / 100).toFixed(2)} CHF
+                      {p.vendor?.email ?? "Unbekannt"}
                     </td>
                     <td className="py-2 px-3 text-[var(--text-main)]">
-                      {p.isActive ? "Aktiv" : "Inaktiv"}
+                      {typeof p.priceCents === "number"
+                        ? (p.priceCents / 100).toFixed(2) + " CHF"
+                        : "–"}
+                    </td>
+                    <td className="py-2 px-3">
+                      {p.status === "ACTIVE" && (
+                        <span className="inline-flex rounded-full bg-emerald-500/10 text-emerald-500 px-3 py-0.5 text-xs font-medium">
+                          Aktiv
+                        </span>
+                      )}
+                      {p.status === "DRAFT" && (
+                        <span className="inline-flex rounded-full bg-slate-500/10 text-slate-300 px-3 py-0.5 text-xs font-medium">
+                          Draft
+                        </span>
+                      )}
+                      {p.status === "BLOCKED" && (
+                        <span className="inline-flex rounded-full bg-rose-500/10 text-rose-400 px-3 py-0.5 text-xs font-medium">
+                          Gesperrt
+                        </span>
+                      )}
                     </td>
                     <td className="py-2 px-3 text-[var(--text-muted)] text-xs">
                       {new Date(p.createdAt).toLocaleDateString("de-CH")}
                     </td>
                     <td className="py-2 px-3 text-right">
-                      <div className="flex justify-end gap-2">
+                      <div className="flex justify-end gap-2 items-center">
+                        <span className="text-xs text-[var(--text-muted)]">
+                          {p.orders?.length ?? 0} Bestellungen
+                        </span>
                         <Link
                           href={`/product/${p.id}`}
-                          className="text-[11px] px-2 py-1 rounded-md bg-[var(--pill-bg)] text-[var(--text-main)] shadow-[inset_0_1px_2px_rgba(255,255,255,0.6)]"
+                          className="neobtn-sm ghost"
                         >
                           Anzeigen
                         </Link>
                         <Link
-                          href={`/dashboard/products/${p.id}/edit-product`}
-                          className="text-[11px] px-2 py-1 rounded-md bg-[var(--primary-soft)] text-[var(--primary-text)] shadow-[inset_0_1px_2px_rgba(255,255,255,0.6)]"
+                          href={`/dashboard/edit/${p.id}`}
+                          className="neobtn-sm"
                         >
                           Bearbeiten
                         </Link>
@@ -228,7 +237,7 @@ export default async function AdminProductsPage({
             </tbody>
           </table>
 
-          {/* Pagination ohne onClick – nur Links */}
+          {/* Pagination (nur Links) */}
           {totalPages > 1 && (
             <div className="mt-4 flex justify-center gap-2 text-xs">
               {Array.from({ length: totalPages }, (_, i) => i + 1).map(
@@ -240,7 +249,6 @@ export default async function AdminProductsPage({
                   params.set("page", pageNumber.toString());
 
                   const href = `/admin/products?${params.toString()}`;
-
                   const isActive = pageNumber === page;
 
                   return (
@@ -249,8 +257,8 @@ export default async function AdminProductsPage({
                       href={href}
                       className={`px-3 py-1 rounded-full border ${
                         isActive
-                          ? "bg-[var(--primary)] text-white border-[var(--primary)]"
-                          : "bg-[var(--pill-bg)] text-[var(--text-main)] border-[var(--border-soft)]"
+                          ? "bg-[var(--accent)] text-white border-[var(--accent)]"
+                          : "bg-[var(--neo-card-bg-soft)] text-[var(--text-main)] border-[var(--neo-card-border)]"
                       }`}
                     >
                       {pageNumber}

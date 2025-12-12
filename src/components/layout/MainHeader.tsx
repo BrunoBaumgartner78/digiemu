@@ -1,11 +1,13 @@
 "use client";
 
+import "./MainHeader.css";
+
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useSession, signOut } from "next-auth/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { signOut, useSession } from "next-auth/react";
 
-const navLinks = [
+const mainLinks = [
   { href: "/", label: "Home" },
   { href: "/marketplace", label: "Marketplace" },
   { href: "/pricing", label: "Preise" },
@@ -13,32 +15,42 @@ const navLinks = [
 ];
 
 export function MainHeader() {
-  const { data: session } = useSession();
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { data: session } = useSession();
 
-  const isDashboard = pathname.startsWith("/dashboard");
-  const isAdmin = pathname.startsWith("/admin");
-  const inAccount = pathname.startsWith("/account");
+  const isLoggedIn = !!session;
+  const userRole = session?.user?.role;
+  const isAdmin = userRole === "ADMIN";
+
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? "hidden" : "";
+  }, [mobileOpen]);
+
+  const isActive = (href: string) =>
+    href === "/" ? pathname === "/" : pathname.startsWith(href) && href !== "/";
 
   return (
-    <header className="app-header">
-      <div className="app-header-inner">
-        {/* Logo */}
-        <Link href="/" className="app-logo">
-          <span className="app-logo-main">DIGIEMU</span>
-          <span className="app-logo-sub">DIGITAL MARKETPLACE</span>
+    <header
+      className="main-header"
+      data-mobile-open={mobileOpen ? "true" : "false"}
+    >
+      <div className="header-inner">
+        {/* BRAND */}
+        <Link href="/" className="logo-lockup">
+          <span className="logo-main">DigiEmu</span>
+          <span className="logo-sub">Digital Marketplace</span>
         </Link>
 
-        {/* Hauptnavigation Desktop */}
-        <nav className="app-nav-desktop">
-          {navLinks.map((link) => (
+        {/* DESKTOP NAVIGATION */}
+        <nav className="primary-nav" aria-label="Navigation">
+          {mainLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
               className={
-                "app-nav-link" +
-                (pathname === link.href ? " app-nav-link-active" : "")
+                "nav-pill nav-pill-small" +
+                (isActive(link.href) ? " nav-pill-active" : "")
               }
             >
               {link.label}
@@ -46,132 +58,214 @@ export function MainHeader() {
           ))}
         </nav>
 
-        {/* Rechts: Auth / Dashboard */}
-        <div className="app-header-right">
-          {session ? (
+        {/* USER ACTIONS */}
+        <div className="header-actions">
+          {isLoggedIn ? (
             <>
+              {/* Dashboard always for logged-in users */}
               <Link
                 href="/dashboard"
-                className={`nav-pill ${
-                  isDashboard ? "nav-pill-primary" : "nav-pill-ghost"
-                }`}
+                className={
+                  "nav-pill nav-pill-ghost" +
+                  (isActive("/dashboard") ? " nav-pill-active" : "")
+                }
               >
                 Dashboard
               </Link>
-              {session.user?.role === "ADMIN" && (
+
+              {/* Top-Produkte only for VENDOR or ADMIN */}
+              {userRole && (userRole === "VENDOR" || userRole === "ADMIN") && (
+                <Link
+                  href="/dashboard/products/top"
+                  className={
+                    "nav-pill nav-pill-ghost" +
+                    (isActive("/dashboard/products/top") ? " nav-pill-active" : "")
+                  }
+                >
+                  Top-Produkte
+                </Link>
+              )}
+
+              {/* Vendor-only Analytics */}
+              {userRole === "VENDOR" && (
+                <Link
+                  href="/dashboard/vendor"
+                  className={
+                    "nav-pill nav-pill-ghost" +
+                    (isActive("/dashboard/vendor")
+                      ? " nav-pill-active"
+                      : "")
+                  }
+                >
+                  Analytics
+                </Link>
+              )}
+
+              {/* Admin-only */}
+              {isAdmin && (
                 <Link
                   href="/admin"
-                  className={`nav-pill ${
-                    isAdmin ? "nav-pill-primary" : "nav-pill-ghost"
-                  }`}
+                  className={
+                    "nav-pill nav-pill-ghost" +
+                    (isActive("/admin") ? " nav-pill-active" : "")
+                  }
                 >
                   Admin
                 </Link>
               )}
+
+              {/* Profile always for logged-in users */}
               <Link
-                href="/account/profile"
-                className={`nav-pill ${
-                  inAccount ? "nav-pill-primary" : "nav-pill-ghost"
-                }`}
+                href="/profile"
+                className={
+                  "nav-pill nav-pill-ghost" +
+                  (isActive("/profile") ? " nav-pill-active" : "")
+                }
               >
                 Profil
               </Link>
+
               <button
-                type="button"
+                className="nav-pill nav-pill-outline"
                 onClick={() => signOut({ callbackUrl: "/" })}
-                className="nav-pill nav-pill-ghost"
               >
                 Logout
               </button>
             </>
           ) : (
             <>
-              <Link href="/login" className="nav-pill nav-pill-ghost">
+              <Link
+                href="/login"
+                className={
+                  "nav-pill nav-pill-ghost" +
+                  (isActive("/login") ? " nav-pill-active" : "")
+                }
+              >
                 Login
               </Link>
               <Link
                 href="/register"
-                className="nav-pill nav-pill-primary"
+                className={
+                  "nav-pill nav-pill-ghost" +
+                  (isActive("/register") ? " nav-pill-active" : "")
+                }
               >
-                Registrieren
+                Konto erstellen
               </Link>
             </>
           )}
-
-          {/* Nur Mobile: Hamburger */}
-          <button
-            type="button"
-            className="menu-button md:hidden"
-            aria-label="Menü öffnen"
-            onClick={() => setMobileOpen(true)}
-          >
-            <span className="menu-icon" />
-          </button>
         </div>
+
+        {/* MOBILE HAMBURGER */}
+        <button
+          type="button"
+          className={"hamburger-btn" + (mobileOpen ? " is-open" : "")}
+          aria-label="Navigation öffnen"
+          aria-expanded={mobileOpen}
+          onClick={() => setMobileOpen((v) => !v)}
+        >
+          <span className="hamburger-inner">
+            <span className="hamburger-line line-1" />
+            <span className="hamburger-line line-2" />
+            <span className="hamburger-line line-3" />
+          </span>
+        </button>
       </div>
 
-      {/* Mobiles Overlay-Menü */}
+      {/* MOBILE MENU OVERLAY */}
       {mobileOpen && (
-        <div className="mobile-overlay">
-          <div className="mobile-drawer">
-            <div className="flex items-center justify-between mb-2">
-              <div>
-                <div className="text-xs uppercase tracking-[0.25em] opacity-70">
-                  Navigation
-                </div>
-                <div className="text-sm font-semibold">
-                  Digital Marketplace
-                </div>
+        <div className="mobile-nav-wrapper" role="dialog" aria-modal="true">
+          <button
+            className="mobile-nav-backdrop"
+            onClick={() => setMobileOpen(false)}
+          />
+
+          <div className="mobile-nav-card">
+            <div className="mobile-nav-header">
+              <div className="mobile-nav-title">
+                <span className="mobile-nav-kicker">Navigation</span>
+                <span className="mobile-nav-brand">Digital Marketplace</span>
               </div>
               <button
-                type="button"
-                className="nav-pill nav-pill-ghost"
+                className="mobile-nav-close"
                 onClick={() => setMobileOpen(false)}
               >
                 Schließen
               </button>
             </div>
 
-            <nav className="flex flex-col gap-2">
-              {navLinks.map((link) => (
+            <nav className="mobile-nav-list">
+              {mainLinks.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="mobile-nav-link"
+                  className={
+                    "mobile-nav-pill" +
+                    (isActive(link.href) ? " mobile-nav-pill-active" : "")
+                  }
                   onClick={() => setMobileOpen(false)}
                 >
                   {link.label}
                 </Link>
               ))}
 
-              {session ? (
+              <div className="mobile-nav-divider" />
+
+              {isLoggedIn ? (
                 <>
                   <Link
                     href="/dashboard"
-                    className="mobile-nav-link"
                     onClick={() => setMobileOpen(false)}
+                    className={
+                      "mobile-nav-pill" +
+                      (isActive("/dashboard") ? " mobile-nav-pill-active" : "")
+                    }
                   >
                     Dashboard
                   </Link>
-                  {session.user?.role === "ADMIN" && (
+
+                  {userRole === "VENDOR" && (
+                    <Link
+                      href="/dashboard/vendor"
+                      onClick={() => setMobileOpen(false)}
+                      className={
+                        "mobile-nav-pill" +
+                        (isActive("/dashboard/vendor")
+                          ? " mobile-nav-pill-active"
+                          : "")
+                      }
+                    >
+                      Analytics
+                    </Link>
+                  )}
+
+                  {isAdmin && (
                     <Link
                       href="/admin"
-                      className="mobile-nav-link"
                       onClick={() => setMobileOpen(false)}
+                      className={
+                        "mobile-nav-pill" +
+                        (isActive("/admin") ? " mobile-nav-pill-active" : "")
+                      }
                     >
                       Admin
                     </Link>
                   )}
+
                   <Link
-                    href="/account/profile"
-                    className="mobile-nav-link"
+                    href="/profile"
                     onClick={() => setMobileOpen(false)}
+                    className={
+                      "mobile-nav-pill" +
+                      (isActive("/profile") ? " mobile-nav-pill-active" : "")
+                    }
                   >
                     Profil
                   </Link>
+
                   <button
                     type="button"
-                    className="mobile-nav-link text-left"
+                    className="mobile-nav-pill mobile-nav-logout"
                     onClick={() => {
                       setMobileOpen(false);
                       signOut({ callbackUrl: "/" });
@@ -184,17 +278,25 @@ export function MainHeader() {
                 <>
                   <Link
                     href="/login"
-                    className="mobile-nav-link"
                     onClick={() => setMobileOpen(false)}
+                    className={
+                      "mobile-nav-pill" +
+                      (isActive("/login") ? " mobile-nav-pill-active" : "")
+                    }
                   >
                     Login
                   </Link>
                   <Link
                     href="/register"
-                    className="mobile-nav-link"
                     onClick={() => setMobileOpen(false)}
+                    className={
+                      "mobile-nav-pill" +
+                      (isActive("/register")
+                        ? " mobile-nav-pill-active"
+                        : "")
+                    }
                   >
-                    Registrieren
+                    Konto erstellen
                   </Link>
                 </>
               )}

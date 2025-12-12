@@ -1,0 +1,138 @@
+.page {
+  min-height: calc(100vh - 80px);
+  padding: 48px 16px 64px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  background: radial-gradient(circle at top left, #e0f2fe 0, #e5e7eb 28%, #e5e7eb 100%);
+}
+
+.card {
+  max-width: 640px;
+  width: 100%;
+  border-radius: 28px;
+  padding: 28px 24px 24px;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.98),
+    rgba(255, 255, 255, 0.9)
+  );
+  box-shadow:
+    0 26px 60px rgba(15, 23, 42, 0.15),
+    0 0 0 1px rgba(226, 232, 240, 0.9);
+}
+
+.title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  margin-bottom: 8px;
+}
+
+.lead {
+  font-size: 0.95rem;
+  color: #4b5563;
+  margin-bottom: 18px;
+}
+
+.text {
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+.infoBox {
+  margin-top: 10px;
+  margin-bottom: 18px;
+  padding: 12px 14px;
+  border-radius: 18px;
+  background: radial-gradient(circle at top left, #dbeafe, #eff6ff);
+  box-shadow: inset 0 0 0 1px rgba(191, 219, 254, 0.8);
+}
+
+.infoTitle {
+  margin: 0 0 4px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #1f2937;
+}
+
+.infoText {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #4b5563;
+}
+
+.downloadButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px;
+  border-radius: 999px;
+  border: 1px solid rgba(55, 48, 163, 0.7);
+  background: radial-gradient(circle at 30% 0%, #eef2ff, #4338ca);
+  color: #f9fafb;
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-top: 4px;
+  box-shadow:
+    0 18px 40px rgba(79, 70, 229, 0.45),
+    inset 0 1px 2px rgba(255, 255, 255, 0.4);
+  transition:
+    transform 0.16s ease,
+    box-shadow 0.16s ease,
+    filter 0.16s ease;
+}
+
+.downloadButton:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+  box-shadow:
+    0 22px 50px rgba(79, 70, 229, 0.6),
+    inset 0 1px 3px rgba(255, 255, 255, 0.5);
+}
+
+.smallPrint {
+  margin-top: 14px;
+  font-size: 0.8rem;
+  color: #9ca3af;
+}
+
+@media (prefers-color-scheme: dark) {
+  .page {
+    background: radial-gradient(circle at top left, #020617, #020617 40%, #020617 100%);
+  }
+
+  .card {
+    background: radial-gradient(circle at top left, #020617, #020617 50%, #020617 100%);
+    box-shadow:
+      0 26px 60px rgba(0, 0, 0, 0.85),
+      0 0 0 1px rgba(30, 64, 175, 0.55);
+  }
+
+  .title {
+    color: #e5e7eb;
+  }
+
+  .lead,
+  .text {
+    color: #9ca3af;
+  }
+
+  .infoBox {
+    background: radial-gradient(circle at top left, #1d4ed8, #020617);
+    box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.8);
+  }
+
+  .infoTitle {
+    color: #e5e7eb;
+  }
+
+  .infoText {
+    color: #cbd5f5;
+  }
+
+  .smallPrint {
+    color: #6b7280;
+  }
+}

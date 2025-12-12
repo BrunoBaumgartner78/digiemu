@@ -1,100 +1,71 @@
-"use client";
+// src/app/dashboard/products/[productId]/edit/page.tsx
+import { getServerSession } from "next-auth";
+import { redirect, notFound } from "next/navigation";
+import { authOptions } from "@/app/api/auth/[...nextauth]/authOptions";
+import { prisma } from "@/lib/prisma";
 
-import { useState } from "react";
-import type { FormEvent } from "react";
+import EditProductForm from "./EditProductForm";
 
-import { useToast } from "../../../../../components/ui/use-toast";
-// Local ProductLike type for prop typing
-type ProductLike = {
-  id: string;
-  title: string;
-  description: string;
-  priceCents: number;
+type PageProps = {
+  // ✅ Next.js 16: params ist ein Promise
+  params: Promise<{ productId: string }>;
 };
 
-export default function EditProductForm({ product }: { product: ProductLike }) {
-  const { toast } = useToast();
+export const dynamic = "force-dynamic";
 
-  const [title, setTitle] = useState(product.title);
-  const [description, setDescription] = useState(product.description);
-  const [price, setPrice] = useState(product.priceCents / 100);
-  const [loading, setLoading] = useState(false);
+export default async function EditProductPage({ params }: PageProps) {
+  const { productId } = await params;
 
-  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setLoading(true);
-
-    const res = await fetch(`/api/vendor/products/${product.id}`, {
-      method: "PATCH",
-      body: JSON.stringify({
-        title,
-        description,
-        priceCents: Math.round(price * 100),
-      }),
-    });
-
-    if (!res.ok) {
-      toast({
-        title: "Fehler",
-        description: "Produkt konnte nicht gespeichert werden.",
-        variant: "destructive",
-      });
-      setLoading(false);
-      return;
-    }
-
-    toast({
-      title: "Gespeichert",
-      description: "Die Änderungen wurden übernommen.",
-    });
-
-    setLoading(false);
-    window.location.href = "/dashboard/products";
+  const session = await getServerSession(authOptions);
+  if (!session || !session.user?.id) {
+    redirect("/login");
   }
 
+  const user = session.user as any;
+  if (user.role !== "VENDOR" && user.role !== "ADMIN") {
+    redirect("/login");
+  }
+
+  // Produkt laden – nur Felder, die wir wirklich brauchen
+  const product = await prisma.product.findUnique({
+    where: { id: productId },
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      priceCents: true,
+      category: true,
+      thumbnail: true,
+      isActive: true,
+      vendorId: true,
+    },
+  });
+
+  if (!product) {
+    notFound();
+  }
+
+  // Vendor darf nur eigene Produkte bearbeiten (Admin darf alles)
+  if (user.role === "VENDOR" && product.vendorId !== user.id) {
+    redirect("/dashboard/products");
+  }
+
+  const initialPrice =
+    typeof product.priceCents === "number"
+      ? (product.priceCents / 100).toFixed(2)
+      : "0.00";
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div>
-        <label className="block mb-1">Titel</label>
-        <input
-          className="w-full px-3 py-2 rounded bg-[#111] border border-gray-700"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          required
-        />
-      </div>
-
-      <div>
-        <label className="block mb-1">Beschreibung</label>
-        <textarea
-          className="w-full p-3 rounded bg-[#111] border border-gray-700"
-          rows={4}
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          required
-        />
-      </div>
-
-      <div>
-        <label className="block mb-1">Preis (CHF)</label>
-        <input
-          type="number"
-          min="0"
-          step="0.05"
-          className="w-full px-3 py-2 rounded bg-[#111] border border-gray-700"
-          value={price}
-          onChange={(e) => setPrice(parseFloat(e.target.value))}
-          required
-        />
-      </div>
-
-      <button
-        type="submit"
-        disabled={loading}
-        className="px-4 py-2 rounded bg-green-600 text-white font-semibold disabled:opacity-50"
-      >
-        {loading ? "Speichern..." : "Speichern"}
-      </button>
-    </form>
+    <main className="page-shell-wide">
+      <EditProductForm
+        id={product.id}
+        initialTitle={product.title}
+        initialDescription={product.description ?? ""}
+        initialPrice={initialPrice}
+        initialCategory={product.category ?? "other"}
+        initialThumbnail={product.thumbnail ?? "/fallback-thumbnail.svg"}
+        initialIsActive={product.isActive ?? true}
+      />
+    </main>
   );
 }

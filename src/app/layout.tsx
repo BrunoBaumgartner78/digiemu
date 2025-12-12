@@ -1,13 +1,12 @@
 // src/app/layout.tsx
 import "./globals.css";
 import type { Metadata } from "next";
-import { MainHeader } from "@/components/layout/MainHeader";
 import { Providers } from "./providers";
+import { MainHeader } from "@/components/layout/MainHeader";
 
 export const metadata: Metadata = {
-  // deine bestehenden Meta-Angaben hier weiterverwenden
   title: "DigiEmu – Digitaler Marktplatz",
-  description: "Digitaler Marktplatz für Creators.",
+  description: "Digitale Produkte kaufen & verkaufen.",
 };
 
 export default function RootLayout({
@@ -17,10 +16,14 @@ export default function RootLayout({
 }) {
   return (
     <html lang="de" suppressHydrationWarning>
-      <body>
+      {/* Wichtig: richtiges Token verwenden */}
+      <body className="bg-[var(--page-bg)] text-[var(--text-main)]">
         <Providers>
           <MainHeader />
-          {children}
+          {/* Konsistenter Shell-Wrapper */}
+          <div className="page-shell">
+            <main className="page-main">{children}</main>
+          </div>
         </Providers>
       </body>
     </html>

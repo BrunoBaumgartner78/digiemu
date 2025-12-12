@@ -1,0 +1,55 @@
+name: DigiEmu UI/UX Checks
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+  workflow_dispatch:
+
+jobs:
+  ui-ux-quality:
+    runs-on: ubuntu-latest
+
+    env:
+      NODE_ENV: development
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # 1) Lint – Codequalität (inkl. React/TSX)
+      - name: Run ESLint (code quality)
+        run: npm run lint --if-present
+
+      # 2) Optional: Tailwind / Styles Lint – falls vorhanden
+      - name: Run Style Lint (CSS/Tailwind)
+        run: npm run lint:styles --if-present
+
+      # 3) Optional: UI-Tests / Storybook-Tests
+      - name: Run UI tests (Jest / RTL)
+        run: npm run test:ui --if-present
+
+      # 4) Optional: E2E / UX-Flows (Playwright/Cypress)
+      - name: Run E2E tests
+        run: npm run test:e2e --if-present
+
+      # 5) Build – stellen sicher, dass UI wirklich baubar ist
+      - name: Build Next.js app (UI sanity check)
+        run: npm run build
+
+      # 6) Build als Artefakt speichern (für manuelle visuelle Kontrolle)
+      - name: Upload Next.js build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: next-build-ui
+          path: .next

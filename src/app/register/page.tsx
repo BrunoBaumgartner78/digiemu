@@ -40,16 +40,25 @@ export default function RegisterPage() {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password, role }),
+        body: JSON.stringify({
+          name: name.trim(),
+          email: email.trim().toLowerCase(),
+          password,
+          role,
+        }),
       });
 
       if (!res.ok) {
         const data = await res.json().catch(() => null);
         const message =
-          data?.error ||
           data?.message ||
+          data?.error ||
           "Registrierung fehlgeschlagen. Bitte versuche es erneut.";
-        throw new Error(message);
+
+        console.error("REGISTER RESPONSE ERROR:", data);
+        setError(message);
+        setLoading(false);
+        return; // ❗ hier abbrechen, nicht weiter mit signIn()
       }
 
       // 2) Direkt einloggen
@@ -61,6 +70,7 @@ export default function RegisterPage() {
 
       if (loginRes?.error) {
         // Falls der Auto-Login scheitert, trotzdem weiterleiten zum Login
+        console.warn("Auto-Login nach Registrierung fehlgeschlagen:", loginRes);
         router.push("/login");
         return;
       }
@@ -68,8 +78,8 @@ export default function RegisterPage() {
       // 3) Ab ins Dashboard
       router.push("/dashboard");
     } catch (err: any) {
-      console.error(err);
-      setError(err.message || "Es ist ein Fehler aufgetreten.");
+      console.error("REGISTER FETCH ERROR:", err);
+      setError(err?.message || "Es ist ein Fehler aufgetreten.");
     } finally {
       setLoading(false);
     }

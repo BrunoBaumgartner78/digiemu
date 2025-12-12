@@ -1,0 +1,269 @@
+/* src/app/help/page.module.css */
+
+.page {
+  min-height: 100vh;
+  padding: 2.5rem 1rem 3rem;
+  background: var(--page-bg);
+}
+
+.inner {
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+/* Header */
+
+.header {
+  margin-bottom: 2.5rem;
+}
+
+.eyebrow {
+  font-size: 0.8rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin-bottom: 0.4rem;
+}
+
+.title {
+  font-size: 2rem;
+  line-height: 1.15;
+  font-weight: 700;
+  margin: 0 0 0.6rem;
+  color: var(--color-text-primary);
+}
+
+.subtitle {
+  margin: 0;
+  max-width: 640px;
+  font-size: 0.98rem;
+  line-height: 1.6;
+  color: var(--color-text-muted);
+}
+
+/* Quick Nav */
+
+/* QuickNav Buttons – light & dark mode responsive */
+
+.quickNavLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 1.2rem;
+  border-radius: 999px;
+  font-size: 0.92rem;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+
+  /* Light Mode */
+  background: var(--bg-soft);
+  border: 1px solid var(--border-soft);
+  color: var(--color-text-primary);
+
+  /* Soft Neumorph */
+  box-shadow:
+    3px 3px 8px var(--shadow-dark),
+    -3px -3px 8px var(--shadow-light);
+
+  transition:
+    background 0.25s ease,
+    color 0.25s ease,
+    box-shadow 0.25s ease,
+    transform 0.15s ease;
+}
+
+.quickNavLink:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    5px 5px 12px var(--shadow-dark),
+    -5px -5px 12px var(--shadow-light);
+}
+
+.quickNavLink:active {
+  transform: translateY(0px);
+  box-shadow:
+    inset 3px 3px 6px rgba(0,0,0,0.35),
+    inset -3px -3px 6px rgba(255,255,255,0.08);
+}
+
+/* Dark Mode override */
+html[data-theme="dark"] .quickNavLink {
+  background: #0f172a; /* deep navy */
+  border: 1px solid rgba(255,255,255,0.08);
+  color: #e2e8f0; /* slate-200 */
+
+  box-shadow:
+    6px 6px 12px rgba(0,0,0,0.6),
+    -6px -6px 12px rgba(255,255,255,0.05);
+}
+
+html[data-theme="dark"] .quickNavLink:hover {
+  background: #1e293b;
+  border-color: rgba(255,255,255,0.12);
+
+  box-shadow:
+    8px 8px 16px rgba(0,0,0,0.65),
+    -8px -8px 16px rgba(255,255,255,0.04);
+}
+
+html[data-theme="dark"] .quickNavLink:active {
+  background: #0d1320;
+  box-shadow:
+    inset 4px 4px 8px rgba(0,0,0,0.7),
+    inset -4px -4px 8px rgba(255,255,255,0.03);
+}
+
+
+/* Layout */
+
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.8rem;
+}
+
+.section,
+.sectionWide {
+  width: 100%;
+}
+
+.sectionWide {
+  grid-column: 1 / -1;
+}
+
+/* ab Tablet: zwei Spalten + breite Technik-Card */
+@media (min-width: 900px) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: flex-start;
+  }
+
+  .sectionWide {
+    grid-column: 1 / 3;
+  }
+}
+
+/* Cards */
+
+.sectionCard {
+  border-radius: var(--radius-xl);
+  background: var(--bg-soft);
+  border: 1px solid var(--border-soft);
+  box-shadow:
+    14px 14px 32px var(--shadow-dark),
+    -14px -14px 32px var(--shadow-light);
+  padding: 1.6rem 1.8rem;
+}
+
+.sectionTitle {
+  margin: 0 0 0.4rem;
+  font-size: 1.25rem;
+  font-weight: 650;
+  color: var(--color-text-primary);
+}
+
+.sectionIntro {
+  margin: 0 0 1.2rem;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+/* FAQ / Accordions */
+
+.faqList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.faqItem {
+  border-radius: 1rem;
+  background: linear-gradient(145deg, var(--bg), var(--bg-soft));
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  padding: 0.55rem 0.9rem;
+}
+
+.faqItem[open] {
+  box-shadow:
+    inset 2px 2px 5px rgba(15, 23, 42, 0.15),
+    inset -2px -2px 5px rgba(255, 255, 255, 0.6);
+}
+
+/* summary ist der klickbare Bereich */
+.faqSummary {
+  list-style: none;
+  cursor: pointer;
+  position: relative;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--color-text-primary);
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+}
+
+/* Standard-Dreieck ausblenden */
+.faqSummary::-webkit-details-marker {
+  display: none;
+}
+
+/* eigenes Icon */
+.faqSummary::before {
+  content: "▸";
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+  font-size: 0.75rem;
+  color: var(--accent-strong);
+}
+
+/* Pfeil drehen, wenn geöffnet */
+.faqItem[open] .faqSummary::before {
+  content: "▾";
+}
+
+.faqSummary:focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 3px;
+  border-radius: 0.6rem;
+}
+
+.faqBody {
+  margin-top: 0.5rem;
+  padding-left: 1.3rem;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--color-text-primary);
+}
+
+.faqBody p {
+  margin: 0 0 0.5rem;
+}
+
+.faqBody p:last-child {
+  margin-bottom: 0;
+}
+
+/* Inline-Link für Support / Kontakt */
+.linkInline {
+  color: var(--accent-strong);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.linkInline:hover {
+  color: var(--accent-dark);
+}
+
+/* Mobile Abstände */
+
+@media (max-width: 599px) {
+  .page {
+    padding: 1.8rem 0.9rem 2.4rem;
+  }
+
+  .sectionCard {
+    padding: 1.3rem 1.3rem 1.4rem;
+  }
+}

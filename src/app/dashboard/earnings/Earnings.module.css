@@ -1,0 +1,66 @@
+.earningsShell {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 3rem;
+}
+
+.title {
+  font-size: 2.1rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: 0.7rem;
+}
+
+.kpiGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2.2rem;
+}
+
+.kpiCard {
+  background: var(--neo-card-bg-soft);
+  border-radius: 1.3rem;
+  box-shadow: var(--neo-card-shadow-soft);
+  padding: 1.3rem 1.1rem 1.1rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  transition: box-shadow 0.18s, transform 0.18s;
+}
+
+.kpiLabel {
+  font-size: 0.98rem;
+  color: var(--color-text-muted);
+}
+
+.kpiValue {
+  font-size: 1.45rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.chartCard {
+  background: var(--neo-card-bg-strong);
+  border-radius: 1.5rem;
+  box-shadow: var(--neo-card-shadow-strong);
+  padding: 2rem 1.6rem 1.6rem 1.6rem;
+  margin-bottom: 2.2rem;
+}
+
+.chartTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 0.7rem;
+}
+
+.emptyCard {
+  background: var(--neo-card-bg-soft);
+  border-radius: 1.3rem;
+  box-shadow: var(--neo-card-shadow-soft);
+  padding: 2rem 1.6rem;
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: 1.08rem;
+}

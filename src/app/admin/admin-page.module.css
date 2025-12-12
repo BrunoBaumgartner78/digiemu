@@ -1,0 +1,51 @@
+.adminPage {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 1.75rem 1.25rem 2.6rem;
+}
+
+@media (min-width: 768px) {
+  .adminPage {
+    padding: 2.25rem 1.75rem 3rem;
+  }
+}
+
+.adminHeaderRow {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.6rem;
+}
+
+@media (min-width: 768px) {
+  .adminHeaderRow {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+}
+
+.adminTitleBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.adminNavBlock {
+  display: flex;
+  justify-content: flex-start;
+}
+
+@media (min-width: 768px) {
+  .adminNavBlock {
+    justify-content: flex-end;
+  }
+}
+
+.adminSection {
+  margin-top: 0.75rem;
+}
+
+.adminSection + .adminSection {
+  margin-top: 1.5rem;
+}

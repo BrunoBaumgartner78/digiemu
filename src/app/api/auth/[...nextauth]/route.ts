@@ -1,9 +1,6 @@
-
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { prisma } from "../../../../../lib/prisma";
-// bcrypt kann für DEV vorübergehend deaktiviert werden (Klartext-Login)
-// import bcrypt from "bcryptjs";
 import type { JWT } from "next-auth/jwt";
 import type { Session } from "next-auth";
 
@@ -20,7 +17,6 @@ export const authOptions = {
           return null;
         }
 
-        // 🔐 DEV-Login (Klartext) – nutzt die "password"-Spalte aus dem Prisma-Model
         const user = await prisma.user.findUnique({
           where: { email: credentials.email },
         });
@@ -29,7 +25,7 @@ export const authOptions = {
           return null;
         }
 
-        // Nur für lokale Entwicklung – später wieder auf bcrypt.compare umstellen!
+        // DEV: Klartext-Login
         if (credentials.password !== user.password) {
           return null;
         }
@@ -42,7 +38,6 @@ export const authOptions = {
         };
       },
     }),
-
   ],
   session: { strategy: "jwt" as const },
   pages: { signIn: "/login" },
@@ -52,12 +47,7 @@ export const authOptions = {
         if (typeof user.id === "string") {
           token.id = user.id;
         }
-        // Rolle sicher auf gültige Literal-Typen einschränken
-        if (
-          user.role === "BUYER" ||
-          user.role === "VENDOR" ||
-          user.role === "ADMIN"
-        ) {
+        if (user.role === "BUYER" || user.role === "VENDOR" || user.role === "ADMIN") {
           token.role = user.role;
         }
       }
@@ -66,9 +56,11 @@ export const authOptions = {
     async session({ session, token }: { session: Session; token: JWT }) {
       if (session.user && token) {
         if (typeof token.id === "string") {
+          // @ts-ignore
           session.user.id = token.id;
         }
         if (typeof token.role === "string") {
+          // @ts-ignore
           session.user.role = token.role;
         }
       }

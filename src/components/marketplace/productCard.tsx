@@ -1,47 +1,47 @@
-// src/components/marketplace/ProductCard.tsx
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
-import styles from "./ProductCard.module.css";
 
-export type ProductLike = {
+type ProductCardProps = {
   id: string;
   title: string;
-  description: string | null;
-  priceCents: number;
-  thumbnail: string | null;
+  price: number;
+  imageUrl: string;
 };
 
-type Props = {
-  product: ProductLike;
-};
-
-export function ProductCard({ product }: Props) {
-  const imageUrl = product.thumbnail || "/images/product-placeholder.png";
-  const price = (product.priceCents ?? 0) / 100;
-
+export function ProductCard({
+  id,
+  title,
+  price,
+  imageUrl,
+}: ProductCardProps) {
   return (
-    <Link href={`/product/${product.id}`} className={styles.card}>
-      <div className={styles.thumbnailWrapper}>
-        <img
+    <div className="neocard group">
+      <div className="relative aspect-square overflow-hidden rounded-2xl">
+        <Image
           src={imageUrl}
-          alt={product.title}
-          className={styles.thumbnail}
+          alt={title}
+          fill
+          className="object-cover transition-transform duration-300 group-hover:scale-105"
         />
       </div>
-      <div className={styles.body}>
-        <h3 className={styles.title}>{product.title}</h3>
-        {product.description && (
-          <p className={styles.description}>
-            {product.description.length > 80
-              ? product.description.slice(0, 77) + "..."
-              : product.description}
-          </p>
-        )}
-        <div className={styles.footer}>
-          <span className={styles.price}>{price.toFixed(2)} CHF</span>
-        </div>
+
+      <div className="mt-3 px-1 space-y-1">
+        <h3 className="text-sm font-medium text-[var(--text)] line-clamp-2">
+          {title}
+        </h3>
+
+        <p className="text-sm font-semibold text-[var(--text-soft)]">
+          CHF {price.toFixed(2)}
+        </p>
       </div>
-    </Link>
+
+      <div className="mt-3">
+        <Link href={`/product/${id}`} className="neobutton w-full text-center">
+          Details
+        </Link>
+      </div>
+    </div>
   );
 }

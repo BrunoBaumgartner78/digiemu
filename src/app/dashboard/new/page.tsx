@@ -1,32 +1,403 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/authOptions";
-import { redirect } from "next/navigation";
-import { prisma } from "@/lib/prisma";
-import Link from "next/link";
+// src/app/dashboard/new/page.tsx
+"use client";
 
-// TODO: Implement ProductForm with file upload (Firebase), price, status, etc.
+import { useState, FormEvent, ChangeEvent } from "react";
+import { useRouter } from "next/navigation";
+import { storage } from "@/lib/firebase";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import styles from "./NewProductForm.module.css";
 
-export default async function NewProductPage() {
-  const session = await getServerSession(authOptions);
-  if (!session || session.user.role !== "VENDOR") {
-    redirect("/dashboard/products");
+const CATEGORY_OPTIONS = [
+  { value: "ebook", label: "E-Book" },
+  { value: "template", label: "Template / Vorlage" },
+  { value: "course", label: "Kurs / Training" },
+  { value: "audio", label: "Audio / Meditation" },
+  { value: "video", label: "Video / Vortrag" },
+  { value: "coaching", label: "Coaching / Session" },
+  { value: "bundle", label: "Bundle / Paket" },
+  { value: "other", label: "Sonstiges" },
+];
+
+export default function NewProductPage() {
+  const router = useRouter();
+
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [priceChf, setPriceChf] = useState("9.90");
+
+  // Kategorie
+  const [category, setCategory] = useState<string>("ebook");
+
+  // Standard-Thumbnail = Fallback aus /public
+  const [thumbnailUrl, setThumbnailUrl] = useState("/fallback-thumbnail.svg");
+
+  // Dateien
+  const [file, setFile] = useState<File | null>(null); // Produktdatei
+  const [thumbFile, setThumbFile] = useState<File | null>(null); // Thumbnail-Bild
+
+  // UI-Status
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Datei-Handler
+  function handleFileChange(e: ChangeEvent<HTMLInputElement>) {
+    setFile(e.target.files?.[0] || null);
   }
 
-  // TODO: Handle POST for product creation, file upload to Firebase, etc.
+  function handleThumbFileChange(e: ChangeEvent<HTMLInputElement>) {
+    setThumbFile(e.target.files?.[0] || null);
+  }
+
+  async function uploadToStorage(pathPrefix: string, file: File) {
+    const safeName = file.name.replace(/\s+/g, "-");
+    const storageRef = ref(storage, `${pathPrefix}/${Date.now()}-${safeName}`);
+
+    const uploadTask = uploadBytesResumable(storageRef, file);
+
+    return await new Promise<string>((resolve, reject) => {
+      uploadTask.on(
+        "state_changed",
+        (snapshot) => {
+          const pct = Math.round(
+            (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+          );
+          setUploadProgress(pct);
+        },
+        (err) => {
+          reject(err);
+        },
+        async () => {
+          const url = await getDownloadURL(uploadTask.snapshot.ref);
+          resolve(url);
+        }
+      );
+    });
+  }
+
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+    setErrorMessage(null);
+    setStatusMessage(null);
+
+    if (!title.trim()) {
+      setErrorMessage("Bitte gib einen Titel ein.");
+      return;
+    }
+    if (!description.trim()) {
+      setErrorMessage("Bitte gib eine kurze Beschreibung ein.");
+      return;
+    }
+
+    // ✅ robustere Preis-Validierung (Komma & Punkt)
+    const normalizedPrice = priceChf.replace(",", ".").trim();
+    const priceNumber = Number(normalizedPrice);
+
+    if (!Number.isFinite(priceNumber) || priceNumber <= 0) {
+      setErrorMessage("Bitte gib einen gültigen Preis in CHF ein.");
+      return;
+    }
+
+    if (!file) {
+      setErrorMessage("Bitte wähle eine Datei für dein Produkt aus.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    setUploadProgress(null);
+
+    try {
+      // 1) Optional: Thumbnail hochladen
+      //    Wenn der Input leer ist → Fallback verwenden
+      let finalThumbnailUrl =
+        thumbnailUrl.trim() || "/fallback-thumbnail.svg";
+
+      if (thumbFile) {
+        setStatusMessage("Lade Thumbnail-Bild hoch …");
+        const thumbUrl = await uploadToStorage("thumbnails", thumbFile);
+        finalThumbnailUrl = thumbUrl;
+      }
+
+      // 2) Produktdatei hochladen
+      setStatusMessage("Lade Produktdatei hoch …");
+      const downloadUrl = await uploadToStorage("products", file);
+
+      // 3) Produkt in der DB anlegen
+      setStatusMessage("Speichere Produkt …");
+
+      const res = await fetch("/api/products/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title: title.trim(),
+          description: description.trim(),
+          priceChf: priceNumber,
+          downloadUrl,
+          thumbnailUrl: finalThumbnailUrl || null,
+          category,
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(
+          data?.message || "Produkt konnte nicht angelegt werden."
+        );
+      }
+
+      setStatusMessage("Produkt erfolgreich angelegt.");
+      setTimeout(() => {
+        router.push("/dashboard/products");
+      }, 600);
+    } catch (err: any) {
+      console.error("Produkt anlegen fehlgeschlagen:", err);
+      setErrorMessage(
+        err?.message || "Upload oder Speichern ist fehlgeschlagen."
+      );
+    } finally {
+      setIsSubmitting(false);
+      setUploadProgress(null);
+    }
+  }
 
   return (
-    <main className="min-h-[70vh] w-full flex justify-center px-4 py-10 bg-gradient-to-br from-[#edf2ff] to-[#f9f9ff]">
-      <div className="w-full max-w-2xl space-y-8">
-        <header className="mb-6">
-          <h1 className="text-2xl font-semibold text-slate-900">Neues Produkt anlegen</h1>
-          <p className="text-xs text-slate-500">Lade deine Datei hoch, setze Preis & Beschreibung</p>
-          <Link href="/dashboard/products" className="inline-flex items-center rounded-full border border-slate-200 bg-white px-4 py-1.5 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-50 transition mt-2">Zurück zur Übersicht</Link>
+    <main className="page-shell-wide">
+      <div className={styles.wrapper}>
+        <a href="/dashboard/products" className={styles.backLink}>
+          Zur Produktübersicht
+        </a>
+
+        <header style={{ marginTop: "0.6rem", marginBottom: "1.4rem" }}>
+          <h1 className="text-2xl font-semibold text-[var(--color-text-primary)]">
+            Neues Produkt anlegen
+          </h1>
+          <p className="text-sm text-[var(--color-text-muted)] max-w-2xl mt-1.5">
+            Trage Titel, Beschreibung und Preis ein. Lade anschließend deine
+            Datei (z. B. PDF, ZIP oder Bild) hoch. Nach dem Speichern erscheint
+            dein Produkt im Marketplace.
+          </p>
         </header>
-        <div className="rounded-3xl bg-white/90 shadow-lg shadow-slate-200/80 p-6 backdrop-blur-sm">
-          {/* Product creation form */}
-          {/* @ts-expect-error Async Server Component passing to Client Component */}
-          <NewProductForm vendorId={session.user.id} />
-        </div>
+
+        <form className={styles.form} onSubmit={handleSubmit}>
+          {/* Linke Spalte: Eingaben */}
+          <div className={styles.colMain}>
+            <div className={styles.fieldGroup}>
+              <label className={styles.label}>Titel</label>
+              <input
+                className={styles.input}
+                type="text"
+                placeholder="z.B. Workbook, Leitfaden, Kursunterlagen …"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
+            </div>
+
+            <div className={styles.fieldGroup}>
+              <label className={styles.label}>Beschreibung</label>
+              <textarea
+                className={styles.textarea}
+                placeholder="Beschreibe kurz, was Käufer nach dem Download erhalten."
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
+            </div>
+
+            {/* Kategorie-Auswahl */}
+            <div className={styles.fieldGroup}>
+              <label className={styles.label}>Kategorie</label>
+              <select
+                className={`${styles.input} ${styles.select}`}
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+              >
+                {CATEGORY_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+              <p className={styles.priceHint}>
+                Die Kategorie wird für Filter im Marketplace verwendet (z.B.
+                E-Books, Kurse, Audio, Templates …).
+              </p>
+            </div>
+
+            {/* Preis */}
+            <div className={styles.fieldGroup}>
+              <label className={styles.label}>Preis (CHF)</label>
+              <div className={styles.priceRow}>
+                <input
+                  className={styles.input}
+                  type="number"
+                  step="0.05"
+                  min="0"
+                  placeholder="z.B. 9.90"
+                  value={priceChf}
+                  onChange={(e) => setPriceChf(e.target.value)}
+                />
+                <p className={styles.priceHint}>
+                  inkl. MwSt. / digitale Leistung (sofern zutreffend)
+                </p>
+              </div>
+            </div>
+
+            {/* Thumbnail-URL + Live-Vorschau */}
+            <div className={styles.fieldGroup}>
+              <label className={styles.label}>Thumbnail-URL (optional)</label>
+              <input
+                className={styles.input}
+                // ✅ text statt url → erlaubt auch relative Pfade wie /fallback-thumbnail.svg
+                type="text"
+                placeholder="https://example.com/dein-bild.jpg oder /fallback-thumbnail.svg"
+                value={thumbnailUrl}
+                onChange={(e) => setThumbnailUrl(e.target.value)}
+              />
+              <p className={styles.priceHint}>
+                Lässt du dieses Feld leer, verwenden wir automatisch{" "}
+                <code>/fallback-thumbnail.svg</code> aus deinem{" "}
+                <code>public/</code>-Ordner. Später kannst du hier ein Bild aus
+                Firebase / Storage eintragen lassen oder eine eigene URL
+                verwenden.
+              </p>
+
+              {/* Vorschau */}
+              <div
+                style={{
+                  marginTop: "0.75rem",
+                  display: "flex",
+                  gap: "1rem",
+                }}
+              >
+                <div
+                  style={{
+                    width: "160px",
+                    height: "100px",
+                    borderRadius: "16px",
+                    overflow: "hidden",
+                    border: "1px solid rgba(148,163,184,0.55)",
+                    boxShadow:
+                      "6px 6px 14px var(--shadow-dark), -6px -6px 14px var(--shadow-light)",
+                    background: "var(--bg-soft)",
+                  }}
+                >
+                  <img
+                    src={thumbnailUrl || "/fallback-thumbnail.svg"}
+                    alt="Thumbnail-Vorschau"
+                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                    onError={(e) => {
+                      const img = e.currentTarget;
+                      const fallback = "/fallback-thumbnail.svg";
+                      if (!img.src.endsWith(fallback)) {
+                        img.src = fallback;
+                      }
+                    }}
+                  />
+                </div>
+                <p className={styles.priceHint} style={{ maxWidth: "220px" }}>
+                  Die Vorschau aktualisiert sich automatisch, wenn du die URL
+                  änderst. So siehst du sofort, wie dein Produkt im Marketplace
+                  wirken wird.
+                </p>
+              </div>
+            </div>
+
+            {/* Produktdatei-Upload Neo-Button */}
+            <div className={styles.fieldGroup}>
+              <label className={styles.label}>
+                DATEI / BILD HOCHLADEN (PRODUKTDATEI)
+              </label>
+              <div className={styles.fileRow}>
+                <label className={styles.fileButton}>
+                  📁 Datei auswählen
+                  <input
+                    type="file"
+                    accept=".pdf,.zip,.jpg,.jpeg,.png,.webp"
+                    onChange={handleFileChange}
+                    className={styles.fileInput}
+                  />
+                </label>
+                <span className={styles.fileName}>
+                  {file ? file.name : "Noch keine Datei gewählt"}
+                </span>
+              </div>
+              <p className={styles.priceHint}>
+                Diese Datei wird als Download-Link für Käufer:innen verwendet.
+              </p>
+            </div>
+
+            {/* Thumbnail-Upload Neo-Button */}
+            <div className={styles.fieldGroup}>
+              <label className={styles.label}>
+                THUMBNAIL-BILD HOCHLADEN (OPTIONAL)
+              </label>
+              <div className={styles.fileRow}>
+                <label className={styles.fileButton}>
+                  🖼 Bild auswählen
+                  <input
+                    type="file"
+                    accept=".jpg,.jpeg,.png,.webp"
+                    onChange={handleThumbFileChange}
+                    className={styles.fileInput}
+                  />
+                </label>
+                <span className={styles.fileName}>
+                  {thumbFile ? thumbFile.name : "Noch kein Bild gewählt"}
+                </span>
+              </div>
+              <p className={styles.priceHint}>
+                Optionales Vorschaubild für dein Produkt. Wenn du hier ein Bild
+                hochlädst, wird die Thumbnail-URL automatisch gesetzt.
+              </p>
+            </div>
+
+            {uploadProgress !== null && (
+              <p className={styles.priceHint}>Upload: {uploadProgress}% …</p>
+            )}
+
+            {errorMessage && <p className={styles.error}>{errorMessage}</p>}
+            {statusMessage && !errorMessage && (
+              <p className={styles.success}>{statusMessage}</p>
+            )}
+
+            <div className={styles.actionsRow}>
+              <button
+                type="button"
+                className={styles.secondaryBtn}
+                onClick={() => router.push("/dashboard/products")}
+              >
+                Abbrechen
+              </button>
+              <button
+                type="submit"
+                className={styles.primaryBtn}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Wird angelegt …" : "Produkt anlegen"}
+              </button>
+            </div>
+          </div>
+
+          {/* Rechte Spalte: Info-Box */}
+          <aside className={styles.colSide}>
+            <div className={styles.infoBox}>
+              <h2 className={styles.infoTitle}>Veröffentlichung</h2>
+              <p className={styles.infoText}>
+                Neue Produkte starten standardmäßig als{" "}
+                <strong>aktiv</strong> (sichtbar im Marketplace), sobald Preis
+                und Download-Datei korrekt hinterlegt sind. Du kannst den
+                Status später jederzeit in der Produkt-Bearbeitung anpassen.
+              </p>
+              <p className={styles.infoText} style={{ marginTop: "0.8rem" }}>
+                Für die ersten Tests genügt ein PDF oder ZIP. Später kannst du
+                professionelle Thumbnails hochladen, damit dein Produkt im
+                Marketplace wie ein fertiger Shop aussieht.
+              </p>
+            </div>
+          </aside>
+        </form>
       </div>
     </main>
   );

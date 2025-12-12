@@ -1,20 +1,19 @@
-// src/app/providers.tsx
 "use client";
 
+import { ThemeProvider } from "next-themes";
 import { SessionProvider } from "next-auth/react";
-// import { ThemeProvider } from "next-themes";
-// ⬇️ Pfad prüfen – meistens so oder ähnlich:
-// import { ToastProvider } from "@/components/ui/use-toast";
 
-type Props = {
-  children: React.ReactNode;
-};
-
-export function Providers({ children }: Props) {
+export function Providers({ children }) {
   return (
     <SessionProvider>
-          {children}
-      {children}
+      <ThemeProvider
+        attribute="data-theme"
+        defaultTheme="light"
+        enableSystem={false}
+        disableTransitionOnChange
+      >
+        {children}
+      </ThemeProvider>
     </SessionProvider>
   );
 }

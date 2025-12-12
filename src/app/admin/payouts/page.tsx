@@ -1,369 +1,158 @@
 // src/app/admin/payouts/page.tsx
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { format } from "date-fns";
-import { de } from "date-fns/locale";
 import Link from "next/link";
 
-type SearchParamsPromise = Promise<{
-  vendor?: string;
-  status?: string;
-  dateRange?: string;
-  page?: string;
-}>;
+export const metadata = {
+  title: "Admin – Vendor Auszahlungen",
+};
 
-interface AdminPayoutsPageProps {
-  searchParams: SearchParamsPromise;
-}
+export default async function AdminPayoutsPage() {
+  const session = await getServerSession(authOptions);
 
-export const dynamic = "force-dynamic";
-
-export default async function AdminPayoutsPage({
-  searchParams,
-}: AdminPayoutsPageProps) {
-  // ---------- FILTERS / PAGINATION ----------
-  const params = await searchParams;
-
-  const vendorId = params.vendor ?? "";
-  const status = (params.status as "ALL" | "PENDING" | "PAID" | undefined) ?? "ALL";
-  const dateRange = params.dateRange ?? "30d";
-  const page = parseInt(params.page ?? "1", 10);
-  const pageSize = 20;
-
-  // Zeitraum bestimmen
-  const now = new Date();
-  let fromDate: Date | undefined;
-
-  switch (dateRange) {
-    case "7d":
-      fromDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-      break;
-    case "30d":
-      fromDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-      break;
-    case "90d":
-      fromDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
-      break;
-    case "all":
-    default:
-      fromDate = undefined;
+  if (!session || session.user.role !== "ADMIN") {
+    // Unauthorized-View beibehalten
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6">
+        <div className="neumorph-card p-8 text-center max-w-md">
+          <h1 className="text-xl font-bold mb-2">Zugriff verweigert</h1>
+          <p className="opacity-80">
+            Nur Administratoren dürfen dieses Panel sehen.
+          </p>
+        </div>
+      </div>
+    );
   }
 
-  const where: any = {};
-
-  if (vendorId) {
-    where.vendorId = vendorId;
-  }
-
-  if (status !== "ALL") {
-    where.status = status;
-  }
-
-  if (fromDate) {
-    where.createdAt = { gte: fromDate };
-  }
-
-  // ---------- SUMMARY BOX DATA ----------
-  const [totalPendingAgg, totalPaidLast30Agg, openRequestsCount, vendors] =
-    await Promise.all([
-      prisma.payout.aggregate({
-        _sum: { amountCents: true },
-        where: { status: "PENDING" },
-      }),
-      prisma.payout.aggregate({
-        _sum: { amountCents: true },
-        where: {
-          status: "PAID",
-          createdAt: {
-            gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+  // Alle Vendoren laden
+  const vendors = await prisma.user.findMany({
+    where: { role: "VENDOR" },
+    include: {
+      vendorProfile: true,
+      products: {
+        select: {
+          id: true,
+          orders: {
+            select: {
+              vendorEarningsCents: true,
+            },
           },
         },
-      }),
-      prisma.payout.count({ where: { status: "PENDING" } }),
-      prisma.user.findMany({
-        where: { role: "VENDOR" },
-        select: { id: true, name: true, email: true },
-        orderBy: { name: "asc" },
-      }),
-    ]);
-
-  const totalPendingCents = totalPendingAgg._sum.amountCents ?? 0;
-  const totalPaidLast30Cents = totalPaidLast30Agg._sum.amountCents ?? 0;
-
-  // ---------- PAGINATED PAYOUTS ----------
-  const [payouts, totalCount] = await Promise.all([
-    prisma.payout.findMany({
-      where,
-      orderBy: { createdAt: "desc" },
-      skip: (page - 1) * pageSize,
-      take: pageSize,
-      include: {
-        vendor: { select: { id: true, name: true, email: true } },
       },
-    }),
-    prisma.payout.count({ where }),
-  ]);
+      payouts: true,
+    },
+  });
 
-  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+  // Berechnung der Vendor-Earnings
+  const vendorRows = vendors.map((vendor) => {
+    const earnings = vendor.products.flatMap((p) =>
+      p.orders.map((o) => o.vendorEarningsCents || 0)
+    );
 
-  // ---------- JSX ----------
+    const totalEarnings = earnings.reduce((a, b) => a + b, 0);
+
+    const alreadyPaid = vendor.payouts
+      .filter((p) => p.status === "PAID")
+      .reduce((acc, p) => acc + p.amountCents, 0);
+
+    const pending = Math.max(totalEarnings - alreadyPaid, 0);
+
+    return {
+      vendor,
+      totalEarnings,
+      alreadyPaid,
+      pending,
+    };
+  });
+
   return (
-    <main className="min-h-[calc(100vh-6rem)] bg-[var(--bg)] px-4 py-8 text-[var(--text-main)]">
-      <div className="max-w-6xl mx-auto space-y-8">
-        {/* HEADER */}
-        <section className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold">Admin – Auszahlungen</h1>
-            <p className="text-sm text-[var(--muted)]">
-              Überblick über Vendor-Payouts, Status und offene Anfragen.
-            </p>
-          </div>
-          <Link
-            href="/admin"
-            className="inline-flex items-center rounded-2xl px-4 py-2 text-sm font-medium
-              bg-[var(--primary)] text-white shadow-[inset_2px_2px_4px_rgba(255,255,255,0.3),inset_-2px_-2px_4px_rgba(0,0,0,0.2)]
-              hover:shadow-[inset_3px_3px_6px_rgba(0,0,0,0.25),inset_-3px_-3px_6px_rgba(255,255,255,0.5)]
-              transition-all active:scale-[0.97]"
-          >
-            Zur Admin-Übersicht
-          </Link>
-        </section>
+    <div className="admin-shell">
+      {/* Breadcrumb + Header */}
+      <div className="admin-breadcrumb">
+        <span>Admin</span>
+        <span className="admin-breadcrumb-dot" />
+        <span>Payouts</span>
+      </div>
 
-        {/* KPI-CARDS */}
-        <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <KpiCard
-            label="Offene Auszahlungen"
-            value={openRequestsCount}
-            subLabel="Status: PENDING"
-          />
-          <KpiCard
-            label="Auszahlungsvolumen offen"
-            value={(totalPendingCents / 100).toFixed(2) + " CHF"}
-            subLabel="Noch nicht bezahlt"
-          />
-          <KpiCard
-            label="Ausbezahlt (30 Tage)"
-            value={(totalPaidLast30Cents / 100).toFixed(2) + " CHF"}
-            subLabel="Status: PAID (30d)"
-          />
-        </section>
+      <header className="admin-header">
+        <div className="admin-kicker">DigiEmu · Admin</div>
+        <h1 className="admin-title">Vendor Auszahlungen</h1>
+        <p className="admin-subtitle">
+          Übersicht über verdiente Beträge, bereits ausgezahlte Summen und
+          offene Payouts pro Vendor.
+        </p>
+      </header>
 
-        {/* FILTERS */}
-        <section
-          className="rounded-3xl bg-[var(--card-bg)] p-4
-          shadow-[8px_8px_16px_rgba(0,0,0,0.15),-8px_-8px_16px_rgba(255,255,255,0.08)]
-          border border-[var(--border-soft)]"
-        >
-          <form className="flex flex-wrap gap-4 items-end">
-            {/* Vendor Filter */}
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-medium text-[var(--muted)]">
-                Vendor
-              </label>
-              <select
-                name="vendor"
-                defaultValue={vendorId}
-                className="rounded-xl border border-[var(--border-soft)] bg-[var(--input-bg)]
-                  px-3 py-2 text-sm outline-none
-                  shadow-[inset_2px_2px_4px_rgba(0,0,0,0.15),inset_-2px_-2px_4px_rgba(255,255,255,0.08)]"
-              >
-                <option value="">Alle</option>
-                {vendors.map((v) => (
-                  <option key={v.id} value={v.id}>
-                    {v.name || v.email || v.id}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Status Filter */}
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-medium text-[var(--muted)]">
-                Status
-              </label>
-              <select
-                name="status"
-                defaultValue={status}
-                className="rounded-xl border border-[var(--border-soft)] bg-[var(--input-bg)]
-                  px-3 py-2 text-sm outline-none
-                  shadow-[inset_2px_2px_4px_rgba(0,0,0,0.15),inset_-2px_-2px_4px_rgba(255,255,255,0.08)]"
-              >
-                <option value="ALL">Alle</option>
-                <option value="PENDING">Pending</option>
-                <option value="PAID">Paid</option>
-              </select>
-            </div>
-
-            {/* Date Range Filter */}
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-medium text-[var(--muted)]">
-                Zeitraum
-              </label>
-              <select
-                name="dateRange"
-                defaultValue={dateRange}
-                className="rounded-xl border border-[var(--border-soft)] bg-[var(--input-bg)]
-                  px-3 py-2 text-sm outline-none
-                  shadow-[inset_2px_2px_4px_rgba(0,0,0,0.15),inset_-2px_-2px_4px_rgba(255,255,255,0.08)]"
-              >
-                <option value="7d">7 Tage</option>
-                <option value="30d">30 Tage</option>
-                <option value="90d">90 Tage</option>
-                <option value="all">Alle</option>
-              </select>
-            </div>
-
-            <button
-              type="submit"
-              className="ml-auto rounded-2xl px-4 py-2 text-sm font-medium
-                bg-[var(--primary)] text-white
-                shadow-[inset_2px_2px_4px_rgba(255,255,255,0.3),inset_-2px_-2px_4px_rgba(0,0,0,0.25)]
-                hover:shadow-[inset_3px_3px_6px_rgba(0,0,0,0.25),inset_-3px_-3px_6px_rgba(255,255,255,0.5)]
-                transition-all active:scale-[0.97]"
+      {vendorRows.length === 0 ? (
+        <div className="admin-card">
+          <p className="text-sm text-[var(--text-muted)]">
+            Keine Vendoren verfügbar.
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {vendorRows.map(({ vendor, totalEarnings, alreadyPaid, pending }) => (
+            <div
+              key={vendor.id}
+              className="admin-card flex flex-col gap-4 md:flex-row md:items-center md:justify-between"
             >
-              Filtern
-            </button>
-          </form>
-        </section>
+              <div>
+                <h2 className="font-semibold text-lg text-[var(--text-main)]">
+                  {vendor.vendorProfile?.displayName || vendor.email}
+                </h2>
 
-        {/* PAYOUTS TABLE */}
-        <section
-          className="rounded-3xl bg-[var(--card-bg)] p-6
-          shadow-[10px_10px_22px_rgba(0,0,0,0.18),-10px_-10px_22px_rgba(255,255,255,0.06)]
-          border border-[var(--border-soft)]"
-        >
-          <h2 className="text-sm font-semibold mb-4">Payouts</h2>
+                <p className="text-xs text-[var(--text-muted)] mt-1 mb-3">
+                  Vendor seit{" "}
+                  {new Date(vendor.createdAt).toLocaleDateString("de-CH")}
+                </p>
 
-          {payouts.length === 0 ? (
-            <p className="text-xs text-[var(--muted)]">
-              Keine Auszahlungen für die aktuelle Filterung gefunden.
-            </p>
-          ) : (
-            <div className="overflow-x-auto rounded-2xl border border-[var(--border-soft)]">
-              <table className="min-w-full text-sm">
-                <thead className="bg-[var(--table-header-bg)] text-[var(--muted-strong)] text-xs uppercase tracking-wide">
-                  <tr>
-                    <th className="py-3 px-4 text-left">Vendor</th>
-                    <th className="py-3 px-4 text-left">Betrag</th>
-                    <th className="py-3 px-4 text-left">Status</th>
-                    <th className="py-3 px-4 text-left">Erstellt</th>
-                    <th className="py-3 px-4 text-left">Aktualisiert</th>
-                    <th className="py-3 px-4 text-left">Aktionen</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-[var(--table-bg)]">
-                  {payouts.map((payout) => (
-                    <tr
-                      key={payout.id}
-                      className="border-t border-[var(--border-soft)] hover:bg-[var(--table-row-hover)] transition-colors"
-                    >
-                      <td className="py-3 px-4">
-                        <div className="flex flex-col">
-                          <span className="font-medium">
-                            {payout.vendor?.name || "Unbekannt"}
-                          </span>
-                          <span className="text-[11px] text-[var(--muted)]">
-                            {payout.vendor?.email}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="py-3 px-4">
-                        {(payout.amountCents / 100).toFixed(2)} CHF
-                      </td>
-                      <td className="py-3 px-4">
-                        <span
-                          className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${
-                            payout.status === "PAID"
-                              ? "bg-emerald-100/10 text-emerald-400 border border-emerald-500/40"
-                              : "bg-amber-100/10 text-amber-400 border border-amber-500/40"
-                          }`}
-                        >
-                          {payout.status}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4 text-[13px] text-[var(--muted)]">
-                        {format(payout.createdAt, "dd.MM.yyyy HH:mm", {
-                          locale: de,
-                        })}
-                      </td>
-                      <td className="py-3 px-4 text-[13px] text-[var(--muted)]">
-                        {format(payout.updatedAt, "dd.MM.yyyy HH:mm", {
-                          locale: de,
-                        })}
-                      </td>
-                      <td className="py-3 px-4 text-[11px] text-[var(--muted)]">
-                        {/* Hier waren vorher Buttons mit onClick → erstmal deaktiviert */}
-                        <span className="italic">
-                          Aktionen (z.B. &quot;Als bezahlt markieren&quot;) bauen
-                          wir später als Client-Komponente / Server Action ein.
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                <div className="space-y-1 text-sm">
+                  <div>
+                    Total verdient:{" "}
+                    <span className="font-semibold">
+                      {(totalEarnings / 100).toFixed(2)} CHF
+                    </span>
+                  </div>
+                  <div>
+                    Bereits ausgezahlt:{" "}
+                    <span className="font-semibold">
+                      {(alreadyPaid / 100).toFixed(2)} CHF
+                    </span>
+                  </div>
+                  <div>
+                    Offen:{" "}
+                    <span className="font-semibold text-[var(--accent)]">
+                      {(pending / 100).toFixed(2)} CHF
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col items-end gap-2 text-right">
+                {pending > 0 ? (
+                  <form action={`/api/admin/payouts/create`} method="POST">
+                    <input type="hidden" name="vendorId" value={vendor.id} />
+                    <button className="neobtn-sm">
+                      Auszahlung erstellen
+                    </button>
+                  </form>
+                ) : (
+                  <span className="text-xs text-[var(--text-muted)]">
+                    Keine Auszahlung offen
+                  </span>
+                )}
+
+                <Link
+                  href={`/admin/payouts/vendor/${vendor.id}`}
+                  className="neobtn-sm ghost"
+                >
+                  Details ansehen →
+                </Link>
+              </div>
             </div>
-          )}
-
-          {/* PAGINATION */}
-          {totalPages > 1 && (
-            <div className="flex justify-center mt-4 gap-2 text-xs">
-              {Array.from({ length: totalPages }).map((_, i) => {
-                const p = i + 1;
-                const isActive = p === page;
-
-                const search = new URLSearchParams();
-                if (vendorId) search.set("vendor", vendorId);
-                if (status) search.set("status", status);
-                if (dateRange) search.set("dateRange", dateRange);
-                search.set("page", String(p));
-
-                return (
-                  <Link
-                    key={p}
-                    href={`/admin/payouts?${search.toString()}`}
-                    className={`px-3 py-1 rounded-full border text-xs ${
-                      isActive
-                        ? "bg-[var(--primary)] text-white border-transparent"
-                        : "bg-[var(--chip-bg)] text-[var(--muted)] border-[var(--border-soft)]"
-                    }`}
-                  >
-                    {p}
-                  </Link>
-                );
-              })}
-            </div>
-          )}
-        </section>
-      </div>
-    </main>
-  );
-}
-
-/* ----------------- SUB COMPONENT ----------------- */
-
-function KpiCard({
-  label,
-  value,
-  subLabel,
-}: {
-  label: string;
-  value: number | string;
-  subLabel?: string;
-}) {
-  return (
-    <div
-      className="rounded-2xl p-4 bg-[var(--card-bg)]
-      shadow-[8px_8px_16px_rgba(0,0,0,0.18),-8px_-8px_16px_rgba(255,255,255,0.05)]
-      border border-[var(--border-soft)]"
-    >
-      <div className="text-xs uppercase tracking-wide text-[var(--muted)]">
-        {label}
-      </div>
-      <div className="mt-2 text-2xl font-semibold text-[var(--text-main)]">
-        {value}
-      </div>
-      {subLabel && (
-        <div className="text-[11px] text-[var(--muted)] mt-1">{subLabel}</div>
+          ))}
+        </div>
       )}
     </div>
   );

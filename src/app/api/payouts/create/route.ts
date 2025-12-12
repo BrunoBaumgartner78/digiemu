@@ -1,16 +1,96 @@
-import { prisma } from "@/lib/prisma";
+// src/app/api/admin/payouts/create/route.ts
+
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 
-export async function POST(req) {
-  const { vendorId, amountCents } = await req.json();
+// POST /api/admin/payouts/create
+export async function POST(req: Request) {
+  const session = await getServerSession(authOptions);
 
-  const payout = await prisma.payout.create({
-    data: {
-      vendorId,
-      amountCents,
-      status: "PENDING"
+  // 1. Nur Admins dürfen Payouts erstellen
+  if (!session || session.user.role !== "ADMIN") {
+    return NextResponse.json(
+      { error: "Unauthorized – Admin privileges required." },
+      { status: 403 }
+    );
+  }
+
+  // 2. VendorId aus dem FormData/JSON extrahieren
+  let vendorId: string | undefined;
+
+  const contentType = req.headers.get("content-type") || "";
+
+  if (contentType.includes("application/json")) {
+    const json = await req.json().catch(() => null);
+    vendorId = json?.vendorId;
+  } else {
+    const form = await req.formData().catch(() => null);
+    vendorId = form?.get("vendorId")?.toString();
+  }
+
+  if (!vendorId) {
+    return NextResponse.json(
+      { error: "Missing vendorId" },
+      { status: 400 }
+    );
+  }
+
+  // 3. Vendor existiert?
+  const vendor = await prisma.user.findUnique({
+    where: { id: vendorId, role: "VENDOR" },
+    include: {
+      products: {
+        select: {
+          orders: {
+            select: { vendorEarningsCents: true },
+          },
+        },
+      },
+      payouts: true
     }
   });
 
-  return NextResponse.json({ payout });
+  if (!vendor) {
+    return NextResponse.json(
+      { error: "Vendor not found" },
+      { status: 404 }
+    );
+  }
+
+  // 4. Vendor-Earnings berechnen
+  const allEarnings = vendor.products.flatMap((p) =>
+    p.orders.map((o) => o.vendorEarningsCents || 0)
+  );
+  const totalEarnings = allEarnings.reduce((a, b) => a + b, 0);
+
+  // bereits ausgezahlt
+  const alreadyPaid = vendor.payouts
+    .filter((p) => p.status === "PAID")
+    .reduce((acc, p) => acc + p.amountCents, 0);
+
+  // ausstehende Summe
+  const pendingAmount = Math.max(totalEarnings - alreadyPaid, 0);
+
+  if (pendingAmount <= 0) {
+    return NextResponse.json(
+      { error: "No pending payout amount for this vendor." },
+      { status: 400 }
+    );
+  }
+
+  // 5. Payout erstellen
+  const payout = await prisma.payout.create({
+    data: {
+      vendorId: vendor.id,
+      amountCents: pendingAmount,
+      status: "PENDING",
+    },
+  });
+
+  return NextResponse.json({
+    message: "Payout created",
+    payout,
+  });
 }

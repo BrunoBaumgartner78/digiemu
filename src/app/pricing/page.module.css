@@ -1,0 +1,163 @@
+/* ==== Layout ======================================================== */
+
+.page {
+  min-height: 100vh;
+  padding: 3.5rem 1.5rem 3rem;
+  background: var(--page-bg);
+  color: var(--color-text-primary);
+}
+
+.inner {
+  max-width: 1120px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2.7rem;
+}
+
+/* ==== Header ======================================================== */
+
+.header {
+  max-width: 720px;
+}
+
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.25em;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  margin-bottom: 0.9rem;
+}
+
+.title {
+  font-size: clamp(2.1rem, 2.5vw + 1.6rem, 2.7rem);
+  line-height: 1.15;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  margin-bottom: 0.9rem;
+  color: var(--color-text-primary);
+}
+
+.lead {
+  font-size: 0.98rem;
+  line-height: 1.7;
+  color: var(--color-text-muted);
+  max-width: 36rem;
+}
+
+/* ==== Plan Card ===================================================== */
+
+.cardSection {
+  display: flex;
+  justify-content: center;
+}
+
+.planCard {
+  width: 100%;
+  border-radius: 1.8rem;
+  padding: 1.8rem 1.9rem 2.1rem;
+
+  background: var(--neo-card-bg-soft);
+  border: 1px solid var(--neo-card-border);
+  box-shadow: var(--neo-card-shadow-soft);
+  backdrop-filter: blur(18px);
+
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+}
+
+.planHeader {
+  max-width: 720px;
+}
+
+.planBadge {
+  font-size: 0.8rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.planTitle {
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin: 0 0 0.6rem;
+}
+
+.planIntro {
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: var(--color-text-muted);
+}
+
+/* ==== Grid innerhalb der Karte ===================================== */
+
+.planGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.4rem 1.6rem;
+}
+
+.planBlock {
+  padding: 0.6rem 0.4rem 0.1rem;
+}
+
+.blockTitle {
+  margin: 0 0 0.3rem;
+  font-size: 0.98rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.blockText {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: var(--color-text-muted);
+}
+
+/* ==== Hinweis / Footer ============================================= */
+
+.noteSection {
+  max-width: 720px;
+}
+
+.noteText {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: var(--color-text-muted);
+}
+
+.footer {
+  margin-top: 0.6rem;
+  padding-top: 1.1rem;
+  border-top: 1px solid rgba(148, 163, 184, 0.4);
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+/* ==== Responsive ==================================================== */
+
+@media (max-width: 900px) {
+  .page {
+    padding: 2.6rem 1.1rem 2.4rem;
+  }
+
+  .planGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .planCard {
+    padding: 1.4rem 1.3rem 1.6rem;
+    border-radius: 1.4rem;
+  }
+
+  .title {
+    font-size: 1.9rem;
+  }
+}

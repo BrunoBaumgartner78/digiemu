@@ -1,68 +1,360 @@
-.container {
-  max-width: 1100px;
-  margin: 0 auto;
+/* src/app/dashboard/DashboardHome.module.css */
+
+/* ===== Shell: großer, abgerundeter Dashboard-Container mit Flow-Glow ===== */
+
+.dashboardShell {
+  position: relative;
+  overflow: hidden;
+  border-radius: 2rem;
+  padding: 2rem 2rem 2.4rem 2rem;
+
+  background: radial-gradient(circle at 0% 0%, #0f172a, #020617);
+  box-shadow:
+    0 32px 90px rgba(0, 0, 0, 0.9),
+    0 0 40px rgba(37, 99, 235, 0.35);
 }
 
-.title {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #0f172a;
+/* große, weiche Lichtwolken im Hintergrund */
+.dashboardShell::before {
+  content: "";
+  position: absolute;
+  inset: -40%;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(59, 130, 246, 0.35), transparent 60%),
+    radial-gradient(circle at 100% 0%, rgba(129, 140, 248, 0.32), transparent 55%),
+    radial-gradient(circle at 20% 100%, rgba(56, 189, 248, 0.25), transparent 55%);
+  opacity: 0.9;
+  filter: blur(10px);
+  animation: shellFlow 26s ease-in-out infinite alternate;
+  pointer-events: none;
+  z-index: 0;
 }
 
-.subtitle {
-  color: #64748b;
-  margin-bottom: 2rem;
+.dashboardShell > * {
+  position: relative;
+  z-index: 1;
 }
 
-.cardGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 1.2rem;
-  margin-bottom: 3rem;
+@keyframes shellFlow {
+  0% {
+    transform: translate3d(-4%, -2%, 0) scale(1.02);
+  }
+  50% {
+    transform: translate3d(3%, 4%, 0) scale(1.06);
+  }
+  100% {
+    transform: translate3d(-2%, 1%, 0) scale(1.03);
+  }
 }
 
-.card {
-  background: #f8fbff;
-  border-radius: 20px;
-  padding: 1.5rem;
-  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08),
-              inset 0 0 0 1px rgba(255, 255, 255, 0.8);
-}
+/* ---------------- Dashboard: Primary CTA Button ---------------- */
 
-.cardLabel {
-  font-size: 0.8rem;
-  color: #64748b;
-  margin-bottom: 0.4rem;
-}
-
-.cardValue {
-  font-size: 1.4rem;
-  font-weight: 600;
-  color: #0f172a;
-}
-
-.section {
-  margin-top: 3rem;
-}
-
-.sectionTitle {
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: #0f172a;
-}
-
-.sectionDesc {
-  color: #64748b;
-  margin-bottom: 1rem;
-}
-
-.addBtn {
+.dashboardPrimaryLink {
   display: inline-flex;
-  padding: 0.8rem 1.4rem;
-  background: linear-gradient(90deg, #2563eb, #4f46e5);
-  color: white;
-  border-radius: 12px;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0.9rem 1.9rem;
+  border-radius: 999px;
+
+  font-size: 0.75rem;
   font-weight: 600;
-  text-decoration: none;
-  box-shadow: 0 18px 40px rgba(37, 99, 235, 0.4);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+
+  background: linear-gradient(135deg, #2563eb, #4f46e5);
+  color: #f9fafb !important;
+  text-decoration: none !important;
+
+  box-shadow: 0 18px 40px rgba(37, 99, 235, 0.55);
+  border: 1px solid rgba(37, 99, 235, 0.9);
+
+  transition:
+    box-shadow 0.18s ease,
+    transform 0.14s ease,
+    filter 0.14s ease;
+
+  margin-top: 1.25rem;
+  margin-bottom: 1.75rem;
+}
+
+.dashboardPrimaryLink:hover {
+  box-shadow: 0 22px 55px rgba(59, 130, 246, 0.8);
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+}
+
+.dashboardPrimaryLink:active {
+  transform: translateY(0);
+  box-shadow: 0 14px 32px rgba(37, 99, 235, 0.5);
+}
+
+.dashboardPrimaryLink:visited {
+  color: #f9fafb !important;
+}
+
+/* ---------------- KPI: 2x2 Grid oben ---------------- */
+
+.kpiSection {
+  margin-top: 0.25rem;
+  margin-bottom: 0.75rem;
+}
+
+.kpiGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .kpiGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.1rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .kpiGrid {
+    gap: 1.3rem;
+  }
+}
+
+/* ---------------- KPI-Cards – dark + Gradient-Glow ---------------- */
+
+.kpiCard {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1.5rem;
+  padding: 1.4rem 1.6rem;
+
+  background: radial-gradient(
+    circle at 0% 0%,
+    rgba(37, 99, 235, 0.5),
+    #020617 65%
+  );
+  box-shadow:
+    0 26px 70px rgba(0, 0, 0, 0.95),
+    inset 0 0 0 1px rgba(148, 163, 184, 0.45);
+  border: 1px solid rgba(129, 140, 248, 0.8);
+  backdrop-filter: blur(18px);
+
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+/* weiche Glow-Highlights innen */
+.kpiCard::before {
+  content: "";
+  position: absolute;
+  inset: -40%;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(96, 165, 250, 0.65), transparent 60%),
+    radial-gradient(circle at 100% 100%, rgba(45, 212, 191, 0.4), transparent 55%);
+  opacity: 0.75;
+  filter: blur(16px);
+  animation: cardGlow 24s ease-in-out infinite alternate;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.kpiCard > * {
+  position: relative;
+  z-index: 1;
+}
+
+.kpiLabel {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: rgba(191, 219, 254, 0.9);
+}
+
+.kpiValue {
+  margin-top: 0.1rem;
+  font-size: 1.9rem;
+  line-height: 1.2;
+  font-weight: 700;
+  color: #f9fafb;
+  text-shadow: 0 1px 3px rgba(15, 23, 42, 0.9);
+}
+
+.kpiSubLabel {
+  font-size: 0.7rem;
+  color: rgba(148, 163, 184, 0.95);
+}
+
+/* ---------------- Mini-Chart ---------------- */
+
+.chartBody {
+  margin-top: 0.6rem;
+  border-radius: 1.3rem;
+  padding: 0.9rem 0.75rem;
+  background: radial-gradient(circle at 0 100%, #0b1120, #020617);
+  box-shadow:
+    inset 0 0 0 1px rgba(30, 64, 175, 0.7),
+    inset 0 4px 12px rgba(15, 23, 42, 0.9);
+}
+
+.chartBar {
+  border-radius: 999px;
+}
+
+/* ---------------- Untere Statistik-Blöcke – dark + Glow ---------------- */
+
+.statCard,
+.chartCard,
+.tableCard {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1.7rem;
+  padding: 1.8rem 1.9rem;
+  margin-top: 1.25rem;
+
+  background: radial-gradient(
+    circle at 0% 0%,
+    rgba(30, 64, 175, 0.6),
+    #020617 70%
+  );
+  box-shadow:
+    0 30px 85px rgba(0, 0, 0, 0.96),
+    inset 0 0 0 1px rgba(30, 64, 175, 0.7);
+  border: 1px solid rgba(129, 140, 248, 0.85);
+  backdrop-filter: blur(22px);
+}
+
+/* zusätzlicher Glow-Layer */
+.statCard::before,
+.chartCard::before,
+.tableCard::before {
+  content: "";
+  position: absolute;
+  inset: -45%;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(59, 130, 246, 0.55), transparent 60%),
+    radial-gradient(circle at 100% 0%, rgba(129, 140, 248, 0.5), transparent 55%),
+    radial-gradient(circle at 50% 100%, rgba(56, 189, 248, 0.4), transparent 55%);
+  opacity: 0.8;
+  filter: blur(18px);
+  animation: cardGlow 28s ease-in-out infinite alternate;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Inhalt über dem Glow */
+.statCard > *,
+.chartCard > *,
+.tableCard > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* etwas mehr Luft zwischen den Blöcken */
+.statCard + .statCard,
+.statCard + .chartCard,
+.chartCard + .statCard,
+.statCard + .tableCard,
+.chartCard + .tableCard {
+  margin-top: 1.5rem;
+}
+
+/* Glow-Animation */
+
+@keyframes cardGlow {
+  0% {
+    transform: translate3d(-6%, 0, 0) scale(1.01);
+  }
+  50% {
+    transform: translate3d(6%, -4%, 0) scale(1.06);
+  }
+  100% {
+    transform: translate3d(-3%, 3%, 0) scale(1.03);
+  }
+}
+
+/* ---------------- Tabelle in "Deine Produkte" ---------------- */
+
+.downloadsTableWrapper {
+  margin-top: 1.3rem;
+  border-radius: 1.2rem;
+  padding: 0.75rem 0.75rem 1.25rem 0.75rem;
+
+  background: radial-gradient(
+    circle at 0% 0%,
+    rgba(15, 23, 42, 0.9),
+    rgba(15, 23, 42, 0.98)
+  );
+  box-shadow:
+    inset 0 0 0 1px rgba(30, 64, 175, 0.8),
+    0 10px 25px rgba(0, 0, 0, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.8);
+}
+
+.productsTable {
+  width: 100%;
+  border-collapse: collapse;
+  border-radius: 0.9rem;
+  overflow: hidden;
+}
+
+.productsTable th,
+.productsTable td {
+  padding: 0.7rem 1.1rem;
+  color: #e5e7eb;
+}
+
+.productsTable th {
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(156, 163, 175, 0.95);
+}
+
+/* ===== NEU: Scroll-Wrapper für Tabellen auf Mobile ===== */
+
+.tableScroll {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tableScrollWrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 0.25rem;
+  position: relative;
+  /* Optional: Fading mask for scroll hint */
+  mask-image: linear-gradient(to right, transparent 0%, #000 8%, #000 92%, transparent 100%);
+}
+
+
+/* ===== Scrollbarer Bereich für die Produkttabelle (Mobile) ===== */
+
+.tableScrollWrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 0.35rem;
+}
+
+/* Kleine optische Begrenzung / „Slot“ für die Tabelle */
+.tableScrollWrapper > * {
+  min-width: 100%;
+}
+
+/* Auf sehr kleinen Screens: Tabelle etwas breiter machen,
+   damit wirklich horizontal gescrollt wird */
+@media (max-width: 768px) {
+  .productsTable {
+    min-width: 640px;
+  }
+}
+
+.tableScrollHint {
+  margin-top: 0.4rem;
+  font-size: 0.7rem;
+  text-align: right;
+  color: var(--color-text-muted);
+  opacity: 0.9;
 }

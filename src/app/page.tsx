@@ -1,8 +1,32 @@
 // src/app/page.tsx
-import styles from "./page.module.css";
 import Link from "next/link";
+import styles from "./page.module.css";
+import {
+  getLandingStats,
+  getTopProducts,
+} from "@/lib/landingStats";
 
-export default function HomePage() {
+export const dynamic = "force-dynamic";
+
+const chfCompact = new Intl.NumberFormat("de-CH", {
+  style: "currency",
+  currency: "CHF",
+  maximumFractionDigits: 0,
+});
+
+const chfNormal = new Intl.NumberFormat("de-CH", {
+  style: "currency",
+  currency: "CHF",
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 0,
+});
+
+export default async function HomePage() {
+  const [stats, topProducts] = await Promise.all([
+    getLandingStats(),
+    getTopProducts(3),
+  ]);
+
   return (
     <main className={styles.page}>
       {/* HERO */}
@@ -21,90 +45,72 @@ export default function HomePage() {
           </p>
 
           <div className={styles.heroActions}>
-            <Link href="/register-vendor" className={`neo-btn neo-btn-primary`}>
+            <Link href="/become-seller" className="neobtn primary">
               Verkäufer werden
             </Link>
-            <Link href="/marketplace" className={`neo-btn neo-btn-secondary`}>
+            <Link href="/marketplace" className="neobtn">
               Produkte entdecken
             </Link>
           </div>
         </div>
 
-        <aside className={`neo-card ${styles.heroCard}`}>
-          <p className={styles.cardLabel}>Live Dashboard (Demo)</p>
-
-          <div className={styles.cardRow}>
-            <div>
+        {/* Live Dashboard – dynamisch */}
+        <aside className={styles.heroCard} aria-label="Live Dashboard">
+          <p className={styles.cardLabel}>Live Dashboard</p>
+          <div className={styles.kpiGrid}>
+            <div className={styles.cardRow}>
               <p className={styles.cardCaption}>Heute</p>
-              <p className={styles.cardValue}>CHF 240</p>
+              <p className={styles.cardValue}>
+                {chfCompact.format(stats.todayTotal)}
+              </p>
               <p className={styles.cardHint}>Direkte Verkäufe</p>
             </div>
-          </div>
-
-          <div className={styles.cardRow}>
-            <div>
+            <div className={styles.cardRow}>
               <p className={styles.cardCaption}>Monat</p>
-              <p className={styles.cardValue}>CHF 4&apos;320</p>
-              <p className={styles.cardHint}>Wiederkehrende Umsätze</p>
+              <p className={styles.cardValue}>
+                {chfCompact.format(stats.monthTotal)}
+              </p>
+              <p className={styles.cardHint}>Umsatz im aktuellen Monat</p>
             </div>
-          </div>
-
-          <div className={styles.cardRow}>
-            <div>
+            <div className={styles.cardRow}>
               <p className={styles.cardCaption}>Creator</p>
-              <p className={styles.cardValue}>128</p>
+              <p className={styles.cardValue}>{stats.activeCreators}</p>
               <p className={styles.cardHint}>Aktive Verkäufer:innen</p>
             </div>
           </div>
         </aside>
       </section>
 
-      {/* BELIEBTE PRODUKTE */}
+      {/* BELIEBTE PRODUKTE – dynamisch */}
       <section className={styles.popularSection}>
-        <div className={styles.popularHeader}>
+        <header className={styles.popularHeader}>
           <p className={styles.eyebrow}>Beliebte Produkte</p>
           <h2 className={styles.sectionTitle}>
             Die meistverkauften digitalen Produkte der letzten 30 Tage.
           </h2>
-        </div>
+        </header>
 
-        <div className={styles.productGrid}>
-          <article className={`neo-card ${styles.productCard}`}>
-            <p className={styles.productType}>Template</p>
-            <h3 className={styles.productTitle}>Notion Budget Template</h3>
-            <p className={styles.productMeta}>CHF 420 / Monat</p>
-          </article>
-
-          <article className={`neo-card ${styles.productCard}`}>
-            <p className={styles.productType}>Preset</p>
-            <h3 className={styles.productTitle}>Lightroom Preset Pack</h3>
-            <p className={styles.productMeta}>CHF 380 / Monat</p>
-          </article>
-
-          <article className={`neo-card ${styles.productCard}`}>
-            <p className={styles.productType}>E-Book</p>
-            <h3 className={styles.productTitle}>eBook: Freelance Starter</h3>
-            <p className={styles.productMeta}>CHF 350 / Monat</p>
-          </article>
-
-          <article className={`neo-card ${styles.productCard}`}>
-            <p className={styles.productType}>Design</p>
-            <h3 className={styles.productTitle}>Canva Social Kit</h3>
-            <p className={styles.productMeta}>CHF 310 / Monat</p>
-          </article>
-
-          <article className={`neo-card ${styles.productCard}`}>
-            <p className={styles.productType}>Kurs</p>
-            <h3 className={styles.productTitle}>Mini-Kurs: Newsletter</h3>
-            <p className={styles.productMeta}>CHF 270 / Monat</p>
-          </article>
-
-          <article className={`neo-card ${styles.productCard}`}>
-            <p className={styles.productType}>UI Kit</p>
-            <h3 className={styles.productTitle}>UI Kit für Figma</h3>
-            <p className={styles.productMeta}>CHF 240 / Monat</p>
-          </article>
-        </div>
+        {topProducts.length === 0 ? (
+          <p className={styles.bodyText}>
+            Noch keine Verkäufe – deine Produkte könnten hier stehen.
+          </p>
+        ) : (
+          <div className={styles.productGrid}>
+            {topProducts.map((p) => (
+              <Link
+                key={p.id}
+                href={`/product/${p.id}`}
+                className={styles.productCard}
+              >
+                <span className={styles.productType}>{p.type}</span>
+                <h3 className={styles.productTitle}>{p.title}</h3>
+                <p className={styles.productMeta}>
+                  {chfNormal.format(p.monthlyRevenue)} Umsatz in 30 Tagen
+                </p>
+              </Link>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* ABOUT / CLAIM */}
@@ -130,6 +136,7 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* FOOTER */}
       <footer className={styles.footer}>
         © {new Date().getFullYear()} DigiEmu – Digital Marketplace for Creators
       </footer>

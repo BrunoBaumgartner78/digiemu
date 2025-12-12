@@ -1,0 +1,436 @@
+/* === Wrapper / Layout =============================================== */
+
+.wrapper {
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 1.75rem 1.5rem 2.5rem;
+  box-sizing: border-box;
+}
+
+.wrapper * {
+  box-sizing: border-box;
+}
+
+/* Zwei-Spalten-Layout für die Form */
+.form {
+  display: grid;
+  gap: 2.4rem;
+}
+
+/* Zwei Spalten ab ~900px */
+@media (min-width: 900px) {
+  .form {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2.2fr);
+    align-items: flex-start;
+  }
+}
+
+/* Eine Spalte auf kleineren Screens */
+@media (max-width: 899px) {
+  .wrapper {
+    padding-inline: 1.25rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .wrapper {
+    padding-inline: 1rem;
+  }
+
+  .form {
+    gap: 1.8rem;
+  }
+}
+
+/* Spalten-Content */
+.colMain,
+.colSide {
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+}
+
+/* rechte Spalte */
+@media (min-width: 900px) {
+  .colSide {
+    align-self: stretch;
+  }
+}
+
+/* === Feldgruppen ==================================================== */
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.label {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+/* Inputs / Textarea im DigiEmu-Neo-Stil */
+
+.input,
+.textarea {
+  width: 100%;
+  padding: 0.8rem 1.4rem;
+  border-radius: 1.4rem;
+  outline: none;
+
+  font-size: 0.9rem;
+  color: var(--color-text-primary);
+  background:
+    radial-gradient(circle at 0 0, #f4f8ff, #dbe7ff),
+    var(--color-card-bg);
+  border: 1px solid #94a3b8;
+
+  box-shadow:
+    0 18px 40px rgba(15, 23, 42, 0.14),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.9);
+
+  transition:
+    box-shadow 0.16s ease,
+    border-color 0.16s ease,
+    background 0.16s ease;
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 220px;
+}
+
+.input::placeholder,
+.textarea::placeholder {
+  color: rgba(148, 163, 184, 0.9);
+}
+
+.input:focus,
+.textarea:focus {
+  border-color: #3b82f6;
+  box-shadow:
+    0 24px 55px rgba(37, 99, 235, 0.35),
+    inset 0 0 0 1px rgba(255, 255, 255, 1);
+}
+
+/* Dark-Mode Touch */
+
+@media (prefers-color-scheme: dark) {
+  .input,
+  .textarea {
+    background:
+      radial-gradient(circle at 0 0, #0b1120, #020617),
+      var(--color-card-bg);
+    border-color: rgba(51, 65, 85, 0.9);
+    box-shadow:
+      0 20px 48px rgba(15, 23, 42, 0.9),
+      inset 0 0 0 1px rgba(148, 163, 184, 0.4);
+  }
+
+  .input::placeholder,
+  .textarea::placeholder {
+    color: rgba(148, 163, 184, 0.7);
+  }
+
+  .input:focus,
+  .textarea:focus {
+    border-color: #60a5fa;
+    box-shadow:
+      0 26px 60px rgba(37, 99, 235, 0.6),
+      inset 0 0 0 1px rgba(15, 23, 42, 0.9);
+  }
+}
+
+/* Spezielle Zeilen (Preis) */
+
+.priceRow {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.priceHint {
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+}
+
+/* === Infobox rechts ================================================ */
+
+.infoBox {
+  border-radius: 1.4rem;
+  padding: 1.4rem 1.6rem;
+  background: linear-gradient(135deg, #020617, #020617);
+  color: #e5e7eb;
+  border: 1px solid rgba(30, 64, 175, 0.9);
+  box-shadow: 0 22px 60px rgba(15, 23, 42, 0.9);
+}
+
+.infoTitle {
+  font-size: 0.8rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+}
+
+.infoText {
+  font-size: 0.8rem;
+  line-height: 1.6;
+}
+
+/* Light-Mode für Infobox */
+
+@media (prefers-color-scheme: light) {
+  .infoBox {
+    background: linear-gradient(135deg, #e5edff, #f5f7ff);
+    color: #0f172a;
+    border-color: rgba(129, 140, 248, 0.9);
+    box-shadow: 0 20px 48px rgba(148, 163, 184, 0.5);
+  }
+}
+
+/* === Status-Meldungen ============================================== */
+
+.error,
+.success {
+  font-size: 0.75rem;
+  margin-top: 0.2rem;
+}
+
+.error {
+  color: #ef4444;
+}
+
+.success {
+  color: #22c55e;
+}
+
+/* === Buttons / Actions ============================================= */
+
+.actionsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  justify-content: flex-end;
+  margin-top: 1.6rem;
+}
+
+/* PRIMARY BUTTON – leuchtend blau */
+
+.primaryBtn {
+  min-width: 10rem;
+  padding: 0.85rem 1.8rem;
+  border-radius: 999px;
+  border: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+
+  background: radial-gradient(circle at 20% 0, #60a5fa, #1d4ed8);
+  color: #f9fafb;
+  box-shadow:
+    0 18px 46px rgba(37, 99, 235, 0.9),
+    0 0 0 1px rgba(15, 23, 42, 0.9);
+
+  cursor: pointer;
+  transition:
+    transform 0.1s ease,
+    box-shadow 0.16s ease,
+    filter 0.16s ease,
+    opacity 0.16s ease;
+}
+
+.primaryBtn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+  box-shadow:
+    0 22px 52px rgba(37, 99, 235, 1),
+    0 0 0 1px rgba(15, 23, 42, 1);
+}
+
+.primaryBtn:disabled {
+  opacity: 0.65;
+  cursor: default;
+  transform: none;
+}
+
+/* SECONDARY BUTTON – gut lesbar in Light & Dark */
+
+.secondaryBtn {
+  min-width: 9rem;
+  padding: 0.85rem 1.6rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+
+  background: radial-gradient(circle at 0 0, #e5e7eb, #cbd5f5);
+  color: #0f172a;
+  border: 1px solid rgba(148, 163, 184, 0.7);
+  box-shadow:
+    0 10px 26px rgba(15, 23, 42, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+
+  cursor: pointer;
+  transition:
+    background 0.16s ease,
+    box-shadow 0.16s ease,
+    transform 0.1s ease,
+    color 0.16s ease,
+    border-color 0.16s ease;
+}
+
+.secondaryBtn:hover {
+  background: radial-gradient(circle at 0 0, #e0e7ff, #c7d2fe);
+  border-color: rgba(129, 140, 248, 0.95);
+  transform: translateY(-1px);
+  box-shadow:
+    0 14px 32px rgba(15, 23, 42, 0.35),
+    0 0 0 1px rgba(129, 140, 248, 0.65);
+}
+
+/* DARK MODE für Abbrechen */
+
+@media (prefers-color-scheme: dark) {
+  .secondaryBtn {
+    background: radial-gradient(circle at 0 0, #020617, #020617);
+    color: #e5edf7;
+    border-color: rgba(148, 163, 184, 0.7);
+    box-shadow:
+      0 14px 40px rgba(15, 23, 42, 0.9),
+      inset 0 1px 0 rgba(148, 163, 184, 0.32);
+  }
+
+  .secondaryBtn:hover {
+    background: radial-gradient(circle at 0 0, #020617, #020617);
+    border-color: rgba(129, 140, 248, 0.95);
+    box-shadow:
+      0 18px 48px rgba(15, 23, 42, 1),
+      0 0 0 1px rgba(129, 140, 248, 0.9);
+  }
+}
+
+/* Zurück-Link im Header der New-Product-Page */
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-weight: 600;
+  color: #2563eb;
+  text-decoration: none;
+}
+
+.backLink::before {
+  content: "←";
+  font-size: 0.9rem;
+  line-height: 1;
+}
+
+.backLink:hover {
+  color: #60a5fa;
+  text-decoration: underline;
+}
+
+.backLink:visited {
+  color: #2563eb;
+}
+
+/* === Neo-Style für Datei-Uploads =================================== */
+
+.fileRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.fileButton {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+
+  padding: 0.6rem 1.4rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+
+  background: radial-gradient(circle at 0 0, #fefce8, #fee2b3);
+  color: #0f172a;
+  border: 1px solid rgba(251, 191, 36, 0.8);
+  box-shadow:
+    0 12px 30px rgba(15, 23, 42, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+
+  cursor: pointer;
+  overflow: hidden;
+  transition:
+    transform 0.1s ease,
+    box-shadow 0.16s ease,
+    background 0.16s ease,
+    border-color 0.16s ease;
+}
+
+/* tatsächliches <input type="file"> ausblenden */
+.fileInput {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.fileButton:hover {
+  transform: translateY(-1px);
+  background: radial-gradient(circle at 0 0, #fef9c3, #fed7aa);
+  border-color: rgba(245, 158, 11, 0.95);
+  box-shadow:
+    0 16px 36px rgba(15, 23, 42, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
+}
+
+.fileName {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  max-width: 260px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Dark-Mode Upload */
+
+@media (prefers-color-scheme: dark) {
+  .fileButton {
+    background: radial-gradient(circle at 0 0, #020617, #020617);
+    color: #e5e7eb;
+    border-color: rgba(148, 163, 184, 0.7);
+    box-shadow:
+      0 14px 40px rgba(15, 23, 42, 0.9),
+      inset 0 1px 0 rgba(148, 163, 184, 0.32);
+  }
+
+  .fileButton:hover {
+    border-color: rgba(251, 191, 36, 0.95);
+    box-shadow:
+      0 18px 48px rgba(15, 23, 42, 1),
+      0 0 0 1px rgba(251, 191, 36, 0.9);
+  }
+
+  .fileName {
+    color: rgba(148, 163, 184, 0.85);
+  }
+}

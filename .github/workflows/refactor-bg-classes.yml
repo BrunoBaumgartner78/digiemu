@@ -1,0 +1,28 @@
+name: Refactor Background Classes
+
+on:
+  workflow_dispatch:
+
+jobs:
+  replace-bg-classes:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Replace Tailwind background classes with CSS variable token
+        run: |
+          # Entferne hart codierte Tailwind BGs
+          find . -type f \( -name "*.tsx" -o -name "*.ts" -o -name "*.jsx" -o -name "*.js" \) -print0 | xargs -0 sed -i \
+            -e 's/bg-black/bg-[var(--page-bg)]/g' \
+            -e 's/bg-slate-[0-9]\+/bg-[var(--page-bg)]/g' \
+            -e 's/bg-zinc-[0-9]\+/bg-[var(--page-bg)]/g' \
+            -e 's/bg-neutral-[0-9]\+/bg-[var(--page-bg)]/g' \
+            -e 's/bg-gray-[0-9]\+/bg-[var(--page-bg)]/g'
+
+      - name: Commit changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Refactor: Remove hardcoded bg-* and use CSS variable token"
+          branch: main

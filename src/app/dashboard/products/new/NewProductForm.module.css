@@ -1,21 +1,368 @@
-.card {
-  background: rgba(255, 255, 255, 0.65);
-  backdrop-filter: blur(18px);
-  border-radius: 2rem;
-  padding: 2rem;
-  box-shadow: 0 30px 60px rgba(15, 23, 42, 0.25);
-}
-.input {
+/* src/app/dashboard/new/NewProductForm.module.css */
+
+/* --- Wrapper & Layout ------------------------------------------------ */
+
+.wrapper {
   width: 100%;
-  padding: 0.8rem 1rem;
-  border-radius: 1rem;
-  border: 1px solid #cbd5e1;
-  background: white;
+  display: flex;
+  justify-content: center;
+  padding-top: 1.8rem;
+  box-sizing: border-box;
 }
-.button {
-  padding: 0.8rem 1.6rem;
-  border-radius: 999px;
-  background: linear-gradient(90deg, #2563eb, #4f46e5);
-  color: white;
+
+.form {
+  width: 100%;
+  max-width: 980px;
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: 2.25rem 2.75rem;
+  align-items: flex-start;
+}
+
+/* linke / rechte Spalte */
+.colMain {
+  display: flex;
+  flex-direction: column;
+  gap: 1.4rem;
+}
+
+.colSide {
+  display: flex;
+  flex-direction: column;
+  gap: 1.4rem;
+}
+
+/* --- Felder ---------------------------------------------------------- */
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.label {
+  font-size: 0.78rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
   font-weight: 600;
+  color: var(--text-muted);
+}
+
+.input,
+.textarea {
+  width: 100%;
+  border-radius: 1.4rem;
+  border: 1px solid rgba(148, 163, 184, 0.55);
+  padding: 0.8rem 1.2rem;
+  font-size: 0.95rem;
+  color: var(--color-text-primary, #020617);
+  background: radial-gradient(circle at 0 0, #f9fafb, #e5edf7);
+  box-shadow:
+    0 14px 40px rgba(15, 23, 42, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+
+  outline: none;
+  transition:
+    border-color 0.16s ease,
+    box-shadow 0.16s ease,
+    background 0.16s ease;
+}
+
+.input::placeholder,
+.textarea::placeholder {
+  color: rgba(148, 163, 184, 0.9);
+}
+
+/* Focus-State */
+.input:focus,
+.textarea:focus {
+  border-color: rgba(59, 130, 246, 0.9);
+  box-shadow:
+    0 16px 44px rgba(37, 99, 235, 0.28),
+    0 0 0 1px rgba(37, 99, 235, 0.75);
+}
+
+/* Dark-Mode-Optimierung (über System / next-themes) */
+@media (prefers-color-scheme: dark) {
+  .input,
+  .textarea {
+    background: radial-gradient(circle at 0 0, #020617, #020617);
+    border-color: rgba(148, 163, 184, 0.55);
+    color: #e5edf7;
+    box-shadow:
+      0 16px 46px rgba(15, 23, 42, 0.9),
+      inset 0 1px 0 rgba(148, 163, 184, 0.25);
+  }
+
+  .input::placeholder,
+  .textarea::placeholder {
+    color: rgba(148, 163, 184, 0.78);
+  }
+
+  .input:focus,
+  .textarea:focus {
+    border-color: rgba(96, 165, 250, 0.9);
+    box-shadow:
+      0 18px 50px rgba(37, 99, 235, 0.6),
+      0 0 0 1px rgba(37, 99, 235, 0.9);
+  }
+}
+
+
+/* Preis-Reihe */
+
+.priceRow {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.priceHint {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+/* Hilfe-Text */
+
+.helpText {
+  margin-top: 0.4rem;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--text-muted);
+}
+
+/* Info-Box ------------------------------------------------------------- */
+
+.infoBox {
+  border-radius: 1.4rem;
+  padding: 1.4rem 1.6rem;
+  background: radial-gradient(circle at 0 0, #0f172a, #020617);
+  color: #e5e7eb;
+  box-shadow:
+    0 22px 55px rgba(15, 23, 42, 0.65),
+    inset 0 0 0 1px rgba(148, 163, 184, 0.45);
+}
+
+.infoTitle {
+  font-size: 0.78rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+  color: #bfdbfe;
+}
+
+.infoText {
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+/* Messages ------------------------------------------------------------- */
+
+.error {
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  color: #fee2e2;
+}
+
+.success {
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  color: #bbf7d0;
+}
+
+/* Aktionen ------------------------------------------------------------- */
+
+.actionsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  justify-content: flex-end;
+  margin-top: 1.6rem;
+}
+
+/* Hauptbutton – bleibt wie bisher, nur leicht verfeinert */
+.primaryBtn {
+  min-width: 10rem;
+  padding: 0.85rem 1.8rem;
+  border-radius: 999px;
+  border: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+
+  background: radial-gradient(circle at 20% 0, #60a5fa, #1d4ed8);
+  color: #f9fafb;
+  box-shadow:
+    0 18px 46px rgba(37, 99, 235, 0.9),
+    0 0 0 1px rgba(15, 23, 42, 0.9);
+
+  cursor: pointer;
+  transition:
+    transform 0.1s ease,
+    box-shadow 0.16s ease,
+    filter 0.16s ease,
+    opacity 0.16s ease;
+}
+
+.primaryBtn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+  box-shadow:
+    0 22px 52px rgba(37, 99, 235, 1),
+    0 0 0 1px rgba(15, 23, 42, 1);
+}
+
+.primaryBtn:disabled {
+  opacity: 0.65;
+  cursor: default;
+  transform: none;
+}
+
+/* Abbrechen-Button – NEU, mit gutem Kontrast in Light & Dark */
+.secondaryBtn {
+  min-width: 9rem;
+  padding: 0.85rem 1.6rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+
+  background: radial-gradient(circle at 0 0, #e5e7eb, #cbd5f5);
+  color: #0f172a;
+  border: 1px solid rgba(148, 163, 184, 0.7);
+  box-shadow:
+    0 10px 26px rgba(15, 23, 42, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+
+  cursor: pointer;
+  transition:
+    background 0.16s ease,
+    box-shadow 0.16s ease,
+    transform 0.1s ease,
+    color 0.16s ease,
+    border-color 0.16s ease;
+}
+
+.secondaryBtn:hover {
+  background: radial-gradient(circle at 0 0, #e0e7ff, #c7d2fe);
+  border-color: rgba(129, 140, 248, 0.95);
+  transform: translateY(-1px);
+  box-shadow:
+    0 14px 32px rgba(15, 23, 42, 0.35),
+    0 0 0 1px rgba(129, 140, 248, 0.65);
+}
+
+/* Dark-Mode für Abbrechen-Button */
+@media (prefers-color-scheme: dark) {
+  .secondaryBtn {
+    background: radial-gradient(circle at 0 0, #020617, #020617);
+    color: #e5edf7;
+    border-color: rgba(148, 163, 184, 0.7);
+    box-shadow:
+      0 14px 40px rgba(15, 23, 42, 0.9),
+      inset 0 1px 0 rgba(148, 163, 184, 0.32);
+  }
+
+  .secondaryBtn:hover {
+    background: radial-gradient(circle at 0 0, #020617, #020617);
+    border-color: rgba(129, 140, 248, 0.95);
+    box-shadow:
+      0 18px 48px rgba(15, 23, 42, 1),
+      0 0 0 1px rgba(129, 140, 248, 0.9);
+  }
+}
+
+/* --- Back-Link „Übersicht“ ------------------------------------------- */
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0.8rem 0 1.4rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: #2563eb;
+}
+
+.backLink::before {
+  content: "‹";
+  font-size: 0.85rem;
+}
+
+.backLink:hover {
+  text-decoration: underline;
+}
+
+
+
+/* --- Responsive ------------------------------------------------------ */
+
+@media (max-width: 900px) {
+  .wrapper {
+    padding-inline: 0.9rem;
+  }
+
+  .form {
+    max-width: 640px;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.8rem;
+  }
+
+  .actionsRow {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 640px) {
+  .wrapper {
+    padding-inline: 0.8rem;
+  }
+
+  .infoBox {
+    margin-top: 0.4rem;
+  }
+
+  .primaryBtn,
+  .secondaryBtn {
+    flex: 1 1 100%;
+    justify-content: center;
+    text-align: center;
+  }
+}
+
+
+/* Mobile / Tablet Layout für das Formular */
+@media (max-width: 900px) {
+  .wrapper {
+    padding: 0.75rem 0.9rem 1.8rem;
+  }
+
+  .form {
+    max-width: 640px;
+    margin: 0 auto;
+    grid-template-columns: 1fr;
+    column-gap: 0;
+    row-gap: 1.75rem;
+  }
+
+  .colMain,
+  .colSide {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .wrapper {
+    padding: 0.5rem 0.8rem 1.8rem;
+  }
+
+  .form {
+    max-width: 100%;
+  }
 }
