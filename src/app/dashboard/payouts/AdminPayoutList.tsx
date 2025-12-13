@@ -1,16 +1,26 @@
-// z.B. src/components/admin/AdminPayoutList.tsx
-import type { AdminPayout } from "@/types";
+// src/app/dashboard/payouts/AdminPayoutList.tsx
+// (oder wo deine Datei wirklich liegt)
+
+type AdminPayout = {
+  id: string;
+  amountCents: number;
+  createdAt: string | Date;
+  status: "PENDING" | "PAID" | string;
+  paidAt?: string | Date | null;
+  vendor: {
+    id: string;
+    email: string;
+    name?: string | null;
+  } | null;
+};
 
 type AdminPayoutListProps = {
   payouts: AdminPayout[];
   onMarkPaid: (id: string) => Promise<void>;
 };
 
-export default function AdminPayoutList({
-  payouts,
-  onMarkPaid,
-}: AdminPayoutListProps) {
-  if (!payouts.length) {
+export default function AdminPayoutList({ payouts, onMarkPaid }: AdminPayoutListProps) {
+  if (!payouts?.length) {
     return (
       <p className="text-xs text-[var(--color-text-muted)] italic">
         Keine Auszahlungen vorhanden.
@@ -22,8 +32,14 @@ export default function AdminPayoutList({
     <div className="space-y-3">
       {payouts.map((p) => {
         const amount = (p.amountCents / 100).toFixed(2);
-        const date = new Date(p.createdAt).toLocaleString("de-CH");
+
+        const createdAt = p.createdAt instanceof Date ? p.createdAt : new Date(p.createdAt);
+        const date = Number.isNaN(createdAt.getTime())
+          ? "—"
+          : createdAt.toLocaleString("de-CH");
+
         const isPaid = p.status === "PAID";
+        const vendorEmail = p.vendor?.email ?? "—";
 
         return (
           <div
@@ -32,7 +48,7 @@ export default function AdminPayoutList({
           >
             <div className="space-y-1">
               <div className="text-sm font-semibold text-[var(--color-text-primary)]">
-                {amount} CHF – {p.vendor.email}
+                {amount} CHF – {vendorEmail}
               </div>
 
               <div className="flex flex-wrap items-center gap-2 text-xs text-[var(--color-text-muted)]">
@@ -40,11 +56,7 @@ export default function AdminPayoutList({
                 <span>•</span>
                 <span>
                   Status:{" "}
-                  <span
-                    className={
-                      isPaid ? "text-emerald-300" : "text-amber-300"
-                    }
-                  >
+                  <span className={isPaid ? "text-emerald-300" : "text-amber-300"}>
                     {isPaid ? "Ausgezahlt" : "Ausstehend"}
                   </span>
                 </span>
@@ -53,6 +65,7 @@ export default function AdminPayoutList({
 
             {!isPaid && (
               <button
+                type="button"
                 onClick={() => onMarkPaid(p.id)}
                 className="inline-flex items-center justify-center rounded-full px-4 py-1.5 text-xs font-semibold tracking-[0.12em] uppercase
                  bg-gradient-to-r from-emerald-500 to-blue-500
