@@ -3,7 +3,11 @@ import { useState } from "react";
 import { FileSelect } from "./FileSelect";
 import { uploadThumbnail, uploadProductFile } from "@/lib/upload";
 
-export function UploadCard({ onUploaded }) {
+type Props = {
+  onUploaded: (data: { thumbnail?: string; fileUrl?: string }) => void;
+};
+
+export function UploadCard({ onUploaded }: Props) {
   const [thumbUrl, setThumbUrl] = useState("");
   const [fileUrl, setFileUrl] = useState("");
 

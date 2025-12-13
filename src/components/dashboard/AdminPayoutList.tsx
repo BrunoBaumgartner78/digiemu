@@ -1,8 +1,20 @@
 "use client";
 import styles from "./AdminPayoutList.module.css";
 
-export default function AdminPayoutList({ payouts }) {
-  async function markPaid(id) {
+type Payout = {
+  id: string;
+  vendor: { email: string };
+  amountCents: number;
+  status: "PENDING" | "PAID";
+  createdAt: string | Date;
+};
+
+type Props = {
+  payouts: Payout[];
+};
+
+export default function AdminPayoutList({ payouts }: Props) {
+  async function markPaid(id: string) {
     await fetch("/api/admin/payouts/markPaid", {
       method: "POST",
       body: JSON.stringify({ id })

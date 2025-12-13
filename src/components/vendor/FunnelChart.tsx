@@ -10,7 +10,18 @@ import {
   Cell
 } from "recharts";
 
-export default function FunnelChart({ data }) {
+type FunnelChartData = {
+  impressions: number;
+  views: number;
+  atc: number;
+  purchases: number;
+};
+
+interface FunnelChartProps {
+  data: FunnelChartData;
+}
+
+export default function FunnelChart({ data }: FunnelChartProps) {
   const funnelData = [
     { name: "Impressionen", value: data.impressions },
     { name: "Ansichten", value: data.views },

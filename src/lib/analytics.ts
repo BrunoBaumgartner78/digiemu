@@ -8,7 +8,7 @@ export async function getTopSellingProductsLast30Days(limit = 3) {
   // falls dein Modell anders heißt: DownloadLog / OrderItem etc. anpassen
   return prisma.product.findMany({
     where: {
-      downloads: {
+      orders: {
         some: {
           createdAt: {
             gte: thirtyDaysAgo,
@@ -19,12 +19,12 @@ export async function getTopSellingProductsLast30Days(limit = 3) {
     include: {
       _count: {
         select: {
-          downloads: true,
+          orders: true,
         },
       },
     },
     orderBy: {
-      downloads: {
+      orders: {
         _count: "desc",
       },
     },

@@ -2,9 +2,23 @@
 import { useEffect } from "react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
-export default function ProductDetailModal({ open, onClose, product }) {
+type Product = {
+  title: string;
+  views30: number;
+  sales30: number;
+  dailyStats?: { date: string; views: number; sales: number }[];
+  [key: string]: any;
+};
+
+interface ProductDetailModalProps {
+  open: boolean;
+  onClose: () => void;
+  product?: Product;
+}
+
+export default function ProductDetailModal({ open, onClose, product }: ProductDetailModalProps) {
   useEffect(() => {
-    function esc(e) {
+    function esc(e: KeyboardEvent) {
       if (e.key === "Escape") onClose();
     }
     document.addEventListener("keydown", esc);

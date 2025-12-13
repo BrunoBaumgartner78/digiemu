@@ -12,7 +12,15 @@ import {
   CartesianGrid,
 } from "recharts";
 
-export default function EarningsChart({ daily, topProducts }) {
+type DailyEarnings = { date: string; earnings: number };
+type TopProduct = { title: string; earnings: number };
+
+interface EarningsChartProps {
+  daily: DailyEarnings[];
+  topProducts: TopProduct[];
+}
+
+export default function EarningsChart({ daily, topProducts }: EarningsChartProps) {
   return (
     <div className="space-y-10">
       {/* Umsatzverlauf */}

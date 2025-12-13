@@ -11,7 +11,18 @@ import {
   Legend
 } from "recharts";
 
-export default function ConversionChart({ data }) {
+type ConversionChartData = {
+  date: string;
+  value?: number;
+  conversion?: number;
+  [key: string]: any;
+};
+
+interface ConversionChartProps {
+  data: ConversionChartData[];
+}
+
+export default function ConversionChart({ data }: ConversionChartProps) {
   if (!data || data.length === 0) {
     return (
       <div className="text-center py-6 opacity-70">
@@ -43,7 +54,7 @@ export default function ConversionChart({ data }) {
 
           <Tooltip
             formatter={(val, key) => {
-              if (key === "ctr") return `${(val * 100).toFixed(2)}%`;
+              if (key === "ctr" && typeof val === "number") return `${(val * 100).toFixed(2)}%`;
               return val;
             }}
             labelFormatter={(l) => `Datum: ${l}`}

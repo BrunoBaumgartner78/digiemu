@@ -100,8 +100,7 @@ export default async function SellerProfilePage({ params }: { params: { vendorId
                 <div className="seller-product-thumbnail-wrapper">
                   {product.thumbnail ? (
                     <img
-                      src={product.thumbnail}
-                      src={product.thumbnail}
+                      src={product.thumbnail ?? "/placeholder.png"}
                       alt={product.title}
                       className="seller-product-thumbnail"
                     />

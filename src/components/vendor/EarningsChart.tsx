@@ -10,7 +10,17 @@ import {
   CartesianGrid,
 } from "recharts";
 
-export default function EarningsChart({ data }) {
+type EarningsChartData = {
+  date: string;
+  earningsCents: number;
+  [key: string]: any;
+};
+
+interface EarningsChartProps {
+  data: EarningsChartData[];
+}
+
+export default function EarningsChart({ data }: EarningsChartProps) {
   if (!data || data.length === 0) {
     return (
       <div className="text-center py-6 opacity-70">
@@ -30,7 +40,7 @@ export default function EarningsChart({ data }) {
             width={70}
           />
           <Tooltip
-            formatter={(v) => `CHF ${(v / 100).toFixed(2)}`}
+            formatter={(v) => typeof v === "number" ? `CHF ${(v / 100).toFixed(2)}` : v}
             labelFormatter={(l) => `Datum: ${l}`}
           />
           <Line

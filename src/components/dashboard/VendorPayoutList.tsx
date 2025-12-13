@@ -1,6 +1,24 @@
 import styles from "./VendorPayoutList.module.css";
 
-export default function VendorPayoutList({ payouts, sales }) {
+type Payout = {
+  id: string;
+  amountCents: number;
+  status: "PENDING" | "PAID";
+  createdAt: string | Date;
+};
+
+type Sale = {
+  id: string;
+  product: { title: string };
+  amountCents: number;
+};
+
+type Props = {
+  payouts: Payout[];
+  sales: Sale[];
+};
+
+export default function VendorPayoutList({ payouts, sales }: Props) {
   const outstanding = payouts
     .filter((p) => p.status === "PENDING")
     .reduce((acc, p) => acc + p.amountCents, 0);

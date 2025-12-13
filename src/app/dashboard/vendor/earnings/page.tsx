@@ -101,7 +101,7 @@ export default async function VendorEarningsPage({
           </div>
         </div>
 
-        <EarningsChart data={earningsByDay} />
+        <EarningsChart data={earningsByDay.map(({ date, value }) => ({ date, earningsCents: value }))} />
       </div>
 
       <div className="neumorph-card p-4 md:p-6 overflow-x-auto">

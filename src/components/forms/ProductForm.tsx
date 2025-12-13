@@ -1,25 +1,19 @@
+
 import { useState, FormEvent, ChangeEvent } from "react";
 import { z } from "zod";
 
-export type ProductFormValues = {
-  title: string;
-  description: string;
-  priceChf: string;
-  category: string;
-  file: File | null;
-  thumbnail: File | null;
-};
-
-const schema = z.object({
-  title: z.string().min(2, "Titel ist erforderlich."),
-  description: z.string().min(5, "Beschreibung ist erforderlich."),
+const productSchema = z.object({
+  title: z.string().min(2, "Titel ist erforderlich.").default("") ,
+  description: z.string().min(5, "Beschreibung ist erforderlich.").default("") ,
   priceChf: z.string().refine((val) => Number(val.replace(",", ".")) > 0, {
     message: "Gültiger Preis in CHF erforderlich.",
-  }),
-  category: z.string().min(1, "Kategorie wählen."),
-  file: z.instanceof(File, { message: "Datei auswählen." }),
-  thumbnail: z.any().optional(),
+  }).default("") ,
+  category: z.string().min(1, "Kategorie wählen.").default("") ,
+  file: z.instanceof(File, { message: "Datei auswählen." }).nullable(),
+  thumbnail: z.instanceof(File).optional().nullable(),
 });
+
+type ProductFormValues = Omit<z.infer<typeof productSchema>, 'file'> & { file: File | null };
 
 export function ProductForm({
   initialValues,
@@ -35,14 +29,14 @@ export function ProductForm({
   loading?: boolean;
 }) {
   const [values, setValues] = useState<ProductFormValues>({
-    title: initialValues?.title || "",
-    description: initialValues?.description || "",
-    priceChf: initialValues?.priceChf || "",
-    category: initialValues?.category || "",
-    file: initialValues?.file || null,
-    thumbnail: initialValues?.thumbnail || null,
+    title: initialValues?.title ?? "",
+    description: initialValues?.description ?? "",
+    priceChf: initialValues?.priceChf ?? "",
+    category: initialValues?.category ?? "",
+    file: initialValues?.file ?? null,
+    thumbnail: initialValues?.thumbnail ?? null,
   });
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<Record<string, string[]>>({});
   const [formError, setFormError] = useState<string | null>(null);
 
   function handleChange(e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
@@ -62,13 +56,10 @@ export function ProductForm({
     e.preventDefault();
     setFormError(null);
     setErrors({});
-    const result = schema.safeParse(values);
+    const result = productSchema.safeParse(values);
     if (!result.success) {
-      const fieldErrors: Record<string, string> = {};
-      result.error.errors.forEach((err) => {
-        if (err.path[0]) fieldErrors[err.path[0]] = err.message;
-      });
-      setErrors(fieldErrors);
+      // Use Zod's flatten for error mapping
+      setErrors(result.error.flatten().fieldErrors);
       return;
     }
     try {
@@ -90,7 +81,7 @@ export function ProductForm({
           onChange={handleChange}
           required
         />
-        {errors.title && <p className="text-red-500 text-xs mt-1">{errors.title}</p>}
+        {errors.title && errors.title.length > 0 && <p className="text-red-500 text-xs mt-1">{errors.title[0]}</p>}
       </div>
       <div>
         <label className="block font-medium mb-1">Beschreibung *</label>
@@ -101,7 +92,7 @@ export function ProductForm({
           onChange={handleChange}
           required
         />
-        {errors.description && <p className="text-red-500 text-xs mt-1">{errors.description}</p>}
+        {errors.description && errors.description.length > 0 && <p className="text-red-500 text-xs mt-1">{errors.description[0]}</p>}
       </div>
       <div>
         <label className="block font-medium mb-1">Preis (CHF) *</label>
@@ -115,7 +106,7 @@ export function ProductForm({
           onChange={handleChange}
           required
         />
-        {errors.priceChf && <p className="text-red-500 text-xs mt-1">{errors.priceChf}</p>}
+        {errors.priceChf && errors.priceChf.length > 0 && <p className="text-red-500 text-xs mt-1">{errors.priceChf[0]}</p>}
       </div>
       <div>
         <label className="block font-medium mb-1">Kategorie *</label>
@@ -131,7 +122,7 @@ export function ProductForm({
             <option key={cat} value={cat}>{cat}</option>
           ))}
         </select>
-        {errors.category && <p className="text-red-500 text-xs mt-1">{errors.category}</p>}
+        {errors.category && errors.category.length > 0 && <p className="text-red-500 text-xs mt-1">{errors.category[0]}</p>}
       </div>
       <div>
         <label className="block font-medium mb-1">Datei-Upload *</label>
@@ -142,7 +133,7 @@ export function ProductForm({
           onChange={handleFileChange}
           required
         />
-        {errors.file && <p className="text-red-500 text-xs mt-1">{errors.file}</p>}
+        {errors.file && errors.file.length > 0 && <p className="text-red-500 text-xs mt-1">{errors.file[0]}</p>}
       </div>
       <div>
         <label className="block font-medium mb-1">Thumbnail (optional)</label>

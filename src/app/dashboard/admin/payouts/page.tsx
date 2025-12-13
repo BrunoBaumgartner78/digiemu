@@ -13,5 +13,11 @@ export default async function AdminPayoutPage() {
     orderBy: { createdAt: "desc" }
   });
 
-  return <AdminPayoutList payouts={payouts} />;
+  // Cast payouts to the expected type for AdminPayoutList
+  const mappedPayouts = payouts.map((p) => ({
+    ...p,
+    status: p.status as "PENDING" | "PAID",
+    vendor: { email: p.vendor.email },
+  }));
+  return <AdminPayoutList payouts={mappedPayouts} />;
 }

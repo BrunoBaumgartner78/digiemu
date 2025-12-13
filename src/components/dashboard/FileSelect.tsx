@@ -1,8 +1,13 @@
 "use client";
 import { useRef } from "react";
 
-export function FileSelect({ label, onChange }) {
-  const inputRef = useRef(null);
+type Props = {
+  label: string;
+  onChange: (file: File) => void;
+};
+
+export function FileSelect({ label, onChange }: Props) {
+  const inputRef = useRef<HTMLInputElement>(null);
 
   return (
     <div>

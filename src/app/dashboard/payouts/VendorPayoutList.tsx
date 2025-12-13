@@ -7,6 +7,7 @@ type VendorPayout = {
   amountCents: number;
   status: "PENDING" | "PAID";
   createdAt: string | Date;
+  note?: string | null;
 };
 
 type VendorPayoutListProps = {
@@ -47,6 +48,11 @@ export default function VendorPayoutList({ payouts }: VendorPayoutListProps) {
               Erstellt: {date}
             </div>
 
+            {p.note ? (
+              <div className="text-xs text-[var(--color-text-muted)] italic">
+                {p.note}
+              </div>
+            ) : null}
           </div>
         );
       })}

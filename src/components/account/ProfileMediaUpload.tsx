@@ -18,7 +18,9 @@ export function ProfileMediaUpload({
 }: ProfileMediaUploadProps) {
   const [url, setUrl] = useState(initialUrl ?? "");
 
-  const handleUploaded = (uploadedUrl: string) => {
+
+  const handleUploaded = (data: { thumbnail?: string; fileUrl?: string }) => {
+    const uploadedUrl = data.thumbnail || data.fileUrl || "";
     setUrl(uploadedUrl);
     onChange(uploadedUrl);
   };

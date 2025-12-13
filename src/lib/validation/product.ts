@@ -10,10 +10,7 @@ export const createProductSchema = z.object({
     .min(10, "Beschreibung muss mindestens 10 Zeichen haben.")
     .max(2000, "Beschreibung darf maximal 2000 Zeichen haben."),
   priceCents: z
-    .number({
-      required_error: "Preis in Rappen ist erforderlich.",
-      invalid_type_error: "Preis muss eine Zahl sein.",
-    })
+    .number()
     .int("Preis muss eine ganze Zahl sein.")
     .positive("Preis muss positiv sein."),
   category: z
