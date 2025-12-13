@@ -6,28 +6,15 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 function renderPdf(vendors: Array<{ email: string; name: string | null }>) {
-  return new Promise<Uint8Array>((resolve, reject) => {
+  return new Promise<Buffer>((resolve, reject) => {
     const doc = new PDFDocument({ size: "A4", margin: 50 });
-    const chunks: Uint8Array[] = [];
+    const chunks: Buffer[] = [];
 
     doc.on("data", (chunk: any) => {
-      const u8 = chunk instanceof Uint8Array ? chunk : new Uint8Array(chunk);
-      chunks.push(u8);
+      chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
     });
 
-    doc.on("end", () => {
-      const total = chunks.reduce((sum, c) => sum + c.length, 0);
-      const merged = new Uint8Array(total);
-      let offset = 0;
-
-      for (const c of chunks) {
-        merged.set(c, offset);
-        offset += c.length;
-      }
-
-      resolve(merged);
-    });
-
+    doc.on("end", () => resolve(Buffer.concat(chunks)));
     doc.on("error", reject);
 
     doc.fontSize(18).text("Vendor Report", { underline: true });
@@ -48,9 +35,11 @@ export async function GET() {
     orderBy: { createdAt: "desc" },
   });
 
-  const pdfBytes = await renderPdf(vendors);
+  const pdfBuffer = await renderPdf(vendors);
 
-  return new Response(pdfBytes, {
+  // TS in deiner Setup-Kombi akzeptiert Buffer/Uint8Array nicht sauber als BodyInit,
+  // deshalb: gezielter Cast (Runtime ist korrekt, weil Node runtime).
+  return new Response(pdfBuffer as unknown as BodyInit, {
     status: 200,
     headers: {
       "Content-Type": "application/pdf",
