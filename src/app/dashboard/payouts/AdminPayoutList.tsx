@@ -1,18 +1,27 @@
+// src/app/dashboard/payouts/AdminPayoutList.tsx
 "use client";
 
-type VendorPayout = {
+
+import { useState } from "react";
+
+type AdminPayout = {
   id: string;
   amountCents: number;
-  status: "PENDING" | "PAID" | "FAILED" | "CANCELLED" | string;
+  status: "PENDING" | "PAID";
   createdAt: string | Date;
-  paidAt?: string | Date | null;
+  vendor: {
+    email: string;
+  };
 };
 
-type VendorPayoutListProps = {
-  payouts: VendorPayout[];
+type AdminPayoutListProps = {
+  payouts: AdminPayout[];
+  onMarkPaid: (id: string) => Promise<void>;
 };
 
-export default function VendorPayoutList({ payouts }: VendorPayoutListProps) {
+export default function AdminPayoutList({ payouts, onMarkPaid }: AdminPayoutListProps) {
+  const [busyId, setBusyId] = useState<string | null>(null);
+
   if (!payouts?.length) {
     return (
       <p className="text-xs text-[var(--color-text-muted)] italic">
@@ -25,10 +34,10 @@ export default function VendorPayoutList({ payouts }: VendorPayoutListProps) {
     <div className="space-y-3">
       {payouts.map((p) => {
         const amount = (p.amountCents / 100).toFixed(2);
-        const created = new Date(p.createdAt).toLocaleString("de-CH");
-        const paidAt = p.paidAt ? new Date(p.paidAt).toLocaleString("de-CH") : null;
-
+        const date = new Date(p.createdAt).toLocaleString("de-CH");
         const isPaid = p.status === "PAID";
+        const vendorLabel = p.vendor?.email ?? "Unbekannter Vendor";
+        const isBusy = busyId === p.id;
 
         return (
           <div
@@ -37,11 +46,11 @@ export default function VendorPayoutList({ payouts }: VendorPayoutListProps) {
           >
             <div className="space-y-1">
               <div className="text-sm font-semibold text-[var(--color-text-primary)]">
-                {amount} CHF
+                {amount} CHF – {vendorLabel}
               </div>
 
               <div className="flex flex-wrap items-center gap-2 text-xs text-[var(--color-text-muted)]">
-                <span>Erstellt: {created}</span>
+                <span>Erstellt: {date}</span>
                 <span>•</span>
                 <span>
                   Status:{" "}
@@ -49,14 +58,30 @@ export default function VendorPayoutList({ payouts }: VendorPayoutListProps) {
                     {isPaid ? "Ausgezahlt" : "Ausstehend"}
                   </span>
                 </span>
-                {paidAt && (
-                  <>
-                    <span>•</span>
-                    <span>Bezahlt: {paidAt}</span>
-                  </>
-                )}
               </div>
             </div>
+
+            {!isPaid && (
+              <button
+                disabled={isBusy}
+                onClick={async () => {
+                  try {
+                    setBusyId(p.id);
+                    await onMarkPaid(p.id);
+                  } finally {
+                    setBusyId(null);
+                  }
+                }}
+                className="inline-flex items-center justify-center rounded-full px-4 py-1.5 text-xs font-semibold tracking-[0.12em] uppercase
+                 bg-gradient-to-r from-emerald-500 to-blue-500
+                 text-white shadow-[0_18px_40px_rgba(16,185,129,0.45)]
+                 hover:shadow-[0_22px_55px_rgba(16,185,129,0.65)]
+                 hover:brightness-105 active:scale-[0.98] transition-all
+                 disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {isBusy ? "..." : "Markieren als bezahlt"}
+              </button>
+            )}
           </div>
         );
       })}

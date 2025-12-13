@@ -98,9 +98,9 @@ export default async function SellerProfilePage({ params }: { params: { vendorId
                 className="seller-product-card"
               >
                 <div className="seller-product-thumbnail-wrapper">
-                  {product.thumbnailUrl ? (
+                  {product.thumbnail ? (
                     <img
-                      src={product.thumbnailUrl}
+                      src={product.thumbnail}
                       alt={product.title}
                       className="seller-product-thumbnail"
                     />
@@ -122,7 +122,7 @@ export default async function SellerProfilePage({ params }: { params: { vendorId
                   )}
                   <div className="seller-product-meta">
                     <span className="seller-product-price">
-                      {(product.price / 100).toFixed(2)} CHF
+                      {(product.priceCents / 100).toFixed(2)} CHF
                     </span>
                     {/* Optional: Link zur Produkt-Detailseite, falls vorhanden */}
                     {/* <Link href={`/product/${product.id}`} className="seller-product-link">

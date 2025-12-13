@@ -444,7 +444,7 @@ export default async function VendorAnalyticsPage() {
                 </p>
               ) : (
                 <div className="flex flex-wrap gap-2">
-                  {keywordExplorer.map((k) => (
+                  {keywordExplorer.map((k: { word: string; count: number; productCount: number }) => (
                     <span
                       key={k.word}
                       className="px-3 py-1 rounded-full text-[11px]

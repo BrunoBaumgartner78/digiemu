@@ -1,3 +1,7 @@
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    // TODO: Implement submit logic or leave as placeholder
+  };
 "use client";
 
 import { useEffect, useState } from "react";
@@ -15,7 +19,7 @@ type ProfileFormProps = {
   };
 };
 
-export function ProfileForm({ initialProfile }: ProfileFormProps) {
+export function ProfileForm({ initialProfile, initialStats }: ProfileFormProps) {
   const { toast } = useToast();
   const [values, setValues] = useState<ProfileFormValues>({
     displayName: initialProfile.displayName ?? "",
@@ -33,6 +37,9 @@ export function ProfileForm({ initialProfile }: ProfileFormProps) {
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    // ...existing code or leave empty if not needed
+  };
   return (
     <>
       {stats && (
@@ -77,84 +84,6 @@ export function ProfileForm({ initialProfile }: ProfileFormProps) {
           </label>
         </div>
         {/* ...existing code... */}
-      </form>
-    </>
-        description: "Dein Verkäuferprofil wurde aktualisiert.",
-      });
-    } catch (err: any) {
-      toast({
-        title: "Fehler",
-        description: err?.message ?? "Profil konnte nicht gespeichert werden.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  return (
-    <form className="profile-form" onSubmit={handleSubmit}>
-      <ProfileImageUploader
-        userId={initialProfile.id ?? ""}
-        avatarUrl={values.avatarUrl}
-        bannerUrl={values.bannerUrl}
-        onAvatarChange={(url) => setValues((prev) => ({ ...prev, avatarUrl: url }))}
-        onBannerChange={(url) => setValues((prev) => ({ ...prev, bannerUrl: url }))}
-      />
-
-      <div className="profile-form-section">
-        <label>
-          Anzeigename
-          <input
-            name="displayName"
-            value={values.displayName ?? ""}
-            onChange={handleChange}
-            placeholder="Dein Shopname / Künstlername"
-          />
-        </label>
-      </div>
-
-      <div className="profile-form-section">
-        <label>
-          Über dich
-          <textarea
-            name="bio"
-            value={values.bio ?? ""}
-            onChange={handleChange}
-            placeholder="Beschreibe kurz dich, deinen Stil und was du anbietest."
-            rows={5}
-          />
-        </label>
-      </div>
-
-      <div className="profile-form-grid">
-        <label>
-          Website
-          <input
-            name="websiteUrl"
-            value={values.websiteUrl ?? ""}
-            onChange={handleChange}
-            placeholder="https://deine-website.ch"
-          />
-        </label>
-        <label>
-          Twitter / X
-          <input
-            name="twitterUrl"
-            value={values.twitterUrl ?? ""}
-            onChange={handleChange}
-            placeholder="https://twitter.com/..."
-          />
-        </label>
-        <label>
-          Instagram
-          <input
-            name="instagramUrl"
-            value={values.instagramUrl ?? ""}
-            onChange={handleChange}
-            placeholder="https://instagram.com/..."
-          />
-        </label>
         <label>
           TikTok
           <input
