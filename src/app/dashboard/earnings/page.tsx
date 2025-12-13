@@ -20,15 +20,9 @@ export default async function EarningsDashboard() {
     );
   }
 
-  // ✅ Nutze die Variable, die du wirklich hast:
-    "https://digiemu.vercel.app";
+  // Base URL for absolute API calls
   const base =
-    "https://digiemu.vercel.app" ;
-  const base =
-    process.env.NEXT_PUBLIC_APP_URL ||
-    process.env.NEXT_PUBLIC_APP_URL ||
-    "https://digiemu.vercel.app";
-  const base = process.env.NEXT_PUBLIC_APP_URL || "https://digiemu.vercel.app";
+    process.env.NEXT_PUBLIC_APP_URL?.trim() ||
     "https://digiemu.vercel.app";
 
   // ✅ Next 16: headers() kann async sein → sicherheitshalber await
