@@ -13,16 +13,30 @@ export async function POST(req: Request) {
 
   const data = await req.json();
 
+  const title = String(data.title ?? "").trim();
+  const description = String(data.description ?? "").trim();
+  const category = String(data.category ?? "").trim();
+  const fileUrl = String(data.fileUrl ?? "").trim();
+  const thumbnail = data.thumbnail ? String(data.thumbnail).trim() : null;
+  const priceCents = Number(data.priceCents);
+
+  if (!title || !fileUrl || !Number.isFinite(priceCents) || priceCents < 0) {
+    return NextResponse.json(
+      { error: "Invalid payload (title, fileUrl, priceCents required)" },
+      { status: 400 }
+    );
+  }
+
   const product = await prisma.product.create({
     data: {
-      title: String(data.title ?? ""),
-      description: String(data.description ?? ""),
-      category: String(data.category ?? ""),
-      fileUrl: String(data.fileUrl ?? ""),
-      thumbnail: data.thumbnail ? String(data.thumbnail) : null,
-      priceCents: Number(data.priceCents),
+      title,
+      description,
+      category,
+      fileUrl,
+      thumbnail,
+      priceCents,
 
-      // ✅ WICHTIG: relation connect statt vendorId:
+      // Relation connect (weil vendorId required, aber nicht direkt setzbar)
       vendor: { connect: { id: userId } },
     },
   });
