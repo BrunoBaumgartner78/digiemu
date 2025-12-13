@@ -1,47 +1,43 @@
 "use client";
 
-type AdminAnalyticsClientProps = {
-  totalOrders: number;
-  revenuePaidOrCompleted: number; // Umsatz aus paid/completed
-  paidOrCompletedOrders: number;
-  avgOrderValue: number;
+import RevenueOverTimeChart from "@/components/admin/analytics/RevenueOverTimeChart";
+import TopProductsBarChart from "@/components/admin/analytics/TopProductsBarChart";
+
+export type RevenuePoint = {
+  date: string;
+  revenueCents: number;
+  orders: number;
+};
+
+export type TopProductPoint = {
+  productId: string;
+  title: string;
+  revenueCents: number;
+  orders: number;
+};
+
+type Props = {
+  revenueOverTime: RevenuePoint[];
+  topProducts: TopProductPoint[];
 };
 
 export default function AdminAnalyticsClient({
-  totalOrders,
-  revenuePaidOrCompleted,
-  paidOrCompletedOrders,
-  avgOrderValue,
-}: AdminAnalyticsClientProps) {
+  revenueOverTime,
+  topProducts,
+}: Props) {
   return (
-    <div className="space-y-4">
-      <div className="grid gap-4 md:grid-cols-4">
-        <div className="neumorph-card p-5">
-          <p className="text-sm opacity-70">Bestellungen</p>
-          <p className="text-2xl font-bold">{totalOrders}</p>
-        </div>
+    <main className="min-h-screen px-4 py-8">
+      <div className="max-w-6xl mx-auto space-y-6">
+        <section className="neumorph-card p-4 md:p-6">
+          <h2 className="text-lg font-bold mb-4">Umsatz über Zeit</h2>
+          <RevenueOverTimeChart data={revenueOverTime} />
+        </section>
 
-        <div className="neumorph-card p-5">
-          <p className="text-sm opacity-70">Paid/Completed</p>
-          <p className="text-2xl font-bold">{paidOrCompletedOrders}</p>
-        </div>
-
-        <div className="neumorph-card p-5">
-          <p className="text-sm opacity-70">Umsatz (paid/completed)</p>
-          <p className="text-2xl font-bold">
-            {Number.isFinite(revenuePaidOrCompleted)
-              ? revenuePaidOrCompleted.toFixed(2)
-              : "0.00"}
-          </p>
-        </div>
-
-        <div className="neumorph-card p-5">
-          <p className="text-sm opacity-70">Ø Bestellwert</p>
-          <p className="text-2xl font-bold">
-            {Number.isFinite(avgOrderValue) ? avgOrderValue.toFixed(2) : "0.00"}
-          </p>
-        </div>
+        <section className="neumorph-card p-4 md:p-6">
+          <h2 className="text-lg font-bold mb-4">Top Produkte</h2>
+          <TopProductsBarChart data={topProducts} />
+        </section>
       </div>
-    </div>
+    </main>
   );
 }
