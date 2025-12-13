@@ -1,11 +1,11 @@
-// src/app/dashboard/payouts/VendorPayoutList.tsx
 "use client";
 
 type VendorPayout = {
   id: string;
   amountCents: number;
+  status: "PENDING" | "PAID" | "FAILED" | "CANCELLED" | string;
   createdAt: string | Date;
-  status: "PENDING" | "PAID" | string;
+  paidAt?: string | Date | null;
 };
 
 type VendorPayoutListProps = {
@@ -25,7 +25,9 @@ export default function VendorPayoutList({ payouts }: VendorPayoutListProps) {
     <div className="space-y-3">
       {payouts.map((p) => {
         const amount = (p.amountCents / 100).toFixed(2);
-        const date = new Date(p.createdAt).toLocaleString("de-CH");
+        const created = new Date(p.createdAt).toLocaleString("de-CH");
+        const paidAt = p.paidAt ? new Date(p.paidAt).toLocaleString("de-CH") : null;
+
         const isPaid = p.status === "PAID";
 
         return (
@@ -39,7 +41,7 @@ export default function VendorPayoutList({ payouts }: VendorPayoutListProps) {
               </div>
 
               <div className="flex flex-wrap items-center gap-2 text-xs text-[var(--color-text-muted)]">
-                <span>Erstellt: {date}</span>
+                <span>Erstellt: {created}</span>
                 <span>•</span>
                 <span>
                   Status:{" "}
@@ -47,18 +49,14 @@ export default function VendorPayoutList({ payouts }: VendorPayoutListProps) {
                     {isPaid ? "Ausgezahlt" : "Ausstehend"}
                   </span>
                 </span>
+                {paidAt && (
+                  <>
+                    <span>•</span>
+                    <span>Bezahlt: {paidAt}</span>
+                  </>
+                )}
               </div>
             </div>
-
-            <span
-              className={`inline-flex items-center justify-center rounded-full px-3 py-1 text-[11px] font-semibold tracking-[0.12em] uppercase ${
-                isPaid
-                  ? "bg-emerald-500/15 text-emerald-200"
-                  : "bg-amber-500/15 text-amber-200"
-              }`}
-            >
-              {isPaid ? "PAID" : "PENDING"}
-            </span>
           </div>
         );
       })}
