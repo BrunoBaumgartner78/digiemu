@@ -15,7 +15,11 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
 
 export async function POST(req: NextRequest) {
   const sig = req.headers.get("stripe-signature");
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  const webhookSecret = (process.env.STRIPE_WEBHOOK_SECRET ?? "").trim();
+console.log("🔐 webhookSecret debug", {
+  prefix: webhookSecret?.slice(0, 8),
+  len: webhookSecret?.length,
+});
 
   // ✅ Sofort sehen ob Route getroffen wird + ob Config stimmt
   console.log("🔔 /api/webhook HIT", {

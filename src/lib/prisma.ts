@@ -8,4 +8,12 @@ export const prisma =
     log: ["error", "warn"],
   });
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+// TEMP DEBUG: welche DB nutzt Next wirklich?
+if (process.env.NODE_ENV !== "production") {
+  globalForPrisma.prisma = prisma;
+  const u = process.env.DATABASE_URL || "";
+  console.log("🧩 NEXT DATABASE_URL host:", u.split("@")[1]?.split("/")[0] ?? "NONE");
+
+}
+
+console.log("🧩 NEXT DATABASE_URL host:", new URL(process.env.DATABASE_URL!).host);

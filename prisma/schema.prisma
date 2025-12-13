@@ -1,7 +1,3 @@
-// ------------------------------------------------------
-// DigiEmu Prisma Schema – Fixed & Stable Version
-// ------------------------------------------------------
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,222 +7,154 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ------------------------------------------------------
-// Enums
-// ------------------------------------------------------
-
-enum Role {
-  BUYER
-  VENDOR
-  ADMIN
-}
-
-// ------------------------------------------------------
-// User
-// ------------------------------------------------------
-
 model User {
-  id        String  @id @default(cuid())
-  email     String  @unique
-  name      String?
-  password  String?
-  role      Role    @default(BUYER)
-  isBlocked Boolean @default(false)
-
-  // Vendor-Produkte, wenn role=VENDOR
-  products Product[] @relation("VendorProducts")
-
-  // Orders (Käufer)
-  orders Order[]
-
-  // Payouts (nur für Vendor)
-  payouts Payout[]
-
-  // Community features
-  likes    Like[]
-  comments Comment[]
-  reviews  Review[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
+  id            String         @id @default(cuid())
+  email         String         @unique
+  name          String?
+  password      String?
+  role          Role           @default(BUYER)
+  isBlocked     Boolean        @default(false)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  comments      Comment[]
+  likes         Like[]
+  orders        Order[]
+  payouts       Payout[]
+  products      Product[]      @relation("VendorProducts")
+  reviews       Review[]
   vendorProfile VendorProfile?
 }
 
-// ------------------------------------------------------
-// Vendor Profile
-// ------------------------------------------------------
-
 model VendorProfile {
-  id String @id @default(cuid())
-
-  user   User   @relation(fields: [userId], references: [id])
-  userId String @unique
-
-  displayName String? @db.VarChar(120)
-  bio         String? @db.Text
-
-  avatarUrl String? @db.VarChar(500)
-  bannerUrl String? @db.VarChar(500)
-
-  websiteUrl   String? @db.VarChar(500)
-  twitterUrl   String? @db.VarChar(500)
-  instagramUrl String? @db.VarChar(500)
-  tiktokUrl    String? @db.VarChar(500)
-  facebookUrl  String? @db.VarChar(500)
-
-  slug     String? @unique
-  isPublic Boolean @default(true)
-
-  products Product[] @relation("VendorProfileProducts")
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String    @id @default(cuid())
+  userId       String    @unique
+  displayName  String?   @db.VarChar(120)
+  bio          String?
+  avatarUrl    String?   @db.VarChar(500)
+  bannerUrl    String?   @db.VarChar(500)
+  websiteUrl   String?   @db.VarChar(500)
+  twitterUrl   String?   @db.VarChar(500)
+  instagramUrl String?   @db.VarChar(500)
+  tiktokUrl    String?   @db.VarChar(500)
+  facebookUrl  String?   @db.VarChar(500)
+  slug         String?   @unique
+  isPublic     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  products     Product[] @relation("VendorProfileProducts")
+  user         User      @relation(fields: [userId], references: [id])
 }
 
-// ------------------------------------------------------
-// Product
-// ------------------------------------------------------
-
 model Product {
-  id          String  @id @default(cuid())
-  title       String
-  description String
-  priceCents  Int
-  fileUrl     String
-  thumbnail   String?
-  category    String
-
-  isActive Boolean @default(true)
-
+  id              String         @id @default(cuid())
+  title           String
+  description     String
+  priceCents      Int
+  fileUrl         String
+  thumbnail       String?
+  category        String
+  isActive        Boolean        @default(true)
+  vendorId        String
+  vendorProfileId String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
   /// Produktstatus für Sichtbarkeit & Moderation.
   /// Mögliche Werte (Konvention, kein Enum):
   /// - "DRAFT"   : nur Vendor + Admin sehen das Produkt
   /// - "ACTIVE"  : Produkt ist im Marketplace sichtbar
   /// - "BLOCKED" : durch Admin gesperrt, nicht sichtbar für Käufer
-  status String @default("DRAFT")
-
+  status          String         @default("DRAFT")
   /// Interne Moderations-Notiz für Admins (z.B. Sperr-Grund).
-  moderationNote String?
-
-  vendorId String
-  vendor   User @relation("VendorProducts", fields: [vendorId], references: [id])
-
-  vendorProfileId String?
+  moderationNote  String?
+  comments        Comment[]
+  likes           Like[]
+  orders          Order[]
+  vendor          User           @relation("VendorProducts", fields: [vendorId], references: [id])
   vendorProfile   VendorProfile? @relation("VendorProfileProducts", fields: [vendorProfileId], references: [id])
-
-  orders   Order[]
-  likes    Like[]
-  comments Comment[]
-  reviews  Review[]
-  views    ProductView[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  views           ProductView[]
+  reviews         Review[]
 }
-
-// ------------------------------------------------------
-// ProductView (Tracking Views for Analytics)
-// ------------------------------------------------------
 
 model ProductView {
   id        String   @id @default(cuid())
-  product   Product  @relation(fields: [productId], references: [id])
   productId String
   viewerId  String?
   createdAt DateTime @default(now())
+  product   Product  @relation(fields: [productId], references: [id])
 }
-
-// ------------------------------------------------------
-// Social: Like, Comment, Review
-// ------------------------------------------------------
 
 model Like {
   id        String   @id @default(cuid())
-  user      User     @relation(fields: [userId], references: [id])
   userId    String
-  product   Product  @relation(fields: [productId], references: [id])
   productId String
   createdAt DateTime @default(now())
+  product   Product  @relation(fields: [productId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
 
   @@unique([userId, productId])
 }
 
 model Comment {
   id        String   @id @default(cuid())
-  user      User     @relation(fields: [userId], references: [id])
   userId    String
-  product   Product  @relation(fields: [productId], references: [id])
   productId String
   content   String
   createdAt DateTime @default(now())
+  product   Product  @relation(fields: [productId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
 }
 
 model Review {
   id        String   @id @default(cuid())
-  user      User     @relation(fields: [userId], references: [id])
   userId    String
-  product   Product  @relation(fields: [productId], references: [id])
   productId String
-  rating    Int      // 1–5 Sterne
+  rating    Int
   content   String?
   createdAt DateTime @default(now())
+  product   Product  @relation(fields: [productId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
 
   @@unique([userId, productId])
 }
 
-// ------------------------------------------------------
-// Order
-// ------------------------------------------------------
-
 model Order {
-  id String @id @default(cuid())
-
-  buyer   User   @relation(fields: [buyerId], references: [id])
-  buyerId String
-
-  product   Product @relation(fields: [productId], references: [id])
-  productId String
-
-  stripeSessionId String @unique
-  amountCents     Int
-  status          String
-
-  vendorEarningsCents   Int @default(0)
-  platformEarningsCents Int @default(0)
-
-  downloadLink DownloadLink?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                    String        @id @default(cuid())
+  buyerId               String
+  productId             String
+  stripeSessionId       String        @unique
+  amountCents           Int
+  status                String
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+  platformEarningsCents Int           @default(0)
+  vendorEarningsCents   Int           @default(0)
+  downloadLink          DownloadLink?
+  buyer                 User          @relation(fields: [buyerId], references: [id])
+  product               Product       @relation(fields: [productId], references: [id])
 }
 
-// ------------------------------------------------------
-// Download Link (ein Download per Order)
-// ------------------------------------------------------
-
 model DownloadLink {
-  id String @id @default(cuid())
-
-  order   Order  @relation(fields: [orderId], references: [id])
-  orderId String @unique
-
+  id        String   @id @default(cuid())
+  orderId   String   @unique
   fileUrl   String
   expiresAt DateTime
   createdAt DateTime @default(now())
+  order     Order    @relation(fields: [orderId], references: [id])
 }
 
-// ------------------------------------------------------
-// Payouts
-// ------------------------------------------------------
-
 model Payout {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   vendorId    String
-  vendor      User     @relation(fields: [vendorId], references: [id])
   amountCents Int
-  status      String   @default("PENDING") // PENDING, PAID
+  status      String    @default("PENDING")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
   paidAt      DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  vendor      User      @relation(fields: [vendorId], references: [id])
+}
+
+enum Role {
+  BUYER
+  VENDOR
+  ADMIN
 }
