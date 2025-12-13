@@ -24,7 +24,7 @@ export default function VendorPayoutList({ payouts }: VendorPayoutListProps) {
   return (
     <div className="space-y-3">
       {payouts.map((p) => {
-        const amount = (Number(p.amountCents) / 100).toFixed(2);
+        const amount = (p.amountCents / 100).toFixed(2);
         const date = new Date(p.createdAt).toLocaleString("de-CH");
         const isPaid = p.status === "PAID";
 
@@ -51,12 +51,11 @@ export default function VendorPayoutList({ payouts }: VendorPayoutListProps) {
             </div>
 
             <span
-              className={
-                "rounded-full px-3 py-1 text-[11px] font-semibold tracking-[0.12em] uppercase " +
-                (isPaid
+              className={`inline-flex items-center justify-center rounded-full px-3 py-1 text-[11px] font-semibold tracking-[0.12em] uppercase ${
+                isPaid
                   ? "bg-emerald-500/15 text-emerald-200"
-                  : "bg-amber-500/15 text-amber-200")
-              }
+                  : "bg-amber-500/15 text-amber-200"
+              }`}
             >
               {isPaid ? "PAID" : "PENDING"}
             </span>
