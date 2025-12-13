@@ -6,12 +6,28 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 function renderPdf(vendors: Array<{ email: string; name: string | null }>) {
-  return new Promise<Buffer>((resolve, reject) => {
+  return new Promise<Uint8Array>((resolve, reject) => {
     const doc = new PDFDocument({ size: "A4", margin: 50 });
-    const chunks: Buffer[] = [];
+    const chunks: Uint8Array[] = [];
 
-    doc.on("data", (c) => chunks.push(Buffer.isBuffer(c) ? c : Buffer.from(c)));
-    doc.on("end", () => resolve(Buffer.concat(chunks)));
+    doc.on("data", (chunk) => {
+      chunks.push(chunk instanceof Uint8Array ? chunk : new Uint8Array(chunk));
+    });
+
+    doc.on("end", () => {
+      const merged = new Uint8Array(
+        chunks.reduce((sum, c) => sum + c.length, 0)
+      );
+
+      let offset = 0;
+      for (const c of chunks) {
+        merged.set(c, offset);
+        offset += c.length;
+      }
+
+      resolve(merged);
+    });
+
     doc.on("error", reject);
 
     doc.fontSize(18).text("Vendor Report", { underline: true });
@@ -32,9 +48,9 @@ export async function GET() {
     orderBy: { createdAt: "desc" },
   });
 
-  const pdfBuffer = await renderPdf(vendors);
+  const pdfBytes = await renderPdf(vendors);
 
-  return new NextResponse(pdfBuffer, {
+  return new NextResponse(pdfBytes, {
     status: 200,
     headers: {
       "Content-Type": "application/pdf",
