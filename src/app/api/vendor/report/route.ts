@@ -10,11 +10,10 @@ function renderPdf(vendors: Array<{ email: string; name: string | null }>) {
   return new Promise<Uint8Array>((resolve, reject) => {
     const doc = new PDFDocument({ size: "A4", margin: 50 });
 
-    // pdfkit emittet Buffer/Uint8Array
     const chunks: Uint8Array[] = [];
 
     doc.on("data", (chunk: any) => {
-      // Buffer ist auch ein Uint8Array → passt
+      // pdfkit liefert Buffer (Buffer ist Uint8Array) oder Uint8Array
       const u8 = chunk instanceof Uint8Array ? chunk : new Uint8Array(chunk);
       chunks.push(u8);
     });
@@ -54,13 +53,8 @@ export async function GET() {
 
   const pdfBytes = await renderPdf(vendors);
 
-  // ✅ NextResponse erwartet BodyInit → ArrayBuffer ist typ-sicher
-  const body = pdfBytes.buffer.slice(
-    pdfBytes.byteOffset,
-    pdfBytes.byteOffset + pdfBytes.byteLength
-  );
-
-  return new NextResponse(body, {
+  // ✅ BodyInit-safe: Uint8Array geht (kein ArrayBuffer/SharedArrayBuffer Union)
+  return new NextResponse(pdfBytes, {
     status: 200,
     headers: {
       "Content-Type": "application/pdf",
