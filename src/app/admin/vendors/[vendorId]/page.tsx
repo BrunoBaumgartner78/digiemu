@@ -126,7 +126,8 @@ export default async function AdminVendorDetailPage(props: {
         </p>
         <p>
           <span className="font-medium">Status:</span>{" "}
-          {vendor.status ?? "—"}
+          {vendor.vendorProfile ? "ACTIVE" : "NO_PROFILE"}
+
         </p>
         {vendor.vendorProfile && (
           <>
