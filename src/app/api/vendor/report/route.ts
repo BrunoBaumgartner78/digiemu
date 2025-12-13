@@ -1,5 +1,4 @@
 // src/app/api/vendor/report/route.ts
-import { NextResponse } from "next/server";
 import PDFDocument from "pdfkit";
 import { prisma } from "@/lib/prisma";
 
@@ -9,11 +8,9 @@ export const dynamic = "force-dynamic";
 function renderPdf(vendors: Array<{ email: string; name: string | null }>) {
   return new Promise<Uint8Array>((resolve, reject) => {
     const doc = new PDFDocument({ size: "A4", margin: 50 });
-
     const chunks: Uint8Array[] = [];
 
     doc.on("data", (chunk: any) => {
-      // pdfkit liefert Buffer (Buffer ist Uint8Array) oder Uint8Array
       const u8 = chunk instanceof Uint8Array ? chunk : new Uint8Array(chunk);
       chunks.push(u8);
     });
@@ -21,8 +18,8 @@ function renderPdf(vendors: Array<{ email: string; name: string | null }>) {
     doc.on("end", () => {
       const total = chunks.reduce((sum, c) => sum + c.length, 0);
       const merged = new Uint8Array(total);
-
       let offset = 0;
+
       for (const c of chunks) {
         merged.set(c, offset);
         offset += c.length;
@@ -53,8 +50,7 @@ export async function GET() {
 
   const pdfBytes = await renderPdf(vendors);
 
-  // ✅ BodyInit-safe: Uint8Array geht (kein ArrayBuffer/SharedArrayBuffer Union)
-  return new NextResponse(pdfBytes, {
+  return new Response(pdfBytes, {
     status: 200,
     headers: {
       "Content-Type": "application/pdf",
