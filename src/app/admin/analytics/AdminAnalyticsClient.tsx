@@ -22,7 +22,14 @@ export default function AdminAnalyticsClient({ revenueOverTime, topProducts }: P
 
         <section className="neumorph-card p-4 md:p-6">
           <h2 className="text-lg font-bold mb-4">Top Produkte</h2>
-          <TopProductsBarChart data={topProducts} />
+          <TopProductsBarChart
+  data={topProducts.map((p) => ({
+    productTitle: p.title,
+    totalRevenueCents: p.revenueCents,
+    totalCount: p.orders,
+  }))}
+/>
+
         </section>
       </div>
     </main>
