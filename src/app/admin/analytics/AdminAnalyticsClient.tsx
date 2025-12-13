@@ -3,28 +3,15 @@
 import RevenueOverTimeChart from "@/components/admin/analytics/RevenueOverTimeChart";
 import TopProductsBarChart from "@/components/admin/analytics/TopProductsBarChart";
 
-export type RevenuePoint = {
-  date: string;
-  revenueCents: number;
-  orders: number;
-};
-
-export type TopProductPoint = {
-  productId: string;
-  title: string;
-  revenueCents: number;
-  orders: number;
-};
+export type RevenuePoint = { date: string; revenueCents: number; orders: number };
+export type TopProductPoint = { productId: string; title: string; revenueCents: number; orders: number };
 
 type Props = {
   revenueOverTime: RevenuePoint[];
   topProducts: TopProductPoint[];
 };
 
-export default function AdminAnalyticsClient({
-  revenueOverTime,
-  topProducts,
-}: Props) {
+export default function AdminAnalyticsClient({ revenueOverTime, topProducts }: Props) {
   return (
     <main className="min-h-screen px-4 py-8">
       <div className="max-w-6xl mx-auto space-y-6">
