@@ -6,7 +6,7 @@ import Link from "next/link";
 
 type SearchParams = {
   q?: string | string[];
-  status?: string | string[];
+  status?: string | string[]; // UI Filter bleibt, aber wir leiten daraus Prisma-Filter ab
   page?: string | string[];
 };
 
@@ -16,7 +16,6 @@ export default async function AdminVendorsPage(props: {
   const session = await getServerSession(authOptions);
 
   if (!session || session.user.role !== "ADMIN") {
-    // Unauthorized-View lassen wir wie gehabt
     return (
       <main className="min-h-[70vh] flex items-center justify-center px-4">
         <div className="neumorph-card p-6 max-w-md text-center">
@@ -35,11 +34,7 @@ export default async function AdminVendorsPage(props: {
   const sp = await props.searchParams;
 
   const search =
-    typeof sp.q === "string"
-      ? sp.q
-      : Array.isArray(sp.q)
-      ? sp.q[0] ?? ""
-      : "";
+    typeof sp.q === "string" ? sp.q : Array.isArray(sp.q) ? sp.q[0] ?? "" : "";
 
   const statusRaw =
     typeof sp.status === "string"
@@ -47,7 +42,9 @@ export default async function AdminVendorsPage(props: {
       : Array.isArray(sp.status)
       ? sp.status[0] ?? "ALL"
       : "ALL";
-  const status = statusRaw || "ALL";
+
+  // UI-Status: ALL | ACTIVE | BLOCKED
+  const statusFilter = statusRaw || "ALL";
 
   const pageRaw =
     typeof sp.page === "string"
@@ -55,11 +52,13 @@ export default async function AdminVendorsPage(props: {
       : Array.isArray(sp.page)
       ? sp.page[0] ?? "1"
       : "1";
-  const page = Number.parseInt(pageRaw, 10) || 1;
 
+  const page = Number.parseInt(pageRaw, 10) || 1;
   const pageSize = 25;
   const skip = (page - 1) * pageSize;
 
+  // ✅ User hat KEIN "status" -> wir filtern über vendorProfile/isPublic oder Existenz
+  // Wenn du wirklich "BLOCKED" brauchst, müssen wir ein echtes Feld im Schema einführen.
   const where: any = { role: "VENDOR" };
 
   if (search) {
@@ -69,9 +68,15 @@ export default async function AdminVendorsPage(props: {
     ];
   }
 
-  if (status !== "ALL") {
-    where.status = status;
+  // ✅ Statusfilter auf existierende Felder mappen:
+  // - ACTIVE: Vendor hat ein VendorProfile
+  // - BLOCKED: Vendor hat KEIN VendorProfile (oder du kannst später echtes Feld einführen)
+  if (statusFilter === "ACTIVE") {
+    where.vendorProfile = { isNot: null };
+  } else if (statusFilter === "BLOCKED") {
+    where.vendorProfile = { is: null };
   }
+  // ALL => kein extra Filter
 
   const [vendors, totalCount] = await Promise.all([
     prisma.user.findMany({
@@ -87,6 +92,7 @@ export default async function AdminVendorsPage(props: {
             },
           },
         },
+        vendorProfile: true,
       },
     }),
     prisma.user.count({ where }),
@@ -96,7 +102,6 @@ export default async function AdminVendorsPage(props: {
 
   return (
     <div className="admin-shell">
-      {/* Breadcrumb + Header */}
       <div className="admin-breadcrumb">
         <span>Admin</span>
         <span className="admin-breadcrumb-dot" />
@@ -111,7 +116,6 @@ export default async function AdminVendorsPage(props: {
         </p>
       </header>
 
-      {/* Filter */}
       <section className="neumorph-card p-6 mb-6 flex flex-wrap gap-4 items-center">
         <form className="flex flex-wrap gap-4 w-full" method="get">
           <input
@@ -122,7 +126,7 @@ export default async function AdminVendorsPage(props: {
           />
           <select
             name="status"
-            defaultValue={status}
+            defaultValue={statusFilter}
             className="input-neu w-40 text-sm"
           >
             <option value="ALL">Alle</option>
@@ -135,7 +139,6 @@ export default async function AdminVendorsPage(props: {
         </form>
       </section>
 
-      {/* Tabelle */}
       <section className="neumorph-card p-6 overflow-x-auto">
         <table className="min-w-full text-sm admin-table">
           <thead>
@@ -176,6 +179,9 @@ export default async function AdminVendorsPage(props: {
                   return sumP + productSum;
                 }, 0);
 
+                // ✅ Status ableiten (keine v.status!)
+                const derivedStatus = v.vendorProfile ? "ACTIVE" : "BLOCKED";
+
                 return (
                   <tr
                     key={v.id}
@@ -185,30 +191,23 @@ export default async function AdminVendorsPage(props: {
                       {v.name || "—"}
                     </td>
                     <td className="py-2 px-3">{v.email}</td>
-                    <td className="py-2 px-3">
-                      {v.products?.length ?? 0}
-                    </td>
+                    <td className="py-2 px-3">{v.products?.length ?? 0}</td>
                     <td className="py-2 px-3">
                       {(revenueCents / 100).toFixed(2)} CHF
                     </td>
                     <td className="py-2 px-3">
                       <span
                         className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                          v.status === "ACTIVE"
+                          derivedStatus === "ACTIVE"
                             ? "bg-emerald-500/10 text-emerald-400"
-                            : v.status === "BLOCKED"
-                            ? "bg-rose-500/10 text-rose-500"
-                            : "bg-slate-500/10 text-slate-300"
+                            : "bg-rose-500/10 text-rose-500"
                         }`}
                       >
-                        {v.status ?? "-"}
+                        {derivedStatus}
                       </span>
                     </td>
                     <td className="py-2 px-3 flex flex-wrap gap-2">
-                      <Link
-                        href={`/admin/vendors/${v.id}`}
-                        className="neobtn-sm"
-                      >
+                      <Link href={`/admin/vendors/${v.id}`} className="neobtn-sm">
                         Vendor-Ansicht
                       </Link>
                       <Link
@@ -225,7 +224,6 @@ export default async function AdminVendorsPage(props: {
           </tbody>
         </table>
 
-        {/* Pagination */}
         <div className="flex justify-between items-center mt-6 text-xs text-[var(--text-muted)]">
           <span>
             Seite {page} von {pageCount} · {totalCount} Vendoren
@@ -235,7 +233,7 @@ export default async function AdminVendorsPage(props: {
               <Link
                 href={`/admin/vendors?page=${page - 1}&q=${encodeURIComponent(
                   search
-                )}&status=${status}`}
+                )}&status=${statusFilter}`}
                 className="neobtn-sm ghost"
               >
                 ← Zurück
@@ -245,7 +243,7 @@ export default async function AdminVendorsPage(props: {
               <Link
                 href={`/admin/vendors?page=${page + 1}&q=${encodeURIComponent(
                   search
-                )}&status=${status}`}
+                )}&status=${statusFilter}`}
                 className="neobtn-sm ghost"
               >
                 Weiter →
