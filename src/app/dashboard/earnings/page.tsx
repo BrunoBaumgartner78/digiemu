@@ -21,15 +21,15 @@ export default async function EarningsDashboard() {
   }
 
   // ✅ Nutze die Variable, die du wirklich hast:
-    "http://localhost:3000";
+    "https://digiemu.vercel.app";
   const base =
-    "http://localhost:3000";
+    "https://digiemu.vercel.app" ;
   const base =
     process.env.NEXT_PUBLIC_APP_URL ||
     process.env.NEXT_PUBLIC_APP_URL ||
-    "http://localhost:3000";
-  const base = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-    "http://localhost:3000";
+    "https://digiemu.vercel.app";
+  const base = process.env.NEXT_PUBLIC_APP_URL || "https://digiemu.vercel.app";
+    "https://digiemu.vercel.app";
 
   // ✅ Next 16: headers() kann async sein → sicherheitshalber await
   const h = await headers();
