@@ -1,3 +1,4 @@
+// src/app/api/vendor/report/route.ts
 import { NextResponse } from "next/server";
 import PDFDocument from "pdfkit";
 import { prisma } from "@/lib/prisma";
@@ -8,16 +9,19 @@ export const dynamic = "force-dynamic";
 function renderPdf(vendors: Array<{ email: string; name: string | null }>) {
   return new Promise<Uint8Array>((resolve, reject) => {
     const doc = new PDFDocument({ size: "A4", margin: 50 });
+
+    // pdfkit emittet Buffer/Uint8Array
     const chunks: Uint8Array[] = [];
 
-    doc.on("data", (chunk) => {
-      chunks.push(chunk instanceof Uint8Array ? chunk : new Uint8Array(chunk));
+    doc.on("data", (chunk: any) => {
+      // Buffer ist auch ein Uint8Array → passt
+      const u8 = chunk instanceof Uint8Array ? chunk : new Uint8Array(chunk);
+      chunks.push(u8);
     });
 
     doc.on("end", () => {
-      const merged = new Uint8Array(
-        chunks.reduce((sum, c) => sum + c.length, 0)
-      );
+      const total = chunks.reduce((sum, c) => sum + c.length, 0);
+      const merged = new Uint8Array(total);
 
       let offset = 0;
       for (const c of chunks) {
@@ -33,9 +37,9 @@ function renderPdf(vendors: Array<{ email: string; name: string | null }>) {
     doc.fontSize(18).text("Vendor Report", { underline: true });
     doc.moveDown();
 
-    vendors.forEach((v) => {
+    for (const v of vendors) {
       doc.fontSize(12).text(`${v.email} – ${v.name ?? ""}`);
-    });
+    }
 
     doc.end();
   });
@@ -50,7 +54,13 @@ export async function GET() {
 
   const pdfBytes = await renderPdf(vendors);
 
-  return new NextResponse(pdfBytes, {
+  // ✅ NextResponse erwartet BodyInit → ArrayBuffer ist typ-sicher
+  const body = pdfBytes.buffer.slice(
+    pdfBytes.byteOffset,
+    pdfBytes.byteOffset + pdfBytes.byteLength
+  );
+
+  return new NextResponse(body, {
     status: 200,
     headers: {
       "Content-Type": "application/pdf",
