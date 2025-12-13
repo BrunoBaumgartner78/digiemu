@@ -1,42 +1,56 @@
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
+import { authOptions } from "@/app/api/auth/[...nextauth]/authOptions";
 
-export async function GET(_: any, { params }: any) {
+type Ctx = {
+  params: Promise<{ id: string }>;
+};
+
+export async function GET(_req: Request, ctx: Ctx) {
+  const { id: productId } = await ctx.params;
+
   const reviews = await prisma.review.findMany({
-    where: { productId: params.id },
+    where: { productId },
     include: { user: true },
-    orderBy: { createdAt: "desc" }
+    orderBy: { createdAt: "desc" },
   });
+
   return NextResponse.json(reviews);
 }
 
-export async function POST(req: Request, { params }: any) {
-  const session = await getServerSession();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+export async function POST(req: Request, ctx: Ctx) {
+  const { id: productId } = await ctx.params;
+
+  const session = await getServerSession(authOptions);
+  const userId = session?.user?.id;
+
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   const { rating, content } = await req.json();
 
-  if (!rating || rating < 1 || rating > 5) {
+  if (typeof rating !== "number" || rating < 1 || rating > 5) {
     return NextResponse.json({ error: "Invalid rating" }, { status: 400 });
   }
 
   const review = await prisma.review.upsert({
     where: {
       userId_productId: {
-        userId: session.user.id,
-        productId: params.id
-      }
+        userId,      // ✅ string garantiert
+        productId,
+      },
     },
     update: {
       rating,
-      content
+      content: typeof content === "string" ? content : null,
     },
     create: {
-      productId: params.id,
-      userId: session.user.id,
+      productId,
+      userId,
       rating,
-      content,
+      content: typeof content === "string" ? content : null,
     },
     include: { user: true },
   });
