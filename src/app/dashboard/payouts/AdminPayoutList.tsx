@@ -36,7 +36,7 @@ export default function AdminPayoutList({ payouts, onMarkPaid }: AdminPayoutList
         const amount = (p.amountCents / 100).toFixed(2);
         const date = new Date(p.createdAt).toLocaleString("de-CH");
         const isPaid = p.status === "PAID";
-        const vendorLabel = p.vendor?.email ?? "Unbekannter Vendor";
+            const vendorLabel = p.vendor?.email ?? (p.vendor as any)?.id ?? "Unbekannter Vendor";
         const isBusy = busyId === p.id;
 
         return (
