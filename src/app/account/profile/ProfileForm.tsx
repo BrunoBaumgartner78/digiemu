@@ -25,7 +25,7 @@ type ProfileFormProps = {
   form: InitialData;
   stats: Stats;
   onChange: (field: keyof InitialData, value: string | boolean) => void;
-  onSubmit: () => Promise<void> | void;
+  onSubmit: (e: React.FormEvent) => Promise<void> | void;
 };
 
 export default function ProfileForm({
@@ -35,8 +35,7 @@ export default function ProfileForm({
   onSubmit,
 }: ProfileFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await onSubmit();
+    await onSubmit(e);
   };
 
   return (

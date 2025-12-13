@@ -1,13 +1,39 @@
 "use client";
+// ✅ ensure InitialData is always fully populated
+function normalizeInitialData(partial: Partial<InitialData> | null | undefined): InitialData {
+  return {
+    displayName: partial?.displayName ?? "",
+    bio: partial?.bio ?? "",
+    websiteUrl: partial?.websiteUrl ?? "",
+    instagramUrl: partial?.instagramUrl ?? "",
+    twitterUrl: partial?.twitterUrl ?? "",
+    youtubeUrl: partial?.youtubeUrl ?? "",
+    tiktokUrl: partial?.tiktokUrl ?? "",
+    facebookUrl: partial?.facebookUrl ?? "",
+    avatarUrl: partial?.avatarUrl ?? "",
+    bannerUrl: partial?.bannerUrl ?? "",
+    slug: partial?.slug ?? "",
+    isPublic: partial?.isPublic ?? false,
+  };
+}
 
 import { useState } from "react";
 import ProfileImageUploader from "./ProfileImageUploader";
 import ProfileForm from "./ProfileForm";
 
 type InitialData = {
-  avatarUrl?: string | null;
-  bannerUrl?: string | null;
-  [key: string]: any;
+  displayName: string;
+  bio: string;
+  websiteUrl: string;
+  instagramUrl: string;
+  twitterUrl: string;
+  youtubeUrl: string;
+  tiktokUrl: string;
+  facebookUrl: string;
+  avatarUrl: string;
+  bannerUrl: string;
+  slug: string;
+  isPublic: boolean;
 };
 
 type ProfileStats = {
@@ -27,7 +53,8 @@ export default function ProfilePageClient({
   initialData,
   initialStats,
 }: ProfilePageClientProps) {
-  const [form, setForm] = useState<InitialData>(initialData);
+  const normalizedInitialData = normalizeInitialData(initialData);
+  const [form, setForm] = useState<InitialData>(normalizedInitialData);
   const [stats] = useState<ProfileStats>(initialStats);
 
   // Fallbacks, falls irgendwas in stats fehlt

@@ -1,54 +1,40 @@
-import { NextResponse, type NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-export const dynamic = "force-dynamic";
+// ✅ Next 16: params ist Promise und enthält beide Segmente (id + productId)
+type Ctx = { params: Promise<{ id: string; productId: string }> };
 
-type Ctx = {
-  params: Promise<{
-    id: string;        // kommt von /dashboard/edit/[id] (kannst du ignorieren)
-    productId: string; // wichtig fürs Löschen
-  }>;
-};
-
-export async function POST(_req: NextRequest, context: Ctx) {
+export async function POST(_req: NextRequest, ctx: Ctx) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { productId } = await context.params;
-  const userId = session.user.id;
-
-  // (optional aber empfehlenswert) Nur Owner oder Admin darf löschen:
-  const isAdmin = session.user.role === "ADMIN";
-
-  const product = await prisma.product.findUnique({
-    where: { id: productId },
-    select: { id: true, vendorId: true },
-  });
-
-  if (!product) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
-  }
-
-  if (!isAdmin && product.vendorId !== userId) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
+  const { productId } = await ctx.params;
 
   try {
-    // Falls du Relationen hast, die Delete blockieren, ggf. vorher dependent rows löschen.
-    // Beispiel (nur falls vorhanden):
-    // await prisma.like.deleteMany({ where: { productId } });
-    // await prisma.comment.deleteMany({ where: { productId } });
-    // await prisma.productView.deleteMany({ where: { productId } });
+    // Optional: Ownership/Role Check (wenn du willst)
+    // z.B. nur Vendor darf eigene Produkte löschen oder Admin alles:
+    // const me = session.user;
+    // if (me.role === "VENDOR") {
+    //   const owns = await prisma.product.findFirst({ where: { id: productId, vendorId: me.id } });
+    //   if (!owns) return NextResponse.json({ error: "Not allowed" }, { status: 403 });
+    // }
 
-    const deleted = await prisma.product.delete({ where: { id: productId } });
+    // Wenn du FK-Constraints hast: erst abhängige Datensätze löschen
+    await prisma.$transaction([
+      prisma.like.deleteMany({ where: { productId } }),
+      prisma.comment.deleteMany({ where: { productId } }),
+      prisma.review.deleteMany({ where: { productId } }),
+      prisma.productView.deleteMany({ where: { productId } }).catch(() => undefined as any),
+      prisma.order.deleteMany({ where: { productId } }),
+      prisma.product.delete({ where: { id: productId } }),
+    ]);
 
-    return NextResponse.json({ success: true, product: deleted });
+    return NextResponse.json({ success: true });
   } catch (err: any) {
-    console.error("DELETE PRODUCT ERROR:", err);
     return NextResponse.json(
       { error: err?.message ?? "Delete failed" },
       { status: 500 }

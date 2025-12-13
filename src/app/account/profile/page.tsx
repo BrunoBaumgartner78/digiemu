@@ -41,6 +41,7 @@ export default async function ProfilePage() {
     websiteUrl: safeProfile.websiteUrl ?? "",
     instagramUrl: safeProfile.instagramUrl ?? "",
     twitterUrl: safeProfile.twitterUrl ?? "",
+    youtubeUrl: typeof (safeProfile as any).youtubeUrl === "string" ? (safeProfile as any).youtubeUrl ?? "" : "",
     tiktokUrl: safeProfile.tiktokUrl ?? "",
     facebookUrl: safeProfile.facebookUrl ?? "",
     avatarUrl: safeProfile.avatarUrl ?? "",

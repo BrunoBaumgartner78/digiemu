@@ -1,6 +1,8 @@
 // src/app/become-seller/page.tsx
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/authOptions";
+
+import { authOptions } from "@/lib/auth"; // <-- so
+
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 

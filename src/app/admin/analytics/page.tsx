@@ -1,8 +1,14 @@
+// src/app/admin/analytics/page.tsx
+
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import AdminAnalyticsClient from "./AdminAnalyticsClient";
+import AdminAnalyticsClient, {
+  RevenuePoint,
+  TopProductPoint,
+} from "./AdminAnalyticsClient";
+
 
 export const metadata = {
   title: "Admin Analytics – DigiEmu",
@@ -17,8 +23,13 @@ function parseDaysParam(searchParams?: SearchParams): number | null {
   return null;
 }
 
-export default async function AdminAnalyticsPage({ searchParams }: { searchParams?: SearchParams }) {
+export default async function AdminAnalyticsPage({
+  searchParams,
+}: {
+  searchParams?: SearchParams;
+}) {
   const session = await getServerSession(authOptions);
+
   if (!session?.user || session.user.role !== "ADMIN") {
     return (
       <main className="min-h-screen flex items-center justify-center px-4">
@@ -31,29 +42,76 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
     );
   }
 
-  // Date filter
   const days = parseDaysParam(searchParams);
-  let fromDate: Date | undefined = undefined;
+  let fromDate: Date | undefined;
+
   if (days) {
     fromDate = new Date();
     fromDate.setHours(0, 0, 0, 0);
     fromDate.setDate(fromDate.getDate() - days + 1);
   }
 
-  // Orders laden (filtered)
   const orders = await prisma.order.findMany({
     where: fromDate ? { createdAt: { gte: fromDate } } : {},
-    include: { product: true, buyer: true },
-    orderBy: { createdAt: "desc" },
-    take: 25,
+    include: { product: true },
   });
 
+  const completed = orders.filter(
+    (o) => o.status === "COMPLETED" || o.status === "PAID"
+  );
 
-  // KPIs & Aggregationen
-  const completedOrders = orders.filter(o => o.status === "COMPLETED");
-  const totalOrders = orders.length;
-  const totalRevenueCents = completedOrders.reduce((sum, o) => sum + o.amountCents, 0);
+  // ---- Revenue over time ----
+  const byDay = new Map<string, { revenueCents: number; orders: number }>();
 
-  // Render analytics client
-  return <AdminAnalyticsClient />;
+  for (const o of completed) {
+    const key = o.createdAt.toISOString().slice(0, 10);
+    const cur = byDay.get(key) ?? { revenueCents: 0, orders: 0 };
+    cur.revenueCents += o.amountCents;
+    cur.orders += 1;
+    byDay.set(key, cur);
+  }
+
+  const revenueOverTime: RevenuePoint[] = Array.from(byDay.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([date, v]) => ({
+      date,
+      revenueCents: v.revenueCents,
+      orders: v.orders,
+    }));
+
+  // ---- Top products ----
+  const byProduct = new Map<
+    string,
+    { title: string; revenueCents: number; orders: number }
+  >();
+
+  for (const o of completed) {
+    const id = o.productId;
+    const title = o.product?.title ?? "Produkt";
+    const cur = byProduct.get(id) ?? {
+      title,
+      revenueCents: 0,
+      orders: 0,
+    };
+    cur.revenueCents += o.amountCents;
+    cur.orders += 1;
+    byProduct.set(id, cur);
+  }
+
+  const topProducts: TopProductPoint[] = Array.from(byProduct.entries())
+    .map(([productId, v]) => ({
+      productId,
+      title: v.title,
+      revenueCents: v.revenueCents,
+      orders: v.orders,
+    }))
+    .sort((a, b) => b.revenueCents - a.revenueCents)
+    .slice(0, 10);
+
+  return (
+    <AdminAnalyticsClient
+      revenueOverTime={revenueOverTime}
+      topProducts={topProducts}
+    />
+  );
 }
