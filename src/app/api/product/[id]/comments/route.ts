@@ -3,15 +3,15 @@ import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import { authOptions } from "@/app/api/auth/[...nextauth]/authOptions";
 
-type Params = {
-  params: {
-    id: string;
-  };
+type Ctx = {
+  params: Promise<{ id: string }>;
 };
 
-export async function GET(_: Request, { params }: Params) {
+export async function GET(_req: Request, ctx: Ctx) {
+  const { id } = await ctx.params;
+
   const comments = await prisma.comment.findMany({
-    where: { productId: params.id },
+    where: { productId: id },
     include: { user: true },
     orderBy: { createdAt: "desc" },
   });
@@ -19,7 +19,9 @@ export async function GET(_: Request, { params }: Params) {
   return NextResponse.json(comments);
 }
 
-export async function POST(req: Request, { params }: Params) {
+export async function POST(req: Request, ctx: Ctx) {
+  const { id } = await ctx.params;
+
   const session = await getServerSession(authOptions);
   const userId = session?.user?.id;
 
@@ -38,8 +40,8 @@ export async function POST(req: Request, { params }: Params) {
 
   const comment = await prisma.comment.create({
     data: {
-      productId: params.id,
-      userId, // ✅ direktes Feld, passt zu deinem Prisma Model
+      productId: id,
+      userId,
       content,
     },
     include: { user: true },
