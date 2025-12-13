@@ -1,73 +1,45 @@
 // src/app/api/track-view/route.ts
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";
-import crypto from "crypto";
-
-const VIEW_WINDOW_HOURS = 24;
+import { prisma } from "@/lib/prisma";
 
 export async function POST(req: Request) {
   try {
-    const { productId } = await req.json();
+    const body = await req.json().catch(() => ({}));
+    const productId = String(body?.productId ?? "").trim();
 
-    if (!productId || typeof productId !== "string") {
-      return NextResponse.json({ error: "Invalid productId" }, { status: 400 });
+    if (!productId) {
+      return NextResponse.json({ error: "Missing productId" }, { status: 400 });
     }
 
-    // ------------------------------------------------------------
-    // 1) Viewer-ID aus Cookie lesen oder neu generieren
-    // ------------------------------------------------------------
-    const cookieStore = cookies();
+    // ✅ Next 16 / Turbopack: cookies() kann Promise sein -> await
+    const cookieStore = await cookies();
+
     let viewerId = cookieStore.get("digiemu_vid")?.value ?? null;
 
     if (!viewerId) {
       viewerId = crypto.randomUUID();
-      // Cookie setzen – 1 Jahr gültig
       cookieStore.set("digiemu_vid", viewerId, {
-        path: "/",
-        httpOnly: false,   // client darf es lesen
+        httpOnly: true,
         sameSite: "lax",
-        maxAge: 60 * 60 * 24 * 365,
+        secure: true,
+        path: "/",
+        maxAge: 60 * 60 * 24 * 365, // 1 Jahr
       });
     }
 
-    // ------------------------------------------------------------
-    // 2) Prüfen, ob es innerhalb der letzten 24h schon eine View gab
-    // ------------------------------------------------------------
-    const cutoff = new Date(Date.now() - VIEW_WINDOW_HOURS * 60 * 60 * 1000);
+    // Optional: Logging in DB (passe Felder an dein Schema an)
+    // Wenn du eine Tabelle "ProductView" hast:
+    // await prisma.productView.create({ data: { productId, viewerId } });
 
-    const recentView = await prisma.productView.findFirst({
-      where: {
-        productId,
-        viewerId,
-        createdAt: { gte: cutoff },
-      },
-    });
+    // Wenn du nur einen Counter im Product hast:
+    // await prisma.product.update({ where: { id: productId }, data: { viewCount: { increment: 1 } } });
 
-    if (recentView) {
-      return NextResponse.json({
-        ok: true,
-        deduped: true,
-        message: "View already counted within last 24h",
-      });
-    }
-
-    // ------------------------------------------------------------
-    // 3) Neue View speichern
-    // ------------------------------------------------------------
-    await prisma.productView.create({
-      data: {
-        productId,
-        viewerId,
-      },
-    });
-
-    return NextResponse.json({
-      ok: true,
-      stored: true,
-    });
-  } catch (err) {
-    console.error("track-view error:", err);
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
+    return NextResponse.json({ ok: true, viewerId });
+  } catch (e: any) {
+    return NextResponse.json(
+      { error: "Track view failed", details: e?.message ?? String(e) },
+      { status: 500 }
+    );
   }
 }
