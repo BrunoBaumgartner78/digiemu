@@ -1,12 +1,12 @@
-import NextAuth from "next-auth";
+import NextAuth, { type NextAuthOptions } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
-import { prisma } from "../../../../../lib/prisma";
+import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export const { handlers } = NextAuth({
+export const authOptions: NextAuthOptions = {
   providers: [
     Credentials({
       name: "Credentials",
@@ -23,14 +23,14 @@ export const { handlers } = NextAuth({
 
         if (!user?.password) return null;
 
-        // bcrypt login (prod-safe)
         const ok = await bcrypt.compare(credentials.password, user.password);
         if (!ok) return null;
 
+        // NextAuth v4 expects an object with id as string
         return {
           id: user.id,
           email: user.email,
-          name: user.name ?? null,
+          name: user.name ?? undefined,
           role: user.role,
         } as any;
       },
@@ -54,8 +54,10 @@ export const { handlers } = NextAuth({
       return session;
     },
   },
-});
+};
 
-// ✅ v5 exports:
-export const GET = handlers.GET;
-export const POST = handlers.POST;
+const handler = NextAuth(authOptions);
+export { handler as GET, handler as POST };
+
+// ✅ NICHT nochmal re-exporten von "./route"!
+// ✅ KEIN: export { authOptions } from "./route";
