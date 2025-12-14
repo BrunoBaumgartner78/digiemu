@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/authOptions";
+import { authOptions } from "@/lib/authOptions";
 import EarningsChart from "@/components/vendor/EarningsChart";
 import { prisma } from "@/lib/prisma";
 

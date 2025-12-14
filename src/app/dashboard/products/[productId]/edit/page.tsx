@@ -1,7 +1,7 @@
 // src/app/dashboard/products/[productId]/edit/page.tsx
 import { getServerSession } from "next-auth";
 import { redirect, notFound } from "next/navigation";
-import { authOptions } from "@/app/api/auth/[...nextauth]/authOptions";
+import { authOptions } from "@/lib/authOptions";
 import { prisma } from "@/lib/prisma";
 
 import EditProductForm from "./EditProductForm";

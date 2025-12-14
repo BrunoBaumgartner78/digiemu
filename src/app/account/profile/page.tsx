@@ -1,7 +1,7 @@
 // src/app/account/profile/page.tsx
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/authOptions";
+import { authOptions } from "@/lib/authOptions";
 import { prisma } from "@/lib/prisma";
 import { getProfileBadges } from "@/lib/profileBadges";
 import ProfilePageClient from "../profile/ProfilePageClient";
