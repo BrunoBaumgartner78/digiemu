@@ -1,3 +1,4 @@
+// src/lib/auth.ts
 import Credentials from "next-auth/providers/credentials";
 import type { NextAuthOptions } from "next-auth";
 import { prisma } from "@/lib/prisma";
@@ -9,10 +10,20 @@ export const authOptions: NextAuthOptions = {
       credentials: { email: {}, password: {} },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
-        const user = await prisma.user.findUnique({ where: { email: credentials.email } });
+
+        const user = await prisma.user.findUnique({
+          where: { email: credentials.email },
+        });
+
         if (!user?.password) return null;
         if (credentials.password !== user.password) return null;
-        return { id: user.id, email: user.email, role: user.role, name: user.name ?? null };
+
+        return {
+          id: user.id,
+          email: user.email,
+          role: user.role,
+          name: user.name ?? null,
+        };
       },
     }),
   ],
