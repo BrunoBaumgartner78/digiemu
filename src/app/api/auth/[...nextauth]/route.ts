@@ -2,13 +2,11 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "../../../../../lib/prisma";
-import type { JWT } from "next-auth/jwt";
-import type { Session } from "next-auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export const authOptions = {
+export const { handlers } = NextAuth({
   providers: [
     Credentials({
       name: "Credentials",
@@ -25,41 +23,39 @@ export const authOptions = {
 
         if (!user?.password) return null;
 
+        // bcrypt login (prod-safe)
         const ok = await bcrypt.compare(credentials.password, user.password);
         if (!ok) return null;
 
         return {
           id: user.id,
           email: user.email,
-          role: user.role,
           name: user.name ?? null,
-        };
+          role: user.role,
+        } as any;
       },
     }),
   ],
-  session: { strategy: "jwt" as const },
+  session: { strategy: "jwt" },
   pages: { signIn: "/login" },
   callbacks: {
-    async jwt({ token, user }: { token: JWT; user?: { id?: string; role?: string } }) {
+    async jwt({ token, user }: any) {
       if (user) {
-        if (typeof user.id === "string") token.id = user.id;
-        if (user.role === "BUYER" || user.role === "VENDOR" || user.role === "ADMIN") {
-          token.role = user.role;
-        }
+        token.id = user.id;
+        token.role = user.role;
       }
       return token;
     },
-    async session({ session, token }: { session: Session; token: JWT }) {
-      if (session.user && token) {
-        // @ts-ignore
-        if (typeof token.id === "string") session.user.id = token.id;
-        // @ts-ignore
-        if (typeof token.role === "string") session.user.role = token.role;
+    async session({ session, token }: any) {
+      if (session?.user) {
+        session.user.id = token.id;
+        session.user.role = token.role;
       }
       return session;
     },
   },
-};
+});
 
-const handler = NextAuth(authOptions);
-export { handler as GET, handler as POST };
+// ✅ v5 exports:
+export const GET = handlers.GET;
+export const POST = handlers.POST;
