@@ -6,30 +6,53 @@ const prisma = new PrismaClient();
 async function main() {
   console.log("Seeding demo data...");
 
-  // Demo-Daten aufräumen
-  await prisma.product.deleteMany({});
-  await prisma.vendorProfile.deleteMany({
-    where: { displayName: "Demo Vendor" },
-  });
-  await prisma.user.deleteMany({
+  // 0) Helper: löscht nur, wenn Model existiert (verhindert Crash, falls Name anders ist)
+  const safeDeleteMany = async (modelName, args = {}) => {
+    const model = prisma[modelName];
+    if (!model || typeof model.deleteMany !== "function") {
+      console.log(`(skip) prisma.${modelName}.deleteMany - model not found`);
+      return;
+    }
+    await model.deleteMany(args);
+    console.log(`(ok) cleared ${modelName}`);
+  };
+
+  // 1) ZUERST: Kind-Tabellen löschen (FK-Abhängigkeiten)
+  //    Passe/ergänze die Liste bei Bedarf – Reihenfolge ist wichtig: Kinder → Eltern
+  await safeDeleteMany("productView");         // z.B. ProductView
+  await safeDeleteMany("productLike");         // z.B. ProductLike / Like
+  await safeDeleteMany("like");                // falls Modell "Like" heißt
+  await safeDeleteMany("review");              // Reviews
+  await safeDeleteMany("comment");             // Kommentare
+  await safeDeleteMany("downloadLink");        // DownloadLinks
+  await safeDeleteMany("download");            // falls vorhanden
+  await safeDeleteMany("orderItem");           // OrderItems (wenn Order -> Items)
+  await safeDeleteMany("order");               // Orders (wenn OrderItem vorher weg ist)
+
+  // 2) Danach: Produkte löschen
+  await safeDeleteMany("product");
+
+  // 3) Demo VendorProfile löschen (und ggf. weitere Tabellen, die VendorProfile referenzieren)
+  await safeDeleteMany("vendorProfile", { where: { displayName: "Demo Vendor" } });
+
+  // 4) Demo Users löschen
+  await safeDeleteMany("user", {
     where: {
-      email: {
-        in: ["admin@digiemu.test", "vendor@digiemu.test"],
-      },
+      email: { in: ["admin@digiemu.test", "vendor@digiemu.test"] },
     },
   });
 
-  // Admin mit KLARTEXT-Passwort (für lokalen Login)
+  // 5) Demo Admin erstellen
   const admin = await prisma.user.create({
     data: {
       email: "admin@digiemu.test",
-      password: "demo1234",
+      password: "demo1234", // lokal ok; in prod bitte gehashed / NextAuth flow
       role: "ADMIN",
       name: "Demo Admin",
     },
   });
 
-  // Vendor mit KLARTEXT-Passwort
+  // 6) Demo Vendor erstellen
   const vendor = await prisma.user.create({
     data: {
       email: "vendor@digiemu.test",
@@ -47,6 +70,7 @@ async function main() {
     },
   });
 
+  // 7) Demo Produkt erstellen
   await prisma.product.create({
     data: {
       title: "Demo Produkt 1",
@@ -69,7 +93,7 @@ async function main() {
 
 main()
   .catch((e) => {
-    console.error(e);
+    console.error("Seed failed:", e);
     process.exit(1);
   })
   .finally(async () => {
