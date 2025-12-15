@@ -15,7 +15,7 @@ export const dynamic = "force-dynamic";
 export async function POST(req: NextRequest) {
   try {
     const baseUrl =
-      process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+      process.env.NEXT_PUBLIC_APP_URL ?? "http://digiemu.vercel.app";
     const contentType = req.headers.get("content-type") ?? "";
     const accept = req.headers.get("accept") || "";
 
