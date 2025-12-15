@@ -4,9 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "postinstall": "prisma generate",
+    "build": "prisma generate && prisma migrate deploy && next build"
   },
   "dependencies": {
     "@auth/core": "^0.34.3",
@@ -35,12 +36,17 @@
     "baseline-browser-mapping": "^2.9.3",
     "eslint": "^9",
     "eslint-config-next": "16.0.3",
-    "prisma": "^6.19.0",
+    "prisma": "^6.19.1",
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
   },
   "prisma": {
     "seed": "node prisma/seed.cjs"
+  },
+  "overrides": {
+    "react-server-dom-turbopack": "19.2.2",
+    "react-server-dom-webpack": "19.2.2",
+    "react-server-dom-parcel": "19.2.2"
   }
 }

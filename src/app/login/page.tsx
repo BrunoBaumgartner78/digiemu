@@ -1,14 +1,16 @@
-// src/app/login/page.tsx
 "use client";
 
 import { useState, FormEvent } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import styles from "./LoginPage.module.css";
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl") ?? "/dashboard";
+
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -18,25 +20,26 @@ export default function LoginPage() {
     setErrorMessage(null);
 
     const form = e.currentTarget;
-    const email = (form.elements.namedItem("email") as HTMLInputElement).value;
-    const password = (form.elements.namedItem("password") as HTMLInputElement)
-      .value;
+    const email = (form.elements.namedItem("email") as HTMLInputElement).value.trim();
+    const password = (form.elements.namedItem("password") as HTMLInputElement).value;
 
     const res = await signIn("credentials", {
       redirect: false,
       email,
       password,
+      callbackUrl,
     });
 
     setLoading(false);
 
-    if (!res || res.error) {
+    // NextAuth: res kann null sein; res.ok ist der wichtigste Indikator
+    if (!res || res.ok === false) {
       setErrorMessage("E-Mail oder Passwort ist falsch.");
       return;
     }
 
-    // nach erfolgreichem Login ins Dashboard
-    router.push("/dashboard");
+    // Wenn NextAuth eine URL zurückgibt, nimm die (sauberer als fixes push)
+    router.replace(res.url ?? callbackUrl);
   }
 
   return (
@@ -96,9 +99,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className={`${styles.button} ${
-              loading ? styles.buttonDisabled : ""
-            }`}
+            className={`${styles.button} ${loading ? styles.buttonDisabled : ""}`}
           >
             {loading ? "Wird eingeloggt…" : "Anmelden"}
           </button>
@@ -112,8 +113,7 @@ export default function LoginPage() {
         </div>
 
         <p className={styles.helper}>
-          Mit dem Login akzeptierst du unsere Nutzungsbedingungen und
-          Datenschutzbestimmungen.
+          Mit dem Login akzeptierst du unsere Nutzungsbedingungen und Datenschutzbestimmungen.
         </p>
       </div>
     </div>
