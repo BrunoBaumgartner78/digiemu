@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { logAuditEvent } from "@/lib/logAuditEvent";
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
@@ -47,7 +48,8 @@ export async function POST(req: Request) {
     );
   }
 
-  // Wenn bereits bezahlt → 200 OK zurückgeben
+
+  // Wenn bereits bezahlt → 200 OK zurückgeben (idempotent, kein Logging)
   if (payout.status === "PAID") {
     return NextResponse.json({
       message: "Payout was already marked as PAID.",
@@ -62,6 +64,16 @@ export async function POST(req: Request) {
       status: "PAID",
       paidAt: new Date(),
     },
+  });
+
+  // Audit log (fire-and-forget, darf Flow nicht blockieren)
+  logAuditEvent({
+    actorId: session.user.id,
+    action: "PAYOUT_MARKED_AS_PAID",
+    targetType: "PAYOUT",
+    targetId: updated.id,
+    meta: { vendorId: updated.vendorId, amountCents: updated.amountCents },
+    // IP/UserAgent optional: req.headers.get("x-forwarded-for") etc.
   });
 
   return NextResponse.json({

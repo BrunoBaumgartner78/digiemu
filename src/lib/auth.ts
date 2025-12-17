@@ -1,48 +1,83 @@
-import Credentials from "next-auth/providers/credentials";
+// src/lib/auth.ts
 import type { NextAuthOptions } from "next-auth";
+import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "@/lib/prisma";
 
 export const authOptions: NextAuthOptions = {
+  // wichtig für App Router
+  session: { strategy: "jwt" },
+
   providers: [
-    Credentials({
+    CredentialsProvider({
       name: "Credentials",
-      credentials: { email: {}, password: {} },
+      credentials: {
+        email: { label: "E-Mail", type: "text" },
+        password: { label: "Passwort", type: "password" },
+      },
       async authorize(credentials) {
-  if (!credentials?.email || !credentials?.password) return null;
+        try {
+          const email = credentials?.email?.toLowerCase().trim();
+          const password = credentials?.password;
 
-  const user = await prisma.user.findUnique({
-    where: { email: credentials.email },
-    select: { id: true, email: true, password: true, role: true, name: true },
-  });
+          if (!email || !password) return null;
 
-  // ✅ Debug: nur email + ob password gesetzt ist
-  console.log("[auth] lookup user:", {
-    email: user?.email ?? null,
-    hasPassword: !!user?.password,
-  });
+          const user = await prisma.user.findUnique({
+            where: { email },
+            select: {
+              id: true,
+              email: true,
+              name: true,
+              password: true, // ✅ MUSS selektiert sein, sonst immer 401
+              role: true,
+              isBlocked: true,
+            },
+          });
 
-  if (!user?.password) return null;
-  if (credentials.password !== user.password) return null;
+          if (!user) return null;
+          if (user.isBlocked) return null;
 
-  return { id: user.id, email: user.email, role: user.role, name: user.name ?? null };
-}
-,
+          // DEV/MVP: Klartext-Vergleich (passt zu deinem /api/auth/register)
+          if ((user.password ?? "") !== password) return null;
+
+          // NextAuth User-Objekt
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name ?? undefined,
+            role: user.role,
+          } as any;
+        } catch (e) {
+          console.error("[NEXTAUTH_AUTHORIZE_ERROR]", e);
+          return null;
+        }
+      },
     }),
   ],
-  session: { strategy: "jwt" },
-  pages: { signIn: "/login" },
+
   callbacks: {
     async jwt({ token, user }) {
+      // beim Login user -> token
       if (user) {
         token.id = (user as any).id;
         token.role = (user as any).role;
       }
       return token;
     },
+
     async session({ session, token }) {
-      (session.user as any).id = token.id;
-      (session.user as any).role = token.role;
+      if (session.user) {
+        (session.user as any).id = token.id;
+        (session.user as any).role = token.role;
+      }
       return session;
     },
   },
+
+  pages: {
+    signIn: "/login",
+  },
+
 };
+
+// Alias for newer imports (no behavior change)
+export const auth = authOptions;

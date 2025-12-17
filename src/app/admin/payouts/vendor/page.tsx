@@ -1,5 +1,5 @@
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { formatCHF } from "@/lib/format";
@@ -10,7 +10,7 @@ export const metadata = {
 };
 
 export default async function AdminVendorEarningsPage() {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession(auth);
   if (!session?.user || session.user.role !== "ADMIN") {
     return (
       <main className="min-h-screen flex items-center justify-center px-4">

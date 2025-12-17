@@ -1,5 +1,8 @@
 /* src/app/dashboard/products/ProductsPage.module.css */
 
+/* ---------------------------
+   Header
+---------------------------- */
 .headerRow {
   display: flex;
   flex-direction: column;
@@ -8,14 +11,16 @@
 
 .title {
   font-size: clamp(1.7rem, 2vw + 1rem, 2.3rem);
-  font-weight: 700;
-  color: var(--color-text-primary, #e5edf7);
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  color: var(--txt);
 }
 
 .subtitle {
-  font-size: 0.9rem;
-  max-width: 34rem;
-  color: var(--color-text-muted, #9ca3af);
+  font-size: 0.95rem;
+  max-width: 42rem;
+  color: var(--txt-muted);
+  line-height: 1.55;
 }
 
 .headerActions {
@@ -24,7 +29,7 @@
   gap: 0.75rem;
 }
 
-/* Primärer Button (Neues Produkt) */
+/* Primärer Button */
 .primaryBtn {
   display: inline-flex;
   align-items: center;
@@ -34,63 +39,164 @@
   border-radius: 999px;
 
   font-size: 0.75rem;
-  font-weight: 600;
+  font-weight: 650;
   letter-spacing: 0.18em;
   text-transform: uppercase;
 
-  background: linear-gradient(135deg, #2563eb, #4f46e5);
+  background: linear-gradient(135deg, var(--accent, #2563eb), var(--accent-2, #4f46e5));
   color: #f9fafb;
   text-decoration: none;
 
-  box-shadow: 0 18px 40px rgba(37, 99, 235, 0.55);
-  border: 1px solid rgba(37, 99, 235, 0.95);
+  box-shadow: 0 18px 40px rgba(37, 99, 235, 0.35);
+  border: 1px solid rgba(37, 99, 235, 0.45);
 
-  transition:
-    box-shadow 0.18s ease,
-    transform 0.14s ease,
-    filter 0.14s ease;
+  transition: box-shadow 0.18s ease, transform 0.14s ease, filter 0.14s ease;
 }
 
 .primaryBtn:hover {
-  box-shadow: 0 22px 55px rgba(37, 99, 235, 0.75);
+  box-shadow: 0 22px 55px rgba(37, 99, 235, 0.5);
   filter: brightness(1.05);
   transform: translateY(-1px);
 }
 
 .primaryBtn:active {
   transform: translateY(0);
-  box-shadow: 0 14px 32px rgba(37, 99, 235, 0.55);
+  box-shadow: 0 14px 32px rgba(37, 99, 235, 0.35);
 }
 
-/* Empty State */
+/* ---------------------------
+   Filter Chips
+---------------------------- */
+.filterRow {
+  margin-top: 0.25rem;
+  margin-bottom: 1.35rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.filterLabel {
+  font-size: 0.75rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 650;
+  color: var(--txt-muted);
+}
+
+.filterChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.filterChip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+
+  padding: 0.35rem 0.95rem;
+  border-radius: 999px;
+
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+
+  border: 1px solid var(--card-border, rgba(15, 23, 42, 0.08));
+  background: var(--card-bg, rgba(255, 255, 255, 0.82));
+  color: var(--txt-muted);
+
+  box-shadow:
+    8px 8px 18px var(--nm-lo, rgba(15, 23, 42, 0.14)),
+    -8px -8px 18px var(--nm-hi, rgba(255, 255, 255, 0.85));
+
+  transition: transform 120ms ease, box-shadow 160ms ease, color 160ms ease, background 160ms ease;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.filterChip:hover {
+  transform: translateY(-1px);
+  color: var(--txt);
+  box-shadow:
+    10px 10px 22px var(--nm-lo, rgba(15, 23, 42, 0.14)),
+    -10px -10px 22px var(--nm-hi, rgba(255, 255, 255, 0.85));
+}
+
+.filterChipActive {
+  background: radial-gradient(circle at 0% 0%, rgba(96, 165, 250, 0.45), transparent 55%),
+    linear-gradient(135deg, var(--accent, #2563eb), var(--accent-2, #4f46e5));
+  color: #fff;
+  border-color: rgba(129, 140, 248, 0.55);
+  box-shadow: 0 14px 30px rgba(37, 99, 235, 0.35);
+}
+
+.filterChipBadge {
+  min-width: 1.4rem;
+  padding: 0.05rem 0.4rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 750;
+  text-align: center;
+
+  background: rgba(15, 23, 42, 0.08);
+  color: var(--txt);
+  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.22);
+}
+
+.filterChipActive .filterChipBadge {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+}
+
+@media (max-width: 768px) {
+  .filterRow {
+    align-items: flex-start;
+  }
+  .filterLabel {
+    width: 100%;
+  }
+}
+
+/* ---------------------------
+   Empty State
+---------------------------- */
 .emptyWrapper {
   display: flex;
   justify-content: center;
 }
 
 .emptyCard {
-  max-width: 420px;
+  max-width: 520px;
   width: 100%;
-  padding: 2.2rem 2.4rem;
+  padding: 2.1rem 2.2rem;
   border-radius: 1.8rem;
   text-align: center;
 
-  background: var(--color-card-bg, rgba(15, 23, 42, 0.9));
-  border: 1px solid rgba(148, 163, 184, 0.35);
-  box-shadow: 0 22px 60px rgba(15, 23, 42, 0.6);
+  background: var(--card-bg, rgba(255, 255, 255, 0.82));
+  border: 1px solid var(--card-border, rgba(15, 23, 42, 0.08));
+  box-shadow:
+    18px 18px 45px var(--nm-lo, rgba(15, 23, 42, 0.14)),
+    -18px -18px 45px var(--nm-hi, rgba(255, 255, 255, 0.85));
+
+  color: var(--txt);
 }
 
 .emptyTitle {
-  font-size: 1.3rem;
-  font-weight: 600;
-  color: var(--color-text-primary, #e5edf7);
-  margin-bottom: 0.4rem;
+  font-size: 1.25rem;
+  font-weight: 750;
+  margin: 0 0 0.4rem;
 }
 
 .emptyText {
-  font-size: 0.9rem;
-  color: var(--color-text-muted, #94a3b8);
-  margin-bottom: 1.4rem;
+  font-size: 0.95rem;
+  margin: 0 0 1.25rem;
+  color: var(--txt-muted);
 }
 
 .emptyBtn {
@@ -102,49 +208,89 @@
   border-radius: 999px;
 
   font-size: 0.78rem;
-  font-weight: 600;
+  font-weight: 650;
   letter-spacing: 0.16em;
   text-transform: uppercase;
 
-  background: linear-gradient(135deg, #2563eb, #4f46e5);
-  color: #f9fafb;
+  background: linear-gradient(135deg, var(--accent, #2563eb), var(--accent-2, #4f46e5));
+  color: #fff;
   text-decoration: none;
-  box-shadow: 0 18px 40px rgba(37, 99, 235, 0.5);
+  box-shadow: 0 18px 40px rgba(37, 99, 235, 0.3);
+  border: 1px solid rgba(37, 99, 235, 0.35);
 }
 
-/* Grid */
+/* ---------------------------
+   Grid
+---------------------------- */
 .grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1.5rem;
 }
 
-/* Card */
+@media (max-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------------------------
+   Product Card (Less flat + readable in dark)
+---------------------------- */
 .card {
   position: relative;
   display: flex;
   flex-direction: column;
   gap: 0.9rem;
 
-  padding: 1.1rem 1.1rem 1rem;
-  border-radius: 1.7rem;
+  padding: 1.05rem 1.05rem 1rem;
+  border-radius: var(--r-xl, 1.6rem);
 
-  background: var(--color-card-bg, rgba(15, 23, 42, 0.92));
-  box-shadow: var(--shadow-soft, 0 22px 60px rgba(15, 23, 42, 0.6));
-  border: 1px solid rgba(15, 23, 42, 0.85);
+  /* Layered neumorph surface */
+  background:
+    radial-gradient(circle at 0% 0%, rgba(255, 255, 255, 0.22), transparent 52%),
+    radial-gradient(circle at 100% 0%, rgba(96, 165, 250, 0.14), transparent 55%),
+    var(--card-bg, rgba(255, 255, 255, 0.82));
 
-  backdrop-filter: blur(18px);
+  border: 1px solid var(--card-border, rgba(15, 23, 42, 0.08));
+  box-shadow:
+    22px 22px 55px var(--nm-lo, rgba(15, 23, 42, 0.14)),
+    -22px -22px 55px var(--nm-hi, rgba(255, 255, 255, 0.85)),
+    inset 1px 1px 0 rgba(255, 255, 255, 0.35);
 
-  transition:
-    transform 0.16s ease,
-    box-shadow 0.18s ease,
-    border-color 0.18s ease;
+  color: var(--txt);
+
+  transition: transform 0.16s ease, box-shadow 0.18s ease, border-color 0.18s ease, filter 0.18s ease;
+}
+
+.card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(circle at 30% 0%, rgba(129, 140, 248, 0.22), transparent 60%);
+  opacity: 0;
+  transition: opacity 160ms ease;
 }
 
 .card:hover {
-  transform: translateY(-4px) scale(1.01);
-  box-shadow: 0 26px 70px rgba(0, 0, 0, 0.9);
-  border-color: rgba(59, 130, 246, 0.9);
+  transform: translateY(-4px);
+  border-color: rgba(129, 140, 248, 0.35);
+  box-shadow:
+    28px 28px 70px var(--nm-lo, rgba(15, 23, 42, 0.14)),
+    -18px -18px 55px var(--nm-hi, rgba(255, 255, 255, 0.85)),
+    inset 1px 1px 0 rgba(255, 255, 255, 0.42);
+}
+
+.card:hover::after {
+  opacity: 1;
 }
 
 /* Thumbnail */
@@ -152,13 +298,25 @@
   position: relative;
   width: 100%;
   aspect-ratio: 4 / 3;
-  border-radius: 1.3rem;
+  border-radius: var(--r-lg, 1.25rem);
   overflow: hidden;
-  background: radial-gradient(
-    circle at top left,
-    rgba(148, 163, 184, 0.28),
-    rgba(15, 23, 42, 0.98)
-  );
+
+  background:
+    radial-gradient(circle at top left, rgba(148, 163, 184, 0.22), transparent 60%),
+    radial-gradient(circle at bottom right, rgba(96, 165, 250, 0.12), transparent 55%),
+    rgba(15, 23, 42, 0.06);
+
+  border: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+.thumbWrapper::after {
+  /* subtle contrast scrim for status pill readability */
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.14), transparent 45%, rgba(0,0,0,0.12));
+  pointer-events: none;
+  opacity: 0.65;
 }
 
 .thumbImage {
@@ -177,41 +335,48 @@
 .thumbPlaceholder {
   width: 100%;
   height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: rgba(148, 163, 184, 0.9);
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  color: var(--txt-muted);
+  background: radial-gradient(circle at 0% 0%, rgba(96, 165, 250, 0.22), transparent 55%);
 }
 
-.thumbIcon {
-  opacity: 0.9;
-}
-
-/* Status-Pill */
+/* Status Pill */
 .statusPill {
   position: absolute;
   left: 0.9rem;
   top: 0.9rem;
+  z-index: 2;
 
   padding: 0.25rem 0.8rem;
   border-radius: 999px;
 
   font-size: 0.68rem;
-  font-weight: 600;
+  font-weight: 750;
   letter-spacing: 0.18em;
   text-transform: uppercase;
+
+  backdrop-filter: blur(10px);
 }
 
 .statusLive {
   background: rgba(34, 197, 94, 0.14);
-  border: 1px solid rgba(34, 197, 94, 0.8);
-  color: rgba(190, 242, 100, 0.98);
+  border: 1px solid rgba(34, 197, 94, 0.55);
+  color: rgba(34, 197, 94, 0.95);
 }
 
 .statusDraft {
-  background: rgba(148, 163, 184, 0.18);
-  border: 1px solid rgba(148, 163, 184, 0.7);
-  color: rgba(226, 232, 240, 0.95);
+  background: rgba(148, 163, 184, 0.14);
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  color: var(--txt);
+}
+
+.statusBlocked {
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.45);
+  color: rgba(239, 68, 68, 0.95);
 }
 
 /* Body */
@@ -219,261 +384,82 @@
   display: flex;
   flex-direction: column;
   gap: 0.45rem;
+  padding: 0 0.1rem;
 }
 
 .cardTitle {
-  font-size: 0.98rem;
-  font-weight: 600;
-  color: var(--color-text-primary, #e5edf7);
+  font-size: 1.02rem;
+  font-weight: 750;
+  color: var(--txt);
+  letter-spacing: -0.01em;
 }
 
 .cardDescription {
-  font-size: 0.8rem;
+  font-size: 0.86rem;
   line-height: 1.6;
-  color: var(--color-text-muted, #9ca3af);
+  color: var(--txt-muted);
 }
 
 /* Meta */
 .metaRow {
   display: flex;
   gap: 1.2rem;
-  margin-top: 0.3rem;
-}
-
-.metaItem {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-}
-
-.metaLabel {
-  font-size: 0.68rem;
-  text-transform: uppercase;
-  letter-spacing: 0.16em;
-  color: rgba(148, 163, 184, 0.85);
-}
-
-.metaValue {
-  font-size: 0.88rem;
-  font-weight: 600;
-  color: var(--color-text-primary, #e5edf7);
-}
-
-.metaFoot {
-  margin-top: 0.4rem;
-  display: flex;
-  justify-content: space-between;
+  margin-top: 0.35rem;
   align-items: baseline;
-  gap: 0.4rem;
 }
 
-.metaDateLabel {
-  font-size: 0.68rem;
-  text-transform: uppercase;
-  letter-spacing: 0.16em;
-  color: rgba(148, 163, 184, 0.85);
+.metaStrong {
+  font-weight: 800;
+  color: var(--txt);
 }
 
-.metaDate {
-  font-size: 0.8rem;
-  color: var(--color-text-muted, #9ca3af);
+.metaMuted {
+  color: var(--txt-muted);
+  font-weight: 650;
 }
 
 /* Actions */
 .actionsRow {
-  margin-top: 0.4rem;
+  margin-top: 0.35rem;
   display: flex;
   gap: 0.6rem;
 }
 
-/* Buttons unten auf der Card */
-.secondaryBtn,
 .ghostBtn {
   flex: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+
   padding: 0.55rem 0.9rem;
   border-radius: 999px;
+
   font-size: 0.75rem;
-  font-weight: 600;
+  font-weight: 650;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  text-decoration: none;
-  transition:
-    background 0.16s ease,
-    color 0.16s ease,
-    box-shadow 0.16s ease,
-    transform 0.12s ease;
-}
 
-/* Bearbeiten */
-.secondaryBtn {
-  background: rgba(59, 130, 246, 0.18);
-  border: 1px solid rgba(59, 130, 246, 0.9);
-  color: rgba(191, 219, 254, 0.98);
-  box-shadow: 0 12px 30px rgba(37, 99, 235, 0.45);
-}
-
-.secondaryBtn:hover {
-  background: rgba(59, 130, 246, 0.3);
-  transform: translateY(-1px);
-}
-
-/* Produkt ansehen */
-.ghostBtn {
   background: transparent;
-  border: 1px solid rgba(148, 163, 184, 0.65);
-  color: rgba(148, 163, 184, 0.95);
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  color: var(--txt);
+  text-decoration: none;
+
+  transition: background 0.16s ease, transform 0.12s ease, box-shadow 0.16s ease, border-color 0.16s ease;
 }
 
 .ghostBtn:hover {
-  background: rgba(15, 23, 42, 0.8);
-  color: #e5edf7;
+  transform: translateY(-1px);
+  background: rgba(96, 165, 250, 0.10);
+  border-color: rgba(129, 140, 248, 0.35);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.10);
 }
 
-/* Responsive */
-@media (max-width: 1024px) {
-  .grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
+/* Mobile tweaks */
 @media (max-width: 720px) {
   .headerRow {
     gap: 0.75rem;
   }
-
-  .grid {
-    grid-template-columns: 1fr;
-  }
-
   .card {
-    border-radius: 1.5rem;
+    border-radius: 1.45rem;
   }
 }
-
-/* =========================================
-   Status-Filter-Zeile (Alle / Aktiv / Entwurf / Blockiert)
-   ========================================= */
-
-.filterRow {
-  margin-top: 0.5rem;
-  margin-bottom: 1.75rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1.25rem;
-  flex-wrap: wrap;
-}
-
-.filterLabel {
-  font-size: 0.75rem;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  font-weight: 600;
-  color: var(--color-text-muted, rgba(148, 163, 184, 0.9));
-}
-
-/* Container für die Chips */
-.filterChips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.6rem;
-}
-
-/* Einzelner Chip */
-.filterChip {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.35rem 0.95rem;
-  border-radius: 999px;
-
-  font-size: 0.75rem;
-  font-weight: 500;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-
-  border: 1px solid rgba(148, 163, 184, 0.45);
-  background: radial-gradient(
-      circle at 30% 20%,
-      rgba(255, 255, 255, 0.18),
-      transparent 60%
-    ),
-    linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.7));
-  color: rgba(148, 163, 184, 0.95);
-
-  box-shadow:
-    4px 4px 10px rgba(15, 23, 42, 0.75),
-    -4px -4px 10px rgba(148, 163, 184, 0.18);
-  transition:
-    background 160ms ease,
-    color 160ms ease,
-    box-shadow 160ms ease,
-    transform 120ms ease;
-  text-decoration: none;
-  cursor: pointer;
-}
-
-.filterChip:hover {
-  transform: translateY(-1px);
-  box-shadow:
-    6px 6px 14px rgba(15, 23, 42, 0.85),
-    -4px -4px 12px rgba(148, 163, 184, 0.25);
-  color: var(--color-text-primary, #f9fafb);
-}
-
-/* Aktiver Chip */
-.filterChipActive {
-  background: radial-gradient(
-      circle at 20% 0%,
-      rgba(96, 165, 250, 0.45),
-      transparent 55%
-    ),
-    linear-gradient(135deg, #2563eb, #1d4ed8);
-  color: #f9fafb;
-  border-color: rgba(129, 140, 248, 0.85);
-  box-shadow:
-    0 0 0 1px rgba(191, 219, 254, 0.4),
-    0 12px 30px rgba(37, 99, 235, 0.55);
-}
-
-/* Mobile: Label über den Chips */
-@media (max-width: 768px) {
-  .filterRow {
-    align-items: flex-start;
-  }
-
-  .filterLabel {
-    width: 100%;
-  }
-}
-
-/* Label + Badge im Chip */
-
-.filterChipLabel {
-  margin-right: 0.35rem;
-}
-
-.filterChipBadge {
-  min-width: 1.4rem;
-  padding: 0.05rem 0.4rem;
-  border-radius: 999px;
-  font-size: 0.7rem;
-  font-weight: 600;
-  text-align: center;
-
-  background: rgba(15, 23, 42, 0.7);
-  color: rgba(226, 232, 240, 0.95);
-  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.5);
-}
-
-/* Badge in aktivem Chip etwas heller/blauer */
-.filterChipActive .filterChipBadge {
-  background: rgba(15, 23, 42, 0.15);
-  color: #eff6ff;
-  box-shadow: inset 0 0 0 1px rgba(191, 219, 254, 0.7);
-}
-

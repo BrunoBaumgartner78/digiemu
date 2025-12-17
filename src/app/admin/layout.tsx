@@ -2,7 +2,7 @@
 import "../globals.css";
 import Link from "next/link";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import AdminBreadcrumbs from "@/components/admin/AdminBredcrumbs";
 
@@ -11,11 +11,12 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession(auth);
   if (!session || session.user.role !== "ADMIN") redirect("/dashboard");
 
   const tabs = [
     { href: "/admin", label: "Dashboard" },
+    { href: "/admin/orders", label: "Orders" },
     { href: "/admin/users", label: "User" },
     { href: "/admin/products", label: "Produkte" },
     { href: "/admin/vendors", label: "Vendoren" },

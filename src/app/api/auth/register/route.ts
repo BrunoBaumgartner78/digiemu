@@ -2,77 +2,87 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+type RegisterBody = {
+  email?: string;
+  password?: string;
+  name?: string;
+  role?: "BUYER" | "VENDOR" | "ADMIN";
+};
+
 export async function POST(req: Request) {
   try {
-    const body = await req.json().catch(() => null);
+    const body: RegisterBody | null = await req.json().catch(() => null);
 
     if (!body) {
       return NextResponse.json(
-        { message: "Ungültiger Request-Body" },
+        { error: "INVALID_BODY", message: "Ungültiger Request." },
         { status: 400 }
       );
     }
 
-    const { email, password, name, role } = body as {
-      email?: string;
-      password?: string;
-      name?: string;
-      role?: string;
-    };
+    const { email, password, name, role } = body;
 
     if (!email || !password) {
       return NextResponse.json(
-        { message: "E-Mail und Passwort sind erforderlich." },
+        {
+          error: "MISSING_FIELDS",
+          message: "E-Mail und Passwort sind erforderlich.",
+        },
         { status: 400 }
       );
     }
 
-    // Rolle absichern – default BUYER
-    const safeRole =
-      role === "VENDOR" || role === "ADMIN" || role === "BUYER"
-        ? role
-        : "BUYER";
+    const normalizedEmail = email.trim().toLowerCase();
 
-    // Existiert User schon?
-    const existing = await prisma.user.findUnique({ where: { email } });
+    // Rolle absichern (ADMIN darf nicht via Public-Register)
+    const safeRole: "BUYER" | "VENDOR" =
+      role === "VENDOR" ? "VENDOR" : "BUYER";
+
+    // Existiert User bereits?
+    const existing = await prisma.user.findUnique({
+      where: { email: normalizedEmail },
+      select: { id: true },
+    });
 
     if (existing) {
       return NextResponse.json(
-        { message: "Es existiert bereits ein Konto mit dieser E-Mail." },
+        {
+          error: "EMAIL_EXISTS",
+          message: "Diese E-Mail-Adresse ist bereits registriert.",
+        },
         { status: 409 }
       );
     }
 
-    // Prisma-Model: User hat (id, email, name?, password?, role, isBlocked, ...)
     const user = await prisma.user.create({
       data: {
-        email,
-        password, // DEV: Klartext wie in deinen authOptions
-        name: name ?? null,
+        email: normalizedEmail,
+        password, // DEV/MVP: Klartext (wie bei dir vorgesehen)
+        name: name?.trim() || null,
         role: safeRole,
-        // isBlocked bekommt automatisch @default(false)
       },
+      select: { id: true },
     });
 
     return NextResponse.json(
       {
+        ok: true,
         message: "Registrierung erfolgreich.",
         userId: user.id,
       },
       { status: 201 }
     );
   } catch (err: any) {
-    console.error("REGISTER ERROR:", err);
-
-    if (err?.code === "P2002") {
-      return NextResponse.json(
-        { message: "Es existiert bereits ein Konto mit dieser E-Mail." },
-        { status: 409 }
-      );
-    }
+    console.error("[AUTH_REGISTER_ERROR]", err);
 
     return NextResponse.json(
-      { message: "Serverfehler bei der Registrierung." },
+      {
+        error: "SERVER_ERROR",
+        message: "Serverfehler bei der Registrierung.",
+      },
       { status: 500 }
     );
   }

@@ -1,6 +1,6 @@
 // src/app/admin/analytics/page.tsx
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import AdminAnalyticsClient from "./AdminAnalyticsClient";
@@ -24,7 +24,7 @@ export default async function AdminAnalyticsPage({
 }: {
   searchParams?: SearchParams;
 }) {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession(auth);
 
   if (!session?.user || session.user.role !== "ADMIN") {
     return (

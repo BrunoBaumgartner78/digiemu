@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
-import { authOptions } from "@/lib/authOptions";
+import { authOptions } from "@/lib/auth";
 
 type Ctx = {
   params: Promise<{ id: string }>;

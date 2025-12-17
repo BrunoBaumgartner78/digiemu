@@ -28,8 +28,11 @@ export function Header() {
         {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-4">
           <Link href="/shop" className="nav-link">Shop</Link>
+          {user && <Link href="/account/buyer-profile" className="nav-link">Buyer-Profil</Link>}
           {isVendor && <Link href="/dashboard" className="nav-link">Dashboard</Link>}
+          {isVendor && <Link href="/account/profile" className="nav-link">Verkäufer-Profil</Link>}
           {isAdmin && <Link href="/admin/products" className="nav-link">Admin</Link>}
+          {isAdmin && <Link href="/account/admin-profile" className="nav-link">Admin-Profil</Link>}
           {isClient && !user && (
             <>
               <Link href="/auth/login" className="neobtn-sm">Login</Link>
@@ -50,8 +53,11 @@ export function Header() {
         <div className="md:hidden border-t border-black/5 bg-[var(--bg)]/90 backdrop-blur-md">
           <nav className="flex flex-col p-4 gap-3">
             <Link href="/shop" className="nav-link" onClick={toggleMenu}>Shop</Link>
+            {user && <Link href="/account/buyer-profile" className="nav-link" onClick={toggleMenu}>Buyer-Profil</Link>}
             {isVendor && <Link href="/dashboard" className="nav-link" onClick={toggleMenu}>Dashboard</Link>}
+            {isVendor && <Link href="/account/profile" className="nav-link" onClick={toggleMenu}>Verkäufer-Profil</Link>}
             {isAdmin && <Link href="/admin/products" className="nav-link" onClick={toggleMenu}>Admin</Link>}
+            {isAdmin && <Link href="/account/admin-profile" className="nav-link" onClick={toggleMenu}>Admin-Profil</Link>}
             {isClient && !user && (
               <>
                 <Link href="/auth/login" className="neobtn-sm" onClick={toggleMenu}>Login</Link>

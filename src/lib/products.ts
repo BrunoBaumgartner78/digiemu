@@ -11,6 +11,15 @@ export type MarketplaceProduct = {
   category: string | null;
   priceCents: number | null;
   thumbnail: string | null;
+  vendorId: string;
+  vendorProfileId?: string | null;
+  vendorProfile?: {
+    id: string;
+    isPublic: boolean;
+    displayName: string | null;
+    avatarUrl: string | null;
+    user?: { name: string | null } | null;
+  } | null;
 };
 
 export type MarketplaceQueryResult = {
@@ -25,6 +34,10 @@ type GetMarketplaceProductsParams = {
   pageSize?: number;
   category?: string;
   search?: string;
+  sort?: "newest" | "price_asc" | "price_desc";
+  /** min/max price in cents (integer) */
+  minPriceCents?: number | undefined;
+  maxPriceCents?: number | undefined;
 };
 
 /**
@@ -42,6 +55,9 @@ export async function getMarketplaceProducts(
     pageSize = PAGE_SIZE,
     category = "all",
     search = "",
+    sort = "newest",
+    minPriceCents,
+    maxPriceCents,
   } = params;
 
   const safePage =
@@ -55,7 +71,7 @@ export async function getMarketplaceProducts(
   // 🔹 Basis-Filter: Nur sichtbare Produkte im Marketplace
   const where: any = {
     isActive: true,             // Vendor hat Produkt aktiviert
-    status: { not: "BLOCKED" }, // nicht vom Admin blockiert
+    status: "ACTIVE",         // nur vollständig veröffentlichte Produkte
   };
 
   // 🔹 Kategorie-Filter
@@ -82,11 +98,23 @@ export async function getMarketplaceProducts(
     ];
   }
 
+  // 🔹 Preis-Range (in cents)
+  if (typeof minPriceCents === "number" || typeof maxPriceCents === "number") {
+    where.priceCents = {} as any;
+    if (typeof minPriceCents === "number") where.priceCents.gte = Math.round(minPriceCents);
+    if (typeof maxPriceCents === "number") where.priceCents.lte = Math.round(maxPriceCents);
+  }
+
+  // 🔹 Sortierung
+  let orderBy: any = { createdAt: "desc" };
+  if (sort === "price_asc") orderBy = { priceCents: "asc" };
+  else if (sort === "price_desc") orderBy = { priceCents: "desc" };
+
   const [total, products] = await Promise.all([
     prisma.product.count({ where }),
     prisma.product.findMany({
       where,
-      orderBy: { createdAt: "desc" },
+      orderBy,
       skip: (safePage - 1) * safePageSize,
       take: safePageSize,
       select: {
@@ -96,6 +124,17 @@ export async function getMarketplaceProducts(
         category: true,
         priceCents: true,
         thumbnail: true,
+        vendorId: true,
+        vendorProfileId: true,
+        vendorProfile: {
+          select: {
+            id: true,
+            isPublic: true,
+            displayName: true,
+            avatarUrl: true,
+            user: { select: { name: true } },
+          },
+        },
       },
     }),
   ]);

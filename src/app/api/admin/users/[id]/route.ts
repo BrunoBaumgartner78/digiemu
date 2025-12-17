@@ -1,7 +1,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
+import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 const ALLOWED_ROLES = ["BUYER", "VENDOR", "ADMIN"] as const;

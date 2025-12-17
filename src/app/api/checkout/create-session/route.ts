@@ -1,23 +1,32 @@
-import { NextResponse } from "next/server";
+// src/app/api/checkout/create-session/route.ts
+import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import Stripe from "stripe";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2025-11-17.clover",
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
+  apiVersion: "2025-11-17.clover" as any,
 });
 
-export async function POST(req: Request) {
-  const auth = await getServerSession(authOptions);
-  if (!auth?.user?.id) {
+export function GET() {
+  return new NextResponse("Method Not Allowed", { status: 405 });
+}
+
+export async function POST(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  const userId = (session?.user as any)?.id as string | undefined;
+
+  if (!userId) {
     return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
   }
 
-  const body = await req.json().catch(() => null);
+  const body = await req.json().catch(() => ({}));
   const productId = body?.productId as string | undefined;
+
   if (!productId) {
     return NextResponse.json({ error: "productId required" }, { status: 400 });
   }
@@ -31,6 +40,7 @@ export async function POST(req: Request) {
       vendorId: true,
       isActive: true,
       status: true,
+      fileUrl: true,
     },
   });
 
@@ -38,11 +48,13 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "PRODUCT_NOT_AVAILABLE" }, { status: 404 });
   }
 
-  const baseUrl =
-    process.env.NEXTAUTH_URL ||
-    process.env.NEXT_PUBLIC_APP_URL ||
-    "http://localhost:3000";
+  if (!product.fileUrl) {
+    return NextResponse.json({ error: "PRODUCT_FILE_MISSING" }, { status: 409 });
+  }
 
+  const origin = req.nextUrl.origin;
+
+  // 1) Checkout Session zuerst erstellen (ohne orderId)
   const checkout = await stripe.checkout.sessions.create({
     mode: "payment",
     payment_method_types: ["card"],
@@ -56,15 +68,33 @@ export async function POST(req: Request) {
         },
       },
     ],
-
-    // ✅ URLs gehören NUR hierhin (top-level)
-    success_url: `${baseUrl}/download/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${baseUrl}/product/${product.id}?canceled=1`,
-
-    // ✅ metadata nur kleine strings (IDs, etc.)
+    success_url: `${origin}/download/success?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${origin}/product/${product.id}?canceled=1`,
     metadata: {
       productId: product.id,
-      buyerId: auth.user.id,
+      buyerId: userId,
+      vendorId: product.vendorId,
+    },
+  });
+
+  // 2) Order anlegen MIT echter stripeSessionId (unique-safe)
+  const order = await prisma.order.create({
+    data: {
+      buyerId: userId,
+      productId: product.id,
+      stripeSessionId: checkout.id, // ✅ wichtig
+      status: "PENDING",
+      amountCents: product.priceCents,
+    },
+    select: { id: true },
+  });
+
+  // 3) Stripe Session metadata nachträglich ergänzen (Webhook braucht orderId)
+  await stripe.checkout.sessions.update(checkout.id, {
+    metadata: {
+      orderId: order.id,
+      productId: product.id,
+      buyerId: userId,
       vendorId: product.vendorId,
     },
   });

@@ -1,4 +1,3 @@
-// src/app/account/profile/ProfileForm.tsx
 "use client";
 
 type InitialData = {
@@ -26,27 +25,20 @@ type ProfileFormProps = {
   stats: Stats;
   onChange: (field: keyof InitialData, value: string | boolean) => void;
   onSubmit: (e: React.FormEvent) => Promise<void> | void;
+  saving?: boolean;
+  onPreview?: () => void;
 };
 
-export default function ProfileForm({
-  form,
-  stats,
-  onChange,
-  onSubmit,
-}: ProfileFormProps) {
-  const handleSubmit = async (e: React.FormEvent) => {
-    await onSubmit(e);
-  };
-
+export default function ProfileForm({ form, stats, onChange, onSubmit, saving, onPreview }: ProfileFormProps) {
   return (
-    <form className="profile-form" onSubmit={handleSubmit}>
-      {/* Beispiel-Felder – hier deine bestehenden Inputs einbauen */}
-      <div className="form-row">
+    <form className="profile-form" onSubmit={onSubmit}>
+  <div className="form-grid">
         <label htmlFor="displayName">Anzeigename</label>
         <input
           id="displayName"
           value={form.displayName}
           onChange={(e) => onChange("displayName", e.target.value)}
+          placeholder="z.B. Bruno Baumgartner"
         />
       </div>
 
@@ -56,31 +48,33 @@ export default function ProfileForm({
           id="bio"
           value={form.bio}
           onChange={(e) => onChange("bio", e.target.value)}
+          placeholder="Kurzbeschreibung…"
         />
       </div>
 
-      {/* Beispiel: Public-Checkbox */}
-      <div className="form-row">
-        <label>
-          <input
-            type="checkbox"
-            checked={form.isPublic}
-            onChange={(e) => onChange("isPublic", e.target.checked)}
-          />
-          Profil öffentlich anzeigen
-        </label>
+      <div className="form-row checkrow">
+        <input
+          id="isPublic"
+          type="checkbox"
+          checked={form.isPublic}
+          onChange={(e) => onChange("isPublic", e.target.checked)}
+        />
+        <label htmlFor="isPublic">Profil öffentlich anzeigen</label>
       </div>
 
-      {/* Du kannst hier bei Bedarf auch Stats lesen, wenn nötig */}
-      {/* z.B. read-only Anzeige: */}
       <div className="form-row readonly">
-        <span>Level: {stats.level}</span>
-        <span>Produkte: {stats.productCount}</span>
+        <span>Level: <b>{stats.level}</b></span>
+        <span>Produkte: <b>{stats.productCount}</b></span>
       </div>
 
-      <button type="submit" className="primary-button">
-        Profil speichern
-      </button>
+      <div className="actions">
+        <button type="submit" className="neobtn" disabled={saving}>
+          {saving ? "Speichere…" : "Profil speichern"}
+        </button>
+        <button type="button" className="neobtn ghost" onClick={() => (typeof (onPreview as any) === "function" ? (onPreview as any)() : undefined)}>
+          Vorschau
+        </button>
+      </div>
     </form>
   );
 }

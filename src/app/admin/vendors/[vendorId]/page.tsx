@@ -1,6 +1,6 @@
 // src/app/admin/vendors/[vendorId]/page.tsx
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
+import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 

@@ -1,122 +1,94 @@
-// src/app/api/webhook/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
-
-
 export const dynamic = "force-dynamic";
 
-// ✅ Einheitlich mit Stripe CLI API Version (und deiner aktuellen CLI-Ausgabe)
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
-  apiVersion: "2025-11-17.clover",
+  apiVersion: "2025-11-17.clover" as any,
 });
 
 export async function POST(req: NextRequest) {
   const sig = req.headers.get("stripe-signature");
   const webhookSecret = (process.env.STRIPE_WEBHOOK_SECRET ?? "").trim();
-console.log("🔐 webhookSecret debug", {
-  prefix: webhookSecret?.slice(0, 8),
-  len: webhookSecret?.length,
-});
-
-  // ✅ Sofort sehen ob Route getroffen wird + ob Config stimmt
-  console.log("🔔 /api/webhook HIT", {
-    hasSig: !!sig,
-    hasSecret: !!webhookSecret,
-  });
 
   if (!sig || !webhookSecret) {
-    console.error("❌ Webhook Secret oder Signatur fehlt");
     return NextResponse.json({ error: "Webhook config error" }, { status: 500 });
   }
 
-  const rawBody = await req.arrayBuffer();
-  const bodyBuffer = Buffer.from(rawBody);
-
   let event: Stripe.Event;
   try {
-    event = stripe.webhooks.constructEvent(bodyBuffer, sig, webhookSecret);
+    const rawBody = await req.text();
+    event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret);
   } catch (err: any) {
-    console.error("❌ Stripe Webhook Signature Error:", err?.message ?? err);
+    console.error("❌ Webhook signature verification failed:", err?.message);
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
-  console.log("✅ Stripe event verified:", event.type);
-
-  // ✅ Wir verarbeiten nur das, was wir brauchen
-  if (event.type !== "checkout.session.completed") {
-    return NextResponse.json({ received: true });
-  }
-
-  const session = event.data.object as Stripe.Checkout.Session;
-
-  const productId = session.metadata?.productId ?? null;
-  const buyerId = session.metadata?.buyerId ?? null;
-  const stripeSessionId = session.id;
-  const amount = session.amount_total ?? 0;
-
-  console.log("📦 checkout.session.completed", {
-    productId,
-    buyerId,
-    stripeSessionId,
-    amount,
-    paymentStatus: session.payment_status,
-    mode: session.mode,
-  });
-
-  if (!productId || !buyerId) {
-    console.warn("⚠️ Metadata fehlt:", session.metadata);
-    return NextResponse.json({ received: true });
-  }
-
   try {
-    // ✅ Produkt holen (nur was wir brauchen)
-    const product = await prisma.product.findUnique({
-      where: { id: productId },
-      select: { fileUrl: true },
-    });
+    if (event.type === "checkout.session.completed") {
+      const session = event.data.object as Stripe.Checkout.Session;
 
-    // ✅ Order upsert (idempotent)
-    const order = await prisma.order.upsert({
-      where: { stripeSessionId },
-      update: {
-        status: "PAID",
-        amountCents: amount,
-      },
-      create: {
-        productId,
-        buyerId,
-        stripeSessionId,
-        status: "PAID",
-        amountCents: amount,
-      },
-      select: { id: true },
-    });
+      const orderId = session.metadata?.orderId;
+      if (!orderId) {
+        console.warn("⚠️ checkout.session.completed without metadata.orderId");
+        return NextResponse.json({ ok: true });
+      }
 
-    console.log("✅ Order gespeichert:", order.id);
+      const order = await prisma.order.findUnique({
+        where: { id: orderId },
+        include: { product: { select: { fileUrl: true } } },
+      });
 
-    // ✅ Wenn fileUrl fehlt, können wir keinen DownloadLink anlegen
-    if (!product?.fileUrl) {
-      console.warn("⚠️ Produkt hat keine fileUrl:", productId);
-      return NextResponse.json({ received: true });
+      if (!order) {
+        console.warn("⚠️ Order not found:", orderId);
+        return NextResponse.json({ ok: true });
+      }
+
+      const fileUrl = order.product?.fileUrl ?? null;
+      if (!fileUrl) {
+        console.warn("⚠️ product.fileUrl missing for order:", orderId);
+        // trotzdem PAID setzen, aber kein DownloadLink möglich
+      }
+
+      const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+      const maxDownloads = 3;
+
+      await prisma.$transaction(async (tx) => {
+        await tx.order.update({
+          where: { id: order.id },
+          data: {
+            status: "PAID",
+            stripeSessionId: session.id,
+          } as any,
+        });
+
+        if (fileUrl) {
+          await tx.downloadLink.upsert({
+            where: { orderId: order.id },
+            create: {
+              orderId: order.id,
+              fileUrl: String(fileUrl),
+              expiresAt,
+              maxDownloads,
+              downloadCount: 0,
+              isActive: true,
+            },
+            update: {
+              fileUrl: String(fileUrl),
+              expiresAt,
+              maxDownloads,
+              isActive: true,
+            },
+          });
+        }
+      });
     }
 
-    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-
-    // ✅ DownloadLink upsert (idempotent)
-    await prisma.downloadLink.upsert({
-      where: { orderId: order.id },
-      update: { fileUrl: product.fileUrl, expiresAt },
-      create: { orderId: order.id, fileUrl: product.fileUrl, expiresAt },
-    });
-
-    console.log("📥 Download-Link erstellt/aktualisiert:", order.id);
-
-    return NextResponse.json({ received: true });
-  } catch (err) {
-    console.error("❌ Fehler beim Speichern von Order/DownloadLink:", err);
-    return NextResponse.json({ received: true }, { status: 200 });
+    return NextResponse.json({ ok: true });
+  } catch (err: any) {
+    console.error("❌ Webhook handler failed:", err?.message);
+    return NextResponse.json({ error: "Webhook handler failed" }, { status: 500 });
   }
 }

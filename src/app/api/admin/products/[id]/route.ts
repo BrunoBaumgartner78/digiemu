@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
+import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { logAuditEvent } from "@/lib/logAuditEvent";
 
 const ALLOWED_STATUSES = ["DRAFT", "ACTIVE", "BLOCKED"] as const;
 type AllowedStatus = (typeof ALLOWED_STATUSES)[number];
@@ -44,6 +45,8 @@ export async function PATCH(
   }
 
   try {
+    // Vorherigen Status laden für Idempotenz
+    const before = await prisma.product.findUnique({ where: { id: params.id }, select: { status: true, vendorId: true, title: true } });
     const updated = await prisma.product.update({
       where: { id: params.id },
       data: updateData,
@@ -56,6 +59,22 @@ export async function PATCH(
         vendorId: true
       },
     });
+
+    // Nur loggen, wenn Status sich geändert hat
+    if (typeof body.status !== "undefined" && before && before.status !== updated.status) {
+      let action = "";
+      if (updated.status === "BLOCKED") action = "PRODUCT_BLOCKED";
+      else if (updated.status === "ACTIVE") action = "PRODUCT_UNBLOCKED";
+      if (action) {
+        logAuditEvent({
+          actorId: session.user.id,
+          action,
+          targetType: "PRODUCT",
+          targetId: updated.id,
+          meta: { vendorId: updated.vendorId, title: updated.title },
+        });
+      }
+    }
 
     return NextResponse.json(updated);
   } catch (error) {

@@ -1,6 +1,6 @@
 // src/app/admin/users/page.tsx
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -18,7 +18,7 @@ export default async function AdminUsersPage({
   searchParams: Promise<AdminUsersSearchParams>;
 }) {
   // Session check (Server-seitig, kein window)
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession(auth);
   if (!session || session.user.role !== "ADMIN") {
     redirect("/dashboard");
   }

@@ -7,6 +7,26 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String
+  action     String
+  targetType String
+  targetId   String?
+  meta       Json?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  actor User @relation("AuditActor", fields: [actorId], references: [id])
+
+  @@index([actorId])
+  @@index([action])
+  @@index([targetType])
+  @@index([targetId])
+  @@index([createdAt])
+}
+
 model User {
   id            String         @id @default(cuid())
   email         String         @unique
@@ -23,6 +43,11 @@ model User {
   products      Product[]      @relation("VendorProducts")
   reviews       Review[]
   vendorProfile VendorProfile?
+  buyerProfile  BuyerProfile?
+  adminProfile  AdminProfile?
+
+  // ✅ ADD THIS:
+  auditLogs AuditLog[] @relation("AuditActor")
 }
 
 model VendorProfile {
@@ -43,6 +68,30 @@ model VendorProfile {
   updatedAt    DateTime  @updatedAt
   products     Product[] @relation("VendorProfileProducts")
   user         User      @relation(fields: [userId], references: [id])
+}
+
+model BuyerProfile {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id])
+  displayName String   @default("")
+  bio         String   @default("")
+  avatarUrl   String   @default("")
+  isPublic    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model AdminProfile {
+  id                    String   @id @default(cuid())
+  userId                String   @unique
+  user                  User     @relation(fields: [userId], references: [id])
+  displayName           String   @default("")
+  signature             String   @default("")
+  notifyOnDownload      Boolean  @default(true)
+  notifyOnPayoutRequest Boolean  @default(true)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
 }
 
 model Product {
@@ -134,12 +183,21 @@ model Order {
 }
 
 model DownloadLink {
-  id        String   @id @default(cuid())
-  orderId   String   @unique
-  fileUrl   String
-  expiresAt DateTime
+  id      String @id @default(cuid())
+  orderId String @unique
+  fileUrl String
+
+  expiresAt     DateTime
+  downloadCount Int      @default(0)
+  maxDownloads  Int      @default(3)
+  isActive      Boolean  @default(true)
+
   createdAt DateTime @default(now())
-  order     Order    @relation(fields: [orderId], references: [id])
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([expiresAt])
 }
 
 model Payout {

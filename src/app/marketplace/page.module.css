@@ -78,6 +78,47 @@
   border: 1px solid rgba(148, 163, 184, 0.55);
 }
 
+/* Controls row: sort + price range */
+.controlsRow {
+  margin-top: 1.2rem;
+  display: flex;
+  gap: 0.9rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.controlGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.controlLabel {
+  font-size: 0.73rem;
+  color: var(--color-text-muted);
+  letter-spacing: 0.06em;
+}
+
+.controlSelect,
+.controlInput {
+  padding: 0.45rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.6);
+  background: var(--bg-soft);
+  box-shadow: inset 6px 6px 12px var(--shadow-dark), inset -6px -6px 12px var(--shadow-light);
+  font-size: 0.9rem;
+  min-width: 120px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .controlSelect,
+  .controlInput {
+    background: rgba(15, 23, 42, 0.96);
+    border-color: rgba(30, 64, 175, 0.7);
+    color: #e5edf7;
+  }
+}
+
 /* Dark mode für Filter-Pill */
 @media (prefers-color-scheme: dark) {
   .filterBar {

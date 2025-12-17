@@ -1,4 +1,3 @@
-// src/app/register/page.tsx
 "use client";
 
 import { FormEvent, useState } from "react";
@@ -6,6 +5,11 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
 import styles from "./RegisterPage.module.css";
+
+type RegisterErrorResponse = {
+  error?: string;
+  message?: string;
+};
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -21,22 +25,17 @@ export default function RegisterPage() {
 
     const name = (form.elements.namedItem("name") as HTMLInputElement).value;
     const email = (form.elements.namedItem("email") as HTMLInputElement).value;
-    const password = (form.elements.namedItem(
-      "password"
-    ) as HTMLInputElement).value;
-    const passwordConfirm = (form.elements.namedItem(
-      "passwordConfirm"
-    ) as HTMLInputElement).value;
+    const password = (form.elements.namedItem("password") as HTMLInputElement).value;
+    const passwordConfirm = (form.elements.namedItem("passwordConfirm") as HTMLInputElement).value;
     const role = (form.elements.namedItem("role") as HTMLInputElement).value;
 
     if (password !== passwordConfirm) {
-      setLoading(false);
       setError("Die Passwörter stimmen nicht überein.");
+      setLoading(false);
       return;
     }
 
     try {
-      // 1) User registrieren
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -48,38 +47,43 @@ export default function RegisterPage() {
         }),
       });
 
+      const data: RegisterErrorResponse | null = await res.json().catch(() => null);
+
       if (!res.ok) {
-        const data = await res.json().catch(() => null);
         const message =
-          data?.message ||
-          data?.error ||
+          data?.message ??
           "Registrierung fehlgeschlagen. Bitte versuche es erneut.";
 
-        console.error("REGISTER RESPONSE ERROR:", data);
+        // ✅ 409 = erwarteter UX-Fall → NICHT loggen
+        if (process.env.NODE_ENV === "development" && res.status !== 409) {
+          console.error(
+            `[REGISTER ERROR] status=${res.status} message="${
+              data?.message ?? "unknown"
+            }"`
+          );
+        }
+
         setError(message);
         setLoading(false);
-        return; // ❗ hier abbrechen, nicht weiter mit signIn()
+        return;
       }
 
-      // 2) Direkt einloggen
+      // ✅ Auto-Login nach erfolgreicher Registrierung
       const loginRes = await signIn("credentials", {
         redirect: false,
-        email,
+        email: email.trim().toLowerCase(),
         password,
       });
 
       if (loginRes?.error) {
-        // Falls der Auto-Login scheitert, trotzdem weiterleiten zum Login
-        console.warn("Auto-Login nach Registrierung fehlgeschlagen:", loginRes);
         router.push("/login");
         return;
       }
 
-      // 3) Ab ins Dashboard
       router.push("/dashboard");
-    } catch (err: any) {
+    } catch (err) {
       console.error("REGISTER FETCH ERROR:", err);
-      setError(err?.message || "Es ist ein Fehler aufgetreten.");
+      setError("Netzwerkfehler. Bitte versuche es erneut.");
     } finally {
       setLoading(false);
     }
@@ -92,60 +96,25 @@ export default function RegisterPage() {
 
         <h1 className={styles.title}>Konto erstellen ✨</h1>
         <p className={styles.subtitle}>
-          Erstelle dein DigiEmu-Konto, um Produkte zu verkaufen oder digitale
-          Inhalte zu kaufen.
+          Erstelle dein DigiEmu-Konto, um Produkte zu verkaufen oder digitale Inhalte zu kaufen.
         </p>
 
         <form onSubmit={handleSubmit} className={styles.form}>
-          {/* Name */}
           <div className={styles.field}>
-            <label htmlFor="name" className={styles.label}>
-              Name
-            </label>
-            <input
-              id="name"
-              name="name"
-              type="text"
-              autoComplete="name"
-              placeholder="Max Muster"
-              required
-              className={styles.input}
-            />
+            <label htmlFor="name" className={styles.label}>Name</label>
+            <input id="name" name="name" type="text" required className={styles.input} />
           </div>
 
-          {/* E-Mail */}
           <div className={styles.field}>
-            <label htmlFor="email" className={styles.label}>
-              E-Mail-Adresse
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              autoComplete="email"
-              placeholder="du@beispiel.ch"
-              required
-              className={styles.input}
-            />
+            <label htmlFor="email" className={styles.label}>E-Mail-Adresse</label>
+            <input id="email" name="email" type="email" required className={styles.input} />
           </div>
 
-          {/* Passwort */}
           <div className={styles.field}>
-            <label htmlFor="password" className={styles.label}>
-              Passwort
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              autoComplete="new-password"
-              placeholder="••••••••"
-              required
-              className={styles.input}
-            />
+            <label htmlFor="password" className={styles.label}>Passwort</label>
+            <input id="password" name="password" type="password" required className={styles.input} />
           </div>
 
-          {/* Passwort bestätigen */}
           <div className={styles.field}>
             <label htmlFor="passwordConfirm" className={styles.label}>
               Passwort bestätigen
@@ -154,47 +123,28 @@ export default function RegisterPage() {
               id="passwordConfirm"
               name="passwordConfirm"
               type="password"
-              autoComplete="new-password"
-              placeholder="••••••••"
               required
               className={styles.input}
             />
           </div>
 
-          {/* Rolle (Buyer / Vendor) */}
           <div className={styles.field}>
             <span className={styles.label}>Kontotyp</span>
             <div className={styles.roleToggle}>
-              <label className={styles.roleOption}>
-                <input
-                  type="radio"
-                  name="role"
-                  value="BUYER"
-                  defaultChecked
-                />
-                <span>Käufer:in</span>
+              <label>
+                <input type="radio" name="role" value="BUYER" defaultChecked />
+                Käufer:in
               </label>
-              <label className={styles.roleOption}>
+              <label>
                 <input type="radio" name="role" value="VENDOR" />
-                <span>Verkäufer:in</span>
+                Verkäufer:in
               </label>
             </div>
-            <p className={styles.helperInline}>
-              Du kannst dein Konto später jederzeit erweitern.
-            </p>
           </div>
 
-          {/* Fehlermeldung */}
           {error && <p className={styles.error}>{error}</p>}
 
-          {/* Submit */}
-          <button
-            type="submit"
-            disabled={loading}
-            className={`${styles.button} ${
-              loading ? styles.buttonDisabled : ""
-            }`}
-          >
+          <button type="submit" disabled={loading} className={styles.button}>
             {loading ? "Konto wird erstellt…" : "Konto erstellen"}
           </button>
         </form>
@@ -205,11 +155,6 @@ export default function RegisterPage() {
             Zum Login
           </Link>
         </div>
-
-        <p className={styles.helper}>
-          Mit der Registrierung akzeptierst du unsere Nutzungsbedingungen und
-          Datenschutzbestimmungen.
-        </p>
       </div>
     </div>
   );

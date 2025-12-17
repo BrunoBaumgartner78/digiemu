@@ -1,11 +1,11 @@
 // src/app/register-vendor/page.tsx
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
-import { authOptions } from "@/lib/authOptions";
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export default async function RegisterVendorPage() {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession(auth);
 
   // Nicht eingeloggt → Login
   if (!session) {

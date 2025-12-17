@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { authOptions } from "@/lib/authOptions";
+import { authOptions } from "@/lib/auth";
 import styles from "./TopLikedProducts.module.css";
 
 export const dynamic = "force-dynamic";

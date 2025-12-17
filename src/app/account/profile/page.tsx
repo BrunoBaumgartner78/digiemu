@@ -1,76 +1,57 @@
-// src/app/account/profile/page.tsx
-import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getProfileBadges } from "@/lib/profileBadges";
-import ProfilePageClient from "../profile/ProfilePageClient";
+import Link from "next/link";
+import ProfilePageClient from "./ProfilePageClient";
+import  style from "./page.module.css";
+import "./profile.module.css";
 
-export default async function ProfilePage() {
-  const session = await getServerSession(authOptions);
+export default async function Page() {
+  const session = await getServerSession(auth);
+  const userId = (session?.user as any)?.id as string | undefined;
 
-  if (!session?.user?.id) {
-    redirect("/login");
-  }
+  // Fetch vendor profile if exists
+  const vendorProfile = userId
+    ? await prisma.vendorProfile.findUnique({ where: { userId } })
+    : null;
 
-  const userId = session.user.id;
+  // Compute product count for this vendor (vendorId references User.id)
+  const productCount = userId
+    ? await prisma.product.count({ where: { vendorId: userId } })
+    : 0;
 
-  const vendorProfile = await prisma.vendorProfile.findUnique({
-    where: { userId },
-  });
+  const level =
+    productCount >= 20 ? "Pro" : productCount >= 5 ? "Creator" : "Starter";
 
-  // Fallback, falls noch kein Profil existiert
-  const safeProfile = vendorProfile ?? {
-    displayName: "",
-    bio: "",
-    websiteUrl: "",
-    instagramUrl: "",
-    twitterUrl: "",
-    tiktokUrl: "",
-    facebookUrl: "",
-    avatarUrl: "",
-    bannerUrl: "",
-    slug: "",
-    isPublic: true,
-    id: null as string | null,
-  };
+  const initialStats = { level, productCount, badges: [] };
 
-  const initialData = {
-    displayName: safeProfile.displayName ?? "",
-    bio: safeProfile.bio ?? "",
-    websiteUrl: safeProfile.websiteUrl ?? "",
-    instagramUrl: safeProfile.instagramUrl ?? "",
-    twitterUrl: safeProfile.twitterUrl ?? "",
-    youtubeUrl: typeof (safeProfile as any).youtubeUrl === "string" ? (safeProfile as any).youtubeUrl ?? "" : "",
-    tiktokUrl: safeProfile.tiktokUrl ?? "",
-    facebookUrl: safeProfile.facebookUrl ?? "",
-    avatarUrl: safeProfile.avatarUrl ?? "",
-    bannerUrl: safeProfile.bannerUrl ?? "",
-    slug: safeProfile.slug ?? "",
-    isPublic: safeProfile.isPublic ?? true,
-  };
-
-  // Stats: aktuell nur Anzahl Produkte
-  let productCount = 0;
-  if (safeProfile.id) {
-    productCount = await prisma.product.count({
-      where: { vendorId: safeProfile.id },
-    });
-  }
-
-  const badgeInfo = getProfileBadges({ productCount });
-
-  const initialStats = {
-    productCount,
-    level: badgeInfo.level,
-    badges: badgeInfo.badges,
-  };
+  const initialData = vendorProfile
+    ? {
+        displayName: vendorProfile.displayName ?? "",
+        bio: vendorProfile.bio ?? "",
+        websiteUrl: vendorProfile.websiteUrl ?? "",
+        instagramUrl: vendorProfile.instagramUrl ?? "",
+        twitterUrl: vendorProfile.twitterUrl ?? "",
+        tiktokUrl: vendorProfile.tiktokUrl ?? "",
+        facebookUrl: vendorProfile.facebookUrl ?? "",
+        avatarUrl: vendorProfile.avatarUrl ?? "",
+        bannerUrl: vendorProfile.bannerUrl ?? "",
+        slug: vendorProfile.slug ?? "",
+        isPublic: vendorProfile.isPublic ?? true,
+      }
+    : null;
 
   return (
-    <ProfilePageClient
-      userId={userId}
-      initialData={initialData}
-      initialStats={initialStats}
-    />
+    <div className="min-h-[calc(100vh-6rem)] px-4 py-8">
+      <div className="max-w-5xl mx-auto space-y-6">
+        {/* Server page: compute data and render client editor only. */}
+        <ProfilePageClient
+          userId={userId ?? ""}
+          initialData={initialData}
+          initialStats={initialStats}
+          vendorProfileId={vendorProfile?.id ?? null}
+        />
+      </div>
+    </div>
   );
 }

@@ -1,8 +1,9 @@
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
+import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
+import EditProductForm from "./EditProductForm";
 
 // TODO: Implement ProductForm with file upload (Firebase), price, status, etc.
 
@@ -57,7 +58,6 @@ export default async function EditProductPage({ params }: { params: { id: string
             <div className="h-px bg-slate-200/70 my-2" />
 
             {/* Original content/form goes here */}
-            {/* @ts-expect-error Async Server Component passing to Client Component */}
             <EditProductForm product={product} />
             {/* END original content/form */}
           </div>

@@ -10,11 +10,11 @@ interface EditProductFormProps {
     id: string;
     title: string;
     description: string;
-    shortDescription: string;
+    shortDescription?: string | null;
     category: string;
     priceCents: number;
     fileUrl: string;
-    thumbnail?: string;
+    thumbnail?: string | null;
     status: string;
   };
 }
@@ -23,7 +23,7 @@ export default function EditProductForm({ product }: EditProductFormProps) {
   const router = useRouter();
   const [title, setTitle] = useState(product.title);
   const [description, setDescription] = useState(product.description);
-  const [shortDescription, setShortDescription] = useState(product.shortDescription);
+  const [shortDescription, setShortDescription] = useState(product.shortDescription ?? "");
   const [category, setCategory] = useState(product.category);
   const [price, setPrice] = useState((product.priceCents / 100).toString());
   const [status, setStatus] = useState(product.status);
