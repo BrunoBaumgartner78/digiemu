@@ -23,7 +23,7 @@ export default async function EarningsDashboard() {
   // Base URL for absolute API calls
   const base =
     process.env.NEXT_PUBLIC_APP_URL?.trim() ||
-    "http://localhost:3000";
+    "https://digiemu.vercel.app";
 
   // ✅ Next 16: headers() kann async sein → sicherheitshalber await
   const h = await headers();

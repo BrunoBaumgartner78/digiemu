@@ -14,7 +14,7 @@ pnpm dev
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [https://digiemu.vercel.app](https://digiemu.vercel.app) with your browser to see the result.
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
@@ -40,3 +40,8 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 2) Login als Demo-User
 3) Öffne ein ACTIVE Produkt
 4) Klick Buy Button → Stripe Checkout → success_url → Download
+
+## Production URLs
+- Production base URL: https://digiemu.vercel.app
+- For local dev keep: http://localhost:3000
+- Set NEXTAUTH_URL in Vercel to: https://digiemu.vercel.app
