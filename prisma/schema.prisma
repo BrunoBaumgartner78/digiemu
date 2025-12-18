@@ -216,3 +216,9 @@ enum Role {
   VENDOR
   ADMIN
 }
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("npg_cD1kb2GiTFsy@ep-small-surf-ag3ig3nt-pooler.c-2.eu-central-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require")
+  directUrl = env("npg_cD1kb2GiTFsy@ep-small-surf-ag3ig3nt.c-2.eu-central-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require")
+}
