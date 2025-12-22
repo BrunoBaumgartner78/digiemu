@@ -13,7 +13,12 @@ type PageProps = {
 };
 
 export default async function EditProductPage({ params }: PageProps) {
-  const pid = String(params?.productId ?? "").trim();
+  // Next.js 16 (Webpack) kann "params" als Promise liefern (sync dynamic APIs)
+  const resolvedParams = (params && typeof (params as any).then === "function")
+    ? await (params as any)
+    : params;
+
+  const pid = String((resolvedParams as any)?.productId ?? "").trim();
   if (!pid) notFound();
 
   const session = await getServerSession(authOptions);
