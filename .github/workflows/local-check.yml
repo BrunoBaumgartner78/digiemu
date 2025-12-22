@@ -1,0 +1,47 @@
+name: Local Check (manual)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  check:
+    name: Lint · Typecheck · Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    env:
+      # Für Build/Prisma (falls du ohne echte DB bauen willst):
+      # - Entweder DATABASE_URL als Secret setzen (auch lokal ok, wenn du nicht pushst)
+      # - Oder dummy URL, falls dein Code beim build nicht wirklich connecten muss
+      DATABASE_URL: ${{ secrets.DATABASE_URL || 'postgresql://user:pass@localhost:5432/db?schema=public' }}
+      NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET || 'dev-secret' }}
+      NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL || 'http://localhost:3000' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Prisma generate
+        run: npx prisma generate
+
+      # Optional (nur wenn du willst):
+      # - name: Prisma validate
+      #   run: npx prisma validate
+
+      - name: Lint
+        run: npm run lint --if-present
+
+      - name: Typecheck
+        run: npm run typecheck --if-present
+
+      - name: Build
+        run: npm run build

@@ -51,9 +51,14 @@ export default async function TopLikedProductsPage() {
           </div>
 
           <div className={styles.headerActions}>
-            <Link href="/dashboard/products" className={styles.ghostBtn}>
-              Zur Produktübersicht
-            </Link>
+           <Link
+  href="/dashboard/products"
+  className={`${styles.ghostBtn} ${styles.topBackBtn}`}
+>
+  Zur Produktübersicht
+</Link>
+
+
           </div>
         </header>
 

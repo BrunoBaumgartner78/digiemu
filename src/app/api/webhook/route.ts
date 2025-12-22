@@ -14,81 +14,81 @@ export async function POST(req: NextRequest) {
   const webhookSecret = (process.env.STRIPE_WEBHOOK_SECRET ?? "").trim();
 
   if (!sig || !webhookSecret) {
-    return NextResponse.json({ error: "Webhook config error" }, { status: 500 });
+    return NextResponse.json(
+      { message: "Missing stripe-signature or STRIPE_WEBHOOK_SECRET" },
+      { status: 400 }
+    );
   }
 
   let event: Stripe.Event;
+
   try {
-    const rawBody = await req.text();
-    event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret);
+    const buf = Buffer.from(await req.arrayBuffer());
+    event = stripe.webhooks.constructEvent(buf, sig, webhookSecret);
   } catch (err: any) {
     console.error("❌ Webhook signature verification failed:", err?.message);
-    return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
+    return NextResponse.json(
+      { message: `Webhook Error: ${err?.message ?? "Invalid signature"}` },
+      { status: 400 }
+    );
   }
 
   try {
     if (event.type === "checkout.session.completed") {
       const session = event.data.object as Stripe.Checkout.Session;
 
-      const orderId = session.metadata?.orderId;
-      if (!orderId) {
-        console.warn("⚠️ checkout.session.completed without metadata.orderId");
-        return NextResponse.json({ ok: true });
-      }
+      // Wichtig: wir können die Order auch OHNE metadata finden:
+      const stripeSessionId = session.id;
 
+      // Order finden
       const order = await prisma.order.findUnique({
-        where: { id: orderId },
-        include: { product: { select: { fileUrl: true } } },
+        where: { stripeSessionId },
+        include: { product: true },
       });
 
       if (!order) {
-        console.warn("⚠️ Order not found:", orderId);
-        return NextResponse.json({ ok: true });
+        console.error("❌ Order not found for session:", stripeSessionId);
+        return NextResponse.json({ received: true }, { status: 200 });
       }
 
-      const fileUrl = order.product?.fileUrl ?? null;
-      if (!fileUrl) {
-        console.warn("⚠️ product.fileUrl missing for order:", orderId);
-        // trotzdem PAID setzen, aber kein DownloadLink möglich
-      }
+      // Idempotent: falls schon PAID + downloadLink existiert -> fertig
+      const existing = await prisma.downloadLink.findUnique({ where: { orderId: order.id } });
+      if (!existing) {
+        // DownloadLink anlegen (48h Beispiel)
+        const expiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000);
 
-      const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-      const maxDownloads = 3;
-
-      await prisma.$transaction(async (tx) => {
-        await tx.order.update({
-          where: { id: order.id },
+        await prisma.downloadLink.create({
           data: {
-            status: "PAID",
-            stripeSessionId: session.id,
-          } as any,
+            orderId: order.id,
+            fileUrl: order.product.fileUrl,
+            expiresAt,
+            maxDownloads: 3,
+            isActive: true,
+          },
         });
+      }
 
-        if (fileUrl) {
-          await tx.downloadLink.upsert({
-            where: { orderId: order.id },
-            create: {
-              orderId: order.id,
-              fileUrl: String(fileUrl),
-              expiresAt,
-              maxDownloads,
-              downloadCount: 0,
-              isActive: true,
-            },
-            update: {
-              fileUrl: String(fileUrl),
-              expiresAt,
-              maxDownloads,
-              isActive: true,
-            },
-          });
-        }
+      // Order auf PAID setzen + Earnings berechnen
+      const amount = order.amountCents;
+      const vendorEarnings = Math.round(amount * 0.8);
+      const platformEarnings = amount - vendorEarnings;
+
+      await prisma.order.update({
+        where: { id: order.id },
+        data: {
+          status: "PAID",
+          vendorEarningsCents: vendorEarnings,
+          platformEarningsCents: platformEarnings,
+        },
       });
     }
 
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ received: true }, { status: 200 });
   } catch (err: any) {
-    console.error("❌ Webhook handler failed:", err?.message);
-    return NextResponse.json({ error: "Webhook handler failed" }, { status: 500 });
+    console.error("❌ Webhook handler error:", err);
+    return NextResponse.json(
+      { message: err?.message ?? "Webhook handler failed" },
+      { status: 500 }
+    );
   }
 }

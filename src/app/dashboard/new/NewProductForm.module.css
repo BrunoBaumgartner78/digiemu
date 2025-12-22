@@ -434,3 +434,31 @@
     color: rgba(148, 163, 184, 0.85);
   }
 }
+
+/* ===== Fix: Dropdown in Dark Mode lesbar ===== */
+.select {
+  color: var(--fg, #eaf0ff);
+  background: rgba(10, 18, 40, 0.55);
+  border: 1px solid rgba(120, 150, 255, 0.22);
+  border-radius: 999px;
+  padding: 12px 16px;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.select:focus {
+  border-color: rgba(120, 170, 255, 0.5);
+}
+
+/* IMPORTANT: options müssen separat gestylt werden */
+.select option {
+  color: #0b1020;              /* Text dunkel */
+  background: #eaf0ff;         /* Hintergrund hell */
+}
+
+/* Falls du im Dark-Theme lieber dunkle Optionen willst: */
+[data-theme="dark"] .select option {
+  color: #eaf0ff;
+  background: #0b1020;
+}

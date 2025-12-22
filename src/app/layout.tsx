@@ -3,8 +3,6 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { Providers } from "./providers";
 import { MainHeader } from "@/components/layout/MainHeader";
-import "./globals.css";
-
 
 export const metadata: Metadata = {
   title: "DigiEmu – Digitaler Marktplatz",

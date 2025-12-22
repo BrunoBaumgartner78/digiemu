@@ -11,7 +11,7 @@ import styles from "./page.module.css";
 
 export const dynamic = "force-dynamic";
 
-type ProductPageProps = { params: { id: string } | Promise<{ id: string }> };
+type ProductPageProps = { params: Promise<{ id: string }> };
 
 const SAFE_IMAGE_HOSTS = [
   "firebasestorage.googleapis.com",
@@ -31,12 +31,13 @@ function canUseNextImage(url: string | null | undefined): boolean {
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
-  const { id } = await Promise.resolve(params);
+  const { id } = await params;
+
   const pid = String(id ?? "").trim();
   if (!pid) notFound();
 
   const session = await getServerSession(auth);
-  const userId = (session?.user as any)?.id ?? null;
+  const userId = ((session?.user as any)?.id as string | undefined) ?? null;
 
   const p = await prisma.product.findUnique({
     where: { id: pid },
@@ -51,31 +52,40 @@ export default async function ProductPage({ params }: ProductPageProps) {
       status: true,
       vendorId: true,
       vendorProfileId: true,
-      vendor: { select: { name: true } },
+
+      vendor: { select: { name: true, isBlocked: true } },
+
       vendorProfile: {
         select: {
           id: true,
+          userId: true, // ✅ wichtig für /seller/[vendorId]
           isPublic: true,
-          slug: true, // ✅ wichtig fürs öffentliche Profil
+          slug: true,
           displayName: true,
           avatarUrl: true,
           bannerUrl: true,
           user: { select: { name: true } },
         },
       },
+
       _count: { select: { likes: true } },
       likes: userId ? { where: { userId }, select: { id: true } } : undefined,
     },
   });
 
-  if (!p || !p.isActive || p.status !== "ACTIVE") notFound();
+  // ✅ harte Guards
+  if (!p) notFound();
+  if (!p.isActive || p.status !== "ACTIVE") notFound();
+  if (p.vendor?.isBlocked) notFound();
 
+  // ✅ Fallback: wenn product.vendorProfile null ist → via userId nachladen
   const vendorProfile =
     p.vendorProfile ??
     (await prisma.vendorProfile.findUnique({
       where: { userId: p.vendorId },
       select: {
         id: true,
+        userId: true, // ✅ wichtig
         isPublic: true,
         slug: true,
         displayName: true,
@@ -90,6 +100,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
       id: { not: p.id },
       isActive: true,
       status: "ACTIVE",
+      vendor: { isBlocked: false },
       OR: [
         ...(p.vendorProfileId ? [{ vendorProfileId: p.vendorProfileId }] : []),
         { vendorId: p.vendorId },
@@ -101,8 +112,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
   });
 
   const price = (p.priceCents ?? 0) / 100;
-  const showNextImage = canUseNextImage(p.thumbnail);
-  const likesCount = p._count.likes ?? 0;
+  const hasThumb = typeof p.thumbnail === "string" && p.thumbnail.trim().length > 0;
+  const showNextImage = canUseNextImage(p.thumbnail) && hasThumb;
+
+  const likesCount = p._count?.likes ?? 0;
   const initialIsLiked = !!userId && (p.likes?.length ?? 0) > 0;
 
   const sellerName =
@@ -111,9 +124,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
     p.vendor?.name ||
     "Verkäufer";
 
+  // ✅ Route ist /seller/[vendorId] => vendorId = User.id = vendorProfile.userId
   const sellerHref =
-    vendorProfile?.isPublic && vendorProfile?.slug
-      ? `/profile/${encodeURIComponent(vendorProfile.slug)}`
+    vendorProfile?.isPublic === true && vendorProfile.userId
+      ? `/seller/${encodeURIComponent(vendorProfile.userId)}`
       : null;
 
   return (
@@ -145,11 +159,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
                   <span style={{ fontSize: 13, opacity: 0.7 }}>Verkauft von</span>
 
                   {sellerHref ? (
-                    <Link href={sellerHref} className="neo-link" style={{ fontWeight: 700 }}>
+                    <Link href={sellerHref} className="neo-link" style={{ fontWeight: 800 }}>
                       {sellerName}
                     </Link>
                   ) : (
-                    <span style={{ fontWeight: 700 }}>{sellerName}</span>
+                    <span style={{ fontWeight: 800 }}>{sellerName}</span>
                   )}
 
                   {vendorProfile.isPublic === false && (
@@ -172,12 +186,12 @@ export default async function ProductPage({ params }: ProductPageProps) {
         </main>
 
         {/* Beschreibung */}
-        {p.description && (
+        {p.description?.trim() ? (
           <section className={styles.descriptionSection}>
             <h2>Beschreibung</h2>
             <p>{p.description}</p>
           </section>
-        )}
+        ) : null}
 
         {/* Weitere Produkte */}
         {relatedProducts.length > 0 && (

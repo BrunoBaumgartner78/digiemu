@@ -1,46 +1,6 @@
-import { getSellerTrustInfo } from "@/lib/sellerTrust";
-import type { Metadata } from "next";
-// SEO metadata for seller page
-export async function generateMetadata({ params }: { params: Promise<{ vendorId: string }> }): Promise<Metadata> {
-  const { vendorId } = await params;
-  const vendor = await prisma.vendorProfile.findUnique({
-    where: { id: vendorId },
-    select: {
-      id: true,
-      isPublic: true,
-      displayName: true,
-      bio: true,
-      bannerUrl: true,
-      avatarUrl: true,
-      user: { select: { name: true } },
-    },
-  });
-  if (!vendor) {
-    return { title: "Verkäufer nicht gefunden – DigiEmu", robots: { index: false, follow: false } };
-  }
-  if (!vendor.isPublic) {
-    return {
-      title: "Privates Verkäuferprofil – DigiEmu",
-      robots: { index: false, follow: false },
-    };
-  }
-  const sellerName = vendor.displayName || vendor.user?.name || "Verkäufer";
-  const desc = vendor.bio?.trim()?.slice(0, 160) || `Digitale Produkte von ${sellerName} auf DigiEmu`;
-  const images = [vendor.bannerUrl, vendor.avatarUrl].filter(Boolean) as string[];
-  return {
-    title: `${sellerName} – Verkäufer auf DigiEmu`,
-    description: desc,
-    openGraph: {
-      title: `${sellerName} – Verkäufer auf DigiEmu`,
-      description: desc,
-      images,
-    },
-    robots: { index: true, follow: true },
-    alternates: { canonical: `/seller/${vendorId}` },
-  };
-}
 // src/app/seller/[vendorId]/page.tsx
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import styles from "./page.module.css";
@@ -48,179 +8,147 @@ import styles from "./page.module.css";
 export const dynamic = "force-dynamic";
 
 type Props = {
-  // du nutzt im Projekt an mehreren Stellen Next16-params als Promise → ok so
   params: Promise<{ vendorId: string }>;
 };
 
-function getInitial(name: string) {
-  const n = (name || "").trim();
-  return n ? n[0]!.toUpperCase() : "V";
+const SAFE_IMAGE_HOSTS = [
+  "firebasestorage.googleapis.com",
+  "storage.googleapis.com",
+  "lh3.googleusercontent.com",
+  "images.pexels.com",
+  "images.unsplash.com",
+];
+
+function canUseNextImage(url: string | null | undefined): boolean {
+  if (!url) return false;
+  try {
+    const u = new URL(url);
+    return SAFE_IMAGE_HOSTS.includes(u.hostname);
+  } catch {
+    return false;
+  }
 }
 
-export default async function SellerProfilePage({ params }: Props) {
-  const { vendorId } = await params;
+function formatCHF(cents: number) {
+  const chf = (cents ?? 0) / 100;
+  return new Intl.NumberFormat("de-CH", { style: "currency", currency: "CHF" }).format(chf);
+}
 
-  const vendor = await prisma.vendorProfile.findUnique({
-    where: { id: vendorId },
+export default async function SellerPage({ params }: Props) {
+  const { vendorId } = await params;
+  const key = String(vendorId ?? "").trim();
+  if (!key) notFound();
+
+  // slug ODER vendorProfile.id ODER vendorProfile.userId
+  const profile = await prisma.vendorProfile.findFirst({
+    where: { OR: [{ slug: key }, { id: key }, { userId: key }] },
     select: {
       id: true,
       userId: true,
+      slug: true,
+      isPublic: true,
       displayName: true,
-      bio: true,
       avatarUrl: true,
       bannerUrl: true,
-      websiteUrl: true,
-      instagramUrl: true,
-      twitterUrl: true,
-      tiktokUrl: true,
-      facebookUrl: true,
-      isPublic: true,
-      user: { select: { name: true } },
+      user: { select: { name: true, isBlocked: true } },
     },
   });
 
-  if (!vendor) notFound();
+  if (!profile) notFound();
+  if (profile.user?.isBlocked) notFound();
+  if (profile.isPublic === false) notFound();
 
-  // optional: wenn Profil privat ist, dann “privat” anzeigen statt alles zeigen
-  if (!vendor.isPublic) {
-    const sellerName = vendor.displayName || vendor.user?.name || "Verkäufer";
-    return (
-      <main className={styles.page}>
-        <section className={styles.privateCard}>
-          <h1 className={styles.name}>{sellerName}</h1>
-          <p className={styles.bio}>Dieses Verkäuferprofil ist privat.</p>
-          <div className={styles.backLinks}>
-            <Link href="/marketplace" className="neobtn primary">
-              Zum Marketplace
-            </Link>
-            <Link href="/" className="neobtn ghost">
-              Startseite
-            </Link>
-          </div>
-        </section>
-      </main>
-    );
-  }
+  const sellerName = profile.displayName || profile.user?.name || "Verkäufer";
 
-  // Robust: einige Datenstände speichern Product.vendorId = vendorProfile.id,
-  // andere evtl. Product.vendorId = userId → wir unterstützen beide.
-  // Count active products for trust signals
-  const activeProductCount = await prisma.product.count({
-    where: {
-      OR: [
-        { vendorProfileId: vendor.id },
-        { vendorId: vendor.userId },
-      ],
-      isActive: true,
-      status: "ACTIVE",
-    },
-  });
-
-  // Fetch products for grid
   const products = await prisma.product.findMany({
     where: {
-      OR: [
-        { vendorProfileId: vendor.id },
-        { vendorId: vendor.userId },
-      ],
+      vendorId: profile.userId,
       isActive: true,
       status: "ACTIVE",
+      vendor: { isBlocked: false },
     },
+    orderBy: { createdAt: "desc" },
+    select: { id: true, title: true, priceCents: true, thumbnail: true, category: true },
+    take: 24,
   });
 
-  // Trust signals
-  const trust = getSellerTrustInfo(activeProductCount);
+  const avatarSrc = (profile.avatarUrl ?? "").trim();
+  const bannerSrc = (profile.bannerUrl ?? "").trim();
 
-  const sellerName = vendor.displayName || vendor.user?.name || "Verkäufer";
-  const initial = getInitial(sellerName);
+  const avatarUseNext = canUseNextImage(avatarSrc);
+  const bannerUseNext = canUseNextImage(bannerSrc);
+
+  const initial = (sellerName || "V").trim().slice(0, 1).toUpperCase();
 
   return (
     <main className={styles.page}>
       {/* Banner */}
       <section className={styles.banner}>
-        {vendor.bannerUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={vendor.bannerUrl}
-            alt={`${sellerName} Banner`}
-            className={styles.bannerImg}
-          />
+        {bannerSrc ? (
+          bannerUseNext ? (
+            <div className={styles.bannerMedia}>
+              <Image
+                src={bannerSrc}
+                alt={`${sellerName} Banner`}
+                fill
+                priority
+                className={styles.bannerImg}
+              />
+            </div>
+          ) : (
+            <img
+              src={bannerSrc}
+              alt={`${sellerName} Banner`}
+              className={styles.bannerImgFallback}
+              referrerPolicy="no-referrer"
+            />
+          )
         ) : (
-          <div className={styles.bannerPlaceholder} aria-hidden="true" />
+          <div className={styles.bannerPlaceholder} />
         )}
       </section>
 
-      {/* Header + Trust signals */}
+      {/* Header Card */}
       <section className={styles.headerCard}>
         <div className={styles.avatarWrap}>
-          {vendor.avatarUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={vendor.avatarUrl}
-              alt={sellerName}
-              className={styles.avatarImg}
-            />
+          {avatarSrc ? (
+            avatarUseNext ? (
+              <Image
+                src={avatarSrc}
+                alt={`${sellerName} Avatar`}
+                width={84}
+                height={84}
+                className={styles.avatarImg}
+              />
+            ) : (
+              <img
+                src={avatarSrc}
+                alt={`${sellerName} Avatar`}
+                width={84}
+                height={84}
+                className={styles.avatarImg}
+                referrerPolicy="no-referrer"
+              />
+            )
           ) : (
-            <div className={styles.avatarFallback} aria-hidden="true">
-              {initial}
-            </div>
+            <div className={styles.avatarFallback}>{initial}</div>
           )}
         </div>
 
         <div className={styles.headerText}>
+          <div className={styles.kicker}>Verkäuferprofil</div>
           <h1 className={styles.name}>{sellerName}</h1>
-          <p className={styles.bio}>
-            {vendor.bio?.trim() ? vendor.bio : "Noch keine Bio hinterlegt."}
-          </p>
-
-          {/* Trust signals */}
-          <div className={styles.trustCard}>
-            <span className={styles.trustLevel}>Level: {trust.level}</span>
-            <span className={styles.trustCount}>{activeProductCount} Produkte</span>
-            <div className={styles.trustProgressBarWrap}>
-              <div className={styles.trustProgressBarBg}>
-                <div
-                  className={styles.trustProgressBarFill}
-                  style={{ width: `${Math.round(trust.progress * 100)}%` }}
-                />
-              </div>
-              <span className={styles.trustProgressText}>
-                {activeProductCount} / {trust.nextLevelTarget} bis {trust.level === "Pro" ? "Max" : trust.level === "Creator" ? "Pro" : "Creator"}
-              </span>
-            </div>
-            <div className={styles.trustBadges}>
-              {trust.badges.map((b) => (
-                <span key={b} className={styles.trustBadge}>{b}</span>
-              ))}
-            </div>
+          <div className={styles.sub}>
+            {products.length} Produkt{products.length === 1 ? "" : "e"} verfügbar
           </div>
 
           <div className={styles.links}>
-            {vendor.websiteUrl && (
-              <a className="neo-link" href={vendor.websiteUrl} target="_blank" rel="noreferrer">
-                Website
-              </a>
-            )}
-            {vendor.instagramUrl && (
-              <a className="neo-link" href={vendor.instagramUrl} target="_blank" rel="noreferrer">
-                Instagram
-              </a>
-            )}
-            {vendor.twitterUrl && (
-              <a className="neo-link" href={vendor.twitterUrl} target="_blank" rel="noreferrer">
-                Twitter/X
-              </a>
-            )}
-            {vendor.tiktokUrl && (
-              <a className="neo-link" href={vendor.tiktokUrl} target="_blank" rel="noreferrer">
-                TikTok
-              </a>
-            )}
-            {vendor.facebookUrl && (
-              <a className="neo-link" href={vendor.facebookUrl} target="_blank" rel="noreferrer">
-                Facebook
-              </a>
-            )}
+            <Link href="/marketplace" className="neobtn neobtn-ghost">
+              ← Marketplace
+            </Link>
+            <Link href="/help" className="neobtn neobtn-ghost">
+              Hilfe
+            </Link>
           </div>
         </div>
       </section>
@@ -228,45 +156,50 @@ export default async function SellerProfilePage({ params }: Props) {
       {/* Products */}
       <section className={styles.productsSection}>
         <div className={styles.productsHeader}>
-          <h2>Produkte von {sellerName}</h2>
-          <p className={styles.productsSub}>
-            {products.length === 0
-              ? "Dieser Verkäufer hat noch keine Produkte veröffentlicht."
-              : `${products.length} Produkt${products.length === 1 ? "" : "e"} im Shop`}
-          </p>
+          <h2>Produkte</h2>
+          <p className={styles.productsSub}>Alle aktiven Produkte dieses Verkäufers</p>
         </div>
 
-        {products.length > 0 && (
+        {products.length === 0 ? (
+          <div className={styles.privateCard}>Dieser Verkäufer hat aktuell keine aktiven Produkte.</div>
+        ) : (
           <div className={styles.grid}>
-            {products.map((p) => (
-              <Link key={p.id} href={`/product/${p.id}`} className={styles.card}>
-                <div className={styles.thumbWrap}>
-                  {p.thumbnail ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={p.thumbnail} alt={p.title} className={styles.thumbImg} />
-                  ) : (
-                    <div className={styles.thumbPlaceholder} aria-hidden="true">
-                      <span>{p.title?.charAt(0)?.toUpperCase() || "💾"}</span>
-                    </div>
-                  )}
-                </div>
+            {products.map((p) => {
+              const thumbSrc = (p.thumbnail ?? "").trim();
+              const thumbUseNext = canUseNextImage(thumbSrc);
 
-                <div className={styles.cardBody}>
-                  <h3 className={styles.cardTitle}>{p.title}</h3>
-
-                  {p.description && (
-                    <p className={styles.desc}>
-                      {p.description.length > 120 ? p.description.slice(0, 117) + "..." : p.description}
-                    </p>
-                  )}
-
-                  <div className={styles.meta}>
-                    <span className={styles.price}>{(p.priceCents / 100).toFixed(2)} CHF</span>
-                    <span className={styles.cat}>{p.category || "Digital"}</span>
+              return (
+                <Link key={p.id} href={`/product/${p.id}`} className={styles.card}>
+                  <div className={styles.thumbWrap}>
+                    {thumbSrc ? (
+                      thumbUseNext ? (
+                        <div className={styles.thumbMedia}>
+                          <Image src={thumbSrc} alt={p.title} fill className={styles.thumbImg} />
+                        </div>
+                      ) : (
+                        <img
+                          src={thumbSrc}
+                          alt={p.title}
+                          className={styles.thumbImgFallback}
+                          referrerPolicy="no-referrer"
+                        />
+                      )
+                    ) : (
+                      <div className={styles.thumbPlaceholder}>💾</div>
+                    )}
                   </div>
-                </div>
-              </Link>
-            ))}
+
+                  <div className={styles.cardBody}>
+                    <h3 className={styles.cardTitle}>{p.title}</h3>
+
+                    <div className={styles.meta}>
+                      <span className={styles.cat}>{p.category ? `Kategorie: ${p.category}` : "Kategorie: —"}</span>
+                      <span className={styles.price}>{formatCHF(p.priceCents)}</span>
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         )}
       </section>

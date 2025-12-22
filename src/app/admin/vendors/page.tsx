@@ -4,18 +4,53 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 
+export const dynamic = "force-dynamic";
+
 type SearchParams = {
   q?: string | string[];
-  status?: string | string[]; // UI Filter bleibt, aber wir leiten daraus Prisma-Filter ab
+  status?: string | string[]; // ALL | ACTIVE | BLOCKED
   page?: string | string[];
 };
 
-export default async function AdminVendorsPage(props: {
-  searchParams: Promise<SearchParams>;
-}) {
+function clamp(n: number, min: number, max: number) {
+  return Math.max(min, Math.min(max, n));
+}
+
+function first(v?: string | string[]) {
+  return typeof v === "string" ? v : Array.isArray(v) ? v[0] ?? "" : "";
+}
+
+function buildQuery(params: { q?: string; status?: string; page?: number | string }) {
+  const sp = new URLSearchParams();
+  if (params.q && params.q.trim()) sp.set("q", params.q.trim());
+  if (params.status && params.status.trim()) sp.set("status", params.status.trim());
+  if (params.page !== undefined) sp.set("page", String(params.page));
+  return sp.toString();
+}
+
+function getPageItems(current: number, total: number) {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+
+  const items: (number | "...")[] = [];
+  const c = clamp(current, 1, total);
+
+  items.push(1);
+
+  const left = Math.max(2, c - 1);
+  const right = Math.min(total - 1, c + 1);
+
+  if (left > 2) items.push("...");
+  for (let p = left; p <= right; p++) items.push(p);
+  if (right < total - 1) items.push("...");
+
+  items.push(total);
+  return items;
+}
+
+export default async function AdminVendorsPage(props: { searchParams: Promise<SearchParams> }) {
   const session = await getServerSession(authOptions);
 
-  if (!session || session.user.role !== "ADMIN") {
+  if (!session || (session.user as any)?.role !== "ADMIN") {
     return (
       <main className="min-h-[70vh] flex items-center justify-center px-4">
         <div className="neumorph-card p-6 max-w-md text-center">
@@ -33,72 +68,48 @@ export default async function AdminVendorsPage(props: {
 
   const sp = await props.searchParams;
 
-  const search =
-    typeof sp.q === "string" ? sp.q : Array.isArray(sp.q) ? sp.q[0] ?? "" : "";
+  const search = first(sp.q);
+  const statusFilter = (first(sp.status) || "ALL").toUpperCase(); // ALL | ACTIVE | BLOCKED
+  const pageRaw = first(sp.page) || "1";
 
-  const statusRaw =
-    typeof sp.status === "string"
-      ? sp.status
-      : Array.isArray(sp.status)
-      ? sp.status[0] ?? "ALL"
-      : "ALL";
-
-  // UI-Status: ALL | ACTIVE | BLOCKED
-  const statusFilter = statusRaw || "ALL";
-
-  const pageRaw =
-    typeof sp.page === "string"
-      ? sp.page
-      : Array.isArray(sp.page)
-      ? sp.page[0] ?? "1"
-      : "1";
-
-  const page = Number.parseInt(pageRaw, 10) || 1;
   const pageSize = 25;
-  const skip = (page - 1) * pageSize;
+  const requestedPage = Number.parseInt(pageRaw, 10) || 1;
 
-  // ✅ User hat KEIN "status" -> wir filtern über vendorProfile/isPublic oder Existenz
-  // Wenn du wirklich "BLOCKED" brauchst, müssen wir ein echtes Feld im Schema einführen.
   const where: any = { role: "VENDOR" };
 
-  if (search) {
+  if (search.trim()) {
     where.OR = [
-      { name: { contains: search, mode: "insensitive" } },
-      { email: { contains: search, mode: "insensitive" } },
+      { name: { contains: search.trim(), mode: "insensitive" } },
+      { email: { contains: search.trim(), mode: "insensitive" } },
     ];
   }
 
-  // ✅ Statusfilter auf existierende Felder mappen:
-  // - ACTIVE: Vendor hat ein VendorProfile
-  // - BLOCKED: Vendor hat KEIN VendorProfile (oder du kannst später echtes Feld einführen)
-  if (statusFilter === "ACTIVE") {
-    where.vendorProfile = { isNot: null };
-  } else if (statusFilter === "BLOCKED") {
-    where.vendorProfile = { is: null };
-  }
-  // ALL => kein extra Filter
+  // Mapping: ACTIVE = not blocked, BLOCKED = blocked (use single source of truth `isBlocked`)
+  if (statusFilter === "ACTIVE") where.isBlocked = false;
+  if (statusFilter === "BLOCKED") where.isBlocked = true;
 
-  const [vendors, totalCount] = await Promise.all([
+  const totalCount = await prisma.user.count({ where });
+  const pageCount = Math.max(1, Math.ceil(totalCount / pageSize));
+  const page = clamp(requestedPage, 1, pageCount);
+
+  const [vendors] = await Promise.all([
     prisma.user.findMany({
       where,
-      skip,
+      skip: (page - 1) * pageSize,
       take: pageSize,
       orderBy: { name: "asc" },
       include: {
         products: {
-          include: {
-            orders: {
-              select: { vendorEarningsCents: true },
-            },
-          },
+          include: { orders: { select: { vendorEarningsCents: true } } },
         },
         vendorProfile: true,
       },
     }),
-    prisma.user.count({ where }),
   ]);
 
-  const pageCount = Math.max(1, Math.ceil(totalCount / pageSize));
+  const hasPrev = page > 1;
+  const hasNext = page < pageCount;
+  const pageItems = getPageItems(page, pageCount);
 
   return (
     <div className="admin-shell">
@@ -111,11 +122,10 @@ export default async function AdminVendorsPage(props: {
       <header className="admin-header">
         <div className="admin-kicker">DigiEmu · Admin</div>
         <h1 className="admin-title">Verkäufer (Admin)</h1>
-        <p className="admin-subtitle">
-          Alle Vendor-Accounts, mit Basisdaten & Status.
-        </p>
+        <p className="admin-subtitle">Alle Vendor-Accounts, mit Basisdaten & Status.</p>
       </header>
 
+      {/* FILTER */}
       <section className="neumorph-card p-6 mb-6 flex flex-wrap gap-4 items-center">
         <form className="flex flex-wrap gap-4 w-full" method="get">
           <input
@@ -124,22 +134,27 @@ export default async function AdminVendorsPage(props: {
             placeholder="Nach Name oder E-Mail suchen…"
             className="input-neu w-full max-w-xs text-sm"
           />
-          <select
-            name="status"
-            defaultValue={statusFilter}
-            className="input-neu w-40 text-sm"
-          >
+          <select name="status" defaultValue={statusFilter} className="input-neu w-40 text-sm">
             <option value="ALL">Alle</option>
             <option value="ACTIVE">Aktiv</option>
             <option value="BLOCKED">Gesperrt</option>
           </select>
+
+          {/* bei Filtern immer zurück auf Seite 1 */}
+          <input type="hidden" name="page" value="1" />
+
           <button type="submit" className="neobtn-sm">
             Filter anwenden
           </button>
         </form>
       </section>
 
+      {/* TABLE */}
       <section className="neumorph-card p-6 overflow-x-auto">
+        <div className="mb-3 text-xs text-[var(--text-muted)]">
+          {totalCount} Vendoren · Seite {page} / {pageCount}
+        </div>
+
         <table className="min-w-full text-sm admin-table">
           <thead>
             <tr>
@@ -151,13 +166,11 @@ export default async function AdminVendorsPage(props: {
               <th className="py-2 px-3 text-left">Aktionen</th>
             </tr>
           </thead>
+
           <tbody>
             {vendors.length === 0 ? (
               <tr>
-                <td
-                  colSpan={6}
-                  className="py-8 text-center text-[var(--text-muted)]"
-                >
+                <td colSpan={6} className="py-8 text-center text-[var(--text-muted)]">
                   <div className="flex flex-col items-center gap-1">
                     <span className="text-2xl">🧑‍💼</span>
                     <span className="font-semibold text-[var(--text-main)]">
@@ -170,31 +183,25 @@ export default async function AdminVendorsPage(props: {
                 </td>
               </tr>
             ) : (
-              vendors.map((v) => {
-                const revenueCents = v.products.reduce((sumP, p) => {
+              vendors.map((v: any) => {
+                const revenueCents = v.products.reduce((sumP: number, p: any) => {
                   const productSum = p.orders.reduce(
-                    (sumO, o) => sumO + (o.vendorEarningsCents ?? 0),
+                    (sumO: number, o: any) => sumO + (o.vendorEarningsCents ?? 0),
                     0
                   );
                   return sumP + productSum;
                 }, 0);
 
-                // ✅ Status ableiten (keine v.status!)
-                const derivedStatus = v.vendorProfile ? "ACTIVE" : "BLOCKED";
+                const derivedStatus = v.isBlocked ? "BLOCKED" : "ACTIVE";
 
                 return (
-                  <tr
-                    key={v.id}
-                    className="border-b border-slate-100 last:border-0"
-                  >
+                  <tr key={v.id} className="border-b border-slate-100 last:border-0">
                     <td className="py-2 px-3 font-medium text-[var(--text-main)]">
                       {v.name || "—"}
                     </td>
                     <td className="py-2 px-3">{v.email}</td>
                     <td className="py-2 px-3">{v.products?.length ?? 0}</td>
-                    <td className="py-2 px-3">
-                      {(revenueCents / 100).toFixed(2)} CHF
-                    </td>
+                    <td className="py-2 px-3">{(revenueCents / 100).toFixed(2)} CHF</td>
                     <td className="py-2 px-3">
                       <span
                         className={`px-2 py-1 rounded-full text-xs font-semibold ${
@@ -210,10 +217,7 @@ export default async function AdminVendorsPage(props: {
                       <Link href={`/admin/vendors/${v.id}`} className="neobtn-sm">
                         Vendor-Ansicht
                       </Link>
-                      <Link
-                        href={`/admin/payouts/vendor/${v.id}`}
-                        className="neobtn-sm ghost"
-                      >
+                      <Link href={`/admin/payouts/vendor/${v.id}`} className="neobtn-sm ghost">
                         Payouts
                       </Link>
                     </td>
@@ -224,33 +228,60 @@ export default async function AdminVendorsPage(props: {
           </tbody>
         </table>
 
-        <div className="flex justify-between items-center mt-6 text-xs text-[var(--text-muted)]">
-          <span>
-            Seite {page} von {pageCount} · {totalCount} Vendoren
-          </span>
-          <div className="flex gap-2">
-            {page > 1 && (
-              <Link
-                href={`/admin/vendors?page=${page - 1}&q=${encodeURIComponent(
-                  search
-                )}&status=${statusFilter}`}
-                className="neobtn-sm ghost"
-              >
-                ← Zurück
-              </Link>
-            )}
-            {page < pageCount && (
-              <Link
-                href={`/admin/vendors?page=${page + 1}&q=${encodeURIComponent(
-                  search
-                )}&status=${statusFilter}`}
-                className="neobtn-sm ghost"
-              >
-                Weiter →
-              </Link>
-            )}
+        {/* PAGINATION */}
+        {pageCount > 1 && (
+          <div className="mt-6 flex items-center justify-between gap-3 flex-wrap">
+            <div className="text-xs text-[var(--text-muted)]">
+              Seite {page} / {pageCount} · {totalCount} Vendoren
+            </div>
+
+            <div className="flex items-center gap-2">
+              {hasPrev ? (
+                <Link
+                  className="neobtn-sm ghost"
+                  href={`/admin/vendors?${buildQuery({ q: search, status: statusFilter, page: page - 1 })}`}
+                >
+                  ← Zurück
+                </Link>
+              ) : (
+                <span className="neobtn-sm ghost opacity-40 pointer-events-none">← Zurück</span>
+              )}
+
+              <div className="flex items-center gap-1">
+                {pageItems.map((it, idx) =>
+                  it === "..." ? (
+                    <span key={`dots-${idx}`} className="px-2 text-[var(--text-muted)]">
+                      …
+                    </span>
+                  ) : (
+                    <Link
+                      key={it}
+                      href={`/admin/vendors?${buildQuery({ q: search, status: statusFilter, page: it })}`}
+                      className={`px-3 py-1 rounded-full border text-xs ${
+                        it === page
+                          ? "bg-[var(--accent)] text-white border-[var(--accent)]"
+                          : "bg-[var(--neo-card-bg-soft)] text-[var(--text-main)] border-[var(--neo-card-border)]"
+                      }`}
+                    >
+                      {it}
+                    </Link>
+                  )
+                )}
+              </div>
+
+              {hasNext ? (
+                <Link
+                  className="neobtn-sm ghost"
+                  href={`/admin/vendors?${buildQuery({ q: search, status: statusFilter, page: page + 1 })}`}
+                >
+                  Weiter →
+                </Link>
+              ) : (
+                <span className="neobtn-sm ghost opacity-40 pointer-events-none">Weiter →</span>
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </section>
     </div>
   );

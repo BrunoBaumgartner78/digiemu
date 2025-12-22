@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { getAdminBucket } from "@/lib/firebaseAdmin";
+import { adminBucket } from "@/lib/firebaseAdmin";
 import { randomUUID } from "crypto";
 
 export const runtime = "nodejs";
@@ -21,13 +21,19 @@ export async function POST(req: Request) {
 
     const form = await req.formData();
     const file = form.get("file");
-    const kind = String(form.get("kind") ?? "avatar"); // avatar | banner
+
+    // ✅ kind absichern (nur erlaubte Werte)
+    const kindRaw = String(form.get("kind") ?? "avatar");
+    const kind = kindRaw === "banner" ? "banner" : "avatar"; // avatar | banner
 
     if (!(file instanceof File)) return jsonError("No file provided");
-    if (!ALLOWED.has(file.type)) return jsonError("Invalid file type. Use png/jpg/webp.");
-    if (file.size > MAX_BYTES) return NextResponse.json({ ok: false, message: "File too large (max 2MB)." }, { status: 413 });
+    if (!ALLOWED.has(file.type))
+      return jsonError("Invalid file type. Use png/jpg/webp.");
+    if (file.size > MAX_BYTES)
+      return jsonError("File too large (max 2MB).", 413);
 
-    const userId = session.user.id;
+    const userId = session.user.id as string;
+
     const ext =
       file.type === "image/png"
         ? "png"
@@ -39,12 +45,12 @@ export async function POST(req: Request) {
     const filename = `${Date.now()}-${randomUUID()}.${ext}`;
     const objectPath = `${folder}/${userId}/${filename}`;
 
-    const arrayBuf = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuf);
-
+    const buffer = Buffer.from(await file.arrayBuffer());
     const token = randomUUID();
 
-    const storageFile = getAdminBucket().file(objectPath);
+    // ✅ adminBucket ist ein Objekt -> NICHT adminBucket()
+   const storageFile = adminBucket.file(objectPath);
+
     await storageFile.save(buffer, {
       resumable: false,
       contentType: file.type,
@@ -56,11 +62,16 @@ export async function POST(req: Request) {
       },
     });
 
-    const bucketName = getAdminBucket().name;
+   const bucketName = adminBucket.name;
     const encodedPath = encodeURIComponent(objectPath);
     const downloadUrl = `https://firebasestorage.googleapis.com/v0/b/${bucketName}/o/${encodedPath}?alt=media&token=${token}`;
 
-    return NextResponse.json({ ok: true, kind, path: objectPath, url: downloadUrl });
+    return NextResponse.json({
+      ok: true,
+      kind,
+      path: objectPath,
+      url: downloadUrl,
+    });
   } catch (err: any) {
     console.error("UPLOAD_API_ERROR", err);
     const msg = err?.message || String(err) || "Upload failed";

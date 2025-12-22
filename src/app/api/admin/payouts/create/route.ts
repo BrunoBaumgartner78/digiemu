@@ -1,0 +1,63 @@
+import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+export async function POST(req: Request) {
+  const session = await getServerSession(authOptions);
+  const user = session?.user as any;
+
+  if (!user?.id || user.role !== "ADMIN") {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
+
+  const form = await req.formData();
+  const vendorId = String(form.get("vendorId") ?? "").trim();
+  const returnTo = String(form.get("returnTo") ?? "").trim();
+
+  if (!vendorId) {
+    return NextResponse.json({ message: "vendorId fehlt" }, { status: 400 });
+  }
+
+  // Pending berechnen (wie in deiner Page)
+  const vendor = await prisma.user.findUnique({
+    where: { id: vendorId },
+    include: {
+      products: { include: { orders: { select: { vendorEarningsCents: true } } } },
+      payouts: true,
+    },
+  });
+
+  if (!vendor) {
+    return NextResponse.json({ message: "Vendor nicht gefunden" }, { status: 404 });
+  }
+
+  const totalEarnings = vendor.products
+    .flatMap((p) => p.orders.map((o) => o.vendorEarningsCents ?? 0))
+    .reduce((a, b) => a + b, 0);
+
+  const alreadyPaid = vendor.payouts
+    .filter((p) => p.status === "PAID")
+    .reduce((sum, p) => sum + p.amountCents, 0);
+
+  const pendingAmount = Math.max(totalEarnings - alreadyPaid, 0);
+
+  if (pendingAmount <= 0) {
+    return NextResponse.json({ message: "Kein ausstehender Betrag" }, { status: 400 });
+  }
+
+  // ⚠️ Annahme: payout hat vendorId + amountCents + status
+  await prisma.payout.create({
+    data: {
+      vendorId,
+      amountCents: pendingAmount,
+      status: "PENDING",
+    } as any,
+  });
+
+  const redirectUrl = returnTo || `/admin/payouts/vendor/${vendorId}`;
+  return NextResponse.redirect(new URL(redirectUrl, req.url));
+}

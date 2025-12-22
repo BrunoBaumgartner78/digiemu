@@ -4,7 +4,6 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "@/lib/prisma";
 
 export const authOptions: NextAuthOptions = {
-  // wichtig für App Router
   session: { strategy: "jwt" },
 
   providers: [
@@ -27,19 +26,20 @@ export const authOptions: NextAuthOptions = {
               id: true,
               email: true,
               name: true,
-              password: true, // ✅ MUSS selektiert sein, sonst immer 401
+              password: true,
               role: true,
               isBlocked: true,
             },
           });
 
           if (!user) return null;
+
+          // ✅ Blocked users cannot sign in
           if (user.isBlocked) return null;
 
-          // DEV/MVP: Klartext-Vergleich (passt zu deinem /api/auth/register)
+          // DEV/MVP: Klartext-Vergleich
           if ((user.password ?? "") !== password) return null;
 
-          // NextAuth User-Objekt
           return {
             id: user.id,
             email: user.email,
@@ -56,18 +56,60 @@ export const authOptions: NextAuthOptions = {
 
   callbacks: {
     async jwt({ token, user }) {
-      // beim Login user -> token
+      // ✅ 1) Beim Login übernehmen
       if (user) {
-        token.id = (user as any).id;
+        token.uid = (user as any).id;
         token.role = (user as any).role;
+        token.email = (user as any).email ?? token.email;
       }
+
+      // ✅ 2) uid/role nachziehen wenn nötig
+      if (!token.uid && token.email) {
+        const dbUser = await prisma.user.findUnique({
+          where: { email: String(token.email) },
+          select: { id: true, role: true, isBlocked: true },
+        });
+
+        if (!dbUser) {
+          // user deleted -> invalidate
+          return {} as any;
+        }
+        if (dbUser.isBlocked) {
+          // ✅ invalidate token if blocked later
+          return {} as any;
+        }
+
+        token.uid = dbUser.id;
+        token.role = dbUser.role;
+        return token;
+      }
+
+      // ✅ 3) WICHTIG: wenn uid vorhanden → block-status prüfen
+      if (token.uid) {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: String(token.uid) },
+          select: { isBlocked: true, role: true },
+        });
+
+        if (!dbUser) return {} as any;
+        if (dbUser.isBlocked) return {} as any;
+
+        // keep role fresh
+        token.role = dbUser.role;
+      }
+
       return token;
     },
 
     async session({ session, token }) {
+      // ✅ Wenn Token invalidiert wurde -> keine Session
+      if (!(token as any)?.uid) {
+        return null as any;
+      }
+
       if (session.user) {
-        (session.user as any).id = token.id;
-        (session.user as any).role = token.role;
+        (session.user as any).id = (token as any).uid || "";
+        (session.user as any).role = (token as any).role;
       }
       return session;
     },
@@ -76,8 +118,7 @@ export const authOptions: NextAuthOptions = {
   pages: {
     signIn: "/login",
   },
-
 };
 
-// Alias for newer imports (no behavior change)
+// Alias
 export const auth = authOptions;

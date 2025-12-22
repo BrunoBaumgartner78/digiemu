@@ -1,17 +1,17 @@
-.profile-image-uploader{
-  width:100%;
-}
+/* =========================
+   Profile - Uploader + Preview
+   (DigiEmu Dark Neo)
+   ========================= */
 
+/* OPTIONAL: Legacy (nur behalten, wenn du es noch irgendwo verwendest)
+.profile-image-uploader{ width:100%; }
 .uploader-grid{
   display:grid;
   grid-template-columns: 2fr 1fr;
   gap: 20px;
 }
-
 @media (max-width: 900px){
-  .uploader-grid{
-    grid-template-columns: 1fr;
-  }
+  .uploader-grid{ grid-template-columns: 1fr; }
 }
 .upload-card{
   border-radius: 20px;
@@ -25,39 +25,556 @@
   flex-direction: column;
   gap: 12px;
 }
-.banner-preview{
-  height: 160px;
-  border-radius: 18px;
-}
-
-.avatar-preview{
-  width: 140px;
-  height: 140px;
-  margin: 0 auto;
-}
-.profile-form{
-  width:100%;
-}
-
+.banner-preview{ height: 160px; border-radius: 18px; }
+.avatar-preview{ width: 140px; height: 140px; margin: 0 auto; }
 .form-grid{
   display:grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px 20px;
 }
-
 @media (max-width: 800px){
-  .form-grid{
-    grid-template-columns: 1fr;
-  }
+  .form-grid{ grid-template-columns: 1fr; }
 }
-
 .profile-form input,
-.profile-form textarea{
-  width:100%;
-}
+.profile-form textarea{ width:100%; }
 .profile-form .actions{
   display:flex;
   justify-content:flex-end;
   gap:12px;
   margin-top: 20px;
+}
+*/
+
+/* === Uploader wrapper === */
+.profile-image-uploader{
+  width:100%;
+}
+
+/* grid wrapper for uploader */
+.profile-images{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+@media (max-width: 1023px){
+  .profile-images{ grid-template-columns: 1fr; }
+}
+
+/* card shell */
+.image-card{
+  border-radius: var(--radius-xl, 1.4rem);
+  padding: 14px;
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(17,24,39,.45);
+  box-shadow:
+    10px 10px 24px rgba(0,0,0,.52),
+    -10px -10px 24px rgba(255,255,255,.04);
+}
+
+/* nice heading inside image cards */
+.image-card h3{
+  margin: 0 0 6px 0;
+  font-weight: 900;
+  color: rgba(255,255,255,.92);
+  letter-spacing: .02em;
+}
+
+/* header row inside card */
+.upload-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.upload-title{
+  font-weight: 900;
+  color: rgba(255,255,255,.92);
+}
+.upload-sub{
+  font-size: 12px;
+  margin-top: 2px;
+  color: rgba(255,255,255,.62);
+}
+
+.upload-actions{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+}
+
+/* hide real file input */
+.file{
+  position:absolute;
+  width:1px;
+  height:1px;
+  padding:0;
+  margin:-1px;
+  overflow:hidden;
+  clip: rect(0,0,0,0);
+  white-space:nowrap;
+  border:0;
+}
+
+/* neo button */
+.upload-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding: .62rem 1rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: linear-gradient(180deg, rgba(74,124,255,.30), rgba(74,124,255,.14));
+  color: rgba(255,255,255,.92);
+  font-weight: 900;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  font-size: 11px;
+  box-shadow:
+    10px 10px 22px rgba(0,0,0,.55),
+    -10px -10px 22px rgba(255,255,255,.05),
+    inset 0 0 0 1px rgba(255,255,255,.08);
+  transition: transform .12s ease, filter .12s ease, opacity .12s ease;
+}
+.upload-btn:hover{ transform: translateY(-1px); filter: brightness(1.05); }
+.upload-btn:active{ transform: translateY(0px); filter: brightness(.98); }
+.upload-btn.is-disabled{
+  opacity: .6;
+  cursor: not-allowed;
+}
+
+/* preview frame */
+.image-preview{
+  margin-top: 12px;
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.06);
+}
+
+/* ensure correct heights */
+.banner-frame{ height: 160px; }
+.avatar-frame{
+  height: 240px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.banner-img{
+  width:100%;
+  height:100%;
+  object-fit: cover;
+  display:block;
+  filter: contrast(1.05) saturate(1.05);
+}
+
+.avatar-img{
+  width: 180px;
+  height: 180px;
+  border-radius: 999px;
+  object-fit: cover;
+  display:block;
+  box-shadow:
+    0 18px 30px rgba(0,0,0,.35),
+    inset 0 0 0 2px rgba(255,255,255,.18);
+  border: 1px solid rgba(255,255,255,.14);
+}
+
+.placeholder{
+  width:100%;
+  height:100%;
+  display:flex;
+  flex-direction: column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  gap: 6px;
+  color: rgba(255,255,255,.72);
+  font-weight: 800;
+}
+.placeholder-sub{
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,.55);
+  max-width: 34ch;
+}
+
+/* upload overlay */
+.upload-overlay{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight: 900;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  font-size: 11px;
+  color: rgba(255,255,255,.92);
+  background: rgba(2,6,23,.55);
+  backdrop-filter: blur(8px);
+}
+
+/* ===== Preview Card (Marketplace-like) ===== */
+.preview-card{
+  border-radius: var(--radius-xl, 1.4rem);
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(17,24,39,.45);
+  box-shadow:
+    10px 10px 24px rgba(0,0,0,.55),
+    -10px -10px 24px rgba(255,255,255,.04);
+}
+
+.preview-banner{
+  position: relative;
+  height: 210px;
+}
+
+.preview-bannerImg{
+  width:100%;
+  height:100%;
+  object-fit: cover;
+  display:block;
+  filter: contrast(1.05) saturate(1.05);
+}
+
+.preview-bannerPlaceholder{
+  width:100%;
+  height:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color: rgba(255,255,255,.60);
+  font-weight: 900;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  font-size: 12px;
+}
+
+.preview-glow{
+  position:absolute;
+  inset:0;
+  background:
+   
+    linear-gradient(180deg, rgba(2,6,23,.10), rgba(2,6,23,.65));
+  pointer-events:none;
+}
+
+.preview-overlay{
+  position:absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 14px;
+  padding: 14px 14px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(2,6,23,.38);
+  backdrop-filter: blur(10px);
+  display:flex;
+  align-items:center;
+  gap: 12px;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.06);
+}
+
+.preview-avatar{
+  width: 56px;
+  height: 56px;
+  border-radius: 999px;
+  overflow:hidden;
+  flex: 0 0 auto;
+  border: 1px solid rgba(255,255,255,.14);
+  box-shadow:
+    0 14px 28px rgba(0,0,0,.35),
+    inset 0 0 0 2px rgba(255,255,255,.16);
+  background: rgba(17,24,39,.55);
+}
+
+.preview-avatarImg{
+  width:100%;
+  height:100%;
+  object-fit: cover;
+  display:block;
+}
+
+.preview-avatarFallback{
+  width:100%;
+  height:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight: 1000;
+  color: rgba(255,255,255,.90);
+  letter-spacing: .06em;
+}
+
+.preview-meta{ min-width: 0; }
+.preview-name{
+  font-size: 16px;
+  font-weight: 1000;
+  color: rgba(255,255,255,.92);
+  line-height: 1.1;
+}
+.preview-sub{
+  margin-top: 4px;
+  font-size: 12px;
+  color: rgba(255,255,255,.70);
+  display:flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items:center;
+}
+
+.pill-public,
+.pill-private{
+  display:inline-flex;
+  align-items:center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-weight: 900;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  font-size: 10px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.06);
+}
+.pill-public{ color: rgba(167,243,208,.95); }
+.pill-private{ color: rgba(253,230,138,.95); }
+
+.preview-body{
+  padding: 14px 14px 16px 14px;
+}
+.preview-bio{
+  color: rgba(255,255,255,.74);
+  font-size: 13px;
+  line-height: 1.35;
+  white-space: pre-wrap;
+}
+
+.profile-shell{
+  min-height: calc(100vh - 6rem);
+  padding: 2rem 1rem;
+}
+
+.profile-wrap{
+  max-width: 1100px;
+  margin: 0 auto;
+  display:flex;
+  flex-direction:column;
+  gap:1rem;
+}
+
+.profile-header{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:1rem;
+  flex-wrap:wrap;
+}
+
+.profile-title{
+  font-size:2.1rem;
+  font-weight:900;
+}
+
+.profile-sub{
+  opacity:.75;
+  max-width: 60ch;
+}
+
+.profile-actions{
+  display:flex;
+  gap:.75rem;
+  align-items:center;
+}
+
+.profile-grid{
+  display:grid;
+  gap:1rem;
+}
+
+@media (min-width: 1024px){
+  .profile-grid{ grid-template-columns: 1.15fr .85fr; }
+}
+
+/* Progress (wir lassen die Optik weitgehend vom Neo-Look tragen) */
+.profile-progress{ margin-top:.85rem; }
+.profile-progress__row{
+  display:flex;
+  justify-content:space-between;
+  font-size:.9rem;
+  opacity:.75;
+  margin-bottom:.35rem;
+}
+.profile-progress__bar{
+  height:12px;
+  border-radius:999px;
+  overflow:hidden;
+}
+.profile-progress__fill{
+  height:100%;
+  border-radius:999px;
+}
+
+/* =========================
+   Scoped “global helpers”
+   Alles nur innerhalb profile-shell gültig
+   ========================= */
+
+.profile-shell :global(.profile-images){
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+@media (max-width: 1023px){
+  .profile-shell :global(.profile-images){ grid-template-columns: 1fr; }
+}
+
+.profile-shell :global(.image-card){
+  border-radius: 18px;
+  padding: 14px;
+}
+
+.profile-shell :global(.upload-head){
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap: 12px;
+  flex-wrap:wrap;
+}
+
+.profile-shell :global(.upload-title){
+  font-weight: 900;
+}
+
+.profile-shell :global(.upload-sub){
+  font-size: 12px;
+  margin-top: 2px;
+  opacity: .7;
+}
+
+/* Hidden file input */
+.profile-shell :global(.file){
+  position:absolute;
+  width:1px;
+  height:1px;
+  padding:0;
+  margin:-1px;
+  overflow:hidden;
+  clip: rect(0,0,0,0);
+  white-space:nowrap;
+  border:0;
+}
+
+/* Preview & image frames */
+.profile-shell :global(.image-preview){
+  margin-top: 12px;
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+}
+
+/* ✅ FIX: gradient syntax (circle at …) */
+.profile-shell :global(.image-preview--dark){
+  background: radial-gradient(circle at 0 100%, rgba(11,17,32,.95), rgba(2,6,23,.90));
+}
+
+/* upload overlay */
+.profile-shell :global(.upload-overlay){
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight: 900;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  font-size: 11px;
+  background: rgba(2,6,23,.55);
+  backdrop-filter: blur(8px);
+}
+
+.profile-shell :global(.banner-frame){ height: 160px; }
+.profile-shell :global(.avatar-frame){
+  height: 240px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.profile-shell :global(.banner-img){
+  width:100%;
+  height:100%;
+  object-fit: cover;
+  display:block;
+}
+
+.profile-shell :global(.avatar-img){
+  width: 180px;
+  height: 180px;
+  border-radius: 999px;
+  object-fit: cover;
+  display:block;
+}
+
+/* Preview Card */
+.profile-shell :global(.preview-card){
+  border-radius: 18px;
+  overflow:hidden;
+}
+
+.profile-shell :global(.preview-banner){
+  position: relative;
+  height: 210px;
+  /* ✅ FIX: gradient syntax */
+  background: radial-gradient(circle at 0 100%, rgba(11,17,32,.95), rgba(2,6,23,.90));
+}
+
+.profile-shell :global(.preview-bannerImg){
+  width:100%;
+  height:100%;
+  object-fit: cover;
+  display:block;
+}
+
+.profile-shell :global(.preview-overlay){
+  position:absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 14px;
+  padding: 14px;
+  border-radius: 18px;
+  display:flex;
+  align-items:center;
+  gap: 12px;
+  backdrop-filter: blur(10px);
+}
+
+.profile-shell :global(.preview-avatar){
+  width: 56px;
+  height: 56px;
+  border-radius: 999px;
+  overflow:hidden;
+  flex: 0 0 auto;
+}
+
+.profile-shell :global(.preview-avatarImg){
+  width:100%;
+  height:100%;
+  object-fit: cover;
+  display:block;
+}
+
+.profile-shell :global(.preview-body){
+  padding: 14px 14px 16px 14px;
+}
+
+.profile-shell :global(.preview-bio){
+  font-size: 13px;
+  line-height: 1.35;
+  white-space: pre-wrap;
+  opacity: .82;
 }

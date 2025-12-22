@@ -8,24 +8,28 @@ type Props = {
 };
 
 export default function AdminUserStatusToggle({ userId, isBlocked }: Props) {
-  const [blocked, setBlocked] = useState(isBlocked);
+  const [blocked, setBlocked] = useState<boolean>(!!isBlocked);
   const [pending, setPending] = useState(false);
 
   async function handleClick() {
     setPending(true);
     try {
-      // TODO: Hier später echten API-Call einbauen, z.B.:
-      // await fetch("/api/admin/users/toggle-block", {
-      //   method: "POST",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify({ userId }),
-      // });
+      const res = await fetch("/api/admin/users/toggle-block", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId }),
+      });
 
-      // Für jetzt: lokal toggeln
-      setBlocked((prev) => !prev);
-      console.log("Toggle user block:", userId, "→", !blocked);
+      if (!res.ok) {
+        const txt = await res.text();
+        throw new Error(txt || "Toggle fehlgeschlagen");
+      }
+
+      const data = await res.json();
+      setBlocked(!!data?.user?.isBlocked);
     } catch (e) {
       console.error(e);
+      alert("Konnte Sperrstatus nicht ändern. Schau Console/Serverlogs an.");
     } finally {
       setPending(false);
     }
@@ -37,9 +41,7 @@ export default function AdminUserStatusToggle({ userId, isBlocked }: Props) {
       onClick={handleClick}
       disabled={pending}
       className={`neobtn-sm ${
-        blocked
-          ? "bg-rose-500/90 text-white"
-          : "bg-emerald-500/90 text-white"
+        blocked ? "bg-rose-500/90 text-white" : "bg-emerald-500/90 text-white"
       }`}
     >
       {pending ? "Aktualisiere…" : blocked ? "Entsperren" : "Sperren"}

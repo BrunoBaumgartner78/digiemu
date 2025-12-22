@@ -14,8 +14,9 @@ export function Header() {
   }, []);
 
   const user = session?.user;
-  const isVendor = user?.role === "VENDOR";
-  const isAdmin = user?.role === "ADMIN";
+  const role = (session?.user as any)?.role;
+  const isVendor = role === "VENDOR";
+  const isAdmin = role === "ADMIN";
 
   const toggleMenu = () => setIsOpen((prev) => !prev);
 
@@ -31,7 +32,7 @@ export function Header() {
           {user && <Link href="/account/buyer-profile" className="nav-link">Buyer-Profil</Link>}
           {isVendor && <Link href="/dashboard" className="nav-link">Dashboard</Link>}
           {isVendor && <Link href="/account/profile" className="nav-link">Verkäufer-Profil</Link>}
-          {isAdmin && <Link href="/admin/products" className="nav-link">Admin</Link>}
+          {isAdmin && <Link href="/admin" className="nav-link">Admin</Link>}
           {isAdmin && <Link href="/account/admin-profile" className="nav-link">Admin-Profil</Link>}
           {isClient && !user && (
             <>
@@ -56,7 +57,7 @@ export function Header() {
             {user && <Link href="/account/buyer-profile" className="nav-link" onClick={toggleMenu}>Buyer-Profil</Link>}
             {isVendor && <Link href="/dashboard" className="nav-link" onClick={toggleMenu}>Dashboard</Link>}
             {isVendor && <Link href="/account/profile" className="nav-link" onClick={toggleMenu}>Verkäufer-Profil</Link>}
-            {isAdmin && <Link href="/admin/products" className="nav-link" onClick={toggleMenu}>Admin</Link>}
+            {isAdmin && <Link href="/admin" className="nav-link" onClick={toggleMenu}>Admin</Link>}
             {isAdmin && <Link href="/account/admin-profile" className="nav-link" onClick={toggleMenu}>Admin-Profil</Link>}
             {isClient && !user && (
               <>

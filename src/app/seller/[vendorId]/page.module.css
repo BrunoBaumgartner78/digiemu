@@ -1,76 +1,12 @@
-.trustCard {
-  margin: 14px 0 0 0;
-  padding: 12px 18px 12px 18px;
-  border-radius: 18px;
-  background: rgba(255,255,255,0.65);
-  box-shadow: 8px 8px 18px rgba(15,23,42,0.10), -6px -6px 14px rgba(255,255,255,0.80);
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 16px 18px;
-  font-size: 15px;
-}
-.trustLevel {
-  font-weight: 700;
-  color: #2563eb;
-  background: rgba(37,99,235,0.08);
-  border-radius: 999px;
-  padding: 2px 14px;
-  font-size: 14px;
-}
-.trustCount {
-  font-size: 14px;
-  color: #0f172a;
-  background: rgba(148,163,184,0.13);
-  border-radius: 999px;
-  padding: 2px 12px;
-}
-.trustProgressBarWrap {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 120px;
-}
-.trustProgressBarBg {
-  width: 100%;
-  height: 8px;
-  background: #e5ecf5;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(37,99,235,0.08);
-}
-.trustProgressBarFill {
-  height: 100%;
-  background: linear-gradient(90deg, #2563eb 60%, #60a5fa 100%);
-  border-radius: 8px;
-  transition: width 0.5s cubic-bezier(.4,1.4,.6,1);
-}
-.trustProgressText {
-  font-size: 12px;
-  color: #2563eb;
-  margin-top: 2px;
-}
-.trustBadges {
-  display: flex;
-  gap: 7px;
-  flex-wrap: wrap;
-}
-.trustBadge {
-  font-size: 12px;
-  font-weight: 600;
-  color: #fff;
-  background: linear-gradient(90deg, #2563eb 60%, #60a5fa 100%);
-  border-radius: 999px;
-  padding: 2px 12px;
-  box-shadow: 0 2px 8px rgba(37,99,235,0.10);
-  letter-spacing: 0.02em;
-}
+/* src/app/seller/[vendorId]/page.module.css */
+
 .page {
   max-width: 1100px;
   margin: 0 auto;
   padding: 28px 18px 60px;
 }
 
+/* Banner */
 .banner {
   border-radius: 28px;
   overflow: hidden;
@@ -80,7 +16,17 @@
     -14px -14px 32px rgba(255, 255, 255, 0.85);
 }
 
+.bannerMedia {
+  position: relative;
+  height: 240px;
+  width: 100%;
+}
+
 .bannerImg {
+  object-fit: cover;
+}
+
+.bannerImgFallback {
   width: 100%;
   height: 240px;
   object-fit: cover;
@@ -94,6 +40,7 @@
     linear-gradient(180deg, rgba(255, 255, 255, 0.45), rgba(0, 0, 0, 0.03));
 }
 
+/* Header */
 .headerCard {
   margin-top: 18px;
   display: grid;
@@ -141,24 +88,33 @@
 
 .headerText {}
 
-.name {
-  margin: 0;
-  font-size: 28px;
+.kicker {
+  font-size: 12px;
+  opacity: 0.75;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
 }
 
-.bio {
+.name {
   margin: 6px 0 0;
-  opacity: 0.8;
-  max-width: 70ch;
+  font-size: 28px;
+  font-weight: 900;
+}
+
+.sub {
+  margin-top: 6px;
+  font-size: 13px;
+  opacity: 0.75;
 }
 
 .links {
-  margin-top: 10px;
+  margin-top: 12px;
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
 }
 
+/* Products */
 .productsSection {
   margin-top: 22px;
 }
@@ -204,15 +160,25 @@
   background: rgba(255, 255, 255, 0.35);
 }
 
-.thumbImg {
+.thumbMedia {
+  position: relative;
+  height: 170px;
   width: 100%;
-  height: 100%;
+}
+
+.thumbImg {
+  object-fit: cover;
+}
+
+.thumbImgFallback {
+  width: 100%;
+  height: 170px;
   object-fit: cover;
   display: block;
 }
 
 .thumbPlaceholder {
-  height: 100%;
+  height: 170px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -227,14 +193,7 @@
 .cardTitle {
   margin: 0;
   font-size: 16px;
-  font-weight: 700;
-}
-
-.desc {
-  margin: 8px 0 0;
-  opacity: 0.78;
-  font-size: 13px;
-  line-height: 1.4;
+  font-weight: 800;
 }
 
 .meta {
@@ -247,7 +206,7 @@
 }
 
 .price {
-  font-weight: 800;
+  font-weight: 900;
 }
 
 .cat {
@@ -263,13 +222,7 @@
     -10px -10px 24px rgba(255, 255, 255, 0.85);
 }
 
-.backLinks {
-  margin-top: 12px;
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
+/* Responsive */
 @media (max-width: 980px) {
   .grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -281,8 +234,8 @@
     grid-template-columns: 1fr;
     text-align: center;
   }
-  .bio {
-    max-width: 100%;
+  .links {
+    justify-content: center;
   }
   .grid {
     grid-template-columns: 1fr;

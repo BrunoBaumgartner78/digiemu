@@ -1,5 +1,8 @@
 "use client";
 
+import React from "react";
+import styles from "./profile.module.css";
+
 type InitialData = {
   displayName: string;
   bio: string;
@@ -29,12 +32,26 @@ type ProfileFormProps = {
   onPreview?: () => void;
 };
 
-export default function ProfileForm({ form, stats, onChange, onSubmit, saving, onPreview }: ProfileFormProps) {
+export default function ProfileForm({
+  form,
+  stats,
+  onChange,
+  onSubmit,
+  saving = false,
+  onPreview,
+}: ProfileFormProps) {
+  const handlePreviewClick = () => {
+    if (!saving) onPreview?.();
+  };
+
   return (
-    <form className="profile-form" onSubmit={onSubmit}>
-  <div className="form-grid">
-        <label htmlFor="displayName">Anzeigename</label>
+    <form className={styles.profileForm} onSubmit={onSubmit}>
+      <div className={styles.formGrid}>
+        <label className={styles.label} htmlFor="displayName">
+          Anzeigename
+        </label>
         <input
+          className={styles.input}
           id="displayName"
           value={form.displayName}
           onChange={(e) => onChange("displayName", e.target.value)}
@@ -42,36 +59,57 @@ export default function ProfileForm({ form, stats, onChange, onSubmit, saving, o
         />
       </div>
 
-      <div className="form-row">
-        <label htmlFor="bio">Bio</label>
+      <div className={styles.formRow}>
+        <label className={styles.label} htmlFor="bio">
+          Bio
+        </label>
         <textarea
+          className={styles.textarea}
           id="bio"
           value={form.bio}
           onChange={(e) => onChange("bio", e.target.value)}
           placeholder="Kurzbeschreibung…"
+          rows={4}
         />
       </div>
 
-      <div className="form-row checkrow">
+      <div className={`${styles.formRow} ${styles.checkRow}`}>
         <input
+          className={styles.checkbox}
           id="isPublic"
           type="checkbox"
           checked={form.isPublic}
           onChange={(e) => onChange("isPublic", e.target.checked)}
         />
-        <label htmlFor="isPublic">Profil öffentlich anzeigen</label>
+        <label className={styles.checkLabel} htmlFor="isPublic">
+          Profil öffentlich anzeigen
+        </label>
       </div>
 
-      <div className="form-row readonly">
-        <span>Level: <b>{stats.level}</b></span>
-        <span>Produkte: <b>{stats.productCount}</b></span>
+      <div className={`${styles.formRow} ${styles.readonly}`}>
+        <span>
+          Level: <b>{stats.level}</b>
+        </span>
+        <span>
+          Produkte: <b>{stats.productCount}</b>
+        </span>
       </div>
 
-      <div className="actions">
-        <button type="submit" className="neobtn" disabled={saving}>
-          {saving ? "Speichere…" : "Profil speichern"}
+      <div className={styles.actions}>
+        <button
+          type="submit"
+          className={`${styles.neoBtn} ${styles.neoBtnPrimary}`}
+          disabled={saving}
+        >
+          {saving ? "Speichere…" : "Änderungen speichern"}
         </button>
-        <button type="button" className="neobtn ghost" onClick={() => (typeof (onPreview as any) === "function" ? (onPreview as any)() : undefined)}>
+
+        <button
+          type="button"
+          className={styles.neoBtn}
+          onClick={handlePreviewClick}
+          disabled={saving}
+        >
           Vorschau
         </button>
       </div>

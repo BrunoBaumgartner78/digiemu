@@ -6,40 +6,79 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import AdminUserStatusToggle from "./AdminUserStatusToggle";
 
+export const dynamic = "force-dynamic";
+
 type AdminUsersSearchParams = {
   q?: string;
   role?: string;
   page?: string;
+  pageSize?: string;
 };
+
+function clampInt(v: string | undefined, fallback: number, min: number, max: number) {
+  const n = Number(v);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.min(max, Math.max(min, Math.trunc(n)));
+}
+
+function buildQuery(params: Record<string, string | undefined>) {
+  const sp = new URLSearchParams();
+  for (const [k, v] of Object.entries(params)) {
+    if (v !== undefined && v !== "" && v !== "ALL") sp.set(k, v);
+  }
+  const s = sp.toString();
+  return s ? `?${s}` : "";
+}
+
+function paginationWindow(current: number, total: number) {
+  const pages: (number | "…")[] = [];
+  const add = (p: number | "…") => pages.push(p);
+
+  if (total <= 7) {
+    for (let i = 1; i <= total; i++) add(i);
+    return pages;
+  }
+
+  add(1);
+
+  const left = Math.max(2, current - 2);
+  const right = Math.min(total - 1, current + 2);
+
+  if (left > 2) add("…");
+  for (let i = left; i <= right; i++) add(i);
+  if (right < total - 1) add("…");
+
+  add(total);
+  return pages;
+}
 
 export default async function AdminUsersPage({
   searchParams,
 }: {
   searchParams: Promise<AdminUsersSearchParams>;
 }) {
-  // Session check (Server-seitig, kein window)
   const session = await getServerSession(auth);
-  if (!session || session.user.role !== "ADMIN") {
+  if (!session || (session.user as any)?.role !== "ADMIN") {
     redirect("/dashboard");
   }
 
-  // Next 16: searchParams ist ein Promise → auflösen
   const params = await searchParams;
-  const search = params.q ?? "";
-  const role = params.role ?? "ALL";
-  const page = Number(params.page ?? "1") || 1;
-  const pageSize = 25;
+
+  // ✅ IMMER Strings
+  const search = String(params.q ?? "");
+  const role = String(params.role ?? "ALL");
+
+  const page = clampInt(params.page, 1, 1, 10_000);
+  const pageSize = clampInt(params.pageSize, 25, 10, 100);
 
   const where: any = {};
-  if (search) {
+  if (search.trim()) {
     where.OR = [
-      { email: { contains: search, mode: "insensitive" } },
-      { name: { contains: search, mode: "insensitive" } },
+      { email: { contains: search.trim(), mode: "insensitive" } },
+      { name: { contains: search.trim(), mode: "insensitive" } },
     ];
   }
-  if (role !== "ALL") {
-    where.role = role;
-  }
+  if (role !== "ALL") where.role = role;
 
   const [users, totalCount] = await Promise.all([
     prisma.user.findMany({
@@ -52,11 +91,30 @@ export default async function AdminUsersPage({
     prisma.user.count({ where }),
   ]);
 
-  const totalPages = Math.ceil(totalCount / pageSize);
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+  const safePage = Math.min(page, totalPages);
+
+  const baseParams: Record<string, string | undefined> = {
+    q: search.trim() ? search.trim() : undefined,
+    role: role ? role : undefined,
+    pageSize: String(pageSize),
+  };
+
+  const prevHref =
+    safePage > 1 ? buildQuery({ ...baseParams, page: String(safePage - 1) }) : undefined;
+
+  const nextHref =
+    safePage < totalPages
+      ? buildQuery({ ...baseParams, page: String(safePage + 1) })
+      : undefined;
+
+  const pageItems = paginationWindow(safePage, totalPages);
+
+  const from = totalCount === 0 ? 0 : (safePage - 1) * pageSize + 1;
+  const to = Math.min(totalCount, safePage * pageSize);
 
   return (
     <div className="admin-shell">
-      {/* Breadcrumb + Header im neuen Admin-Style */}
       <div className="admin-breadcrumb">
         <span>Admin</span>
         <span className="admin-breadcrumb-dot" />
@@ -66,34 +124,107 @@ export default async function AdminUsersPage({
       <header className="admin-header">
         <div className="admin-kicker">DigiEmu · Admin</div>
         <h1 className="admin-title">Userverwaltung</h1>
-        <p className="admin-subtitle">
-          Alle Nutzer, Rollen & Sperrstatus im Überblick.
-        </p>
+        <p className="admin-subtitle">Alle Nutzer, Rollen & Sperrstatus im Überblick.</p>
       </header>
 
       <div className="space-y-4">
         {/* Filterzeile */}
         <div className="flex flex-wrap gap-3 items-center justify-between">
+          {/* ✅ Controlled: value statt defaultValue */}
           <form className="flex gap-2 flex-wrap" method="get">
+            {/* bei Filter immer Seite 1 */}
+            <input type="hidden" name="page" value="1" />
+
             <input
               type="text"
               name="q"
-              defaultValue={search}
+              value={search}                // ✅ controlled
+              readOnly                     // ✅ Server Component: keine onChange -> readOnly, verhindert React warning
               placeholder="Nach Name oder E-Mail suchen…"
               className="input-neu max-w-xs"
             />
-            <select name="role" defaultValue={role} className="input-neu w-40">
+
+            <select
+              name="role"
+              value={role}                 // ✅ controlled
+              disabled                     // ✅ Server Component: keine onChange -> disabled
+              className="input-neu w-40"
+            >
               <option value="ALL">Alle Rollen</option>
               <option value="BUYER">Buyer</option>
               <option value="VENDOR">Vendor</option>
               <option value="ADMIN">Admin</option>
             </select>
-            <button type="submit" className="neobtn-sm">
-              Filtern
-            </button>
+
+            <label className="flex items-center gap-2">
+              <span className="text-xs text-[var(--text-muted)]">Pro Seite</span>
+              <select
+                name="pageSize"
+                value={String(pageSize)}   // ✅ controlled
+                disabled                   // ✅ Server Component: keine onChange -> disabled
+                className="input-neu w-24"
+              >
+                <option value="10">10</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+              </select>
+            </label>
+
+            {/* ✅ Damit es trotzdem änderbar ist, nutzen wir eine zweite “echte” UI via details:
+                Browser kann Werte ändern, weil es echte Inputs sind (nicht controlled).
+                Das ist der sauberste Weg ohne Client-Komponente.
+            */}
+            <details className="ml-1">
+              <summary className="neobtn-sm" style={{ listStyle: "none" }}>
+                Filter bearbeiten
+              </summary>
+
+              <div className="mt-2 flex flex-wrap gap-2 items-center">
+                <input
+                  type="text"
+                  name="q"
+                  defaultValue={search}
+                  placeholder="Nach Name oder E-Mail suchen…"
+                  className="input-neu max-w-xs"
+                />
+
+                <select name="role" defaultValue={role} className="input-neu w-40">
+                  <option value="ALL">Alle Rollen</option>
+                  <option value="BUYER">Buyer</option>
+                  <option value="VENDOR">Vendor</option>
+                  <option value="ADMIN">Admin</option>
+                </select>
+
+                <select name="pageSize" defaultValue={String(pageSize)} className="input-neu w-24">
+                  <option value="10">10</option>
+                  <option value="25">25</option>
+                  <option value="50">50</option>
+                  <option value="100">100</option>
+                </select>
+
+                <button type="submit" className="neobtn-sm">
+                  Anwenden
+                </button>
+              </div>
+            </details>
+
+            <noscript>
+              <button type="submit" className="neobtn-sm">
+                Filtern
+              </button>
+            </noscript>
           </form>
+
           <span className="text-xs text-[var(--text-muted)]">
-            {totalCount} Nutzer gefunden
+            {totalCount === 0 ? (
+              <>0 Nutzer</>
+            ) : (
+              <>
+                Zeige <strong>{from}</strong>–<strong>{to}</strong> von{" "}
+                <strong>{totalCount}</strong>
+              </>
+            )}
           </span>
         </div>
 
@@ -112,24 +243,14 @@ export default async function AdminUsersPage({
             </thead>
             <tbody>
               {users.map((user) => (
-                <tr
-                  key={user.id}
-                  className="border-b border-slate-200/40 last:border-0"
-                >
+                <tr key={user.id} className="border-b border-slate-200/40 last:border-0">
                   <td className="text-[var(--text-main)] py-2 px-4">
-                    <Link
-                      href={`/admin/users/${user.id}`}
-                      className="underline"
-                    >
+                    <Link href={`/admin/users/${user.id}`} className="underline">
                       {user.email}
                     </Link>
                   </td>
-                  <td className="text-[var(--text-main)] py-2 px-4">
-                    {user.name ?? "—"}
-                  </td>
-                  <td className="text-[var(--text-main)] py-2 px-4">
-                    {user.role}
-                  </td>
+                  <td className="text-[var(--text-main)] py-2 px-4">{user.name ?? "—"}</td>
+                  <td className="text-[var(--text-main)] py-2 px-4">{user.role}</td>
                   <td className="py-2 px-4">
                     {user.isBlocked ? (
                       <span className="inline-flex rounded-full bg-rose-500/10 text-rose-500 px-3 py-0.5 text-xs font-medium">
@@ -142,13 +263,10 @@ export default async function AdminUsersPage({
                     )}
                   </td>
                   <td className="text-[var(--text-muted)] text-xs py-2 px-4">
-                    {new Date(user.createdAt).toLocaleDateString()}
+                    {new Date(user.createdAt).toLocaleDateString("de-CH")}
                   </td>
                   <td className="py-2 px-4">
-                    <AdminUserStatusToggle
-                      userId={user.id}
-                      isBlocked={user.isBlocked}
-                    />
+                    <AdminUserStatusToggle userId={user.id} isBlocked={user.isBlocked} />
                   </td>
                 </tr>
               ))}
@@ -158,37 +276,42 @@ export default async function AdminUsersPage({
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex justify-end gap-2 mt-2 text-xs">
-            <form method="get">
-              <input type="hidden" name="q" value={search} />
-              <input type="hidden" name="role" value={role} />
-              <button
-                type="submit"
-                name="page"
-                value={page - 1}
-                disabled={page === 1}
-                className="neobtn-sm"
-              >
+          <nav className="flex flex-wrap items-center justify-end gap-2 mt-2" aria-label="Pagination">
+            {prevHref ? (
+              <Link className="neobtn-sm" href={prevHref}>
                 « Zurück
-              </button>
-            </form>
-            <span>
-              Seite {page} / {totalPages}
-            </span>
-            <form method="get">
-              <input type="hidden" name="q" value={search} />
-              <input type="hidden" name="role" value={role} />
-              <button
-                type="submit"
-                name="page"
-                value={page + 1}
-                disabled={page === totalPages}
-                className="neobtn-sm"
-              >
+              </Link>
+            ) : (
+              <span className="neobtn-sm opacity-50 cursor-not-allowed">« Zurück</span>
+            )}
+
+            <div className="flex flex-wrap items-center gap-2">
+              {pageItems.map((p, idx) =>
+                p === "…" ? (
+                  <span key={`dots-${idx}`} className="text-[var(--text-muted)] px-2">
+                    …
+                  </span>
+                ) : (
+                  <Link
+                    key={p}
+                    href={buildQuery({ ...baseParams, page: String(p) })}
+                    className={"neobtn-sm " + (p === safePage ? " !bg-[var(--accent)] !text-white" : "")}
+                    aria-current={p === safePage ? "page" : undefined}
+                  >
+                    {p}
+                  </Link>
+                )
+              )}
+            </div>
+
+            {nextHref ? (
+              <Link className="neobtn-sm" href={nextHref}>
                 Weiter »
-              </button>
-            </form>
-          </div>
+              </Link>
+            ) : (
+              <span className="neobtn-sm opacity-50 cursor-not-allowed">Weiter »</span>
+            )}
+          </nav>
         )}
       </div>
     </div>

@@ -42,7 +42,7 @@ export default async function ProductsOverviewPage(props: PageProps) {
       : "all";
 
   const allProducts = await prisma.product.findMany({
-    where: { vendorId },
+    where: { vendorId, status: { not: "ARCHIVED" } },
     orderBy: { updatedAt: "desc" },
     select: {
       id: true,

@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useId, useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { compressImageFile } from "@/lib/imageCompress";
+import styles from "./profile.module.css";
 
 type ProfileImageUploaderProps = {
   userId: string;
@@ -19,6 +20,9 @@ export default function ProfileImageUploader({
   onAvatarChange,
   onBannerChange,
 }: ProfileImageUploaderProps) {
+  const bannerInputId = useId();
+  const avatarInputId = useId();
+
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [uploadingBanner, setUploadingBanner] = useState(false);
   const { toast } = useToast();
@@ -31,98 +35,158 @@ export default function ProfileImageUploader({
     const res = await fetch("/api/upload/image", { method: "POST", body: fd });
     const text = await res.text().catch(() => "");
 
-    // Try to parse JSON response
     let json: any = null;
     try {
       json = text ? JSON.parse(text) : null;
-    } catch (e) {
-      // not JSON
-    }
+    } catch {}
 
     if (!res.ok) {
-      const msg = (json && json.message) || `Upload failed (${res.status}): ${text.slice(0, 200)}`;
+      const msg =
+        (json && json.message) || `Upload failed (${res.status}): ${text.slice(0, 200)}`;
       throw new Error(msg);
     }
-
     if (!json || !json.ok) {
-      const msg = (json && json.message) || `Upload failed (invalid response): ${text.slice(0,200)}`;
+      const msg =
+        (json && json.message) || `Upload failed (invalid response): ${text.slice(0, 200)}`;
       throw new Error(msg);
     }
-
     return String(json.url);
   }
-
-  const handleAvatarSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    try {
-      setUploadingAvatar(true);
-      const compressed = await compressImageFile(file, { maxWidth: 512, maxHeight: 512, mimeType: "image/webp", quality: 0.82 });
-      const url = await uploadImage("avatar", compressed);
-      onAvatarChange(url);
-      toast({ title: "Avatar hochgeladen", variant: "success" });
-    } catch (err: any) {
-      console.error("Avatar upload failed:", err);
-      toast({ title: "Upload fehlgeschlagen", description: err?.message ?? "Avatar konnte nicht hochgeladen werden.", variant: "destructive" });
-    } finally {
-      setUploadingAvatar(false);
-    }
-  };
 
   const handleBannerSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     try {
       setUploadingBanner(true);
-      const compressed = await compressImageFile(file, { maxWidth: 1600, maxHeight: 900, mimeType: "image/webp", quality: 0.82 });
+      const compressed = await compressImageFile(file, {
+        maxWidth: 1600,
+        maxHeight: 900,
+        mimeType: "image/webp",
+        quality: 0.82,
+      });
       const url = await uploadImage("banner", compressed);
       onBannerChange(url);
       toast({ title: "Banner hochgeladen", variant: "success" });
     } catch (err: any) {
-      console.error("Banner upload failed:", err);
-      toast({ title: "Upload fehlgeschlagen", description: err?.message ?? "Banner konnte nicht hochgeladen werden.", variant: "destructive" });
+      console.error(err);
+      toast({
+        title: "Upload fehlgeschlagen",
+        description: err?.message ?? "Banner konnte nicht hochgeladen werden.",
+        variant: "destructive",
+      });
     } finally {
       setUploadingBanner(false);
+      e.currentTarget.value = "";
+    }
+  };
+
+  const handleAvatarSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      setUploadingAvatar(true);
+      const compressed = await compressImageFile(file, {
+        maxWidth: 512,
+        maxHeight: 512,
+        mimeType: "image/webp",
+        quality: 0.82,
+      });
+      const url = await uploadImage("avatar", compressed);
+      onAvatarChange(url);
+      toast({ title: "Avatar hochgeladen", variant: "success" });
+    } catch (err: any) {
+      console.error(err);
+      toast({
+        title: "Upload fehlgeschlagen",
+        description: err?.message ?? "Avatar konnte nicht hochgeladen werden.",
+        variant: "destructive",
+      });
+    } finally {
+      setUploadingAvatar(false);
+      e.currentTarget.value = "";
     }
   };
 
   return (
-    <section className="profile-image-uploader">
-      <div className="profile-images">
+    <section className={styles.profileImageUploader}>
+      <div className={styles.profileImages}>
         {/* Banner */}
-        <div className="image-card">
-          <div>
-            <div className="upload-title">Banner</div>
-            <div className="upload-sub">Empfohlen: 1600×400</div>
+        <div className={styles.imageCard}>
+          <div className={styles.uploadHead}>
+            <div>
+              <div className={styles.uploadTitle}>Banner</div>
+              <div className={styles.uploadSub}>Empfohlen: 1600×400</div>
+            </div>
+
+            <div className={styles.uploadActions}>
+              <input
+                id={bannerInputId}
+                className={styles.file}
+                type="file"
+                accept="image/*"
+                onChange={handleBannerSelect}
+                disabled={uploadingBanner}
+              />
+              <label
+                htmlFor={bannerInputId}
+                className={`${styles.neoBtn} ${styles.neoBtnPrimary} ${
+                  uploadingBanner ? styles.isDisabled : ""
+                }`}
+              >
+                {uploadingBanner ? "Upload…" : "Datei wählen"}
+              </label>
+            </div>
           </div>
 
-          <div className="image-preview" style={{ marginTop: 8 }}>
+          <div className={`${styles.imagePreview} ${styles.bannerFrame}`}>
             {bannerUrl ? (
-              <img src={bannerUrl} alt="Profilbanner" className="banner-img" />
+              <img src={bannerUrl} alt="Profilbanner" className={styles.bannerImg} />
             ) : (
-              <div className="banner-placeholder">Kein Banner hinterlegt</div>
+              <div className={styles.previewBannerPlaceholder}>Kein Banner hinterlegt</div>
             )}
+            {uploadingBanner && <div className={styles.uploadOverlay}>UPLOADING</div>}
           </div>
-
-          <input className="file" type="file" accept="image/*" onChange={handleBannerSelect} />
         </div>
 
         {/* Avatar */}
-        <div className="image-card">
-          <div>
-            <div className="upload-title">Avatar</div>
-            <div className="upload-sub">Quadratisch, z.B. 512×512</div>
+        <div className={styles.imageCard}>
+          <div className={styles.uploadHead}>
+            <div>
+              <div className={styles.uploadTitle}>Avatar</div>
+              <div className={styles.uploadSub}>Quadratisch, z.B. 512×512</div>
+            </div>
+
+            <div className={styles.uploadActions}>
+              <input
+                id={avatarInputId}
+                className={styles.file}
+                type="file"
+                accept="image/*"
+                onChange={handleAvatarSelect}
+                disabled={uploadingAvatar}
+              />
+              <label
+                htmlFor={avatarInputId}
+                className={`${styles.neoBtn} ${styles.neoBtnPrimary} ${
+                  uploadingAvatar ? styles.isDisabled : ""
+                }`}
+              >
+                {uploadingAvatar ? "Upload…" : "Datei wählen"}
+              </label>
+            </div>
           </div>
 
-          <div className="avatar-preview" style={{ display: "flex", justifyContent: "center", marginTop: 8 }}>
+          <div className={`${styles.imagePreview} ${styles.avatarFrame}`}>
             {avatarUrl ? (
-              <img src={avatarUrl} alt="Avatar" className="public-avatar" style={{ width: 180, height: 180, objectFit: "cover" }} />
+              <img src={avatarUrl} alt="Avatar" className={styles.avatarImg} />
             ) : (
-              <div className="avatar-placeholder">Kein Avatar hinterlegt</div>
+              <div className={styles.placeholder}>
+                Kein Avatar
+                <div className={styles.placeholderSub}>Wird im Marketplace angezeigt</div>
+              </div>
             )}
+            {uploadingAvatar && <div className={styles.uploadOverlay}>UPLOADING</div>}
           </div>
-
-          <input className="file" type="file" accept="image/*" onChange={handleAvatarSelect} />
         </div>
       </div>
     </section>

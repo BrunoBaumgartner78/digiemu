@@ -22,7 +22,8 @@ export async function GET() {
           priceCents: true,
           thumbnail: true,
           vendorId: true,
-          vendor: { select: { name: true } },
+      vendor: { select: { name: true, isBlocked: true } },
+
           vendorProfile: { select: { id: true, isPublic: true, displayName: true, avatarUrl: true } },
         },
       }),

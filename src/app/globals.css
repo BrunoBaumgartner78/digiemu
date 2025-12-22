@@ -2609,3 +2609,52 @@ input.file[type="file"]::file-selector-button{
     8px 8px 16px rgba(163,177,198,.45),
     -8px -8px 16px rgba(255,255,255,.9);
 }
+/* ===== Theme Glow Tuning ===== */
+/* src/app/account/profile/profile.module.css */
+
+/* ===== Global Theme Vars (CSS Modules safe) ===== */
+:root {
+  /* Neon Button tuning */
+  --neon-ring: rgba(74,124,255,0.25);
+  --neon-glow-1: rgba(74,124,255,0.22);
+  --neon-glow-2: rgba(120,88,255,0.14);
+  --neon-glow-hover: 0.75;
+
+  /* Default (Light) shadows */
+  --card-bg: rgba(255,255,255,0.22);
+  --card-border: rgba(0,0,0,0.05);
+
+  --shadow-a: rgba(255,255,255,0.8);
+  --shadow-b: rgba(163,177,198,0.55);
+  --inset-a: rgba(255,255,255,0.55);
+  --inset-b: rgba(163,177,198,0.28);
+
+  /* Ambient glow (light: subtle) */
+  --ambient-glow: rgba(74,124,255,0.08);
+}
+
+/* ===== Dark Mode: blue glow like dashboard ===== */
+html.dark,
+body.dark,
+html[data-theme="dark"],
+body[data-theme="dark"]   
+  /* Cards */
+ {
+  /* Cards */
+  --card-bg: rgba(14, 20, 40, 0.55);
+  --card-border: rgba(255,255,255,0.08);
+
+  /* Replace white glow with blue glow */
+  --shadow-a: rgba(35, 90, 255, 0.18);   /* blue top-left */
+  --shadow-b: rgba(0, 0, 0, 0.55);       /* dark bottom-right */
+  --inset-a: rgba(35, 90, 255, 0.10);    /* blue inset */
+  --inset-b: rgba(0, 0, 0, 0.35);        /* dark inset */
+
+  --ambient-glow: rgba(35, 90, 255, 0.22);
+
+  /* Neon: reduce intensity in dark */
+  --neon-ring: rgba(74,124,255,0.16);
+  --neon-glow-1: rgba(74,124,255,0.12);
+  --neon-glow-2: rgba(120,88,255,0.08);
+  --neon-glow-hover: 0.35;
+}

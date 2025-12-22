@@ -1,56 +1,57 @@
+// src/app/account/profile/page.tsx
 import { getServerSession } from "next-auth";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import Link from "next/link";
 import ProfilePageClient from "./ProfilePageClient";
-import  style from "./page.module.css";
-import "./profile.module.css";
+import styles from "./profile.module.css";
+
+export const dynamic = "force-dynamic";
 
 export default async function Page() {
   const session = await getServerSession(auth);
   const userId = (session?.user as any)?.id as string | undefined;
 
-  // Fetch vendor profile if exists
-  const vendorProfile = userId
-    ? await prisma.vendorProfile.findUnique({ where: { userId } })
-    : null;
+  if (!userId) {
+    return (
+      <div className={styles.pageWrap}>
+        <div className={styles.container}>
+          <div className={styles.card}>
+            <h1 className={styles.h1}>Dein Verkäufer-Profil</h1>
+            <p className={styles.p}>Bitte einloggen, um dein Profil zu bearbeiten.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-  // Compute product count for this vendor (vendorId references User.id)
-  const productCount = userId
-    ? await prisma.product.count({ where: { vendorId: userId } })
-    : 0;
+  const vendorProfile = await prisma.vendorProfile.findUnique({
+    where: { userId },
+  });
 
-  const level =
-    productCount >= 20 ? "Pro" : productCount >= 5 ? "Creator" : "Starter";
+  // Produktanzahl (passe Feldnamen ggf. an!)
+  // Häufig: Product.vendorId oder Product.userId oder Product.vendorProfileId
+  // Wir versuchen vendorId=userId (typisch) – wenn es bei dir anders ist, sag kurz Bescheid.
+  const productCount = await prisma.product.count({
+    where: {
+      vendorId: userId as any,
+    } as any,
+  });
 
-  const initialStats = { level, productCount, badges: [] };
-
-  const initialData = vendorProfile
-    ? {
-        displayName: vendorProfile.displayName ?? "",
-        bio: vendorProfile.bio ?? "",
-        websiteUrl: vendorProfile.websiteUrl ?? "",
-        instagramUrl: vendorProfile.instagramUrl ?? "",
-        twitterUrl: vendorProfile.twitterUrl ?? "",
-        tiktokUrl: vendorProfile.tiktokUrl ?? "",
-        facebookUrl: vendorProfile.facebookUrl ?? "",
-        avatarUrl: vendorProfile.avatarUrl ?? "",
-        bannerUrl: vendorProfile.bannerUrl ?? "",
-        slug: vendorProfile.slug ?? "",
-        isPublic: vendorProfile.isPublic ?? true,
-      }
-    : null;
+  const initialProfile = {
+    displayName: vendorProfile?.displayName ?? (session?.user as any)?.name ?? "",
+    bio: vendorProfile?.bio ?? "",
+    isPublic: vendorProfile?.isPublic ?? true,
+    avatarUrl: vendorProfile?.avatarUrl ?? "",
+    bannerUrl: vendorProfile?.bannerUrl ?? "",
+    levelName: "Starter", // falls du Level in DB hast, hier mappen
+    productCount,
+    nextGoal: 5,
+  };
 
   return (
-    <div className="min-h-[calc(100vh-6rem)] px-4 py-8">
-      <div className="max-w-5xl mx-auto space-y-6">
-        {/* Server page: compute data and render client editor only. */}
-        <ProfilePageClient
-          userId={userId ?? ""}
-          initialData={initialData}
-          initialStats={initialStats}
-          vendorProfileId={vendorProfile?.id ?? null}
-        />
+    <div className={styles.pageWrap}>
+      <div className={styles.container}>
+        <ProfilePageClient initialProfile={initialProfile} />
       </div>
     </div>
   );

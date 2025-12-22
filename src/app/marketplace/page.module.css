@@ -566,3 +566,34 @@
     6px 6px 14px var(--shadow-dark),
     -6px -6px 14px var(--shadow-light);
 }
+
+/* Wichtig: Karte als Stacking-Context */
+.card {
+  position: relative;
+}
+
+/* Falls .cardBody (Link) irgendwo absolut/overlay ist:
+   => wir geben ihm eine niedrigere Ebene */
+.cardBody {
+  position: relative;
+  z-index: 1;
+}
+
+/* Seller-Zeile muss ÜBER dem Link liegen */
+.cardSeller {
+  position: relative;
+  z-index: 5;
+  pointer-events: auto;
+}
+
+/* Footer (Kaufen Button etc.) ebenfalls klickbar halten */
+.cardFooter {
+  position: relative;
+  z-index: 5;
+  pointer-events: auto;
+}
+
+/* Optional: falls irgendwo pointer-events deaktiviert wurden */
+.cardSeller a {
+  pointer-events: auto;
+}

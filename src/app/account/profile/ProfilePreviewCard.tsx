@@ -1,5 +1,7 @@
 "use client";
 
+import styles from "./profile.module.css";
+
 type PreviewProps = {
   displayName: string;
   bio: string;
@@ -23,34 +25,42 @@ export default function ProfilePreviewCard({
   const safeBio = bio?.trim() || "Noch keine Bio hinterlegt.";
 
   return (
-    <section className="neo-card profile-preview">
-      <div className="profile-preview__banner">
+    <section className={styles.previewCard}>
+      <div className={styles.previewBanner}>
         {bannerUrl ? (
-          <img className="profile-preview__bannerImg" src={bannerUrl} alt="Banner" />
+          <img className={styles.previewBannerImg} src={bannerUrl} alt="Banner" />
         ) : (
-          <div className="profile-preview__bannerPlaceholder">Banner (optional)</div>
+          <div className={styles.previewBannerPlaceholder}>Banner (optional)</div>
         )}
 
-        <div className="profile-preview__overlay">
-          <div className="profile-preview__avatar">
+        <div className={styles.previewGlow} />
+
+        <div className={styles.previewOverlay}>
+          <div className={styles.previewAvatar}>
             {avatarUrl ? (
-              <img className="profile-preview__avatarImg" src={avatarUrl} alt="Avatar" />
+              <img className={styles.previewAvatarImg} src={avatarUrl} alt="Avatar" />
             ) : (
-              <div className="profile-preview__avatarPlaceholder">A</div>
+              <div className={styles.previewAvatarFallback}>{safeName.slice(0, 1).toUpperCase()}</div>
             )}
           </div>
 
-          <div className="profile-preview__meta">
-            <div className="profile-preview__name">{safeName}</div>
-            <div className="profile-preview__sub">
-              {level} · {productCount} Produkte · {isPublic ? "Öffentlich" : "Privat"}
+          <div className={styles.previewMeta}>
+            <div className={styles.previewName}>{safeName}</div>
+            <div className={styles.previewSub}>
+              <span>{level}</span>
+              <span>·</span>
+              <span>{productCount} Produkte</span>
+              <span>·</span>
+              <span className={isPublic ? styles.pillPublic : styles.pillPrivate}>
+                {isPublic ? "ÖFFENTLICH" : "PRIVAT"}
+              </span>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="profile-preview__body">
-        <div className="profile-preview__bio">{safeBio}</div>
+      <div className={styles.previewBody}>
+        <div className={styles.previewBio}>{safeBio}</div>
       </div>
     </section>
   );

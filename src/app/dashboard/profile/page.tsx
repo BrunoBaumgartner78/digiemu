@@ -38,9 +38,22 @@ export default async function ProfilePage() {
                 {user.name ?? "Unbekannter Nutzer"}
               </h2>
             </div>
-            <span className="inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] bg-emerald-500/10 border border-emerald-400/40 text-emerald-300">
-              {user.role}
-            </span>
+          <span className="inline-flex items-center justify-center rounded-full
+  px-4 py-2 md:px-5 md:py-2.5
+  text-[12px] md:text-[13px]
+  font-semibold uppercase tracking-[0.18em]
+  bg-emerald-500/10 border border-emerald-400/45
+  text-emerald-300
+  shadow-[0_10px_24px_rgba(16,185,129,0.18)]
+  whitespace-nowrap">
+  {user.role}
+</span>
+
+
+
+
+
+
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">

@@ -1,35 +1,26 @@
-import "server-only";
+// src/lib/firebaseAdmin.ts
 import { cert, getApps, initializeApp } from "firebase-admin/app";
 import { getStorage } from "firebase-admin/storage";
 
-const projectId = process.env.FIREBASE_PROJECT_ID;
-const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
-const privateKey = (process.env.FIREBASE_PRIVATE_KEY ?? "").replace(/\\n/g, "\n");
-const storageBucket = process.env.FIREBASE_STORAGE_BUCKET;
+const projectId = process.env.FIREBASE_ADMIN_PROJECT_ID;
+const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL;
+const privateKey = process.env.FIREBASE_ADMIN_PRIVATE_KEY?.replace(/\\n/g, "\n");
 
-let adminBucketInstance: any = null;
-
-export function getAdminBucket(): any {
-  if (adminBucketInstance) return adminBucketInstance;
-
-  if (!projectId || !clientEmail || !privateKey || !storageBucket) {
-    throw new Error(
-      "Missing Firebase Admin env vars. Need FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY, FIREBASE_STORAGE_BUCKET."
-    );
-  }
-
-  const app =
-    getApps().length > 0
-      ? getApps()[0]
-      : initializeApp({
-          credential: cert({
-            projectId,
-            clientEmail,
-            privateKey,
-          }),
-          storageBucket,
-        });
-
-  adminBucketInstance = getStorage(app).bucket(storageBucket);
-  return adminBucketInstance;
+if (!projectId || !clientEmail || !privateKey) {
+  throw new Error("Missing Firebase Admin env vars (FIREBASE_ADMIN_*)");
 }
+
+const bucketName = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
+if (!bucketName) {
+  throw new Error("Missing NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET");
+}
+
+const app =
+  getApps().length > 0
+    ? getApps()[0]
+    : initializeApp({
+        credential: cert({ projectId, clientEmail, privateKey }),
+        storageBucket: bucketName,
+      });
+
+export const adminBucket = getStorage(app).bucket();

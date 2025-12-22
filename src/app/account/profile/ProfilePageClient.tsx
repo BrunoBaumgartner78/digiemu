@@ -1,291 +1,382 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
-import ProfileImageUploader from "./ProfileImageUploader";
-import ProfileForm from "./ProfileForm";
-import ProfilePreviewCard from "./ProfilePreviewCard";
+import * as React from "react";
 import styles from "./profile.module.css";
-import { useToast } from "@/components/ui/use-toast";
 
-// optional (wenn du das CSS wirklich angelegt hast)
-// import "./profile-neo.css";
-
-type InitialData = {
+type InitialProfile = {
   displayName: string;
   bio: string;
-  websiteUrl: string;
-  instagramUrl: string;
-  twitterUrl: string;
-  tiktokUrl: string;
-  facebookUrl: string;
+  isPublic: boolean;
   avatarUrl: string;
   bannerUrl: string;
-  slug: string;
-  isPublic: boolean;
+  levelName: string;
+  productCount: number;
+  nextGoal: number;
 };
 
-type ProfileStats = {
-  level?: string;
-  productCount?: number;
-  badges?: string[];
-};
-
-type ProfilePageClientProps = {
-  userId: string;
-  initialData: Partial<InitialData> | null;
-  initialStats: ProfileStats;
-  vendorProfileId?: string | null;
-};
-
-function normalizeInitialData(partial: Partial<InitialData> | null | undefined): InitialData {
-  return {
-    displayName: partial?.displayName ?? "",
-    bio: partial?.bio ?? "",
-    websiteUrl: partial?.websiteUrl ?? "",
-    instagramUrl: partial?.instagramUrl ?? "",
-    twitterUrl: partial?.twitterUrl ?? "",
-    tiktokUrl: partial?.tiktokUrl ?? "",
-    facebookUrl: partial?.facebookUrl ?? "",
-    avatarUrl: partial?.avatarUrl ?? "",
-    bannerUrl: partial?.bannerUrl ?? "",
-    slug: partial?.slug ?? "",
-    isPublic: partial?.isPublic ?? true,
-  };
+function isBlobUrl(url: string) {
+  return url?.startsWith("blob:");
 }
 
 export default function ProfilePageClient({
-  userId,
-  initialData,
-  initialStats,
-  vendorProfileId,
-}: ProfilePageClientProps) {
-  const router = useRouter();
-  const { toast } = useToast();
+  initialProfile,
+}: {
+  initialProfile: InitialProfile;
+}) {
+  const [displayName, setDisplayName] = React.useState(initialProfile.displayName);
+  const [bio, setBio] = React.useState(initialProfile.bio);
+  const [isPublic, setIsPublic] = React.useState(initialProfile.isPublic);
 
-  const normalizedInitialData = useMemo(() => normalizeInitialData(initialData), [initialData]);
-  const [form, setForm] = useState<InitialData>(normalizedInitialData);
-  const [dirty, setDirty] = useState(false);
-  const [stats] = useState<ProfileStats>(initialStats);
-  const [saving, setSaving] = useState(false);
+  const [avatarUrl, setAvatarUrl] = React.useState(initialProfile.avatarUrl);
+  const [bannerUrl, setBannerUrl] = React.useState(initialProfile.bannerUrl);
 
-  // ✅ wichtig: die echte VendorProfile.id merken (optional)
-  const [profileId, setProfileId] = useState<string | null>(vendorProfileId ?? null);
+  const [saving, setSaving] = React.useState(false);
+  const [toast, setToast] = React.useState<string | null>(null);
 
-  const safeStats = useMemo(
-    () => ({
-      level: stats?.level ?? "Starter",
-      productCount: stats?.productCount ?? 0,
-      badges: stats?.badges ?? [],
-    }),
-    [stats]
-  );
+  const [uploadingAvatar, setUploadingAvatar] = React.useState(false);
+  const [uploadingBanner, setUploadingBanner] = React.useState(false);
+  const [avatarProgress, setAvatarProgress] = React.useState(0);
+  const [bannerProgress, setBannerProgress] = React.useState(0);
 
-  const handleChange = (field: keyof InitialData, value: string | boolean) => {
-    setForm((prev) => ({ ...prev, [field]: value as any }));
-    setDirty(true);
+  const products = initialProfile.productCount ?? 0;
+  const nextGoal = initialProfile.nextGoal ?? 5;
+  const progress = Math.min(products, nextGoal);
+  const pct = Math.round((progress / Math.max(1, nextGoal)) * 100);
+
+  const showToast = (msg: string) => {
+    setToast(msg);
+    window.setTimeout(() => setToast(null), 2600);
   };
 
-  // ✅ Saubere Save-Funktion, die auch Preview benutzen kann
-  const saveProfile = async (): Promise<{ slug?: string; isPublic?: boolean; id?: string } | null> => {
-    setSaving(true);
+  async function uploadViaApi(
+    file: File,
+    kind: "avatar" | "banner",
+    onProgress: (pct: number) => void
+  ): Promise<string> {
+    const maxMb = kind === "banner" ? 6 : 3;
+    const maxBytes = maxMb * 1024 * 1024;
+
+    if (!file.type.startsWith("image/")) {
+      throw new Error("Bitte nur Bilddateien (PNG/JPG/WebP).");
+    }
+    if (file.size > maxBytes) {
+      throw new Error(`Datei zu gross. Max ${maxMb}MB.`);
+    }
+
+    // Progress fake (HTTP Upload kann man ohne XHR nicht sauber tracken)
+    onProgress(10);
+
+    const fd = new FormData();
+    fd.append("file", file);
+    fd.append("kind", kind);
+
+    const res = await fetch("/api/upload/profile-image", {
+      method: "POST",
+      body: fd,
+    });
+
+    if (!res.ok) {
+      const txt = await res.text();
+      throw new Error(txt || "Upload fehlgeschlagen");
+    }
+
+    onProgress(90);
+    const data = (await res.json()) as { url: string };
+    onProgress(100);
+
+    if (!data?.url) throw new Error("Upload-URL fehlt");
+    return data.url;
+  }
+
+  async function onPickAvatar(file: File | null) {
+    if (!file) return;
+    setUploadingAvatar(true);
+    setAvatarProgress(0);
     try {
-      if (form.avatarUrl?.startsWith("blob:") || form.bannerUrl?.startsWith("blob:")) {
-        toast({
-          title: "Bilder noch nicht hochgeladen",
-          description: "Bitte Avatar/Banner zuerst hochladen (keine blob:-URL).",
-          variant: "destructive",
-        });
-        return null;
+      const url = await uploadViaApi(file, "avatar", setAvatarProgress);
+      setAvatarUrl(url);
+      showToast("✅ Avatar hochgeladen");
+    } catch (e: any) {
+      console.error(e);
+      showToast(`❌ Avatar Upload: ${e?.message ?? "fehlgeschlagen"}`);
+    } finally {
+      setUploadingAvatar(false);
+    }
+  }
+
+  async function onPickBanner(file: File | null) {
+    if (!file) return;
+    setUploadingBanner(true);
+    setBannerProgress(0);
+    try {
+      const url = await uploadViaApi(file, "banner", setBannerProgress);
+      setBannerUrl(url);
+      showToast("✅ Banner hochgeladen");
+    } catch (e: any) {
+      console.error(e);
+      showToast(`❌ Banner Upload: ${e?.message ?? "fehlgeschlagen"}`);
+    } finally {
+      setUploadingBanner(false);
+    }
+  }
+
+  function removeImage(kind: "avatar" | "banner") {
+    if (kind === "avatar") setAvatarUrl("");
+    else setBannerUrl("");
+  }
+
+  async function saveProfile() {
+    setSaving(true);
+    setToast(null);
+
+    try {
+      if (isBlobUrl(avatarUrl) || isBlobUrl(bannerUrl)) {
+        throw new Error("Bitte keine blob-URLs speichern. Nutze Upload oder URL.");
       }
 
-      const res = await fetch("/api/account/profile", {
+      const res = await fetch("/api/vendor/profile", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          displayName,
+          bio,
+          isPublic,
+          avatarUrl,
+          bannerUrl,
+        }),
       });
 
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(json?.message || json?.error || "Fehler beim Speichern");
+      if (!res.ok) {
+        const txt = await res.text();
+        throw new Error(txt || "Save failed");
+      }
 
-      const p = json?.profile ?? json ?? {};
-      if (typeof p?.id === "string") setProfileId(p.id);
-
-      setForm((prev) => ({
-        ...prev,
-        ...(p.slug ? { slug: String(p.slug) } : {}),
-        ...(typeof p.isPublic === "boolean" ? { isPublic: Boolean(p.isPublic) } : {}),
-      }));
-
-      setDirty(false);
-
-      toast({ title: "Profil gespeichert", variant: "success" });
-      router.refresh();
-
-      return {
-        slug: typeof p.slug === "string" ? p.slug : undefined,
-        isPublic: typeof p.isPublic === "boolean" ? p.isPublic : undefined,
-        id: typeof p.id === "string" ? p.id : undefined,
-      };
-    } catch (err: any) {
-      toast({
-        title: "Fehler beim Speichern",
-        description: err?.message || "Unbekannter Fehler",
-        variant: "destructive",
-      });
-      return null;
+      showToast("✅ Profil gespeichert");
+    } catch (e: any) {
+      console.error(e);
+      showToast(`❌ Speichern: ${e?.message ?? "fehlgeschlagen"}`);
     } finally {
       setSaving(false);
     }
-  };
+  }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await saveProfile();
-  };
-
-  const PREVIEW_NEW_TAB = false;
-
-  const openPreview = (slug: string) => {
-    const url = `/profile/${encodeURIComponent(slug)}`;
-    if (PREVIEW_NEW_TAB) window.open(url, "_blank", "noopener,noreferrer");
-    else router.push(url);
-  };
-
-  const handlePreviewClick = async () => {
-    console.log("PREVIEW_CLICK", { slug: form.slug, isPublic: form.isPublic, dirty });
-
-    if (!form.isPublic) {
-      toast({
-        title: "Profil nicht öffentlich",
-        description: "Aktiviere 'Profil öffentlich anzeigen', um die öffentliche Vorschau zu sehen.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Wenn slug fehlt oder ungespeicherte Änderungen: speichern -> dann öffnen
-    if (!form.slug || dirty) {
-      const saved = await saveProfile();
-      const slug = saved?.slug || form.slug; // fallback, falls state noch nicht aktualisiert ist
-      if (!slug) {
-        toast({
-          title: "Vorschau nicht möglich",
-          description: "Bitte Profil speichern (Slug fehlt).",
-          variant: "destructive",
-        });
-        return;
-      }
-      openPreview(slug);
-      return;
-    }
-
-    openPreview(form.slug);
-  };
+  function previewScroll() {
+    const el = document.getElementById("live-preview");
+    el?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
 
   return (
-    <div className={styles["profile-shell"]}>
-      <div className={styles["profile-wrap"]}>
-        <header className={styles["profile-header"]}>
-          <div>
-            <h1 className={styles["profile-title"]}>Dein Verkäufer-Profil</h1>
-            <p className={styles["profile-sub"]}>Banner, Avatar und Profilinfos – so sehen dich deine Kunden auf dem Marktplatz.</p>
+    <div className={styles.stack}>
+      <div className={styles.hero}>
+        <div className={styles.brandRow}>
+          <div className={styles.brand}>
+            <div className={styles.brandTop}>DIGIEMU</div>
+            <div className={styles.brandSub}>DIGITAL MARKETPLACE</div>
+          </div>
+        </div>
+
+        <h1 className={styles.h1}>Dein Verkäufer-Profil</h1>
+        <p className={styles.p}>
+          Banner, Avatar und Profilinfos – so sehen dich deine Kunden auf dem Marktplatz.
+        </p>
+
+        <div className={styles.actionRow}>
+          <button className={`${styles.btn} ${styles.btnGhost}`} type="button" onClick={previewScroll}>
+            Vorschau
+          </button>
+          <button className={`${styles.btn} ${styles.btnNeon}`} type="button" onClick={saveProfile} disabled={saving}>
+            {saving ? "Speichert…" : "Profil speichern"}
+          </button>
+        </div>
+
+        <div className={styles.progressCard}>
+          <div className={styles.pills}>
+            <div className={styles.pill}>
+              <span className={styles.pillLabel}>LEVEL</span>
+              <strong className={styles.pillValue}>{initialProfile.levelName}</strong>
+            </div>
+            <div className={styles.pill}>
+              <span className={styles.pillLabel}>Produkte</span>
+              <strong className={styles.pillValue}>{products}</strong>
+            </div>
           </div>
 
-          <div className={styles["profile-actions"]}>
+          <div className={styles.progressMeta}>
+            <span className={styles.progressTitle}>Level-Fortschritt</span>
+            <span className={styles.progressCount}>
+              {progress} / {nextGoal}
+            </span>
+          </div>
+
+          <div className={styles.progressTrack} aria-label="Progress">
+            <div className={styles.progressBar} style={{ width: `${pct}%` }} />
+          </div>
+
+          <div className={styles.tip}>Tipp: Ab {nextGoal} Produkten bist du „Creator“, ab 20 „Pro“.</div>
+        </div>
+      </div>
+
+      {/* Uploads */}
+      <div className={styles.card}>
+        <h2 className={styles.h2}>Profilbilder</h2>
+        <p className={styles.small}>Upload → Server → Firebase Storage → URL wird gespeichert.</p>
+
+        {/* Banner */}
+        <div className={styles.fieldBlock}>
+          <div className={styles.fieldHead}>
+            <div>
+              <div className={styles.fieldTitle}>Banner</div>
+              <div className={styles.fieldHint}>Empfohlen: 1600×400 (max 6MB)</div>
+            </div>
+          </div>
+
+          <div className={styles.uploadRow}>
+            <label className={styles.fileBtn}>
+              Datei wählen
+              <input
+                className={styles.fileInput}
+                type="file"
+                accept="image/*"
+                onChange={(e) => onPickBanner(e.target.files?.[0] ?? null)}
+              />
+            </label>
+
             <button
               type="button"
-              className={`${styles["neo-btn"]} ${styles["neo-btn--primary"]} ${saving ? styles["is-disabled"] : ""}`}
-              onClick={handlePreviewClick}
-              disabled={saving}
-              aria-label="Öffentliche Profil-Vorschau ansehen"
+              className={`${styles.btn} ${styles.btnGhost}`}
+              onClick={() => removeImage("banner")}
+              disabled={!bannerUrl || uploadingBanner}
             >
-              {saving ? "Speichern…" : "Vorschau"}
+              Entfernen
             </button>
           </div>
-        </header>
 
-        <section className={`${styles["profile-neo-card"]} ${styles["profile-stats"] || ""}`}>
-          <div className={styles["profile-stats-row"]}>
-            <div className={styles["profile-pill"]}>
-              <span style={{ opacity: 0.7, fontWeight: 700, marginRight: 8 }}>LEVEL</span>
-              <span style={{ fontWeight: 800 }}>{safeStats.level}</span>
+          {uploadingBanner ? (
+            <div className={styles.uploadMeta}>
+              <div className={styles.uploadLabel}>Upload: {bannerProgress}%</div>
+              <div className={styles.progressTrackSm}>
+                <div className={styles.progressBarSm} style={{ width: `${bannerProgress}%` }} />
+              </div>
             </div>
+          ) : null}
 
-            <div className={styles["profile-pill"]}>
-              <span style={{ opacity: 0.7, fontWeight: 700, marginRight: 8 }}>Produkte</span>
-              <span style={{ fontWeight: 900 }}>{safeStats.productCount}</span>
+          {bannerUrl ? (
+            <div className={styles.imageWrap}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img className={styles.bannerImg} src={bannerUrl} alt="Banner preview" />
             </div>
-          </div>
+          ) : null}
+        </div>
 
-          {safeStats.badges.length > 0 && (
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10 }}>
-              {safeStats.badges.map((badge) => (
-                <span key={badge} className={styles["profile-pill"]}>
-                  {badge}
-                </span>
-              ))}
-            </div>
-          )}
-
-          <div className={styles["profile-progress"]} style={{ ["--progress" as any]: `${Math.min(100, Math.round((safeStats.productCount / 5) * 100))}%` }}>
-            <div className={styles["profile-progress__row"]}>
-              <span>Level-Fortschritt</span>
-              <span>{safeStats.productCount} / 5</span>
-            </div>
-            <div className={styles["profile-progress__bar"]}>
-              <div className={styles["profile-progress__fill"]} style={{ width: `${Math.min(100, Math.round((safeStats.productCount / 5) * 100))}%` }} />
+        {/* Avatar */}
+        <div className={styles.fieldBlock}>
+          <div className={styles.fieldHead}>
+            <div>
+              <div className={styles.fieldTitle}>Avatar</div>
+              <div className={styles.fieldHint}>Quadratisch, z. B. 512×512 (max 3MB)</div>
             </div>
           </div>
-        </section>
 
-        <div className={styles["profile-grid"]}>
-          <div>
-            <div className={`${styles["profile-neo-card"]} image-card`}>
-              <h3>Profilbilder</h3>
-              <div className="mt-2">
-                <ProfileImageUploader
-                  userId={userId}
-                  avatarUrl={form.avatarUrl}
-                  bannerUrl={form.bannerUrl}
-                  onAvatarChange={(url) => {
-                    setForm((prev) => ({ ...prev, avatarUrl: url }));
-                    setDirty(true);
-                  }}
-                  onBannerChange={(url) => {
-                    setForm((prev) => ({ ...prev, bannerUrl: url }));
-                    setDirty(true);
-                  }}
-                />
+          <div className={styles.uploadRow}>
+            <label className={styles.fileBtn}>
+              Datei wählen
+              <input
+                className={styles.fileInput}
+                type="file"
+                accept="image/*"
+                onChange={(e) => onPickAvatar(e.target.files?.[0] ?? null)}
+              />
+            </label>
+
+            <button
+              type="button"
+              className={`${styles.btn} ${styles.btnGhost}`}
+              onClick={() => removeImage("avatar")}
+              disabled={!avatarUrl || uploadingAvatar}
+            >
+              Entfernen
+            </button>
+          </div>
+
+          {uploadingAvatar ? (
+            <div className={styles.uploadMeta}>
+              <div className={styles.uploadLabel}>Upload: {avatarProgress}%</div>
+              <div className={styles.progressTrackSm}>
+                <div className={styles.progressBarSm} style={{ width: `${avatarProgress}%` }} />
+              </div>
+            </div>
+          ) : null}
+
+          {avatarUrl ? (
+            <div className={styles.avatarRow}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img className={styles.avatarImg} src={avatarUrl} alt="Avatar preview" />
+              <div className={styles.smallHint}>Wird im Marketplace rund angezeigt.</div>
+            </div>
+          ) : null}
+        </div>
+      </div>
+
+      {/* Text fields */}
+      <div className={styles.card}>
+        <h2 className={styles.h2}>Profilinfos</h2>
+
+        <label className={styles.label}>Anzeigename</label>
+        <input className={styles.input} value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
+
+        <label className={styles.label}>Bio</label>
+        <textarea className={styles.textarea} value={bio} onChange={(e) => setBio(e.target.value)} />
+
+        <label className={styles.checkRow}>
+          <input type="checkbox" checked={isPublic} onChange={(e) => setIsPublic(e.target.checked)} />
+          <span>Profil öffentlich anzeigen</span>
+        </label>
+
+        <div className={styles.actionRowBottom}>
+          <button className={`${styles.btn} ${styles.btnNeon}`} type="button" onClick={saveProfile} disabled={saving}>
+            {saving ? "Speichert…" : "Änderungen speichern"}
+          </button>
+          <button className={`${styles.btn} ${styles.btnGhost}`} type="button" onClick={previewScroll}>
+            Vorschau
+          </button>
+        </div>
+      </div>
+
+      {/* Preview */}
+      <div id="live-preview" className={styles.card}>
+        <h2 className={styles.h2}>Live Vorschau</h2>
+        <p className={styles.small}>So wirkt dein Profil im Marketplace.</p>
+
+        <div className={styles.previewCard}>
+          <div
+            className={styles.previewBanner}
+            style={{ backgroundImage: bannerUrl ? `url(${bannerUrl})` : undefined }}
+          />
+          <div className={styles.previewInner}>
+            <div className={styles.previewTop}>
+              <div className={styles.previewAvatarWrap}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                {avatarUrl ? (
+                  <img className={styles.previewAvatar} src={avatarUrl} alt="avatar" />
+                ) : (
+                  <div className={styles.previewAvatarFallback}>N</div>
+                )}
+              </div>
+
+              <div className={styles.previewMeta}>
+                <div className={styles.previewName}>{displayName || "—"}</div>
+                <div className={styles.previewSub}>
+                  {initialProfile.levelName} · {products} Produkte ·{" "}
+                  <span className={styles.badge}>{isPublic ? "ÖFFENTLICH" : "PRIVAT"}</span>
+                </div>
               </div>
             </div>
 
-            <div className={`${styles["profile-neo-card"]} mt-4`}> 
-              <ProfileForm
-                form={form}
-                stats={safeStats}
-                onChange={handleChange}
-                onSubmit={handleSubmit}
-                saving={saving}
-                onPreview={handlePreviewClick}
-              />
-            </div>
+            <div className={styles.previewBio}>{bio || "—"}</div>
           </div>
-
-          <aside className={styles["profile-preview-card"]}>
-            <div className={`${styles["profile-neo-card"]}`}>
-              <ProfilePreviewCard
-                displayName={form.displayName}
-                bio={form.bio}
-                avatarUrl={form.avatarUrl}
-                bannerUrl={form.bannerUrl}
-                level={safeStats.level}
-                productCount={safeStats.productCount}
-                isPublic={form.isPublic}
-              />
-            </div>
-          </aside>
         </div>
+
+        {toast ? <div className={styles.toast}>{toast}</div> : null}
       </div>
     </div>
   );

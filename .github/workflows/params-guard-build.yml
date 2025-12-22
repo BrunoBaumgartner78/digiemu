@@ -1,0 +1,74 @@
+name: Params Guard + Build (Ubuntu)
+
+on:
+  push:
+    branches: [ main, develop, staging ]
+  pull_request:
+
+jobs:
+  guard_and_build:
+    runs-on: ubuntu-latest
+
+    env:
+      NODE_ENV: production
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DIRECT_URL: ${{ secrets.DIRECT_URL }}
+      NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+      NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
+
+      FIREBASE_ADMIN_PROJECT_ID: ${{ secrets.FIREBASE_ADMIN_PROJECT_ID }}
+      FIREBASE_ADMIN_CLIENT_EMAIL: ${{ secrets.FIREBASE_ADMIN_CLIENT_EMAIL }}
+      FIREBASE_ADMIN_PRIVATE_KEY: ${{ secrets.FIREBASE_ADMIN_PRIVATE_KEY }}
+      NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ${{ secrets.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET }}
+
+      STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+      STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      # ---------- GUARDS: params must not be Promise ----------
+      - name: Guard - forbid Promise params typing in App Router pages
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          echo "Scanning for invalid params typing (Promise/Promise.resolve)..."
+
+          # 1) block: params: {..} | Promise<{..}>
+          if grep -RIn --include='page.tsx' -E 'params:\s*\{[^}]*\}\s*\|\s*Promise<\s*\{[^}]*\}\s*>' src/app; then
+            echo ""
+            echo "❌ Found invalid Next.js App Router typing: params typed as union with Promise."
+            echo "Fix: type PageProps = { params: { ... } }  (no Promise)"
+            exit 1
+          fi
+
+          # 2) block: Promise.resolve(params)
+          if grep -RIn --include='page.tsx' -F 'Promise.resolve(params)' src/app; then
+            echo ""
+            echo "❌ Found Promise.resolve(params) in page.tsx."
+            echo "Fix: use params.id directly (params are not a Promise)."
+            exit 1
+          fi
+
+          echo "✅ Guard passed: no Promise params patterns found."
+
+      # ---------- Build ----------
+      - name: Prisma generate
+        run: npx prisma generate
+
+      - name: Prisma migrate deploy
+        run: npx prisma migrate deploy
+
+      - name: Next build
+        run: npm run build
