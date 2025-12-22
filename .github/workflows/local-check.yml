@@ -15,7 +15,7 @@ jobs:
       # - Oder dummy URL, falls dein Code beim build nicht wirklich connecten muss
       DATABASE_URL: ${{ secrets.DATABASE_URL || 'postgresql://user:pass@localhost:5432/db?schema=public' }}
       NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET || 'dev-secret' }}
-      NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL || 'http://localhost:3000' }}
+      NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL || 'https://digemu.vercel.app' }}
 
     steps:
       - name: Checkout
