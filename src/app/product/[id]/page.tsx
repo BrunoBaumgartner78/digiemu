@@ -7,6 +7,7 @@ import { getServerSession } from "next-auth";
 import { auth } from "@/lib/auth";
 import LikeButtonClient from "@/components/product/LikeButtonClient";
 import BuyButtonClient from "@/components/checkout/BuyButtonClient";
+import ProductViewTracker from "@/components/analytics/ProductViewTracker";
 import styles from "./page.module.css";
 
 export const dynamic = "force-dynamic";
@@ -73,10 +74,17 @@ export default async function ProductPage({ params }: ProductPageProps) {
     },
   });
 
-  // ✅ harte Guards
+    // ✅ Guards (Public vs. Preview)
   if (!p) notFound();
-  if (!p.isActive || p.status !== "ACTIVE") notFound();
-  if (p.vendor?.isBlocked) notFound();
+
+  const role = ((session?.user as any)?.role as string | undefined) ?? null;
+  const isAdmin = role === "ADMIN";
+  const isOwner = !!userId && userId === p.vendorId;
+
+  const isPublicVisible = p.isActive === true && p.status === "ACTIVE" && !p.vendor?.isBlocked;
+  const canPreview = isAdmin || isOwner; // Vendor/Admin dürfen auch DRAFT sehen
+
+  if (!isPublicVisible && !canPreview) notFound();
 
   // ✅ Fallback: wenn product.vendorProfile null ist → via userId nachladen
   const vendorProfile =
@@ -135,6 +143,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
       <div className={styles.inner}>
         <main className={styles.layout}>
           {/* Bild */}
+          <ProductViewTracker productId={p.id} />
           <section className={styles.mediaCard}>
             {showNextImage ? (
               <Image
@@ -175,7 +184,14 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
             <p className={styles.priceLine}>CHF {price.toFixed(2)}</p>
 
-            <BuyButtonClient productId={p.id} />
+            {p.isActive && p.status === "ACTIVE" ? (
+  <BuyButtonClient productId={p.id} />
+) : (
+  <div className="neo-card" style={{ padding: 12, marginTop: 10, opacity: 0.85 }}>
+    <strong>Vorschau</strong> – Dieses Produkt ist noch nicht öffentlich (Status: {p.status}).
+  </div>
+)}
+
 
             <LikeButtonClient
               productId={p.id}
