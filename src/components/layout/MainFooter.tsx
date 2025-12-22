@@ -1,61 +1,100 @@
-// src/components/layout/MainFooter.tsx
 import Link from "next/link";
+import styles from "./mainFooter.module.css";
 
-const footerMainLinks = [
-  { href: "/marketplace", label: "Marketplace" },
-  { href: "/prices", label: "Preise" },
-  { href: "/help", label: "Hilfe" },
+type FooterLink = { label: string; href: string };
+
+const LEGAL: FooterLink[] = [
+  { label: "AGB", href: "/agb" },
+  { label: "Impressum", href: "/impressum" },
+  { label: "Datenschutz", href: "/datenschutz" },
 ];
 
-const footerLegalLinks = [
-  { href: "/impressum", label: "Impressum" },
-  { href: "/datenschutz", label: "Datenschutz" },
-  { href: "/agb", label: "AGB" },
+const INFO: FooterLink[] = [
+  { label: "Kontakt", href: "/contact" },
+  { label: "About us", href: "/about" },
+  { label: "About marketplace", href: "/about-marketplace" },
 ];
 
-export function MainFooter() {
+const QUICK: FooterLink[] = [
+  { label: "Marketplace", href: "/marketplace" },
+  { label: "Preise", href: "/preise" },
+  { label: "Hilfe", href: "/help" },
+];
+
+export default function MainFooter() {
+  const year = new Date().getFullYear();
+
   return (
-    <footer className="border-t border-slate-200/70 bg-slate-50/80">
-      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-8 text-sm text-slate-600 sm:px-6 lg:px-8 md:flex-row md:items-center md:justify-between">
-        <div>
-          <div className="text-sm font-semibold text-slate-800">
-            DigiEmu – Digital Marketplace for Creators
+    <footer className={styles.wrap} aria-label="Footer">
+      <div className={styles.container}>
+        <div className={styles.card}>
+          <div className={styles.top}>
+            {/* Brand */}
+            <div className={styles.brand}>
+              <div className={styles.logo} aria-hidden="true">
+                D
+              </div>
+              <div>
+                <div className={styles.kicker}>DIGIEMU</div>
+                <div className={styles.title}>Digitaler Marktplatz</div>
+                <p className={styles.tagline}>
+                  Digitale Produkte von Creators – sicher kaufen, einfach verkaufen.
+                </p>
+
+                <div className={styles.quick}>
+                  {QUICK.map((l) => (
+                    <Link key={l.href} href={l.href} className={styles.pill}>
+                      {l.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Link Columns */}
+            <div className={styles.cols}>
+              <div className={styles.col}>
+                <div className={styles.colTitle}>Rechtliches</div>
+                <ul className={styles.list}>
+                  {LEGAL.map((l) => (
+                    <li key={l.href}>
+                      <Link href={l.href} className={styles.link}>
+                        {l.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className={styles.col}>
+                <div className={styles.colTitle}>Infos</div>
+                <ul className={styles.list}>
+                  {INFO.map((l) => (
+                    <li key={l.href}>
+                      <Link href={l.href} className={styles.link}>
+                        {l.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
           </div>
-          <p className="mt-1 text-xs text-slate-500">
-            Kuratierter Multivendor-Marktplatz für digitale Produkte mit
-            transparenter 80/20-Aufteilung.
-          </p>
+
+          {/* Bottom row */}
+          <div className={styles.bottom}>
+            <div className={styles.muted}>© {year} DigiEmu · Alle Rechte vorbehalten</div>
+
+            <div className={styles.meta}>
+              <span className={styles.muted}>Support:</span>
+              <a className={styles.mail} href="mailto:support@digiemu.ch">
+                support@digiemu.ch
+              </a>
+              <span className={styles.dot}>·</span>
+              <span className={styles.muted}>Made with 🤍 in Switzerland</span>
+            </div>
+          </div>
         </div>
-
-        <div className="flex flex-wrap gap-6">
-          <nav className="flex flex-col gap-1 text-xs sm:text-sm">
-            {footerMainLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="transition hover:text-slate-900"
-              >
-                {link.label}
-              </Link>
-            ))}
-          </nav>
-
-          <nav className="flex flex-col gap-1 text-xs sm:text-sm">
-            {footerLegalLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="transition hover:text-slate-900"
-              >
-                {link.label}
-              </Link>
-            ))}
-          </nav>
-        </div>
-      </div>
-
-      <div className="border-t border-slate-200/70 py-4 text-center text-[11px] text-slate-400">
-        © {new Date().getFullYear()} DigiEmu – Digital Marketplace for Creators
       </div>
     </footer>
   );

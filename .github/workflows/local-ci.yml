@@ -15,8 +15,8 @@ jobs:
       DATABASE_URL_UNPOOLED: ${{ secrets.DATABASE_URL_UNPOOLED }}
 
       # ✅ Localhost URLs (keine digiemu.vercel.app)
-      NEXTAUTH_URL: "https://digiemu.vercel.app"
-      NEXT_PUBLIC_APP_URL: "https://digiemu.vercel.app"
+      NEXTAUTH_URL: "http://localhost:3000"
+      NEXT_PUBLIC_APP_URL: "http://localhost:3000"
 
       # weitere Secrets (falls benötigt)
       NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
@@ -44,11 +44,11 @@ jobs:
         run: npm ci
 
       # ✅ Optional: harte URLs im Repo temporär umstellen (nur im CI workspace)
-      - name: Replace digiemu.vercel.app -> https://digiemu.vercel.app
+      - name: Replace digiemu.vercel.app -> http://localhost:3000
         run: |
           rg -n "https?://digiemu\.vercel\.app" . || true
           rg -l "https?://digiemu\.vercel\.app" . \
-            | xargs -r sed -i 's#https\?://digiemu\.vercel\.app#https://digiemu.vercel.app#g'
+            | xargs -r sed -i 's#https\?://digiemu\.vercel\.app#http://localhost:3000#g'
 
       - name: Prisma validate
         run: npx prisma validate

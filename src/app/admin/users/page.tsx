@@ -62,9 +62,9 @@ export default async function AdminUsersPage({
     redirect("/dashboard");
   }
 
-  const params = await searchParams;
+  // Next 16: searchParams kann ein Promise sein → immer unwrap
+  const params = await Promise.resolve(searchParams ?? {});
 
-  // ✅ IMMER Strings
   const search = String(params.q ?? "");
   const role = String(params.role ?? "ALL");
 
@@ -96,7 +96,7 @@ export default async function AdminUsersPage({
 
   const baseParams: Record<string, string | undefined> = {
     q: search.trim() ? search.trim() : undefined,
-    role: role ? role : undefined,
+    role: role !== "ALL" ? role : undefined,
     pageSize: String(pageSize),
   };
 
@@ -128,54 +128,14 @@ export default async function AdminUsersPage({
       </header>
 
       <div className="space-y-4">
-        {/* Filterzeile */}
-        <div className="flex flex-wrap gap-3 items-center justify-between">
-          {/* ✅ Controlled: value statt defaultValue */}
-          <form className="flex gap-2 flex-wrap" method="get">
-            {/* bei Filter immer Seite 1 */}
-            <input type="hidden" name="page" value="1" />
-
-            <input
-              type="text"
-              name="q"
-              value={search}                // ✅ controlled
-              readOnly                     // ✅ Server Component: keine onChange -> readOnly, verhindert React warning
-              placeholder="Nach Name oder E-Mail suchen…"
-              className="input-neu max-w-xs"
-            />
-
-            <select
-              name="role"
-              value={role}                 // ✅ controlled
-              disabled                     // ✅ Server Component: keine onChange -> disabled
-              className="input-neu w-40"
-            >
-              <option value="ALL">Alle Rollen</option>
-              <option value="BUYER">Buyer</option>
-              <option value="VENDOR">Vendor</option>
-              <option value="ADMIN">Admin</option>
-            </select>
-
-            <label className="flex items-center gap-2">
-              <span className="text-xs text-[var(--text-muted)]">Pro Seite</span>
-              <select
-                name="pageSize"
-                value={String(pageSize)}   // ✅ controlled
-                disabled                   // ✅ Server Component: keine onChange -> disabled
-                className="input-neu w-24"
-              >
-                <option value="10">10</option>
-                <option value="25">25</option>
-                <option value="50">50</option>
-                <option value="100">100</option>
-              </select>
-            </label>
-
-            {/* ✅ Damit es trotzdem änderbar ist, nutzen wir eine zweite “echte” UI via details:
-                Browser kann Werte ändern, weil es echte Inputs sind (nicht controlled).
-                Das ist der sauberste Weg ohne Client-Komponente.
-            */}
-            <details className="ml-1">
+        {/* Filter (nur eine UI, wirkliches GET-Form) */}
+        <form
+          className="flex flex-wrap gap-3 items-center justify-between"
+          method="GET"
+          action="/admin/users"
+        >
+          <div className="flex flex-wrap gap-3 items-center">
+            <details>
               <summary className="neobtn-sm" style={{ listStyle: "none" }}>
                 Filter bearbeiten
               </summary>
@@ -196,25 +156,29 @@ export default async function AdminUsersPage({
                   <option value="ADMIN">Admin</option>
                 </select>
 
-                <select name="pageSize" defaultValue={String(pageSize)} className="input-neu w-24">
-                  <option value="10">10</option>
-                  <option value="25">25</option>
-                  <option value="50">50</option>
-                  <option value="100">100</option>
-                </select>
+                <label className="flex items-center gap-2">
+                  <span className="text-xs text-[var(--text-muted)]">Pro Seite</span>
+                  <select
+                    name="pageSize"
+                    defaultValue={String(pageSize)}
+                    className="input-neu w-24"
+                  >
+                    <option value="10">10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                  </select>
+                </label>
+
+                {/* bei Filter immer auf Seite 1 */}
+                <input type="hidden" name="page" value="1" />
 
                 <button type="submit" className="neobtn-sm">
                   Anwenden
                 </button>
               </div>
             </details>
-
-            <noscript>
-              <button type="submit" className="neobtn-sm">
-                Filtern
-              </button>
-            </noscript>
-          </form>
+          </div>
 
           <span className="text-xs text-[var(--text-muted)]">
             {totalCount === 0 ? (
@@ -226,7 +190,7 @@ export default async function AdminUsersPage({
               </>
             )}
           </span>
-        </div>
+        </form>
 
         {/* Tabelle */}
         <div className="overflow-x-auto rounded-2xl border border-[var(--neo-card-border)] bg-[var(--neo-card-bg-soft)] shadow-[var(--neo-card-shadow-soft)]">
@@ -241,35 +205,44 @@ export default async function AdminUsersPage({
                 <th className="text-left py-2 px-4">Aktionen</th>
               </tr>
             </thead>
+
             <tbody>
-              {users.map((user) => (
-                <tr key={user.id} className="border-b border-slate-200/40 last:border-0">
-                  <td className="text-[var(--text-main)] py-2 px-4">
-                    <Link href={`/admin/users/${user.id}`} className="underline">
-                      {user.email}
-                    </Link>
-                  </td>
-                  <td className="text-[var(--text-main)] py-2 px-4">{user.name ?? "—"}</td>
-                  <td className="text-[var(--text-main)] py-2 px-4">{user.role}</td>
-                  <td className="py-2 px-4">
-                    {user.isBlocked ? (
-                      <span className="inline-flex rounded-full bg-rose-500/10 text-rose-500 px-3 py-0.5 text-xs font-medium">
-                        Gesperrt
-                      </span>
-                    ) : (
-                      <span className="inline-flex rounded-full bg-emerald-500/10 text-emerald-500 px-3 py-0.5 text-xs font-medium">
-                        Aktiv
-                      </span>
-                    )}
-                  </td>
-                  <td className="text-[var(--text-muted)] text-xs py-2 px-4">
-                    {new Date(user.createdAt).toLocaleDateString("de-CH")}
-                  </td>
-                  <td className="py-2 px-4">
-                    <AdminUserStatusToggle userId={user.id} isBlocked={user.isBlocked} />
+              {users.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="py-6 text-center text-[var(--text-muted)] text-sm">
+                    Keine Nutzer gefunden.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                users.map((user) => (
+                  <tr key={user.id} className="border-b border-slate-200/40 last:border-0">
+                    <td className="text-[var(--text-main)] py-2 px-4">
+                      <Link href={`/admin/users/${user.id}`} className="underline">
+                        {user.email}
+                      </Link>
+                    </td>
+                    <td className="text-[var(--text-main)] py-2 px-4">{user.name ?? "—"}</td>
+                    <td className="text-[var(--text-main)] py-2 px-4">{user.role}</td>
+                    <td className="py-2 px-4">
+                      {user.isBlocked ? (
+                        <span className="inline-flex rounded-full bg-rose-500/10 text-rose-500 px-3 py-0.5 text-xs font-medium">
+                          Gesperrt
+                        </span>
+                      ) : (
+                        <span className="inline-flex rounded-full bg-emerald-500/10 text-emerald-500 px-3 py-0.5 text-xs font-medium">
+                          Aktiv
+                        </span>
+                      )}
+                    </td>
+                    <td className="text-[var(--text-muted)] text-xs py-2 px-4">
+                      {new Date(user.createdAt).toLocaleDateString("de-CH")}
+                    </td>
+                    <td className="py-2 px-4">
+                      <AdminUserStatusToggle userId={user.id} isBlocked={user.isBlocked} />
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -295,7 +268,9 @@ export default async function AdminUsersPage({
                   <Link
                     key={p}
                     href={buildQuery({ ...baseParams, page: String(p) })}
-                    className={"neobtn-sm " + (p === safePage ? " !bg-[var(--accent)] !text-white" : "")}
+                    className={
+                      "neobtn-sm " + (p === safePage ? " !bg-[var(--accent)] !text-white" : "")
+                    }
                     aria-current={p === safePage ? "page" : undefined}
                   >
                     {p}

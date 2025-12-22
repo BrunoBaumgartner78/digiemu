@@ -7,6 +7,8 @@ import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
 
 type AdminProductsSearchParams = {
   q?: string;
@@ -15,9 +17,11 @@ type AdminProductsSearchParams = {
   page?: string; // "1", "2", ...
 };
 
+type SP = Record<string, string | string[] | undefined>;
+const first = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
+
 type AdminProductsPageProps = {
-  // Next gibt searchParams als Objekt
-  searchParams?: AdminProductsSearchParams;
+  searchParams?: SP;
 };
 
 function clamp(n: number, min: number, max: number) {
@@ -65,19 +69,23 @@ function getPageItems(current: number, total: number) {
 export default async function AdminProductsPage({
   searchParams,
 }: AdminProductsPageProps) {
+  console.log("ADMIN_PRODUCTS_RENDER", new Date().toISOString(), { searchParams });
   // Auth / Role check
   const session = await getServerSession(authOptions);
   if (!session) redirect("/login");
   const user = session.user as any;
   if (user.role !== "ADMIN") redirect("/dashboard");
 
-  const resolved = searchParams ?? {};
+  const resolved = await Promise.resolve(searchParams ?? {});
+  const first = (v: any) => (Array.isArray(v) ? v[0] : v);
 
-  const search = (resolved.q ?? "").toString();
-  const vendorFilter = (resolved.vendor ?? "").toString();
-  const statusFilter = (resolved.status ?? "").toString();
+const search = (first(resolved.q) ?? "").toString();
+const vendorFilter = (first(resolved.vendor) ?? "").toString();
+const statusFilter = (first(resolved.status) ?? "").toString();
 
-  const requestedPage = parseInt((resolved.page ?? "1").toString(), 10);
+
+
+  const requestedPage = parseInt((first(resolved.page) ?? "1").toString(), 10);
   const page = Number.isFinite(requestedPage) && requestedPage > 0 ? requestedPage : 1;
 
   const pageSize = 20;
@@ -96,9 +104,13 @@ export default async function AdminProductsPage({
     where.vendorId = vendorFilter.trim();
   }
 
-  if (statusFilter === "ACTIVE") where.status = "ACTIVE";
-  if (statusFilter === "DRAFT") where.status = "DRAFT";
-  if (statusFilter === "BLOCKED") where.status = "BLOCKED";
+ if (statusFilter.trim().length > 0) {
+  where.status = { equals: statusFilter.trim(), mode: "insensitive" };
+}
+
+
+  // Debug (remove later)
+  console.log("ADMIN_PRODUCTS_FILTER", { search, vendorFilter, statusFilter, where });
 
   // total zuerst -> totalPages berechnen
   const totalProducts = await prisma.product.count({ where });
