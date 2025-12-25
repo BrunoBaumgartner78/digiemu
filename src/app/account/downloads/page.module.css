@@ -385,3 +385,16 @@
   }
 }
 
+/* DigiEmu downloads overflow fix */
+.card, .row, .meta, .content, .actions {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.title, .desc, .orderId, .url, .filename, .productTitle, .description, .code {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  hyphens: auto;
+}
+
+
