@@ -2674,6 +2674,22 @@ body[data-theme="dark"]
   white-space: pre-line;
 }
 
+/* === DigiEmu preserve newlines === */
+/* Use on any element that should respect \n line breaks from DB */
+[data-preserve-newlines] {
+  white-space: pre-line; /* keeps \n as line breaks, still wraps */
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+/* Optional: for code-ish blocks */
+[data-preserve-prewrap] {
+  white-space: pre-wrap; /* keeps spaces + \n */
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+/* === /DigiEmu preserve newlines === */
+
+
 /* ===== DigiEmu mobile overflow guard ===== */
 :root {
   /* helps on some browsers with accidental horizontal scroll */

@@ -244,7 +244,9 @@ export default async function AccountDownloadsPage({
                       </p>
 
                       {order.product?.description && (
-                        <p className={styles.description}>{order.product.description}</p>
+                        <p className={styles.description} data-preserve-newlines>
+                          {order.product.description}
+                        </p>
                       )}
 
                       {hasLink && (
