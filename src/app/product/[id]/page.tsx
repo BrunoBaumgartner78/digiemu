@@ -160,7 +160,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
           {/* Kaufkarte */}
           <section className={styles.buyCard}>
-            <h1 className={styles.title}>{p.title}</h1>
+            <h1 className={`${styles.title} textSafe`}>{p.title}</h1>
 
             {vendorProfile && (
               <section className="neo-card" style={{ padding: 14, marginTop: 14 }}>
@@ -205,7 +205,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
         {p.description?.trim() ? (
           <section className={styles.descriptionSection}>
             <h2>Beschreibung</h2>
-            <p>{p.description}</p>
+            <p className="textSafe textPreserve">{p.description}</p>
           </section>
         ) : null}
 

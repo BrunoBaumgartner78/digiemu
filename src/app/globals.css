@@ -2658,3 +2658,19 @@ body[data-theme="dark"]
   --neon-glow-2: rgba(120,88,255,0.08);
   --neon-glow-hover: 0.35;
 }
+
+
+/* ===== DigiEmu text safety utilities =====
+   - prevents long words/URLs from overflowing
+   - preserves newline characters from textarea inputs
+*/
+.textSafe {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  hyphens: auto;
+}
+
+.textPreserve {
+  white-space: pre-line;
+}
+
