@@ -106,7 +106,7 @@ export default async function AccountDownloadsPage({
   }
 
   return (
-    <div className={styles.page}>
+    <div className={`${styles.page} noOverflowX`}>
       <div className={styles.inner}>
         <header>
           <h1 className={styles.heading}>Meine Käufe & Downloads</h1>

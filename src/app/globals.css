@@ -2674,3 +2674,44 @@ body[data-theme="dark"]
   white-space: pre-line;
 }
 
+/* ===== DigiEmu mobile overflow guard ===== */
+:root {
+  /* helps on some browsers with accidental horizontal scroll */
+  overflow-x: hidden;
+}
+
+/* Make sure layout never becomes wider than the viewport */
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Common offenders: long words, urls, badges, code blocks */
+* {
+  min-width: 0;
+}
+
+img, svg, video, canvas {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Utility: apply to any container that must not overflow */
+.noOverflowX {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Utility: for long text/ids/urls inside cards */
+.textWrap {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* If some flex row blows out: allow wrapping */
+.flexWrapSafe {
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+
