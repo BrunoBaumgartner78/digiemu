@@ -9,7 +9,7 @@ export default function Page() {
       <div className={styles.container}>
         <section className={styles.card}>
           <div className={styles.kicker}>DIGIEMU · RECHTLICHES</div>
-          <h1 className={styles.title}>Allgemeine Geschäftsbedingungen (AGB)</h1>
+          <h1 className={styles.title}>Allgemeine Geschäfts- Bedingungen (AGB)</h1>
           <p className={styles.subtitle}>
             Stand: {new Date().toLocaleDateString("de-CH")} · Platzhaltertext – bitte juristisch prüfen lassen.
           </p>
