@@ -7,7 +7,7 @@ type FooterLink = { label: string; href: string };
 const LEGAL_LINKS: FooterLink[] = [
   { label: "Impressum", href: "/impressum" },
   { label: "Datenschutz", href: "/datenschutz" },
-  { label: "AGB", href: "/legal/agb" },
+  { label: "AGB", href: "/agb" },
 ];
 
 const INFO: FooterLink[] = [
