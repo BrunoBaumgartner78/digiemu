@@ -2,9 +2,12 @@ import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import Link from "next/link";
 import DownloadCard from "./DownloadCard";
 import ProcessingCard from "./ProcessingCard";
 import SuccessPoller from "./SuccessPoller";
+
+export const dynamic = "force-dynamic";
 
 type SearchParams = { session_id?: string };
 type Props = { searchParams: Promise<SearchParams> };
@@ -26,7 +29,7 @@ export default async function DownloadSuccessPage({ searchParams }: Props) {
     },
   });
 
-  // ✅ wenn noch nichts da ist: UI + Poller
+  // if order not yet created: show processing + poller
   if (!order) {
     return (
       <main className="page-center">
@@ -42,7 +45,7 @@ export default async function DownloadSuccessPage({ searchParams }: Props) {
     return <ErrorState message="Bestellung nicht gefunden." />;
   }
 
-  // ✅ wenn Order da aber DownloadLink noch nicht: UI + Poller
+  // if order exists but download not ready: show poller
   if (!order.downloadLink || order.status !== "PAID") {
     return (
       <main className="page-center">
@@ -56,6 +59,11 @@ export default async function DownloadSuccessPage({ searchParams }: Props) {
 
   return (
     <main className="page-center">
+      <div className="neo-card max-w-md text-center" style={{ marginBottom: 12 }}>
+        <h2 className="neo-title">Vielen Dank für deinen Kauf</h2>
+        <p className="neo-text">Dein Produkt steht jetzt zum Download bereit. Zusätzlich haben wir dir eine E-Mail mit deinem persönlichen Download-Link gesendet.</p>
+      </div>
+
       <DownloadCard order={order} />
     </main>
   );

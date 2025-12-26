@@ -46,16 +46,21 @@ export async function POST(
       ? { status: "ACTIVE", isActive: true }
       : { status: "DRAFT", isActive: false };
 
-  const updated = await prisma.product.update({
-    where: { id },
-    data,
-    select: {
-      id: true,
-      status: true,
-      isActive: true,
-      title: true,
-      vendorId: true,
-    },
+  // Update product and maintain vendorProfile.activeProductsCount atomically
+  const updated = await prisma.$transaction(async (tx) => {
+    const upd = await tx.product.update({ where: { id }, data, select: { id: true, status: true, isActive: true, title: true, vendorId: true } });
+
+    const vp = await tx.vendorProfile.findUnique({ where: { userId: upd.vendorId }, select: { id: true, activeProductsCount: true } });
+    if (vp) {
+      if (action === "publish") {
+        await tx.vendorProfile.update({ where: { id: vp.id }, data: { activeProductsCount: { increment: 1 } } });
+      } else {
+        const newCount = Math.max(0, (vp.activeProductsCount ?? 0) - 1);
+        await tx.vendorProfile.update({ where: { id: vp.id }, data: { activeProductsCount: newCount } as any });
+      }
+    }
+
+    return upd;
   });
 
   return NextResponse.json({ product: updated });

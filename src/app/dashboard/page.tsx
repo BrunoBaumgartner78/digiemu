@@ -5,7 +5,10 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import styles from "./DashboardHome.module.css";
-import { LineChart, Trophy, DownloadCloud, Package } from "lucide-react";
+import { Trophy, DownloadCloud, Package } from "lucide-react";
+
+// ✅ NEW: client chart (fetches /api/analytics/revenue-30d itself)
+import Revenue30dChart from "@/components/analytics/Revenue30dChart";
 
 export const dynamic = "force-dynamic";
 
@@ -24,12 +27,12 @@ export default async function DashboardPage() {
 
   const vendorId = user.id as string;
 
-  // ✅ nur 30 Tage (kein Toggle mehr)
+  // ✅ only 30 days (for KPIs + downloads range)
   const rangeDays = 30;
   const rangeMs = rangeDays * 24 * 60 * 60 * 1000;
   const rangeStart = new Date(Date.now() - rangeMs);
 
-  // ✅ nur bezahlte Orders zählen (wie Earnings/Payouts)
+  // ✅ paid-like statuses (same as your current logic)
   const paidLikeStatuses = [
     "PAID",
     "paid",
@@ -42,8 +45,8 @@ export default async function DashboardPage() {
   /* ===================== DATA ===================== */
   const [
     products,
-    ordersRange,
-    ordersAll,
+    ordersRange, // still used for KPI (grossRange)
+    ordersAll,   // used for KPIs + top products
     payoutsPaidAgg,
     payoutsPendingCount,
     downloadsAll,
@@ -85,7 +88,6 @@ export default async function DashboardPage() {
       where: {
         order: {
           product: { vendorId },
-          // optional: Downloads nur von bezahlten Orders zählen
           status: { in: paidLikeStatuses as any },
         },
       },
@@ -117,54 +119,20 @@ export default async function DashboardPage() {
   ]);
 
   /* ===================== KPIs (20/80 Split) ===================== */
-  // Brutto (100%)
-  const grossAllCents = ordersAll.reduce(
-    (s, o) => s + (o.amountCents ?? 0),
-    0
-  );
-  const grossRangeCents = ordersRange.reduce(
-    (s, o) => s + (o.amountCents ?? 0),
-    0
-  );
+  const grossAllCents = ordersAll.reduce((s, o) => s + (o.amountCents ?? 0), 0);
+  const grossRangeCents = ordersRange.reduce((s, o) => s + (o.amountCents ?? 0), 0);
 
-  // Vendor (80%) – prefer gespeichertes vendorEarningsCents, fallback 80% von gross
-  let vendorAllCents = ordersAll.reduce(
-    (s, o) => s + (o.vendorEarningsCents ?? 0),
-    0
-  );
+  let vendorAllCents = ordersAll.reduce((s, o) => s + (o.vendorEarningsCents ?? 0), 0);
   if (vendorAllCents === 0 && grossAllCents > 0) {
     vendorAllCents = Math.round(grossAllCents * 0.8);
   }
 
-  let vendorRangeCents = 0;
-  // range orders haben vendorEarningsCents nicht selektiert → 80% fallback
-  if (grossRangeCents > 0) vendorRangeCents = Math.round(grossRangeCents * 0.8);
-
   const platformAllCents = Math.max(grossAllCents - vendorAllCents, 0);
 
-  // Auszahlbar basiert auf Vendor-Anteil, nicht auf Brutto
   const paidOutCents = payoutsPaidAgg._sum.amountCents ?? 0;
   const availableCents = Math.max(vendorAllCents - paidOutCents, 0);
 
   const isEmpty = grossAllCents === 0;
-
-  /* ===================== CHART 1: DAILY (30) ===================== */
-  const dayMap: Record<string, number> = {};
-  for (const o of ordersRange) {
-    const key = o.createdAt.toISOString().slice(0, 10);
-    dayMap[key] = (dayMap[key] ?? 0) + (o.amountCents ?? 0);
-  }
-
-  const days: { day: string; sum: number }[] = [];
-  for (let i = rangeDays - 1; i >= 0; i--) {
-    const d = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
-    days.push({ day: d, sum: dayMap[d] ?? 0 });
-  }
-
-  const maxDay = Math.max(1, ...days.map((d) => d.sum));
-  const maxIndex = days.findIndex((d) => d.sum === maxDay && d.sum > 0);
-  const maxLabel =
-    maxDay > 0 ? `Max ${(maxDay / 100).toFixed(2)} CHF` : "Max 0 CHF";
 
   /* ===================== TOP PRODUCTS (ALL TIME) ===================== */
   const productMap: Record<string, number> = {};
@@ -185,9 +153,7 @@ export default async function DashboardPage() {
 
   return (
     <main className="page-shell-wide">
-      <section
-        className={`neo-surface p-6 md:p-8 space-y-10 ${styles.dashboardShell}`}
-      >
+      <section className={`neo-surface p-6 md:p-8 space-y-10 ${styles.dashboardShell}`}>
         {/* HEADER */}
         <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
@@ -228,13 +194,13 @@ export default async function DashboardPage() {
         {/* KPI GRID */}
         <section className={styles.kpiGrid}>
           <Kpi label="Produkte" value={products.length} />
+
           <Kpi
             label="Downloads"
             value={downloadsAll}
             sub={`${rangeDays} Tage: ${downloadsRange}`}
           />
 
-          {/* ✅ jetzt sauber: Brutto + Split */}
           <Kpi
             label="Umsatz (Brutto)"
             value={chf(grossAllCents)}
@@ -250,48 +216,8 @@ export default async function DashboardPage() {
           />
         </section>
 
-        {/* DAILY CHART */}
-        <section className={`${styles.statCard} space-y-3`}>
-          <div className="flex items-center justify-between gap-4">
-            <h2 className="flex items-center gap-2 text-sm font-semibold text-white">
-              <LineChart size={16} /> Einnahmen – letzte {rangeDays} Tage
-            </h2>
-            <div className="text-[11px] text-white/70">{maxLabel}</div>
-          </div>
-
-          <div className="mt-2 rounded-2xl p-4 bg-[radial-gradient(circle_at_0_100%,#0b1120,#020617)] shadow-[inset_0_0_0_1px_rgba(30,64,175,0.7),inset_0_10px_24px_rgba(0,0,0,0.35)]">
-            <div className="flex items-end gap-[4px] h-[180px]">
-              {days.map((d, idx) => {
-                const h = Math.max(6, Math.round((d.sum / maxDay) * 160));
-                const title =
-                  d.sum === 0
-                    ? `${d.day}: keine Verkäufe`
-                    : `${d.day}: ${(d.sum / 100).toFixed(2)} CHF`;
-                const isMax = idx === maxIndex && d.sum > 0;
-
-                return (
-                  <div
-                    key={d.day}
-                    title={title}
-                    style={{ height: `${h}px` }}
-                    className={[
-                      "flex-1 min-w-[3px] rounded-full",
-                      "bg-gradient-to-t from-emerald-400 via-blue-500 to-indigo-500",
-                      "shadow-[0_10px_22px_rgba(0,0,0,0.25),inset_0_0_0_1px_rgba(255,255,255,0.10)]",
-                      "transition-transform duration-150",
-                      "hover:scale-x-[1.25] hover:brightness-110",
-                      isMax ? "ring-1 ring-white/60" : "",
-                    ].join(" ")}
-                  />
-                );
-              })}
-            </div>
-
-            <p className="mt-3 text-[12px] text-white/65">
-              Hover: Balken-Highlight · Max-Tag markiert
-            </p>
-          </div>
-        </section>
+        {/* ✅ NEW DAILY CHART (real 30-day bars via API) */}
+        <Revenue30dChart />
 
         {/* TOP PRODUCTS */}
         <section className={`${styles.statCard} space-y-4`}>

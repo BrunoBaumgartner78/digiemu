@@ -86,19 +86,34 @@ export async function PATCH(req: Request, ctx: Ctx) {
   const thumbnailRaw = body.thumbnail;
   const thumbnail = typeof thumbnailRaw === "string" ? thumbnailRaw.trim() : "";
 
-  const updated = await prisma.product.update({
-    where: { id: productId },
-    data: {
-      title,
-      description,
-      category,
-      priceCents,
-      isActive: requestedIsActive,
-      thumbnail: thumbnail.length > 0 ? thumbnail : null,
-      // status wird hier absichtlich NICHT geändert
-      // moderationNote wird hier absichtlich NICHT geändert
-    },
-    select: { id: true, status: true, isActive: true },
+  // Update product and adjust vendorProfile.activeProductsCount if isActive changed
+  const updated = await prisma.$transaction(async (tx) => {
+    const upd = await tx.product.update({
+      where: { id: productId },
+      data: {
+        title,
+        description,
+        category,
+        priceCents,
+        isActive: requestedIsActive,
+        thumbnail: thumbnail.length > 0 ? thumbnail : null,
+      },
+      select: { id: true, status: true, isActive: true, vendorId: true, title: true },
+    });
+
+    if (typeof existing.isActive === "boolean" && typeof upd.isActive === "boolean" && existing.isActive !== upd.isActive) {
+      const vp = await tx.vendorProfile.findUnique({ where: { userId: upd.vendorId }, select: { id: true, activeProductsCount: true } });
+      if (vp) {
+        if (upd.isActive) {
+          await tx.vendorProfile.update({ where: { id: vp.id }, data: { activeProductsCount: { increment: 1 } } });
+        } else {
+          const newCount = Math.max(0, (vp.activeProductsCount ?? 0) - 1);
+          await tx.vendorProfile.update({ where: { id: vp.id }, data: { activeProductsCount: newCount } as any });
+        }
+      }
+    }
+
+    return upd;
   });
 
   return NextResponse.json({ ok: true, updated });

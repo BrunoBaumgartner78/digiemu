@@ -21,11 +21,18 @@ export async function GET(_req: NextRequest) {
 
     const vendorId = session.user.id;
 
-    // ✅ Lade alle PAID/COMPLETED Orders für Vendor-Produkte
-    // (Passe Status ggf. an dein System an: "PAID" / "COMPLETED")
+    // Compute last 30 days (including today) at UTC date boundaries
+    const DAYS = 30;
+    const now = new Date();
+    const end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 23, 59, 59));
+    const start = new Date(end);
+    start.setUTCDate(start.getUTCDate() - (DAYS - 1));
+
+    // Load orders in range for vendor
     const orders = await prisma.order.findMany({
       where: {
         status: { in: ["PAID", "COMPLETED"] },
+        createdAt: { gte: start },
         product: { vendorId },
       },
       select: {
@@ -33,18 +40,25 @@ export async function GET(_req: NextRequest) {
         vendorEarningsCents: true,
         amountCents: true,
       },
-      orderBy: { createdAt: "asc" },
     });
 
-    // ✅ Summe: nimm vendorEarningsCents falls gesetzt, sonst fallback auf amountCents
     const totalEarningsCents = orders.reduce((sum, o) => {
       const v = typeof o.vendorEarningsCents === "number" ? o.vendorEarningsCents : 0;
       const fallback = typeof o.amountCents === "number" ? o.amountCents : 0;
       return sum + (v > 0 ? v : fallback);
     }, 0);
 
-    // ✅ Group by YYYY-MM-DD (UTC stabil)
+    // Prepare map with all days initialized to 0
     const map = new Map<string, number>();
+    for (let i = 0; i < DAYS; i++) {
+      const d = new Date(start);
+      d.setUTCDate(start.getUTCDate() + i);
+      const key = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(
+        d.getUTCDate()
+      ).padStart(2, "0")}`;
+      map.set(key, 0);
+    }
+
     for (const o of orders) {
       const d = new Date(o.createdAt);
       const key = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(
@@ -60,13 +74,10 @@ export async function GET(_req: NextRequest) {
 
     const daily = Array.from(map.entries()).map(([date, cents]) => ({
       date,
-      earnings: Number((cents / 100).toFixed(2)), // Chart-friendly CHF
+      earningsCents: cents,
     }));
 
-    return NextResponse.json({
-      daily,
-      totalEarnings: Number((totalEarningsCents / 100).toFixed(2)),
-    });
+    return NextResponse.json({ daily, totalEarningsCents });
   } catch (err) {
     console.error("vendor earnings chart error:", err);
     return NextResponse.json(

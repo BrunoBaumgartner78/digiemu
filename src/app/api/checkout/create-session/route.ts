@@ -26,6 +26,11 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json().catch(() => ({}));
   const productId = body?.productId as string | undefined;
+  const consent = body?.digitalConsent === true || body?.digitalConsent === 'true';
+
+  if (!consent) {
+    return NextResponse.json({ error: "DIGITAL_CONSENT_REQUIRED" }, { status: 400 });
+  }
 
   if (!productId) {
     return NextResponse.json({ error: "productId required" }, { status: 400 });
@@ -73,6 +78,8 @@ export async function POST(req: NextRequest) {
     metadata: {
       productId: product.id,
       buyerId: userId,
+      digitalConsent: "true",
+      consentAt: new Date().toISOString(),
       vendorId: product.vendorId,
     },
   });

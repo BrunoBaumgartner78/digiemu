@@ -8,7 +8,7 @@ import { Suspense } from "react";
 
 import { prisma } from "@/lib/prisma";
 import FilterBar from "@/components/analytics/FilterBar";
-import RevenueChart from "@/components/analytics/RevenueChart";
+import Revenue30dChart from "@/components/analytics/Revenue30dChart";
 import ProductDownloadPie from "@/components/analytics/ProductDownloadPie";
 
 export default async function AnalyticsPage() {
@@ -26,7 +26,10 @@ export default async function AnalyticsPage() {
         <FilterBar />
       </Suspense>
 
-      <RevenueChart sales={sales} />
+      {/* NEW: client-side 30d chart fetched from /api/analytics/revenue-30d */}
+      <Revenue30dChart />
+
+      {/* keep pie using server-fetched sales */}
       <ProductDownloadPie sales={sales} />
     </div>
   );

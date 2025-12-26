@@ -12,6 +12,7 @@ type InitialProfile = {
   levelName: string;
   productCount: number;
   nextGoal: number;
+  nextGoalUnit?: "products" | "chf";
 };
 
 function isBlobUrl(url: string) {
@@ -40,8 +41,11 @@ export default function ProfilePageClient({
 
   const products = initialProfile.productCount ?? 0;
   const nextGoal = initialProfile.nextGoal ?? 5;
-  const progress = Math.min(products, nextGoal);
-  const pct = Math.round((progress / Math.max(1, nextGoal)) * 100);
+  const nextGoalUnit = initialProfile.nextGoalUnit ?? "products";
+
+  // progress display: if next target is products, base on product count; if CHF, display revenue progress placeholder
+  const progressValue = nextGoalUnit === "products" ? Math.min(products, nextGoal) : 0;
+  const pct = Math.round((progressValue / Math.max(1, nextGoal)) * 100);
 
   const showToast = (msg: string) => {
     setToast(msg);
@@ -204,15 +208,28 @@ export default function ProfilePageClient({
           <div className={styles.progressMeta}>
             <span className={styles.progressTitle}>Level-Fortschritt</span>
             <span className={styles.progressCount}>
-              {progress} / {nextGoal}
+              {progressValue} / {nextGoal}
             </span>
           </div>
 
-          <div className={styles.progressTrack} aria-label="Progress">
+          <div
+            className={styles.progressTrack}
+            aria-label="Progress"
+            role="progressbar"
+            aria-valuemin={0}
+            aria-valuenow={progressValue}
+            aria-valuemax={nextGoal}
+          >
             <div className={styles.progressBar} style={{ width: `${pct}%` }} />
           </div>
 
-          <div className={styles.tip}>Tipp: Ab {nextGoal} Produkten bist du „Creator“, ab 20 „Pro“.</div>
+          <div className={styles.tip}>
+            {nextGoalUnit === "products" ? (
+              <>Tipp: Ab {nextGoal} Produkten steigst du ins nächste Level auf.</>
+            ) : (
+              <>Tipp: Erreiche CHF {nextGoal.toLocaleString("de-CH")} Umsatz, um ins nächste Level aufzusteigen.</>
+            )}
+          </div>
         </div>
       </div>
 

@@ -1,14 +1,13 @@
-// src/app/download/[orderId]/page.tsx
 import React from "react";
+import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import Link from "next/link";
 import styles from "./page.module.css";
 
-type Params = { orderId: string };
-
 export const dynamic = "force-dynamic";
+
+type Params = { orderId: string };
 
 function Badge({
   tone = "neutral",

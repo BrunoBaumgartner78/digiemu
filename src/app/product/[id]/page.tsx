@@ -1,6 +1,7 @@
 // src/app/product/[id]/page.tsx
-import Image from "next/image";
 import Link from "next/link";
+import Image from "next/image";
+import crypto from "crypto";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
@@ -8,27 +9,24 @@ import { auth } from "@/lib/auth";
 import LikeButtonClient from "@/components/product/LikeButtonClient";
 import BuyButtonClient from "@/components/checkout/BuyButtonClient";
 import ProductViewTracker from "@/components/analytics/ProductViewTracker";
+import BadgeRow from "@/components/marketplace/BadgeRow";
+import { getBadgesForVendors } from "@/lib/trustBadges";
 import styles from "./page.module.css";
 
 export const dynamic = "force-dynamic";
 
 type ProductPageProps = { params: Promise<{ id: string }> };
 
-const SAFE_IMAGE_HOSTS = [
-  "firebasestorage.googleapis.com",
-  "lh3.googleusercontent.com",
-  "images.pexels.com",
-  "images.unsplash.com",
-];
+function signThumbUrl(productId: string, variant?: "blur" | "full") {
+  const secret = (process.env.THUMB_TOKEN_SECRET ?? "").trim();
+  const v = variant && variant.length > 0 ? variant : "full";
+  const base = `/api/media/thumbnail/${encodeURIComponent(productId)}`;
+  if (!secret) return `${base}?variant=${v}`;
 
-function canUseNextImage(url: string | null | undefined): boolean {
-  if (!url) return false;
-  try {
-    const u = new URL(url);
-    return SAFE_IMAGE_HOSTS.includes(u.hostname);
-  } catch {
-    return false;
-  }
+  const exp = Date.now() + 60 * 60 * 1000;
+  const payload = `${productId}.${v}.${exp}`;
+  const sig = crypto.createHmac("sha256", secret).update(payload).digest("hex");
+  return `${base}?variant=${v}&exp=${exp}&sig=${sig}`;
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
@@ -59,12 +57,16 @@ export default async function ProductPage({ params }: ProductPageProps) {
       vendorProfile: {
         select: {
           id: true,
-          userId: true, // ✅ wichtig für /seller/[vendorId]
+          userId: true,
           isPublic: true,
           slug: true,
           displayName: true,
           avatarUrl: true,
           bannerUrl: true,
+          totalSales: true,
+          refundsCount: true,
+          activeProductsCount: true,
+          lastSaleAt: true,
           user: { select: { name: true } },
         },
       },
@@ -74,7 +76,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
     },
   });
 
-    // ✅ Guards (Public vs. Preview)
   if (!p) notFound();
 
   const role = ((session?.user as any)?.role as string | undefined) ?? null;
@@ -82,18 +83,17 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const isOwner = !!userId && userId === p.vendorId;
 
   const isPublicVisible = p.isActive === true && p.status === "ACTIVE" && !p.vendor?.isBlocked;
-  const canPreview = isAdmin || isOwner; // Vendor/Admin dürfen auch DRAFT sehen
+  const canPreview = isAdmin || isOwner;
 
   if (!isPublicVisible && !canPreview) notFound();
 
-  // ✅ Fallback: wenn product.vendorProfile null ist → via userId nachladen
   const vendorProfile =
     p.vendorProfile ??
     (await prisma.vendorProfile.findUnique({
       where: { userId: p.vendorId },
       select: {
         id: true,
-        userId: true, // ✅ wichtig
+        userId: true,
         isPublic: true,
         slug: true,
         displayName: true,
@@ -102,6 +102,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
         user: { select: { name: true } },
       },
     }));
+
+  // Prepare badges for this vendor (pass vendorProfile object including counters)
+  const badgesMap = await getBadgesForVendors({ [p.vendorId]: vendorProfile ?? {} });
+  const badgesForVendor = badgesMap[p.vendorId] ?? [];
 
   const relatedProducts = await prisma.product.findMany({
     where: {
@@ -121,7 +125,18 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   const price = (p.priceCents ?? 0) / 100;
   const hasThumb = typeof p.thumbnail === "string" && p.thumbnail.trim().length > 0;
-  const showNextImage = canUseNextImage(p.thumbnail) && hasThumb;
+
+  // determine if buyer has purchased -> enable full mode
+  let canFull = isAdmin || isOwner;
+  if (!canFull && userId) {
+    const buyerOrder = await prisma.order.findFirst({
+      where: { buyerId: userId, productId: pid, status: { in: ["PAID", "paid", "COMPLETED", "completed"] } },
+      select: { id: true },
+    });
+    if (buyerOrder) canFull = true;
+  }
+
+  const thumbSrc = hasThumb ? signThumbUrl(p.id, canFull ? "full" : "blur") : null;
 
   const likesCount = p._count?.likes ?? 0;
   const initialIsLiked = !!userId && (p.likes?.length ?? 0) > 0;
@@ -132,33 +147,32 @@ export default async function ProductPage({ params }: ProductPageProps) {
     p.vendor?.name ||
     "Verkäufer";
 
-  // ✅ Route ist /seller/[vendorId] => vendorId = User.id = vendorProfile.userId
   const sellerHref =
-    vendorProfile?.isPublic === true && vendorProfile.userId
-      ? `/seller/${encodeURIComponent(vendorProfile.userId)}`
+    vendorProfile?.isPublic === true && vendorProfile.id
+      ? `/seller/${encodeURIComponent(vendorProfile.id)}`
       : null;
 
   return (
     <div className={styles.page}>
       <div className={styles.inner}>
         <main className={styles.layout}>
-          {/* Bild */}
           <ProductViewTracker productId={p.id} />
+
           <section className={styles.mediaCard}>
-            {showNextImage ? (
-              <Image
-                src={p.thumbnail as string}
-                alt={p.title}
-                fill
-                priority
-                className={styles.mediaImage}
-              />
-            ) : (
-              <div className={styles.mediaPlaceholder}>💾</div>
-            )}
+              {thumbSrc ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={thumbSrc}
+                  alt={p.title}
+                  className={styles.mediaImage}
+                  loading="eager"
+                  referrerPolicy="no-referrer"
+                />
+              ) : (
+                <div className={styles.mediaPlaceholder}>💾</div>
+              )}
           </section>
 
-          {/* Kaufkarte */}
           <section className={styles.buyCard}>
             <h1 className={`${styles.title} textSafe`}>{p.title}</h1>
 
@@ -179,19 +193,29 @@ export default async function ProductPage({ params }: ProductPageProps) {
                     <span style={{ fontSize: 12, opacity: 0.65 }}>(Profil privat)</span>
                   )}
                 </div>
+                <div style={{ marginTop: 8 }}>
+                  <BadgeRow badges={badgesForVendor} max={3} />
+                </div>
               </section>
             )}
 
             <p className={styles.priceLine}>CHF {price.toFixed(2)}</p>
 
-            {p.isActive && p.status === "ACTIVE" ? (
-  <BuyButtonClient productId={p.id} />
-) : (
-  <div className="neo-card" style={{ padding: 12, marginTop: 10, opacity: 0.85 }}>
-    <strong>Vorschau</strong> – Dieses Produkt ist noch nicht öffentlich (Status: {p.status}).
-  </div>
-)}
+            <div style={{ fontSize: 13, opacity: 0.85, marginTop: 6, lineHeight: 1.6 }}>
+              Digitaler Download · Kein physischer Versand
+              <br />
+              <strong>Hinweis:</strong> Mit dem Kauf stimmst du ausdrücklich zu,
+              dass der Download vor Ablauf der Widerrufsfrist beginnt.
+              Dadurch erlischt das Widerrufsrecht (§ 356 Abs. 5 BGB / OR).
+            </div>
 
+            {p.isActive && p.status === "ACTIVE" ? (
+              <BuyButtonClient productId={p.id} />
+            ) : (
+              <div className="neo-card" style={{ padding: 12, marginTop: 10, opacity: 0.85 }}>
+                <strong>Vorschau</strong> – Dieses Produkt ist noch nicht öffentlich (Status: {p.status}).
+              </div>
+            )}
 
             <LikeButtonClient
               productId={p.id}
@@ -201,7 +225,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
           </section>
         </main>
 
-        {/* Beschreibung */}
         {p.description?.trim() ? (
           <section className={styles.descriptionSection}>
             <h2>Beschreibung</h2>
@@ -209,7 +232,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
           </section>
         ) : null}
 
-        {/* Weitere Produkte */}
         {relatedProducts.length > 0 && (
           <section className={styles.relatedSection}>
             <h2>Mehr Produkte dieses Anbieters</h2>

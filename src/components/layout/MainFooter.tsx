@@ -1,12 +1,13 @@
 import Link from "next/link";
 import styles from "./mainFooter.module.css";
+import { LEGAL } from "@/lib/legal";
 
 type FooterLink = { label: string; href: string };
 
-const LEGAL: FooterLink[] = [
-  { label: "AGB", href: "/agb" },
+const LEGAL_LINKS: FooterLink[] = [
   { label: "Impressum", href: "/impressum" },
   { label: "Datenschutz", href: "/datenschutz" },
+  { label: "AGB", href: "/legal/agb" },
 ];
 
 const INFO: FooterLink[] = [
@@ -27,6 +28,11 @@ export default function MainFooter() {
   return (
     <footer className={styles.wrap} aria-label="Footer">
       <div className={styles.container}>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", fontSize: 13, marginBottom: 8 }}>
+          <Link href="/impressum">Impressum</Link>
+          <Link href="/datenschutz">Datenschutz</Link>
+          <Link href="/help">Hilfe</Link>
+        </div>
         <div className={styles.card}>
           <div className={styles.top}>
             {/* Brand */}
@@ -56,7 +62,7 @@ export default function MainFooter() {
               <div className={styles.col}>
                 <div className={styles.colTitle}>Rechtliches</div>
                 <ul className={styles.list}>
-                  {LEGAL.map((l) => (
+                  {LEGAL_LINKS.map((l) => (
                     <li key={l.href}>
                       <Link href={l.href} className={styles.link}>
                         {l.label}
@@ -83,12 +89,20 @@ export default function MainFooter() {
 
           {/* Bottom row */}
           <div className={styles.bottom}>
-            <div className={styles.muted}>© {year} DigiEmu · Alle Rechte vorbehalten</div>
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center", justifyContent: "center", padding: "14px 10px", fontSize: 13, opacity: 0.9 }}>
+              <span style={{ opacity: 0.7 }}>© {year} {LEGAL.companyName}</span>
+              {LEGAL_LINKS.map((l) => (
+                <Link key={l.href} href={l.href} className={styles.link}>
+                  {l.label}
+                </Link>
+              ))}
+              <Link href="/help" className={styles.link}>Hilfe</Link>
+            </div>
 
             <div className={styles.meta}>
               <span className={styles.muted}>Support:</span>
-              <a className={styles.mail} href="mailto:support@digiemu.ch">
-                support@digiemu.ch
+              <a className={styles.mail} href={`mailto:${LEGAL.supportEmail}`}>
+                {LEGAL.supportEmail}
               </a>
               <span className={styles.dot}>·</span>
               <span className={styles.muted}>Made with 🤍 in Switzerland</span>

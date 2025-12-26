@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import ProfilePageClient from "./ProfilePageClient";
 import styles from "./profile.module.css";
+import { computeSellerTrustFromDb } from "@/lib/sellerTrust";
 
 export const dynamic = "force-dynamic";
 
@@ -37,15 +38,18 @@ export default async function Page() {
     } as any,
   });
 
+  const trust = await computeSellerTrustFromDb(userId);
+
   const initialProfile = {
     displayName: vendorProfile?.displayName ?? (session?.user as any)?.name ?? "",
     bio: vendorProfile?.bio ?? "",
     isPublic: vendorProfile?.isPublic ?? true,
     avatarUrl: vendorProfile?.avatarUrl ?? "",
     bannerUrl: vendorProfile?.bannerUrl ?? "",
-    levelName: "Starter", // falls du Level in DB hast, hier mappen
+    levelName: trust.level,
     productCount,
-    nextGoal: 5,
+    nextGoal: trust.nextLevelTarget,
+    nextGoalUnit: trust.nextLevelUnit,
   };
 
   return (

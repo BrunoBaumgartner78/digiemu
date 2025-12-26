@@ -1,8 +1,9 @@
 // src/app/marketplace/page.tsx
-
 import Link from "next/link";
-import Image from "next/image";
+import crypto from "crypto";
 import { getMarketplaceProducts, PAGE_SIZE } from "@/lib/products";
+import { getBadgesForVendors } from "@/lib/trustBadges";
+import BadgeRow from "@/components/marketplace/BadgeRow";
 import styles from "./page.module.css";
 import SellerLink from "@/components/seller/SellerLink";
 
@@ -20,14 +21,25 @@ const CATEGORY_FILTERS = [
   { key: "other", label: "Sonstiges" },
 ];
 
-type SearchParams = {
-  [key: string]: string | string[] | undefined;
-};
+type SearchParams = { [key: string]: string | string[] | undefined };
+type MarketplacePageProps = { searchParams?: Promise<SearchParams> };
 
-type MarketplacePageProps = {
-  // Next 15/16: searchParams ist ein Promise
-  searchParams?: Promise<SearchParams>;
-};
+/**
+ * ✅ Server-side Token-Signing für Thumbnail Proxy
+ * - verhindert URL-Leaks (Firebase URLs tauchen nie im HTML auf)
+ */
+function signThumbUrl(productId: string, variant: "blur" | "full" = "blur") {
+  const secret = (process.env.THUMB_TOKEN_SECRET ?? "").trim();
+  const base = `/api/media/thumbnail/${encodeURIComponent(productId)}`;
+
+  // Dev-friendly
+  if (!secret) return `${base}?variant=${variant}`;
+
+  const exp = Date.now() + 60 * 60 * 1000; // 60 Minuten
+  const payload = `${productId}.${variant}.${exp}`;
+  const sig = crypto.createHmac("sha256", secret).update(payload).digest("hex");
+  return `${base}?variant=${variant}&exp=${exp}&sig=${sig}`;
+}
 
 export default async function MarketplacePage(props: MarketplacePageProps) {
   const params: SearchParams = props.searchParams ? await props.searchParams : {};
@@ -55,7 +67,6 @@ export default async function MarketplacePage(props: MarketplacePageProps) {
   const category = resolvedCategoryParam && resolvedCategoryParam.length > 0 ? resolvedCategoryParam : "all";
   const search = resolvedSearchParam ?? "";
 
-  // Sort + Price Range (from query)
   const resolvedSortParam =
     typeof params.sort === "string" ? params.sort : Array.isArray(params.sort) ? params.sort[0] : undefined;
 
@@ -69,7 +80,6 @@ export default async function MarketplacePage(props: MarketplacePageProps) {
   const minPrice = resolvedMinPriceParam ?? undefined;
   const maxPrice = resolvedMaxPriceParam ?? undefined;
 
-  // Convert CHF inputs (strings) to cents for the DB query
   const parseCHFToCents = (v?: string | undefined): number | undefined => {
     if (v === undefined || v === null) return undefined;
     const s = String(v).trim();
@@ -99,11 +109,6 @@ export default async function MarketplacePage(props: MarketplacePageProps) {
   const hasPrev = page > 1;
   const hasNext = page < pageCount;
 
-  /**
-   * Baut die Query-Params für Links (Pagination + Filter)
-   * - Kategorie "all" entfernt den category-Parameter
-   * - Suche bleibt erhalten, außer wir überschreiben sie explizit
-   */
   const baseQuery = (extra: { page?: number; category?: string; q?: string; sort?: string; minPrice?: string; maxPrice?: string }) => {
     const query: Record<string, string> = {};
 
@@ -115,54 +120,52 @@ export default async function MarketplacePage(props: MarketplacePageProps) {
 
     if (extra.page !== undefined) query.page = String(extra.page);
 
-    // Preserve sort & price filters when present
     const sortToUse = extra.sort !== undefined ? extra.sort : sort;
     if (sortToUse && String(sortToUse).length > 0 && sortToUse !== "newest") query.sort = String(sortToUse);
 
-    const minToUse = extra.minPrice !== undefined ? extra.minPrice : minPrice;
+    const minToUse = extra.minPrice !== undefined ? extra.minPrice : (minPrice as any);
     if (minToUse !== undefined && String(minToUse).trim().length > 0) query.minPrice = String(minToUse);
 
-    const maxToUse = extra.maxPrice !== undefined ? extra.maxPrice : maxPrice;
+    const maxToUse = extra.maxPrice !== undefined ? extra.maxPrice : (maxPrice as any);
     if (maxToUse !== undefined && String(maxToUse).trim().length > 0) query.maxPrice = String(maxToUse);
 
     return query;
   };
 
+  // Prepare badges for visible vendors (map vendorId -> vendorProfile)
+  const vendorProfilesMap: Record<string, any> = {};
+  for (const p of products) {
+    if (!p.vendorId) continue;
+    vendorProfilesMap[p.vendorId] = p.vendorProfile ?? null;
+  }
+
+  const badgesMap = await getBadgesForVendors(vendorProfilesMap);
 
   return (
     <div className={styles.page}>
       <div className={styles.inner}>
-        {/* Header */}
         <header className={styles.header}>
           <div>
             <p className={styles.eyebrow}>Digital Marketplace</p>
             <h1 className={styles.title}>Marketplace</h1>
+            <div style={{ fontSize: 13, opacity: 0.75, marginTop: 6 }}>
+              ✔ Verifizierte Verkäufer · ✔ Sichere Zahlungen · ✔ Sofortiger Download
+            </div>
             <p className={styles.subtitle}>
               Digitale Produkte für Creator &amp; Coaches – sicher bezahlen und sofort herunterladen.
             </p>
           </div>
 
-          {/* Suche */}
           <form className={styles.searchBar} action="/marketplace">
             {category !== "all" && <input type="hidden" name="category" value={category} />}
-            {/* preserve filters when submitting search */}
             {sort && sort !== "newest" && <input type="hidden" name="sort" value={String(sort)} />}
             {minPrice !== undefined && <input type="hidden" name="minPrice" value={String(minPrice)} />}
             {maxPrice !== undefined && <input type="hidden" name="maxPrice" value={String(maxPrice)} />}
-            <input
-              className={styles.searchInput}
-              type="text"
-              name="q"
-              placeholder="Suche nach Titel oder Beschreibung …"
-              defaultValue={search}
-            />
-            <button className={styles.searchButton} type="submit">
-              Suchen
-            </button>
+            <input className={styles.searchInput} type="text" name="q" placeholder="Suche nach Titel oder Beschreibung …" defaultValue={search} />
+            <button className={styles.searchButton} type="submit">Suchen</button>
           </form>
         </header>
 
-        {/* Filter / Kategorie-Pills */}
         <div className={styles.filterBar}>
           <span className={styles.filterLabel}>Kategorien</span>
           <div className={styles.filterChips}>
@@ -171,10 +174,7 @@ export default async function MarketplacePage(props: MarketplacePageProps) {
               return (
                 <Link
                   key={cat.key}
-                  href={{
-                    pathname: "/marketplace",
-                    query: baseQuery({ category: cat.key, page: 1 }),
-                  }}
+                  href={{ pathname: "/marketplace", query: baseQuery({ category: cat.key, page: 1 }) }}
                   className={`${styles.filterChip} ${isActive ? styles.filterChipActive : ""}`}
                 >
                   {cat.label}
@@ -184,9 +184,7 @@ export default async function MarketplacePage(props: MarketplacePageProps) {
           </div>
         </div>
 
-        {/* Controls: Sort + Price Range */}
         <form className={styles.controlsRow} action="/marketplace">
-          {/* keep category & search when applying filters */}
           {category !== "all" && <input type="hidden" name="category" value={category} />}
           {search && search.trim().length > 0 && <input type="hidden" name="q" value={search} />}
 
@@ -201,52 +199,31 @@ export default async function MarketplacePage(props: MarketplacePageProps) {
 
           <div className={styles.controlGroup}>
             <label className={styles.controlLabel} htmlFor="minPrice">Min CHF</label>
-            <input
-              id="minPrice"
-              name="minPrice"
-              type="number"
-              step="0.5"
-              placeholder="Min CHF"
-              defaultValue={minPrice ?? ""}
-              className={styles.controlInput}
-            />
+            <input id="minPrice" name="minPrice" type="number" step="0.5" placeholder="Min CHF" defaultValue={minPrice ?? ""} className={styles.controlInput} />
           </div>
 
           <div className={styles.controlGroup}>
             <label className={styles.controlLabel} htmlFor="maxPrice">Max CHF</label>
-            <input
-              id="maxPrice"
-              name="maxPrice"
-              type="number"
-              step="0.5"
-              placeholder="Max CHF"
-              defaultValue={maxPrice ?? ""}
-              className={styles.controlInput}
-            />
+            <input id="maxPrice" name="maxPrice" type="number" step="0.5" placeholder="Max CHF" defaultValue={maxPrice ?? ""} className={styles.controlInput} />
           </div>
 
           <div>
-            <button type="submit" className={styles.searchButton}>
-              Anwenden
-            </button>
+            <button type="submit" className={styles.searchButton}>Anwenden</button>
           </div>
         </form>
 
-        {/* Empty State */}
-        {total === 0 && <div className={styles.emptyState}>Keine Produkte gefunden – passe deine Suche oder Kategorie an.</div>}
+        {total === 0 && (
+          <div className={styles.emptyState}>Keine Produkte gefunden – passe deine Suche oder Kategorie an.</div>
+        )}
 
-        {/* Grid */}
         {products.length > 0 && (
           <section className={styles.gridSection}>
             <div className={styles.grid}>
               {products.map((p: any) => {
-                const price =
-                  typeof p.priceCents === "number" ? (p.priceCents / 100).toFixed(2) : "0.00";
+                const price = typeof p.priceCents === "number" ? (p.priceCents / 100).toFixed(2) : "0.00";
 
-                const hasRealThumbnail =
-                  typeof p.thumbnail === "string" &&
-                  p.thumbnail.trim().length > 0 &&
-                  !p.thumbnail.includes("example.com");
+                const hasThumb = typeof p.thumbnail === "string" && p.thumbnail.trim().length > 0;
+                const thumbSrc = hasThumb ? signThumbUrl(p.id, "blur") : null;
 
                 const vendorProfile = p.vendorProfile ?? null;
                 const rawSellerName =
@@ -263,13 +240,15 @@ export default async function MarketplacePage(props: MarketplacePageProps) {
                   <article key={p.id} className={styles.card}>
                     <Link href={`/product/${p.id}`} className={styles.cardBody}>
                       <div className={styles.cardImageWrapper}>
-                        {hasRealThumbnail ? (
-                          <Image
-                            src={p.thumbnail as string}
+                        {thumbSrc ? (
+                          // ✅ bewusst <img> (kein Next/Image localPatterns Ärger + Querystrings ok)
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={thumbSrc}
                             alt={p.title}
-                            fill
-                            className={styles.cardImage}
-                            sizes="(min-width: 1024px) 280px, (min-width: 640px) 50vw, 100vw"
+                            className={`${styles.cardImage} ${styles.cardImageBlur}`}
+                            loading="lazy"
+                            referrerPolicy="no-referrer"
                           />
                         ) : (
                           <div className={styles.cardImagePlaceholder}>
@@ -288,7 +267,6 @@ export default async function MarketplacePage(props: MarketplacePageProps) {
                       {p.description && <p className={styles.cardDescription}>{p.description}</p>}
                     </Link>
 
-                    {/* Seller Block */}
                     <div
                       className={styles.cardSeller}
                       style={{
@@ -303,7 +281,6 @@ export default async function MarketplacePage(props: MarketplacePageProps) {
                     >
                       <span style={{ opacity: 0.7 }}>Verkauft von</span>
 
-                      {/* Avatar/Initial */}
                       <div
                         style={{
                           width: 22,
@@ -321,32 +298,23 @@ export default async function MarketplacePage(props: MarketplacePageProps) {
                       >
                         {avatarUrl ? (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={avatarUrl}
-                            alt=""
-                            style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                          />
+                          <img src={avatarUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                         ) : (
                           <span>{sellerName.charAt(0).toUpperCase()}</span>
                         )}
                       </div>
 
-                      {/* Name: Link nur wenn public + id vorhanden */}
                       {isPublic && vendorProfileId ? (
-                        <SellerLink
-                          vendorProfileId={vendorProfileId}
-                          productId={p.id}
-                          source="marketplace_card"
-                          className="neo-link"
-                        >
+                        <SellerLink vendorProfileId={vendorProfileId} productId={p.id} source="marketplace_card" className="neo-link">
                           {sellerName}
                         </SellerLink>
                       ) : (
                         <span style={{ fontWeight: 700 }}>
-                          {sellerName}{" "}
-                          <span style={{ fontSize: 11, opacity: 0.6 }}>(Profil privat)</span>
+                          {sellerName} <span style={{ fontSize: 11, opacity: 0.6 }}>(Profil privat)</span>
                         </span>
                       )}
+                      {/* Badges (max 2) */}
+                      <BadgeRow badges={badgesMap[p.vendorId] ?? []} max={2} />
                     </div>
 
                     <div className={styles.cardFooter}>
@@ -365,19 +333,13 @@ export default async function MarketplacePage(props: MarketplacePageProps) {
           </section>
         )}
 
-        {/* Pagination */}
         {pageCount > 1 && (
           <nav className={styles.pagination} aria-label="Seiten">
-            <div className={styles.paginationInfo}>
-              Seite {page} von {pageCount} · {total} Produkte
-            </div>
+            <div className={styles.paginationInfo}>Seite {page} von {pageCount} · {total} Produkte</div>
 
             <div className={styles.paginationButtons}>
               {hasPrev ? (
-                <Link
-                  href={{ pathname: "/marketplace", query: baseQuery({ page: page - 1 }) }}
-                  className={styles.pageButton}
-                >
+                <Link href={{ pathname: "/marketplace", query: baseQuery({ page: page - 1 }) }} className={styles.pageButton}>
                   ← Zurück
                 </Link>
               ) : (
@@ -385,10 +347,7 @@ export default async function MarketplacePage(props: MarketplacePageProps) {
               )}
 
               {hasNext ? (
-                <Link
-                  href={{ pathname: "/marketplace", query: baseQuery({ page: page + 1 }) }}
-                  className={styles.pageButton}
-                >
+                <Link href={{ pathname: "/marketplace", query: baseQuery({ page: page + 1 }) }} className={styles.pageButton}>
                   Weiter →
                 </Link>
               ) : (

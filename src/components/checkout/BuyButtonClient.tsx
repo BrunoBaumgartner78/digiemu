@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import DigitalConsent from "@/components/checkout/DigitalConsent";
 
 type Props = {
   productId: string;
@@ -11,6 +12,8 @@ type UiError = { code: string; title: string; message: string; help?: boolean };
 export default function BuyButtonClient({ productId }: Props) {
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<UiError | null>(null);
+  const [consent, setConsent] = React.useState(false);
+
 
   // ✅ useRef = Lock (keine Rerenders nötig)
   const inFlightRef = React.useRef(false);
@@ -70,6 +73,10 @@ export default function BuyButtonClient({ productId }: Props) {
       setError({ code: "GENERIC", ...mapError("GENERIC") });
       return;
     }
+    if (!consent) {
+      setError({ code: "CONSENT_REQUIRED", title: "Einwilligung benötigt", message: "Bitte bestätige den Hinweis zu digitalen Inhalten (Widerruf)." });
+      return;
+    }
 
     setLoading(true);
     setError(null);
@@ -91,7 +98,7 @@ export default function BuyButtonClient({ productId }: Props) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         signal: controller.signal,
-        body: JSON.stringify({ productId }),
+        body: JSON.stringify({ productId, digitalConsent: true }),
       });
 
       // UNAUTHORIZED: redirect to login with callback
@@ -131,7 +138,12 @@ export default function BuyButtonClient({ productId }: Props) {
   const isDisabled = loading || inFlightRef.current;
 
   return (
-    <div style={{ display: "grid", gap: "0.75rem" }}>
+    <div style={{ display: "grid", gap: "0.5rem" }}>
+      <DigitalConsent value={consent} onChange={setConsent} />
+      <div style={{ fontSize: 13, opacity: 0.85, color: "var(--text-muted)", lineHeight: 1.3 }}>
+        Mit dem Klick auf „Kaufen" erklärst du dich damit einverstanden, dass der Download sofort nach Zahlung
+        verfügbar ist und dein Widerrufsrecht bei digitalen Inhalten erlischt.
+      </div>
       <button
         type="button"
         className="neobtn primary"
@@ -159,6 +171,16 @@ export default function BuyButtonClient({ productId }: Props) {
           "Jetzt kaufen"
         )}
       </button>
+
+      <div style={{ marginTop: 8, fontSize: 12, opacity: 0.75, lineHeight: 1.5 }}>
+        🔒 Sicherer Checkout · Sofortiger Download · Keine versteckten Gebühren
+      </div>
+
+      <div style={{ fontSize: 12, opacity: 0.75, marginTop: 8, lineHeight: 1.5 }}>
+        Mit dem Kauf stimme ich den {" "}
+        <a href="/legal/agb" className="neo-link">AGB</a>{" "}
+        zu und verzichte auf das Widerrufsrecht nach Download.
+      </div>
 
       {error && (
         <div
