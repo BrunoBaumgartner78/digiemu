@@ -3,7 +3,7 @@ import "./globals.css";
 import type { Metadata } from "next";
 import Script from "next/script";
 import { Providers } from "./providers";
-import { MainHeader } from "@/components/layout/MainHeader";
+import { MainHeader } from "@/components/cookies/layout/MainHeader";
 import CookieConsentBanner from "@/components/cookies/CookieConsentBanner";
 import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
 

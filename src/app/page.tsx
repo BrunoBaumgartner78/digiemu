@@ -4,7 +4,7 @@ import { getServerSession } from "next-auth";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Main } from "next/document";
-import MainFooter from "@/components/layout/MainFooter";
+import MainFooter from "@/components/cookies/layout/MainFooter";
 
 export const dynamic = "force-dynamic";
 
