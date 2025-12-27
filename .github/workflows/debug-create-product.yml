@@ -14,8 +14,8 @@ jobs:
       DATABASE_URL_UNPOOLED: ${{ secrets.DATABASE_URL_UNPOOLED }}
 
       # Localhost URLs
-      NEXTAUTH_URL: "http://localhost:3000"
-      NEXT_PUBLIC_APP_URL: "http://localhost:3000"
+      NEXTAUTH_URL: "http://bellu.ch"
+      NEXT_PUBLIC_APP_URL: "http://bellu.ch"
       NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
 
       # Firebase (falls deine App sie beim Build/Runtime braucht)
