@@ -9,7 +9,7 @@ export default function Page() {
       <div className={styles.container}>
         <section className={styles.card}>
           <div className={styles.kicker}>DIGIEMU · RECHTLICHES</div>
-          <h1 className={styles.title}>Datenschutzerklärung</h1>
+          <h1 className={styles.title}>Datenschutz- Erklärung</h1>
           <p className={styles.subtitle}>
             Stand: {new Date().toLocaleDateString("de-CH")} · Platzhalter (revDSG/DSGVO prüfen).
           </p>

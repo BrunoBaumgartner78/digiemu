@@ -20,7 +20,7 @@ export default function Page() {
       <div className={styles.container}>
         <section className={styles.card}>
           <div className={styles.kicker}>DIGIEMU · RECHTLICHES</div>
-          <h1 className={styles.title}>Allgemeine Geschäftsbedingungen (AGB)</h1>
+          <h1 className={styles.title}>Allgemeine Geschäfts- Bedingungen (AGB)</h1>
           <p className={styles.subtitle}>
             Stand: {stand} · Hinweis: Vorlage – bitte juristisch prüfen lassen.
           </p>
@@ -52,8 +52,8 @@ export default function Page() {
 
             <h2 className={styles.h2}>2. Betreiber der Plattform</h2>
             <p className={styles.p}>
-              DigiEmu · Betreiber: <strong>[Name / Firma eintragen]</strong> · Adresse:{" "}
-              <strong>[Adresse]</strong> · E-Mail: <strong>[Kontaktadresse]</strong> · Sitz:{" "}
+              DigiEmu · Betreiber: <strong>Baumgartner Web Design & Develompmet</strong> · Adresse:{" "}
+              <strong>Le pré-aux-Boufes 222</strong> · E-Mail: <strong>support@bellu.ch</strong> · Sitz:{" "}
               <strong>Schweiz</strong>
             </p>
 
