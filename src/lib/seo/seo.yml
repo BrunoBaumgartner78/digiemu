@@ -12,7 +12,7 @@ seo:
     maxLength: 60
   description:
     default: "Multi-Vendor Plattform für digitale Produkte. Verkaufen, bezahlen, downloaden – einfach & sicher."
-    maxLength: 155
+    baseUrl: "https://bellu.ch"     # ✅ FIX: richtige Domain
   keywords:
     - "digitale produkte"
     - "marktplatz"
@@ -28,12 +28,12 @@ seo:
     googleBot:
       index: true
       follow: true
-      maxImagePreview: "large"
+      maxImagePreview: large
       maxSnippet: -1
       maxVideoPreview: -1
 openGraph:
   type: "website"
-  url: "https://bellu.ch"
+  
   siteName: "DigiEmu"
   title: "DigiEmu – Digitaler Marktplatz"
   description: "Verkaufe digitale Produkte auf DigiEmu. Multi-Vendor Plattform mit Stripe & sicheren Downloads."
@@ -50,7 +50,7 @@ twitter:
   images:
     - "/og-image.png"
 icons:
-  favicon:
+  icon:
     - rel: "icon"
       url: "/favicon.ico"
       sizes: "any"

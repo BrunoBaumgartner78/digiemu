@@ -1,16 +1,13 @@
 // src/app/layout.tsx
 import "./globals.css";
-import type { Metadata } from "next";
 import Script from "next/script";
 import { Providers } from "./providers";
 import { MainHeader } from "@/components/layout/MainHeader";
 import CookieConsentBanner from "@/components/cookies/CookieConsentBanner";
 import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
+import { siteMetadata } from "@/lib/seo/metadata";   // ✅ YAML -> Next metadata
 
-export const metadata: Metadata = {
-  title: "DigiEmu – Digitaler Marktplatz",
-  description: "Digitale Produkte kaufen & verkaufen.",
-};
+export const metadata = siteMetadata;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const gaId = process.env.NEXT_PUBLIC_GA_ID;
@@ -18,7 +15,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="de" suppressHydrationWarning>
       <body className="bg-[var(--page-bg)] text-[var(--text-main)]">
-        {/* ✅ 1) Google Consent Mode – DEFAULT = DENIED (VOR Analytics!) */}
+        {/* Consent default denied (vor GA) */}
         {gaId && (
           <Script id="google-consent-default" strategy="beforeInteractive">
             {`
@@ -41,10 +38,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </div>
         </Providers>
 
-        {/* ✅ 2) Cookie Banner (setzt später granted/denied per update) */}
         <CookieConsentBanner />
-
-        {/* ✅ 3) Google Analytics (liest Consent Mode korrekt aus) */}
         {gaId && <GoogleAnalytics gaId={gaId} />}
       </body>
     </html>
