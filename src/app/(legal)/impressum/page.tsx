@@ -11,7 +11,7 @@ export default function Page() {
           <div className={styles.kicker}>DIGIEMU · RECHTLICHES</div>
           <h1 className={styles.title}>Impressum</h1>
           <p className={styles.subtitle}>
-            Stand: {new Date().toLocaleDateString("de-CH")} · Platzhalter – bitte deine Daten einsetzen.
+            Stand: {new Date().toLocaleDateString("de-CH")} · Baumgartner Web Design & Develompmet
           </p>
 
           <div className={styles.pillRow}>
