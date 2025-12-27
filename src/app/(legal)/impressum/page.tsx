@@ -25,9 +25,9 @@ export default function Page() {
           <div className={styles.section}>
             <h2 className={styles.h2}>Betreiber</h2>
             <p className={styles.p}>
-              DigiEmu (Platzhalter)<br />
-              Straße & Hausnummer<br />
-              PLZ Ort, Schweiz
+              DigiEmu (Baumgartner Web Design & Develompmet)<br />
+              Le pré-aux-Boufes 222<br />
+              2615 Sonvilier, Schweiz
             </p>
 
             <h2 className={styles.h2}>Kontakt</h2>
