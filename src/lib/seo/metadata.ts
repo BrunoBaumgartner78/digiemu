@@ -1,32 +1,58 @@
-import fs from 'fs';
-import path from 'path';
-import yaml from 'yaml';
+import "server-only";
+import fs from "fs";
+import path from "path";
+import { parse } from "yaml";
 
-const seoPath = path.join(process.cwd(), 'src/lib/seo/seo.yml');
-const seoConfig = yaml.parse(fs.readFileSync(seoPath, 'utf8'));
+const seoPath = path.join(process.cwd(), "src/lib/seo/seo.yml");
+const seoConfig = parse(fs.readFileSync(seoPath, "utf8")) as any;
 
-function buildPageMetadata(pathname: string, overrides?: any) {
-  const route = seoConfig.routes?.[pathname] || {};
+function withBaseUrl(url: string) {
+  // erlaubt /og-image.png und macht daraus absolute URL
+  if (!url) return url;
+  if (url.startsWith("http://") || url.startsWith("https://")) return url;
+  const base = (seoConfig?.site?.baseUrl || "").replace(/\/$/, "");
+  const rel = url.startsWith("/") ? url : `/${url}`;
+  return `${base}${rel}`;
+}
+
+export function buildPageMetadata(pathname: string, overrides: any = {}) {
+  const route = seoConfig?.routes?.[pathname] || {};
+  const baseUrl = seoConfig?.site?.baseUrl || "";
+
+  const ogImages = (route?.openGraph?.images || seoConfig?.openGraph?.images || []).map((img: any) => ({
+    ...img,
+    url: withBaseUrl(img.url),
+  }));
+
+  const twitterImages = (route?.twitter?.images || seoConfig?.twitter?.images || []).map((u: string) =>
+    withBaseUrl(u)
+  );
+
   return {
-    title: route.title || seoConfig.seo.title.default,
-    description: route.description || seoConfig.seo.description.default,
-    keywords: seoConfig.seo.keywords,
-    alternates: seoConfig.seo.alternates,
-    robots: route.robots || seoConfig.seo.robots,
+    metadataBase: new URL(baseUrl),
+    title: route.title || seoConfig?.seo?.title?.default,
+    description: route.description || seoConfig?.seo?.description?.default,
+    keywords: seoConfig?.seo?.keywords,
+    alternates: route.alternates || seoConfig?.seo?.alternates,
+    robots: route.robots || seoConfig?.seo?.robots,
+
     openGraph: {
-      ...seoConfig.openGraph,
-      ...route.openGraph,
-      images: seoConfig.openGraph.images,
+      ...seoConfig?.openGraph,
+      ...route?.openGraph,
+      url: route?.openGraph?.url || seoConfig?.openGraph?.url || baseUrl,
+      images: ogImages,
     },
+
     twitter: {
-      ...seoConfig.twitter,
-      images: seoConfig.twitter.images,
+      ...seoConfig?.twitter,
+      ...route?.twitter,
+      images: twitterImages,
     },
-    icons: seoConfig.icons,
-    metadataBase: new URL(seoConfig.site.baseUrl),
+
+    icons: seoConfig?.icons,
+
     ...overrides,
   };
 }
 
-export const siteMetadata = buildPageMetadata('/');
-export { buildPageMetadata };
+export const siteMetadata = buildPageMetadata("/");
