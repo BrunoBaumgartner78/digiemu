@@ -44,7 +44,7 @@ export default function Page() {
 
             <h2 className={styles.h2}>Kontakt</h2>
             <p className={styles.p}>
-              Datenschutz-Anfragen: <a href="mailto:support@digiemu.ch">support@digiemu.ch</a>
+              Datenschutz-Anfragen: <a href="mailto:support@bellu.ch">support@bellu.ch</a>
             </p>
 
             <p className={styles.muted}>

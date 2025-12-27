@@ -135,7 +135,7 @@ jobs:
                       </p>
                       <h2 className={styles.h2}>Kontakt</h2>
                       <p className={styles.p}>
-                        E-Mail: support@digiemu.ch
+                        E-Mail: support@bellu.ch
                       </p>
                       <p className={styles.muted}>
                         Platzhalter – ergänze UID/MWST/HR falls nötig.

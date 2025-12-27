@@ -1,7 +1,7 @@
 # Zentraler SEO/OG/Favicon-Config-Block
 site:
   name: "DigiEmu"
-  baseUrl: "https://digiemu.vercel.app"
+  baseUrl: "https://bellu.ch"
   locale: "de_CH"
   language: "de"
   themeColor: "#e5ecf5"
@@ -21,7 +21,7 @@ seo:
     - "stripe"
     - "switzerland"
   alternates:
-    canonical: "https://digiemu.vercel.app"
+    canonical: "https://bellu.ch"
   robots:
     index: true
     follow: true
@@ -33,7 +33,7 @@ seo:
       maxVideoPreview: -1
 openGraph:
   type: "website"
-  url: "https://digiemu.vercel.app"
+  url: "https://bellu.ch"
   siteName: "DigiEmu"
   title: "DigiEmu – Digitaler Marktplatz"
   description: "Verkaufe digitale Produkte auf DigiEmu. Multi-Vendor Plattform mit Stripe & sicheren Downloads."

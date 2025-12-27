@@ -32,7 +32,7 @@ export default function Page() {
 
             <h2 className={styles.h2}>Kontakt</h2>
             <p className={styles.p}>
-              E-Mail: <a href="mailto:support@digiemu.ch">support@digiemu.ch</a>
+              E-Mail: <a href="mailto:support@bellu.ch">support@bellu.ch</a>
             </p>
 
             <h2 className={styles.h2}>Haftung</h2>

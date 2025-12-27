@@ -23,12 +23,12 @@ export default function Page() {
           <div className={styles.section}>
             <h2 className={styles.h2}>Support</h2>
             <p className={styles.p}>
-              <a href="mailto:support@digiemu.ch">support@digiemu.ch</a>
+              <a href="mailto:support@bellu.ch">support@bellu.ch</a>
             </p>
 
             <h2 className={styles.h2}>Partnerschaften / Creators</h2>
             <p className={styles.p}>
-              <a href="mailto:partners@digiemu.ch">partners@digiemu.ch</a>
+              <a href="mailto:partners@bellu.ch">partners@bellu.ch</a>
             </p>
 
             <p className={styles.muted}>

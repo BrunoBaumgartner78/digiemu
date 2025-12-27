@@ -1,0 +1,63 @@
+# env-routing.yml
+# Zentrale Definition für Base-URLs je Umgebung
+# Ziel: KEINE hardcodierten URLs im Code
+
+app:
+  name: "DigiEmu / Bellu"
+  ports:
+    local: 3000
+
+environments:
+  local:
+    description: "Lokale Entwicklung"
+    baseUrl: "http://localhost:3000"
+    nextauthUrl: "http://localhost:3000"
+    publicAppUrl: "http://localhost:3000"
+    stripe:
+      mode: "test"
+      webhookBaseUrl: "http://localhost:3000"
+    indexing:
+      robots: "noindex, nofollow"
+
+  preview:
+    description: "Vercel Preview / Staging"
+    baseUrl: "https://digiemu.vercel.app"
+    nextauthUrl: "https://digiemu.vercel.app"
+    publicAppUrl: "https://digiemu.vercel.app"
+    stripe:
+      mode: "test"
+      webhookBaseUrl: "https://digiemu.vercel.app"
+    indexing:
+      robots: "noindex, nofollow"
+
+  production:
+    description: "Produktion bellu.ch"
+    baseUrl: "https://bellu.ch"
+    nextauthUrl: "https://bellu.ch"
+    publicAppUrl: "https://bellu.ch"
+    stripe:
+      mode: "live"
+      webhookBaseUrl: "https://bellu.ch"
+    indexing:
+      robots: "index, follow"
+
+usage:
+  rules:
+    - "❌ Niemals http://localhost:3000 im Code hardcoden"
+    - "❌ Niemals bellu.ch im Code hardcoden"
+    - "✅ Immer process.env.NEXT_PUBLIC_APP_URL verwenden (Client)"
+    - "✅ Immer process.env.NEXTAUTH_URL verwenden (Server)"
+    - "✅ Stripe URLs aus ENV zusammensetzen"
+
+env_mapping:
+  local:
+    NEXTAUTH_URL: "http://localhost:3000"
+    NEXT_PUBLIC_APP_URL: "http://localhost:3000"
+
+  preview:
+    NEXTAUTH_URL: "https://digiemu.vercel.app"
+    NEXT_PUBLIC_APP_URL: "https://digiemu.vercel.app"
+
+  production:
+    NEXTAUTH_URL: "https://bellu.ch"
+    NEXT_PUBLIC_APP_URL: "https://bellu.ch"

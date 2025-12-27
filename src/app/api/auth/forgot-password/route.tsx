@@ -38,7 +38,7 @@ export async function POST(req: Request) {
   });
 
   // ✅ Reset-Link:
-  // `${process.env.NEXT_PUBLIC_APP_URL ?? "https://digiemu.vercel.app"}/reset-password/${token}`
+  // `${process.env.NEXT_PUBLIC_APP_URL ?? "https://bellu.ch"}/reset-password/${token}`
   // -> hier Mail senden
 
   return NextResponse.redirect(redirectUrl);
