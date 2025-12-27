@@ -140,10 +140,7 @@ export default function BuyButtonClient({ productId }: Props) {
   return (
     <div style={{ display: "grid", gap: "0.5rem" }}>
       <DigitalConsent value={consent} onChange={setConsent} />
-      <div style={{ fontSize: 13, opacity: 0.85, color: "var(--text-muted)", lineHeight: 1.3 }}>
-        Mit dem Klick auf „Kaufen" erklärst du dich damit einverstanden, dass der Download sofort nach Zahlung
-        verfügbar ist und dein Widerrufsrecht bei digitalen Inhalten erlischt.
-      </div>
+      {/* Consent text now only shown above button on product page, not here */}
       <button
         type="button"
         className="neobtn primary"

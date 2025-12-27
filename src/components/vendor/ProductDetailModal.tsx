@@ -31,7 +31,7 @@ export default function ProductDetailModal({ open, onClose, product }: ProductDe
 
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[200]">
-      <div className="neumorph-card p-6 w-full max-w-2xl relative">
+      <div className="neumorph-card p-6 w-full max-w-2xl relative" style={{ overflow: "hidden" }}>
         <button
           onClick={onClose}
           className="absolute top-3 right-3 text-sm opacity-60 hover:opacity-100"
@@ -70,7 +70,7 @@ export default function ProductDetailModal({ open, onClose, product }: ProductDe
           </div>
         </div>
 
-        <div className="h-64 neumorph-card p-4">
+        <div className="chartWrap neumorph-card p-4">
           {data.length > 0 ? (
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={data}>

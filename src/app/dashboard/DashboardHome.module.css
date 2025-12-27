@@ -1,3 +1,19 @@
+/* Chart wrapper for fixed height, mobile safe */
+.chartWrap {
+  height: 260px;
+}
+
+@media (max-width: 640px) {
+  .grid {
+    grid-template-columns: 1fr !important;
+  }
+  .neo-card {
+    border-radius: var(--radius-xl);
+  }
+  .chartWrap {
+    height: 240px;
+  }
+}
 /* src/app/dashboard/DashboardHome.module.css */
 
 /* =========================================================

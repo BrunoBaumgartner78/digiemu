@@ -31,8 +31,8 @@ export default function EarningsChart({ data }: EarningsChartProps) {
   return (
     <div>
       <div className="text-sm text-muted-foreground mb-2">Tägliche Einnahmen (letzte 30 Tage)</div>
-      <div className="w-full h-64 md:h-80">
-        <ResponsiveContainer>
+      <div className="chartWrap">
+        <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data}>
             <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
             <XAxis

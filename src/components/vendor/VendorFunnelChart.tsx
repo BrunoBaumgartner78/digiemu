@@ -84,7 +84,7 @@ export default function VendorFunnelChart({ funnel }: { funnel: VendorFunnel }) 
       </div>
 
       {/* Bar Chart */}
-      <div className="w-full h-64 neumorph-inner">
+      <div className="chartWrap neumorph-inner">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={chartData}>
             <XAxis dataKey="name" />

@@ -201,12 +201,21 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
             <p className={styles.priceLine}>CHF {price.toFixed(2)}</p>
 
-            <div style={{ fontSize: 13, opacity: 0.85, marginTop: 6, lineHeight: 1.6 }}>
-              Digitaler Download · Kein physischer Versand
-              <br />
-              <strong>Hinweis:</strong> Mit dem Kauf stimmst du ausdrücklich zu,
-              dass der Download vor Ablauf der Widerrufsfrist beginnt.
-              Dadurch erlischt das Widerrufsrecht (§ 356 Abs. 5 BGB / OR).
+            <div className="neo-card" style={{ padding: 12, marginTop: 10 }}>
+              <div style={{ fontWeight: 900 }}>Digitale Inhalte · Sofortiger Download</div>
+              <div style={{ marginTop: 6, opacity: 0.85, lineHeight: 1.5, fontSize: 13 }}>
+                Mit dem Kauf stimmst du zu, dass der Download sofort startet.
+                Dadurch erlischt dein Widerrufsrecht.
+              </div>
+
+              <details style={{ marginTop: 10, opacity: 0.8 }}>
+                <summary style={{ cursor: "pointer", fontWeight: 800 }}>Rechtliche Hinweise</summary>
+                <div style={{ marginTop: 6, fontSize: 12, lineHeight: 1.6 }}>
+                  Bei digitalen Inhalten erlischt das Widerrufsrecht,
+                  sobald du dem sofortigen Beginn der Ausführung zustimmst
+                  (§ 356 Abs. 5 BGB / OR).
+                </div>
+              </details>
             </div>
 
             {p.isActive && p.status === "ACTIVE" ? (

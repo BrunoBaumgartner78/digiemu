@@ -1,0 +1,105 @@
+# seo.yml
+# Zentraler SEO/OG/Favicon-Config-Block (z.B. einlesen und in Next.js metadata mappen)
+
+site:
+  name: "DigiEmu"
+  baseUrl: "https://digiemu.vercel.app"
+  locale: "de_CH"
+  language: "de"
+  themeColor: "#e5ecf5"
+
+seo:
+  title:
+    default: "DigiEmu – Digitaler Marktplatz"
+    template: "%s | DigiEmu"
+    maxLength: 60
+  description:
+    default: "Multi-Vendor Plattform für digitale Produkte. Verkaufen, bezahlen, downloaden – einfach & sicher."
+    maxLength: 155
+  keywords:
+    - "digitale produkte"
+    - "marktplatz"
+    - "creator"
+    - "downloads"
+    - "stripe"
+    - "switzerland"
+  alternates:
+    canonical: "https://digiemu.vercel.app"
+  robots:
+    index: true
+    follow: true
+    googleBot:
+      index: true
+      follow: true
+      maxImagePreview: "large"
+      maxSnippet: -1
+      maxVideoPreview: -1
+
+openGraph:
+  type: "website"
+  url: "https://digiemu.vercel.app"
+  siteName: "DigiEmu"
+  title: "DigiEmu – Digitaler Marktplatz"
+  description: "Verkaufe digitale Produkte auf DigiEmu. Multi-Vendor Plattform mit Stripe & sicheren Downloads."
+  locale: "de_CH"
+  images:
+    - url: "/og-image.png"
+      width: 1200
+      height: 630
+      alt: "DigiEmu – Digitaler Marktplatz"
+
+twitter:
+  card: "summary_large_image"
+  title: "DigiEmu – Digitaler Marktplatz"
+  description: "Multi-Vendor Plattform für digitale Produkte."
+  images:
+    - "/og-image.png"
+
+icons:
+  # Diese Dateien liegen in /public
+  favicon:
+    - rel: "icon"
+      url: "/favicon.ico"
+      sizes: "any"
+      type: "image/x-icon"
+    - rel: "icon"
+      url: "/icon.png"
+      sizes: "512x512"
+      type: "image/png"
+  apple:
+    - rel: "apple-touch-icon"
+      url: "/apple-icon.png"
+      sizes: "180x180"
+  other:
+    - rel: "manifest"
+      url: "/site.webmanifest"
+
+assets:
+  # Empfehlung: exakt so in /public ablegen
+  requiredPublicFiles:
+    - "/favicon.ico"
+    - "/icon.png"         # 512x512 PNG
+    - "/apple-icon.png"   # 180x180 PNG
+    - "/og-image.png"     # 1200x630 PNG
+    - "/site.webmanifest"
+
+routes:
+  # Beispiel-Overrides (z.B. /dashboard nicht indexieren)
+  "/":
+    title: "DigiEmu – Digitaler Marktplatz"
+    description: "Multi-Vendor Plattform für digitale Produkte. Verkaufen, bezahlen, downloaden – einfach & sicher."
+    robots:
+      index: true
+      follow: true
+
+  "/dashboard":
+    title: "Dashboard"
+    robots:
+      index: false
+      follow: false
+
+  "/admin":
+    title: "Admin"
+    robots:
+      index: false
+      follow: false
