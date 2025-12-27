@@ -1,3 +1,58 @@
+/* --- DigiEmu Mobile Chart Overlap Fix v1.1 --- */
+.page-shell {
+  min-height: 100dvh;
+  padding-bottom: calc(120px + env(safe-area-inset-bottom));
+}
+
+.neo-card {
+  position: relative;
+  isolation: isolate;
+  z-index: 0;
+}
+
+.neo-card:has(.recharts-responsive-container) {
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+.neo-card:has(.recharts-responsive-container) .recharts-responsive-container {
+  width: 100%;
+  height: clamp(160px, 32vh, 260px);
+}
+.neo-card:has(.recharts-responsive-container) .recharts-wrapper {
+  width: 100%;
+  height: 100%;
+}
+.neo-card:has(.recharts-responsive-container) svg {
+  overflow: visible;
+}
+
+/* Fallback: .chart-card for legacy browsers */
+.chart-card {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+.chart-card .chart-wrap {
+  width: 100%;
+  height: clamp(160px, 32vh, 260px);
+}
+.chart-card .recharts-responsive-container {
+  width: 100%;
+  height: 100%;
+}
+.chart-card .recharts-wrapper {
+  width: 100%;
+  height: 100%;
+}
+/* Chart card and chart wrapper for mobile overlap fix */
+.chart-card {
+  overflow: hidden;
+}
+.chart-card .chart-wrap {
+  width: 100%;
+  height: clamp(160px, 32vh, 260px);
+}
 /* ===== Neo Link (secondary link style) ===== */
 .neo-link{
   color: inherit;
@@ -369,6 +424,13 @@ img {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+}
+
+.page-shell.dashboard-scroll {
+  padding-bottom: calc(96px + env(safe-area-inset-bottom));
+}
+.page-shell.screen-dvh {
+  min-height: 100dvh;
 }
 
 .page-main {
@@ -2767,4 +2829,36 @@ img, svg, video, canvas {
   min-width: 0;
 }
 
+/* 1) Jede Card darf nie über anderen Inhalt "drüber schweben" */
+.neo-card {
+  position: relative;
+  isolation: isolate;
+  z-index: 0;
+}
+
+/* 2) Recharts-Container bekommt echte Höhe */
+.recharts-responsive-container {
+  width: 100% !important;
+  height: clamp(160px, 32vh, 260px) !important;
+}
+
+/* 3) Chart-Wrapper bleibt in der Card */
+.recharts-wrapper {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* 4) EXTREM WICHTIG: Unter jedem Chart erzwingen wir Abstand,
+      egal was die nächste Card macht. */
+.recharts-responsive-container {
+  margin-bottom: 18px !important;
+  display: block !important;
+}
+
+/* 5) Falls irgendeine Card per transform hochgezogen wird: neutralisieren (nur Mobile) */
+@media (max-height: 750px) {
+  .neo-card {
+    transform: none !important;
+  }
+}
 

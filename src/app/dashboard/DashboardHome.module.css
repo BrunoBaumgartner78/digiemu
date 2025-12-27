@@ -1,3 +1,18 @@
+/* Chart wrapper for mobile overlap fix */
+.chart-wrap {
+  width: 100%;
+  height: clamp(160px, 32vh, 260px);
+}
+
+/* Dashboard scroll container for bottom nav */
+.dashboard-scroll {
+  padding-bottom: calc(96px + env(safe-area-inset-bottom));
+}
+
+/* Viewport height fix for mobile browsers */
+.screen-dvh {
+  min-height: 100dvh;
+}
 /* Chart wrapper for fixed height, mobile safe */
 .chartWrap {
   height: 260px;
@@ -12,6 +27,9 @@
   }
   .chartWrap {
     height: 240px;
+  }
+  .chart-wrap {
+    height: clamp(140px, 28vh, 220px);
   }
 }
 /* src/app/dashboard/DashboardHome.module.css */
