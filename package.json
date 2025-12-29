@@ -8,17 +8,13 @@
     "dev:admin": "cross-env NEXT_PUBLIC_FEATURE_ADMIN=true next dev",
     "dev:community": "cross-env NEXT_PUBLIC_FEATURE_COMMUNITY=true next dev",
     "dev:allfeatures": "cross-env NEXT_PUBLIC_FEATURE_ADMIN=true NEXT_PUBLIC_FEATURE_COMMUNITY=true NEXT_PUBLIC_FEATURE_ANALYTICS=true next dev",
-  
-    "start": "next start",
     "lint": "next lint",
     "postinstall": "prisma generate",
-    
     "build:local": "prisma generate && next build",
     "build:win": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"taskkill /F /IM node.exe /T 2>$null; taskkill /F /IM prisma.exe /T 2>$null; if (Test-Path .next\\dev\\lock) { Remove-Item .next\\dev\\lock -Force }; if (Test-Path node_modules\\.prisma\\client) { Remove-Item node_modules\\.prisma\\client -Recurse -Force }; npx prisma generate; npm run build\"",
-   "predev": "node scripts/gen-analytics-config.mjs",
-    "dev": "next dev --webpack",
-    "build": "prisma generate && next build"
-  
+    "dev": "next dev",
+    "build": "prisma generate && next build",
+    "start": "next start"
   },
   "dependencies": {
     "@auth/core": "^0.34.3",
@@ -39,9 +35,7 @@
     "sharp": "^0.34.5",
     "stripe": "^20.0.0",
     "swr": "^2.3.7",
-
-    "zod": "^4.2.1",
-     "yaml": "^2.5.0"
+    "zod": "^4.2.1"
   },
   "devDependencies": {
     "@playwright/test": "^1.57.0",
@@ -65,6 +59,4 @@
     "react-server-dom-webpack": "19.2.2",
     "react-server-dom-parcel": "19.2.2"
   }
-
-  
 }
