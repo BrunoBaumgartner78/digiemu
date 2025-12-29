@@ -65,4 +65,6 @@
     "react-server-dom-webpack": "19.2.2",
     "react-server-dom-parcel": "19.2.2"
   }
+
+  
 }

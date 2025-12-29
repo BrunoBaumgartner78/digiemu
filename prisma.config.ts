@@ -8,6 +8,4 @@ export default defineConfig({
   engine: "classic",
   datasource: { url: env("DATABASE_URL") },
 
-  // ✅ hierhin verschieben
-  seed: "node prisma/seed.cjs",
 });
