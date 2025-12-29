@@ -10,7 +10,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="de" suppressHydrationWarning>
       <body>
-        {/* GA Basis-Skript */}
         {GA_ID && (
           <>
             <Script
@@ -23,9 +22,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 function gtag(){dataLayer.push(arguments);}
                 window.gtag = gtag;
 
-                gtag('consent', 'default', {
-                  analytics_storage: 'denied'
-                });
+                gtag('js', new Date());
+                gtag('config', '${GA_ID}', { anonymize_ip: true });
+
+                // default: denied
+                gtag('consent', 'default', { analytics_storage: 'denied' });
               `}
             </Script>
           </>
@@ -33,9 +34,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
         <Providers>
           <MainHeader />
-          <main>{children}</main>
-          <CookieConsentBanner />
+          <div className="page-shell">
+            <main className="page-main">{children}</main>
+          </div>
         </Providers>
+
+        <CookieConsentBanner />
       </body>
     </html>
   );
