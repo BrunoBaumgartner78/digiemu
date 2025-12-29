@@ -1,30 +1,44 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { analyticsConfig } from "@/lib/analytics/config";
+
+declare global {
+  interface Window {
+    gtag?: (...args: any[]) => void;
+  }
+}
+
+const STORAGE_KEY = "analytics_consent";
+const EVENTS_ON_GRANT = ["page_view"] as const;
 
 export default function CookieConsentBanner() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    const key = analyticsConfig.consent.storageKey;
-    const stored = localStorage.getItem(key);
-    if (stored === null) setVisible(true);
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      // Nur anzeigen, wenn noch keine Entscheidung getroffen wurde
+      setVisible(stored === null);
+    } catch {
+      // Falls localStorage geblockt ist: trotzdem anzeigen
+      setVisible(true);
+    }
   }, []);
 
   if (!visible) return null;
 
   const onAllow = () => {
-    const key = analyticsConfig.consent.storageKey;
+    try {
+      localStorage.setItem(STORAGE_KEY, "true");
+    } catch {}
 
-    localStorage.setItem(key, "true");
-
+    // Consent updaten (GA darf nun messen)
     window.gtag?.("consent", "update", {
       analytics_storage: "granted",
     });
 
-    // ✅ YAML-gesteuert: events.onGrant
-    for (const ev of analyticsConfig.events.onGrant) {
+    // Nach Consent ein page_view auslösen (sonst bleibt Realtime oft 0)
+    for (const ev of EVENTS_ON_GRANT) {
       window.gtag?.("event", ev);
     }
 
@@ -32,15 +46,22 @@ export default function CookieConsentBanner() {
   };
 
   const onDeny = () => {
-    const key = analyticsConfig.consent.storageKey;
-    localStorage.setItem(key, "false");
+    try {
+      localStorage.setItem(STORAGE_KEY, "false");
+    } catch {}
+
+    // Optional: explizit denied setzen
+    window.gtag?.("consent", "update", {
+      analytics_storage: "denied",
+    });
+
     setVisible(false);
   };
 
   return (
     <div
       data-cookie-banner="1"
-      className="fixed bottom-0 left-0 w-full z-[999999] bg-[#232323] text-white p-4 flex flex-col md:flex-row items-center justify-between shadow"
+      className="fixed bottom-0 left-0 w-full z-[2147483647] bg-[#232323] text-white p-4 flex flex-col md:flex-row items-center justify-between shadow"
     >
       <span className="mb-2 md:mb-0">
         Wir verwenden Cookies für anonyme Statistik (Google Analytics).
