@@ -1,43 +1,51 @@
 "use client";
 import { useEffect, useState } from "react";
 
-export default function ConsentBanner() {
-  const [show, setShow] = useState(false);
-  const [consent, setConsent] = useState<null | boolean>(null);
+function applyConsent(consent: boolean) {
+  (window as any).gtag?.("consent", "update", {
+    analytics_storage: consent ? "granted" : "denied",
+    ad_storage: "denied",
+    ad_user_data: "denied",
+    ad_personalization: "denied",
+  });
+
+  if (consent) {
+    const gaId = process.env.NEXT_PUBLIC_GA_ID;
+    if (gaId) {
+      (window as any).gtag?.("config", gaId, {
+        anonymize_ip: true,
+        page_path: window.location.pathname,
+      });
+    }
+  }
+}
+
+export default function CookieConsentBanner() {
+  const [ready, setReady] = useState(false);
+  const [consent, setConsent] = useState<boolean | null>(null);
 
   useEffect(() => {
-    const stored = localStorage.getItem("analytics_consent");
-    if (stored === null) {
-      setShow(true);
-      return;
+    try {
+      const stored = localStorage.getItem("analytics_consent");
+      if (stored === null) {
+        setConsent(null); // Banner anzeigen
+      } else {
+        const value = stored === "true";
+        setConsent(value);       // Banner ausblenden
+        applyConsent(value);     // Consent direkt anwenden
+      }
+    } catch {
+      // Falls localStorage blockiert ist: Banner trotzdem anzeigen
+      setConsent(null);
+    } finally {
+      setReady(true);
     }
-    setConsent(stored === "true");
   }, []);
 
-  // wenn Consent bereits gespeichert ist, direkt anwenden
-  useEffect(() => {
-    if (consent === null) return;
+  if (!ready) return null;
 
-    (window as any).gtag?.("consent", "update", {
-      analytics_storage: consent ? "granted" : "denied",
-      ad_storage: "denied",
-      ad_user_data: "denied",
-      ad_personalization: "denied",
-    });
-
-    // optional: sofort pageview senden (hilft fürs “active”)
-    if (consent) {
-      const gaId = process.env.NEXT_PUBLIC_GA_ID;
-      if (gaId) {
-        (window as any).gtag?.("config", gaId, {
-          anonymize_ip: true,
-          page_path: window.location.pathname,
-        });
-      }
-    }
-  }, [consent]);
-
-  if (consent !== null || !show) return null;
+  // Wenn consent null => noch keine Entscheidung => Banner anzeigen
+  if (consent !== null) return null;
 
   return (
     <div className="fixed bottom-0 left-0 w-full bg-[#232323] text-white p-4 flex flex-col md:flex-row items-center justify-between z-50 shadow">
@@ -49,9 +57,9 @@ export default function ConsentBanner() {
         <button
           className="px-4 py-2 rounded bg-[#39FF14] text-[#1A1A1A] font-semibold"
           onClick={() => {
-            localStorage.setItem("analytics_consent", "true");
+            try { localStorage.setItem("analytics_consent", "true"); } catch {}
+            applyConsent(true);
             setConsent(true);
-            setShow(false);
           }}
         >
           Erlauben
@@ -60,9 +68,9 @@ export default function ConsentBanner() {
         <button
           className="px-4 py-2 rounded border border-[#39FF14] text-white font-semibold"
           onClick={() => {
-            localStorage.setItem("analytics_consent", "false");
+            try { localStorage.setItem("analytics_consent", "false"); } catch {}
+            applyConsent(false);
             setConsent(false);
-            setShow(false);
           }}
         >
           Ablehnen
