@@ -33,13 +33,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         )}
 
         <Providers>
-          <MainHeader />
-          <div className="page-shell">
-            <main className="page-main">{children}</main>
-          </div>
-        </Providers>
+  <MainHeader />
+  <div className="page-shell">
+    <main className="page-main">{children}</main>
+  </div>
 
-        <CookieConsentBanner />
+  <CookieConsentBanner />
+</Providers>
+
       </body>
     </html>
   );

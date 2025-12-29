@@ -67,3 +67,16 @@
   .bar { left: 12px; right: 12px; bottom: 12px; }
   .actions { width: 100%; justify-content: flex-end; }
 }
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647; /* wichtig */
+  background: rgba(10, 14, 20, 0.45);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  display: grid;
+  place-items: center;
+  padding: 18px;
+}
+
