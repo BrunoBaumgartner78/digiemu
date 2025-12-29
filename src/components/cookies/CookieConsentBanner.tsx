@@ -1,87 +1,80 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
-declare global {
-  interface Window {
-    gtag?: (...args: any[]) => void;
-  }
-}
-
-const STORAGE_KEY = "analytics_consent";
-const EVENTS_ON_GRANT = ["page_view"] as const;
+import { createPortal } from "react-dom";
 
 export default function CookieConsentBanner() {
   const [visible, setVisible] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      // Nur anzeigen, wenn noch keine Entscheidung getroffen wurde
-      setVisible(stored === null);
-    } catch {
-      // Falls localStorage geblockt ist: trotzdem anzeigen
-      setVisible(true);
-    }
+    setMounted(true);
+    const stored = localStorage.getItem("analytics_consent");
+    if (stored === null) setVisible(true);
   }, []);
 
-  if (!visible) return null;
+  if (!mounted || !visible) return null;
 
-  const onAllow = () => {
-    try {
-      localStorage.setItem(STORAGE_KEY, "true");
-    } catch {}
-
-    // Consent updaten (GA darf nun messen)
-    window.gtag?.("consent", "update", {
-      analytics_storage: "granted",
-    });
-
-    // Nach Consent ein page_view auslösen (sonst bleibt Realtime oft 0)
-    for (const ev of EVENTS_ON_GRANT) {
-      window.gtag?.("event", ev);
-    }
-
-    setVisible(false);
-  };
-
-  const onDeny = () => {
-    try {
-      localStorage.setItem(STORAGE_KEY, "false");
-    } catch {}
-
-    // Optional: explizit denied setzen
-    window.gtag?.("consent", "update", {
-      analytics_storage: "denied",
-    });
-
-    setVisible(false);
-  };
-
-  return (
+  return createPortal(
     <div
       data-cookie-banner="1"
-      className="fixed bottom-0 left-0 w-full z-[2147483647] bg-[#232323] text-white p-4 flex flex-col md:flex-row items-center justify-between shadow"
+      style={{
+        position: "fixed",
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 2147483647,
+        background: "#232323",
+        color: "white",
+        padding: 16,
+        display: "flex",
+        gap: 12,
+        justifyContent: "space-between",
+        alignItems: "center",
+      }}
     >
-      <span className="mb-2 md:mb-0">
+      <span>
         Wir verwenden Cookies für anonyme Statistik (Google Analytics).
       </span>
 
-      <div className="flex gap-2">
+      <div style={{ display: "flex", gap: 8 }}>
         <button
-          className="px-4 py-2 rounded bg-[#39FF14] text-[#1A1A1A] font-semibold"
-          onClick={onAllow}
+          onClick={() => {
+            localStorage.setItem("analytics_consent", "true");
+            window.gtag?.("consent", "update", {
+              analytics_storage: "granted",
+            });
+            window.gtag?.("event", "page_view");
+            setVisible(false);
+          }}
+          style={{
+            background: "#39FF14",
+            color: "#1A1A1A",
+            padding: "8px 12px",
+            borderRadius: 10,
+            fontWeight: 600,
+          }}
         >
           Erlauben
         </button>
 
         <button
-          className="px-4 py-2 rounded border border-[#39FF14] text-white font-semibold"
-          onClick={onDeny}
+          onClick={() => {
+            localStorage.setItem("analytics_consent", "false");
+            setVisible(false);
+          }}
+          style={{
+            background: "transparent",
+            border: "1px solid #39FF14",
+            color: "white",
+            padding: "8px 12px",
+            borderRadius: 10,
+          }}
         >
           Ablehnen
         </button>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
