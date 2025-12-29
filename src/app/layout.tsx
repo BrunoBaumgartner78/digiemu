@@ -3,9 +3,11 @@ import "./globals.css";
 import Script from "next/script";
 import { Providers } from "./providers";
 import { MainHeader } from "@/components/layout/MainHeader";
-import CookieConsentBanner from "@/components/ConsentBanner";
+
 import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
 import { siteMetadata } from "@/lib/seo/metadata";   // ✅ YAML -> Next metadata
+import CookieConsentBanner from "@/components/cookies/CookieConsentBanner";
+
 
 export const metadata = siteMetadata;
 
@@ -32,14 +34,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         )}
 
         <Providers>
-          <MainHeader />
-          <div className="page-shell">
-            <main className="page-main">{children}</main>
-          </div>
-        </Providers>
+  <MainHeader />
+  <div className="page-shell">
+    <main className="page-main">{children}</main>
+  </div>
 
-        <CookieConsentBanner />
-        {gaId && <GoogleAnalytics gaId={gaId} />}
+  {/* WICHTIG: innerhalb Providers, aber außerhalb Layout-Wrapper */}
+  <CookieConsentBanner />
+</Providers>
+
       </body>
     </html>
   );

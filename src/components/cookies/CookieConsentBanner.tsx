@@ -3,64 +3,46 @@
 import { useEffect, useState } from "react";
 import styles from "./CookieConsentBanner.module.css";
 
-type ConsentState = "granted" | "denied";
-const STORAGE_KEY = "bellu_cookie_consent_v1";
-
 declare global {
   interface Window {
     gtag?: (...args: any[]) => void;
   }
 }
 
-function setGoogleConsent(state: ConsentState) {
-  // gtag wird durch GA Script bereitgestellt; falls noch nicht da: trotzdem speichern, später greift es.
-  if (typeof window.gtag !== "function") return;
-  window.gtag("consent", "update", {
-    analytics_storage: state,
-    ad_storage: "denied",
-    ad_user_data: "denied",
-    ad_personalization: "denied",
-  });
-}
-
 export default function CookieConsentBanner() {
-  const [open, setOpen] = useState(false);
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY) as ConsentState | null;
-
-    if (!saved) {
-      setOpen(true);
-      // Default bleibt denied (layout setzt default schon), hier nur sicherheitshalber:
-      setGoogleConsent("denied");
-      return;
+    try {
+      const stored = localStorage.getItem("analytics_consent");
+      setVisible(stored === null);
+      console.log("[CookieConsentBanner] mounted, stored =", stored);
+    } catch {
+      // Falls localStorage geblockt ist: zeig Banner trotzdem
+      setVisible(true);
     }
-
-    // bereits entschieden → anwenden
-    setGoogleConsent(saved);
   }, []);
 
-  function accept() {
-    localStorage.setItem(STORAGE_KEY, "granted");
-    setGoogleConsent("granted");
-    setOpen(false);
-  }
+  if (!visible) return null;
 
-  function decline() {
-    localStorage.setItem(STORAGE_KEY, "denied");
-    setGoogleConsent("denied");
-    setOpen(false);
-  }
+  const accept = () => {
+    localStorage.setItem("analytics_consent", "true");
+    window.gtag?.("consent", "update", { analytics_storage: "granted" });
+    setVisible(false);
+  };
 
-  if (!open) return null;
+  const decline = () => {
+    localStorage.setItem("analytics_consent", "false");
+    window.gtag?.("consent", "update", { analytics_storage: "denied" });
+    setVisible(false);
+  };
 
   return (
-    <div className={styles.overlay} role="dialog" aria-modal="true" aria-label="Cookie-Einstellungen">
-      <div className={styles.panel}>
-        <div className={styles.title}>Cookies & Analyse</div>
+    <div className={styles.overlay} data-cookie-banner="1">
+      <div className={styles.panel} role="dialog" aria-modal="true" aria-label="Cookie Einwilligung">
+        <div className={styles.title}>Cookies & Statistik</div>
         <p className={styles.text}>
-          Wir verwenden notwendige Cookies für den Betrieb. Mit deiner Zustimmung nutzen wir zusätzlich
-          Analyse-Cookies (Google Analytics), um bellu.ch zu verbessern.
+          Wir verwenden Cookies für anonyme Statistik (Google Analytics). Du kannst zustimmen oder ablehnen.
         </p>
 
         <div className={styles.actions}>
@@ -68,12 +50,12 @@ export default function CookieConsentBanner() {
             Ablehnen
           </button>
           <button className={styles.primary} onClick={accept}>
-            Akzeptieren
+            Erlauben
           </button>
         </div>
 
         <p className={styles.hint}>
-          Tipp: Wir können später im Footer einen Link „Cookie-Einstellungen“ einbauen, um die Wahl zu ändern.
+          Hinweis: Du kannst deine Entscheidung jederzeit ändern, indem du den Browser-Speicher löschst.
         </p>
       </div>
     </div>
