@@ -20,12 +20,9 @@ export default function GoogleAnalytics({ gaId }: { gaId: string }) {
           function gtag(){dataLayer.push(arguments);}
           window.gtag = gtag;
 
-          // optional: DebugView nur in Dev
           ${isDev ? "gtag('set','debug_mode',true);" : ""}
 
-          // Falls du Consent default NICHT mehr im layout setzt,
-          // kannst du das hier drin lassen. Wenn du es im layout schon hast:
-          // ist doppelt ok (überschreibt nur nochmal "denied").
+          // Consent default: denied (vor config!)
           gtag('consent', 'default', {
             analytics_storage: 'denied',
             ad_storage: 'denied',
@@ -35,7 +32,7 @@ export default function GoogleAnalytics({ gaId }: { gaId: string }) {
 
           gtag('js', new Date());
 
-          // Sauber: kein automatischer page_view vor Consent
+          // Kein automatischer page_view vor Consent
           gtag('config', '${gaId}', {
             anonymize_ip: true,
             send_page_view: false

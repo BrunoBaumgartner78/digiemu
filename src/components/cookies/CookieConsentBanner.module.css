@@ -1,43 +1,44 @@
-.overlay {
+.wrap {
   position: fixed;
   inset: 0;
-  z-index: 2147483647;
-
-  background: rgba(10, 14, 20, 0.55);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-
+  z-index: 999999;
   display: grid;
-  place-items: center;
-  padding: 18px;
+  place-items: end center;
+  padding: 16px;
+
+  background: rgba(10, 14, 20, 0.35);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 .panel {
   width: min(720px, 100%);
   border-radius: 22px;
-  padding: 18px 18px 16px;
+  padding: 16px 16px 14px;
 
-  /* neumorph glass */
   background: rgba(255, 255, 255, 0.10);
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  box-shadow:
-    0 18px 70px rgba(0, 0, 0, 0.45),
-    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.28);
 
   color: rgba(255, 255, 255, 0.92);
 }
 
+.head {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
 .title {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 750;
   letter-spacing: 0.2px;
-  margin-bottom: 8px;
 }
 
 .text {
-  margin: 0 0 14px;
+  font-size: 13px;
   line-height: 1.45;
-  color: rgba(255, 255, 255, 0.86);
+  color: rgba(255, 255, 255, 0.82);
 }
 
 .actions {
@@ -54,16 +55,13 @@
   padding: 10px 14px;
   font-weight: 700;
   cursor: pointer;
-  transition: transform 0.08s ease, filter 0.12s ease;
+  transition: transform 120ms ease, filter 120ms ease;
 }
 
 .primary:hover,
 .secondary:hover {
+  transform: translateY(-1px);
   filter: brightness(1.05);
-}
-.primary:active,
-.secondary:active {
-  transform: translateY(1px);
 }
 
 .primary {
@@ -74,11 +72,15 @@
 .secondary {
   color: rgba(255, 255, 255, 0.92);
   background: rgba(255, 255, 255, 0.14);
-  border: 1px solid rgba(255, 255, 255, 0.20);
+  border: 1px solid rgba(255, 255, 255, 0.22);
 }
 
-.hint {
-  margin: 10px 0 0;
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.72);
+@media (max-width: 420px) {
+  .actions {
+    justify-content: stretch;
+  }
+  .primary,
+  .secondary {
+    flex: 1;
+  }
 }
