@@ -42,26 +42,28 @@ export default function CookieConsentBanner() {
     setVisible(false);
   };
 
-  return createPortal(
-    <div className={styles.overlay} data-cookie-banner="1">
-      <div className={styles.panel}>
-        <div className={styles.title}>Cookies & Statistik</div>
-        <p className={styles.text}>
-          Wir verwenden Cookies für anonyme Statistik (Google Analytics).
-        </p>
+ return createPortal(
+  <div className={styles.overlay} data-cookie-banner="1">
+    <div className={styles.panel}>
+      <div className={styles.title}>Cookies & Statistik</div>
+      <p className={styles.text}>
+        Wir verwenden Cookies für anonyme Statistik (Google Analytics).
+      </p>
 
-        <div className={styles.actions}>
-          <button className={styles.secondary} onClick={onDeny}>
-            Ablehnen
-          </button>
-          <button className={styles.primary} onClick={onAllow}>
-            Erlauben
-          </button>
-        </div>
-
-        <p className={styles.hint}>Du kannst die Entscheidung jederzeit im Browser löschen.</p>
+      <div className={styles.actions}>
+        <button className={styles.secondary} onClick={onDeny}>
+          Ablehnen
+        </button>
+        <button className={styles.primary} onClick={onAllow}>
+          Erlauben
+        </button>
       </div>
-    </div>,
-    document.body
-  );
+
+      <p className={styles.hint}>
+        Du kannst die Entscheidung jederzeit im Browser löschen.
+      </p>
+    </div>
+  </div>,
+  document.body
+);
 }

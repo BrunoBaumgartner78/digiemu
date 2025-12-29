@@ -1,82 +1,84 @@
-/* Neumorph / Glass – passt zu deinem Look */
-.bar {
-  position: fixed;
-  left: 16px;
-  right: 16px;
-  bottom: 16px;
-  z-index: 999999;
-  border-radius: 22px;
-  padding: 14px 14px;
-  display: flex;
-  gap: 14px;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-
-  background: rgba(255, 255, 255, 0.55);
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-
-  box-shadow:
-    10px 10px 22px rgba(163, 177, 198, 0.55),
-    -10px -10px 22px rgba(255, 255, 255, 0.9);
-}
-
-.text {
-  color: rgba(17, 17, 17, 0.82);
-  font-size: 14px;
-  line-height: 1.35;
-  max-width: 64ch;
-}
-
-.actions {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-
-.btn {
-  border: 0;
-  border-radius: 16px;
-  padding: 10px 14px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: transform 0.08s ease, filter 0.15s ease;
-}
-
-.btn:active {
-  transform: translateY(1px);
-}
-
-.allow {
-  background: rgba(255, 255, 255, 0.75);
-  color: rgba(17, 17, 17, 0.9);
-  box-shadow:
-    6px 6px 14px rgba(163, 177, 198, 0.55),
-    -6px -6px 14px rgba(255, 255, 255, 0.9);
-}
-
-.deny {
-  background: rgba(255, 255, 255, 0.35);
-  color: rgba(17, 17, 17, 0.75);
-  border: 1px solid rgba(0, 0, 0, 0.06);
-}
-
-@media (max-width: 520px) {
-  .bar { left: 12px; right: 12px; bottom: 12px; }
-  .actions { width: 100%; justify-content: flex-end; }
-}
-
 .overlay {
   position: fixed;
   inset: 0;
-  z-index: 2147483647; /* wichtig */
-  background: rgba(10, 14, 20, 0.45);
+  z-index: 2147483647;
+
+  background: rgba(10, 14, 20, 0.55);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
+
   display: grid;
   place-items: center;
   padding: 18px;
 }
 
+.panel {
+  width: min(720px, 100%);
+  border-radius: 22px;
+  padding: 18px 18px 16px;
+
+  /* neumorph glass */
+  background: rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow:
+    0 18px 70px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 750;
+  letter-spacing: 0.2px;
+  margin-bottom: 8px;
+}
+
+.text {
+  margin: 0 0 14px;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.86);
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.primary,
+.secondary {
+  border: 0;
+  border-radius: 14px;
+  padding: 10px 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.08s ease, filter 0.12s ease;
+}
+
+.primary:hover,
+.secondary:hover {
+  filter: brightness(1.05);
+}
+.primary:active,
+.secondary:active {
+  transform: translateY(1px);
+}
+
+.primary {
+  color: #0b0d12;
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.secondary {
+  color: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.20);
+}
+
+.hint {
+  margin: 10px 0 0;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.72);
+}
