@@ -1,62 +1,65 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import styles from "./CookieConsentBanner.module.css";
-
-declare global {
-  interface Window {
-    gtag?: (...args: any[]) => void;
-  }
-}
+import { analyticsConfig } from "@/lib/analytics/config";
 
 export default function CookieConsentBanner() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem("analytics_consent");
-      setVisible(stored === null);
-      console.log("[CookieConsentBanner] mounted, stored =", stored);
-    } catch {
-      // Falls localStorage geblockt ist: zeig Banner trotzdem
-      setVisible(true);
-    }
+    const key = analyticsConfig.consent.storageKey;
+    const stored = localStorage.getItem(key);
+    if (stored === null) setVisible(true);
   }, []);
 
   if (!visible) return null;
 
-  const accept = () => {
-    localStorage.setItem("analytics_consent", "true");
-    window.gtag?.("consent", "update", { analytics_storage: "granted" });
+  const onAllow = () => {
+    const key = analyticsConfig.consent.storageKey;
+
+    localStorage.setItem(key, "true");
+
+    window.gtag?.("consent", "update", {
+      analytics_storage: "granted",
+    });
+
+    // ✅ YAML-gesteuert: events.onGrant
+    for (const ev of analyticsConfig.events.onGrant) {
+      window.gtag?.("event", ev);
+    }
+
     setVisible(false);
   };
 
-  const decline = () => {
-    localStorage.setItem("analytics_consent", "false");
-    window.gtag?.("consent", "update", { analytics_storage: "denied" });
+  const onDeny = () => {
+    const key = analyticsConfig.consent.storageKey;
+    localStorage.setItem(key, "false");
     setVisible(false);
   };
 
   return (
-    <div className={styles.overlay} data-cookie-banner="1">
-      <div className={styles.panel} role="dialog" aria-modal="true" aria-label="Cookie Einwilligung">
-        <div className={styles.title}>Cookies & Statistik</div>
-        <p className={styles.text}>
-          Wir verwenden Cookies für anonyme Statistik (Google Analytics). Du kannst zustimmen oder ablehnen.
-        </p>
+    <div
+      data-cookie-banner="1"
+      className="fixed bottom-0 left-0 w-full z-[999999] bg-[#232323] text-white p-4 flex flex-col md:flex-row items-center justify-between shadow"
+    >
+      <span className="mb-2 md:mb-0">
+        Wir verwenden Cookies für anonyme Statistik (Google Analytics).
+      </span>
 
-        <div className={styles.actions}>
-          <button className={styles.secondary} onClick={decline}>
-            Ablehnen
-          </button>
-          <button className={styles.primary} onClick={accept}>
-            Erlauben
-          </button>
-        </div>
+      <div className="flex gap-2">
+        <button
+          className="px-4 py-2 rounded bg-[#39FF14] text-[#1A1A1A] font-semibold"
+          onClick={onAllow}
+        >
+          Erlauben
+        </button>
 
-        <p className={styles.hint}>
-          Hinweis: Du kannst deine Entscheidung jederzeit ändern, indem du den Browser-Speicher löschst.
-        </p>
+        <button
+          className="px-4 py-2 rounded border border-[#39FF14] text-white font-semibold"
+          onClick={onDeny}
+        >
+          Ablehnen
+        </button>
       </div>
     </div>
   );
