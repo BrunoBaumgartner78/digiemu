@@ -3,7 +3,7 @@ import "./globals.css";
 import Script from "next/script";
 import { Providers } from "./providers";
 import { MainHeader } from "@/components/layout/MainHeader";
-import CookieConsentBanner from "@/components/cookies/CookieConsentBanner";
+import ConsentBanner from "@/components/ConsentBanner";
 import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
 import { siteMetadata } from "@/lib/seo/metadata";   // ✅ YAML -> Next metadata
 
@@ -38,7 +38,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </div>
         </Providers>
 
-        <CookieConsentBanner />
+        <ConsentBanner />
         {gaId && <GoogleAnalytics gaId={gaId} />}
       </body>
     </html>
