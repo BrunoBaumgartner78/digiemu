@@ -1,5 +1,3 @@
-
-
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { prisma } from "@/lib/prisma";
@@ -12,6 +10,15 @@ export const dynamic = "force-dynamic";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
   apiVersion: "2025-11-17.clover" as any,
 });
+
+// Option B: Debug-Logger (nur wenn explizit via Env-Flag aktiviert)
+const isDebug = process.env.DEBUG_STRIPE_WEBHOOK === "1";
+const dbg = (...args: any[]) => {
+  if (isDebug) console.log(...args);
+};
+const dbgWarn = (...args: any[]) => {
+  if (isDebug) console.warn(...args);
+};
 
 export async function POST(req: NextRequest) {
   const sig = req.headers.get("stripe-signature");
@@ -52,7 +59,10 @@ export async function POST(req: NextRequest) {
         metadata.email;
 
       if (!productId) {
-        console.error("❌ Missing productId in session metadata for session:", stripeSessionId);
+        console.error(
+          "❌ Missing productId in session metadata for session:",
+          stripeSessionId
+        );
         return NextResponse.json({ received: true }, { status: 200 });
       }
 
@@ -62,8 +72,8 @@ export async function POST(req: NextRequest) {
       }
 
       if (!digitalConsent) {
-        console.warn("❌ Missing digitalConsent=true in session metadata:", stripeSessionId);
-        // Continue without failing Stripe; log for manual review
+        // nur warnen im Debug-Modus (sonst Spam). Fehler wird nicht an Stripe zurückgegeben.
+        dbgWarn("⚠️ Missing digitalConsent=true in session metadata:", stripeSessionId);
       }
 
       // Ensure buyer exists
@@ -107,10 +117,6 @@ export async function POST(req: NextRequest) {
           select: { id: true, status: true, buyerId: true, productId: true },
         });
 
-        // Determine if we should count this sale now:
-        // - no existing order -> yes
-        // - existing order but not PAID -> yes (status transition)
-        // - existing order already PAID -> NO (idempotent)
         const shouldCountSale = !existing || existing.status !== "PAID";
 
         const order = await tx.order.upsert({
@@ -178,7 +184,6 @@ export async function POST(req: NextRequest) {
             where: { id: vendorProfileId },
             data: {
               totalSales: { increment: 1 },
-              // ✅ Vendor revenue should be vendorEarnings (80%), not gross amount
               totalRevenueCents: { increment: vendorEarnings },
               activeProductsCount,
               lastSaleAt: new Date(),
@@ -195,21 +200,26 @@ export async function POST(req: NextRequest) {
         where: { action: emailKey },
         select: { id: true },
       });
+
       if (alreadySent) {
-        console.log("📧 purchase email already sent for session:", stripeSessionId);
+        dbg("📧 purchase email already sent for session:", stripeSessionId);
       }
 
       // Send confirmation email once (idempotent)
       if (!alreadySent) {
         try {
           const base = process.env.APP_BASE_URL?.replace(/\/+$/, "") ?? "";
-          const downloadUrl = base ? `${base}/download/${txResult.orderId}` : `/download/${txResult.orderId}`;
+          const downloadUrl = base
+            ? `${base}/download/${txResult.orderId}`
+            : `/download/${txResult.orderId}`;
+
           await sendPurchaseEmail(email, {
             orderId: txResult.orderId,
             productTitle: product.title ?? "Dein Produkt",
             downloadUrl,
             amountCents: amount,
           });
+
           await prisma.auditLog.create({
             data: {
               actorId: buyer.id,

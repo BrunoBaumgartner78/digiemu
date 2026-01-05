@@ -20,6 +20,12 @@ const mainLinks = [
   { href: "/help", label: "Hilfe" },
 ];
 
+// Option B: Debug-Logger (Client) – nur wenn explizit via NEXT_PUBLIC Flag aktiviert
+const isDebug = process.env.NEXT_PUBLIC_DEBUG_MAINHEADER === "1";
+const dbg = (...args: any[]) => {
+  if (isDebug) console.log(...args);
+};
+
 export function MainHeader() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -34,15 +40,9 @@ export function MainHeader() {
   const isBuyer = role === "BUYER";
 
   useEffect(() => {
-    if (process.env.NODE_ENV !== "production") {
-      console.log("[MainHeader] role check", {
-        status,
-        role,
-        isAdmin,
-        user: session?.user,
-      });
-    }
-  }, [status, role, isAdmin, session?.user]);
+    // bewusst ohne session.user, damit keine sensiblen Daten im Browser-Log landen
+    dbg("[MainHeader] role check", { status, role, isAdmin, isVendor, isBuyer });
+  }, [status, role, isAdmin, isVendor, isBuyer]);
 
   useEffect(() => {
     const prevOverflow = document.body.style.overflow;
@@ -90,7 +90,9 @@ export function MainHeader() {
 
         <div className="header-actions">
           {isAuthLoading ? (
-            <span className="nav-pill nav-pill-ghost" aria-label="Lade Session…">…</span>
+            <span className="nav-pill nav-pill-ghost" aria-label="Lade Session…">
+              …
+            </span>
           ) : isLoggedIn ? (
             <>
               <Link
@@ -190,7 +192,11 @@ export function MainHeader() {
 
       {mobileOpen && (
         <div className="mobile-nav-wrapper" role="dialog" aria-modal="true">
-          <button className="mobile-nav-backdrop" onClick={() => setMobileOpen(false)} aria-label="Menü schließen" />
+          <button
+            className="mobile-nav-backdrop"
+            onClick={() => setMobileOpen(false)}
+            aria-label="Menü schließen"
+          />
 
           <div className="mobile-nav-card">
             <div className="mobile-nav-header">
@@ -218,7 +224,9 @@ export function MainHeader() {
               <div className="mobile-nav-divider" />
 
               {isAuthLoading ? (
-                <span className="mobile-nav-pill" aria-label="Lade Session…">…</span>
+                <span className="mobile-nav-pill" aria-label="Lade Session…">
+                  …
+                </span>
               ) : isLoggedIn ? (
                 <>
                   {isVendor && (
@@ -292,10 +300,18 @@ export function MainHeader() {
                 </>
               ) : (
                 <>
-                  <Link href="/login" onClick={() => setMobileOpen(false)} className={"mobile-nav-pill" + (isActive("/login") ? " mobile-nav-pill-active" : "")}>
+                  <Link
+                    href="/login"
+                    onClick={() => setMobileOpen(false)}
+                    className={"mobile-nav-pill" + (isActive("/login") ? " mobile-nav-pill-active" : "")}
+                  >
                     Login
                   </Link>
-                  <Link href="/register" onClick={() => setMobileOpen(false)} className={"mobile-nav-pill" + (isActive("/register") ? " mobile-nav-pill-active" : "")}>
+                  <Link
+                    href="/register"
+                    onClick={() => setMobileOpen(false)}
+                    className={"mobile-nav-pill" + (isActive("/register") ? " mobile-nav-pill-active" : "")}
+                  >
                     Konto erstellen
                   </Link>
                 </>
@@ -307,4 +323,3 @@ export function MainHeader() {
     </header>
   );
 }
-      

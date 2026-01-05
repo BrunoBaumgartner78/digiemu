@@ -70,6 +70,10 @@ model VendorProfile {
   facebookUrl         String?   @db.VarChar(500)
   slug                String?   @unique
   isPublic            Boolean   @default(true)
+
+  // ✅ NEU: Vendor muss zuerst durch Admin freigeschaltet werden
+  status              VendorStatus @default(PENDING)
+
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
   ratingAvg           Float?
@@ -82,6 +86,7 @@ model VendorProfile {
   products            Product[] @relation("VendorProfileProducts")
   user                User      @relation(fields: [userId], references: [id])
 }
+
 
 model BuyerProfile {
   id          String   @id @default(cuid())
@@ -247,4 +252,12 @@ model PasswordReset {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+
+enum VendorStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SUSPENDED
 }

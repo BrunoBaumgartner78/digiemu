@@ -56,62 +56,81 @@ export const authOptions: NextAuthOptions = {
 
   callbacks: {
     async jwt({ token, user }) {
-      // ✅ 1) Beim Login übernehmen
-      if (user) {
-        token.uid = (user as any).id;
-        token.role = (user as any).role;
-        token.email = (user as any).email ?? token.email;
-      }
-
-      // ✅ 2) uid/role nachziehen wenn nötig
-      if (!token.uid && token.email) {
-        const dbUser = await prisma.user.findUnique({
-          where: { email: String(token.email) },
-          select: { id: true, role: true, isBlocked: true },
-        });
-
-        if (!dbUser) {
-          // user deleted -> invalidate
-          return {} as any;
-        }
-        if (dbUser.isBlocked) {
-          // ✅ invalidate token if blocked later
-          return {} as any;
+      try {
+        // 1) Beim Login übernehmen
+        if (user) {
+          (token as any).uid = (user as any).id;
+          (token as any).role = (user as any).role;
+          token.email = (user as any).email ?? token.email;
+          (token as any).invalid = false;
+          (token as any).dbError = false;
+          return token;
         }
 
-        token.uid = dbUser.id;
-        token.role = dbUser.role;
+        // 2) Wenn wir keine uid haben, versuchen wir sie nachzuziehen
+        if (!(token as any).uid && token.email) {
+          const dbUser = await prisma.user.findUnique({
+            where: { email: String(token.email) },
+            select: { id: true, role: true, isBlocked: true },
+          });
+
+          if (!dbUser || dbUser.isBlocked) {
+            (token as any).invalid = true;
+            return token;
+          }
+
+          (token as any).uid = dbUser.id;
+          (token as any).role = dbUser.role;
+          (token as any).invalid = false;
+          (token as any).dbError = false;
+          return token;
+        }
+
+        // 3) Wenn uid vorhanden -> block-status prüfen
+        if ((token as any).uid) {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: String((token as any).uid) },
+            select: { isBlocked: true, role: true },
+          });
+
+          if (!dbUser || dbUser.isBlocked) {
+            (token as any).invalid = true;
+            return token;
+          }
+
+          // keep role fresh
+          (token as any).role = dbUser.role;
+          (token as any).invalid = false;
+          (token as any).dbError = false;
+        }
+
+        return token;
+      } catch (e) {
+        // ✅ Prisma/DB Problem -> Token nicht zerstören, nur markieren
+        console.error("[NEXTAUTH_JWT_DB_ERROR]", e);
+        (token as any).dbError = true;
         return token;
       }
-
-      // ✅ 3) WICHTIG: wenn uid vorhanden → block-status prüfen
-      if (token.uid) {
-        const dbUser = await prisma.user.findUnique({
-          where: { id: String(token.uid) },
-          select: { isBlocked: true, role: true },
-        });
-
-        if (!dbUser) return {} as any;
-        if (dbUser.isBlocked) return {} as any;
-
-        // keep role fresh
-        token.role = dbUser.role;
-      }
-
-      return token;
     },
 
     async session({ session, token }) {
-      // ✅ Wenn Token invalidiert wurde -> keine Session
-      if (!(token as any)?.uid) {
-        return null as any;
+      // ✅ niemals "null" zurückgeben
+      const invalid = (token as any)?.invalid === true;
+      const dbError = (token as any)?.dbError === true;
+
+      if (!session) return { user: null } as any;
+
+      // ✅ wenn Token ungültig ODER DB hängt: saubere "leere" Session zurückgeben
+      if (invalid || dbError || !(token as any)?.uid) {
+        return { ...session, user: null } as any;
       }
 
-      if (session.user) {
-        (session.user as any).id = (token as any).uid || "";
-        (session.user as any).role = (token as any).role;
-      }
-      return session;
+      // user anreichern
+      const u = (session.user ?? {}) as any;
+      u.id = (token as any).uid || "";
+      u.role = (token as any).role;
+
+      return { ...session, user: u } as any;
     },
   },
 

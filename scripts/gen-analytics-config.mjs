@@ -15,4 +15,6 @@ export const analyticsConfig = ${JSON.stringify(cfg, null, 2)} as const;
 fs.mkdirSync(path.dirname(outPath), { recursive: true });
 fs.writeFileSync(outPath, content, "utf8");
 
-console.log("✅ generated:", outPath);
+if (process.env.DEBUG_ANALYTICS_CONFIG === "1") {
+  console.log("✅ generated:", outPath);
+}

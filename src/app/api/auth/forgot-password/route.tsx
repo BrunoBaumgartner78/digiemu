@@ -2,9 +2,16 @@
 import { prisma } from "@/lib/prisma";
 import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
+import { sendPasswordResetEmail } from "@/lib/email";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+// Option B: Debug-Logger (Server) – nur wenn explizit aktiviert
+const isDebug = process.env.DEBUG_AUTH_EMAIL === "1";
+const dbg = (...args: any[]) => {
+  if (isDebug) console.log(...args);
+};
 
 export async function POST(req: Request) {
   const form = await req.formData();
@@ -19,7 +26,7 @@ export async function POST(req: Request) {
     return NextResponse.redirect(redirectUrl);
   }
 
-  const user = await prisma.user.findUnique({ where: { email } });
+  const user = await prisma.user.findUnique({ where: { email }, select: { id: true, email: true } });
   if (!user) {
     return NextResponse.redirect(redirectUrl);
   }
@@ -37,9 +44,21 @@ export async function POST(req: Request) {
     },
   });
 
-  // ✅ Reset-Link:
-  // `${process.env.NEXT_PUBLIC_APP_URL ?? "https://bellu.ch"}/reset-password/${token}`
-  // -> hier Mail senden
+  // ✅ Reset-Link bauen
+  const base =
+    (process.env.APP_BASE_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? "").replace(/\/+$/, "") ||
+    "https://bellu.ch";
+
+  const resetUrl = `${base}/reset-password/${token}`;
+
+  // ✅ Mail senden (best effort, aber im Zweifel trotzdem neutral redirecten)
+  try {
+    await sendPasswordResetEmail(user.email, { resetUrl, expiresMinutes: 30 });
+    dbg("[forgot-password] reset email sent", { email: user.email });
+  } catch (e: any) {
+    // bewusst kein hard fail -> keine Info-Leaks
+    console.error("[forgot-password] failed to send reset email:", e?.message ?? e);
+  }
 
   return NextResponse.redirect(redirectUrl);
 }

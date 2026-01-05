@@ -37,10 +37,8 @@ function buildQuery(params: {
   const sp = new URLSearchParams();
 
   if (params.q && params.q.trim().length > 0) sp.set("q", params.q.trim());
-  if (params.vendor && params.vendor.trim().length > 0)
-    sp.set("vendor", params.vendor.trim());
-  if (params.status && params.status.trim().length > 0)
-    sp.set("status", params.status.trim());
+  if (params.vendor && params.vendor.trim().length > 0) sp.set("vendor", params.vendor.trim());
+  if (params.status && params.status.trim().length > 0) sp.set("status", params.status.trim());
   if (params.page !== undefined) sp.set("page", String(params.page));
 
   return sp.toString();
@@ -66,10 +64,15 @@ function getPageItems(current: number, total: number) {
   return items;
 }
 
-export default async function AdminProductsPage({
-  searchParams,
-}: AdminProductsPageProps) {
-  console.log("ADMIN_PRODUCTS_RENDER", new Date().toISOString(), { searchParams });
+// Option B: Debug-Logger (nur wenn explizit via Env-Flag aktiviert)
+const isDebug = process.env.DEBUG_ADMIN_PRODUCTS === "1";
+const dbg = (...args: any[]) => {
+  if (isDebug) console.log(...args);
+};
+
+export default async function AdminProductsPage({ searchParams }: AdminProductsPageProps) {
+  dbg("ADMIN_PRODUCTS_RENDER", new Date().toISOString(), { searchParams });
+
   // Auth / Role check
   const session = await getServerSession(authOptions);
   if (!session) redirect("/login");
@@ -77,13 +80,10 @@ export default async function AdminProductsPage({
   if (user.role !== "ADMIN") redirect("/dashboard");
 
   const resolved = await Promise.resolve(searchParams ?? {});
-  const first = (v: any) => (Array.isArray(v) ? v[0] : v);
 
-const search = (first(resolved.q) ?? "").toString();
-const vendorFilter = (first(resolved.vendor) ?? "").toString();
-const statusFilter = (first(resolved.status) ?? "").toString();
-
-
+  const search = (first(resolved.q) ?? "").toString();
+  const vendorFilter = (first(resolved.vendor) ?? "").toString();
+  const statusFilter = (first(resolved.status) ?? "").toString();
 
   const requestedPage = parseInt((first(resolved.page) ?? "1").toString(), 10);
   const page = Number.isFinite(requestedPage) && requestedPage > 0 ? requestedPage : 1;
@@ -104,13 +104,13 @@ const statusFilter = (first(resolved.status) ?? "").toString();
     where.vendorId = vendorFilter.trim();
   }
 
- if (statusFilter.trim().length > 0) {
-  where.status = { equals: statusFilter.trim(), mode: "insensitive" };
-}
+  if (statusFilter.trim().length > 0) {
+    // Wenn status ein Prisma-Enum ist: where.status = statusFilter.trim()
+    // (Kein "mode" bei equals)
+    where.status = statusFilter.trim();
+  }
 
-
-  // Debug (remove later)
-  console.log("ADMIN_PRODUCTS_FILTER", { search, vendorFilter, statusFilter, where });
+  dbg("ADMIN_PRODUCTS_FILTER", { search, vendorFilter, statusFilter, where });
 
   // total zuerst -> totalPages berechnen
   const totalProducts = await prisma.product.count({ where });
