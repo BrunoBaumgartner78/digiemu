@@ -1,103 +1,89 @@
-export const runtime = "nodejs";
-
 import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
-import { getTenantFromRequest } from "@/lib/tenants";
+import { requireTenant } from "@/lib/tenant-context";
+import { requireModeOr403 } from "@/lib/tenantModeGuard";
 
 export async function POST(req: Request) {
-  const tenantHit = getTenantFromRequest(req);
-  if (!tenantHit) {
-    return NextResponse.json({ error: "Unknown tenant" }, { status: 400 });
-  }
+  const { tenantKey, tenant } = await requireTenant(req);
 
-  const { tenant, key } = tenantHit;
+  // ✅ Step 10: Mode enforcement (Product creation / upload)
+  // NOTE: Apply the same guard to edit/delete routes too (product.update, product.delete).
+  const modeGate = requireModeOr403({
+    tenant,
+    allow: ["MARKETPLACE"],
+    feature: "product.create",
+  });
+  if (!modeGate.ok) return modeGate.res;
 
   const session = await getServerSession(auth);
-  const user = session?.user as any | undefined;
-  const userId = user?.id as string | undefined;
-
-  if (!userId) {
-    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
-  }
+  const userId = (session?.user as any)?.id as string | undefined;
+  if (!userId) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
 
   const vendorProfile = await prisma.vendorProfile.findUnique({
-    where: { userId },
+    where: { tenantKey_userId: { tenantKey, userId } },
     select: { id: true, status: true },
   });
 
-  if (!vendorProfile) {
-    return NextResponse.json({ error: "Vendor profile not found" }, { status: 403 });
-  }
+  if (!vendorProfile) return NextResponse.json({ error: "VendorProfile not found" }, { status: 403 });
+  if (vendorProfile.status !== "APPROVED") return NextResponse.json({ error: "Vendor not approved" }, { status: 403 });
 
-  if (vendorProfile.status !== "APPROVED") {
-    return NextResponse.json(
-      { error: "Vendor not approved", status: vendorProfile.status },
-      { status: 403 }
-    );
-  }
+  const body = await req.json().catch(() => ({} as any));
+  // Never trust tenantKey from client
+  if (body?.tenantKey) delete body.tenantKey;
 
-  const body = await req.json();
+  // Accept either `priceCents` OR `priceChf` from clients
+  const priceCents =
+    typeof body.priceCents === "number"
+      ? Math.round(body.priceCents)
+      : typeof body.priceChf === "number"
+      ? Math.round(body.priceChf * 100)
+      : 0;
 
-  const title = String(body?.title ?? "").trim();
-  const description = String(body?.description ?? "").trim();
-  const category = String(body?.category ?? "").trim();
-  const fileUrl = String(body?.fileUrl ?? "").trim();
-  const thumbnail = body?.thumbnail ? String(body.thumbnail) : null;
-
-  let priceCents: number;
-  if (typeof body?.priceCents === "number") {
-    priceCents = Math.max(0, Math.floor(body.priceCents));
-  } else if (typeof body?.price === "number") {
-    priceCents = Math.max(0, Math.floor(body.price * 100));
-  } else {
-    priceCents = 0;
-  }
-
-  if (!title || !description || !category || !fileUrl) {
-    return NextResponse.json(
-      { error: "Missing fields", required: ["title", "description", "category", "fileUrl"] },
-      { status: 400 }
-    );
-  }
-
-  // --- YAML business rules ---
   if (tenant.catalogMode === "FREE_ONLY" && priceCents > 0) {
-    return NextResponse.json(
-      { error: "Only free products allowed", tenant: key },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "Only free products allowed" }, { status: 400 });
   }
-
   if (tenant.catalogMode === "PAID_ONLY" && priceCents === 0) {
-    return NextResponse.json(
-      { error: "Only paid products allowed", tenant: key },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "Only paid products allowed" }, { status: 400 });
   }
-
   if (tenant.payments === "OFF" && priceCents > 0) {
-    return NextResponse.json(
-      { error: "Payments are disabled for this tenant", tenant: key },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "Payments are disabled" }, { status: 400 });
   }
 
+  // Basic validation
+  if (!String(body.title ?? "").trim()) {
+    return NextResponse.json({ error: "Missing title" }, { status: 400 });
+  }
+  if (!String(body.description ?? "").trim()) {
+    return NextResponse.json({ error: "Missing description" }, { status: 400 });
+  }
+  const fileUrlCandidate = String(body.fileUrl ?? body.downloadUrl ?? "").trim();
+  if (!fileUrlCandidate) {
+    return NextResponse.json({ error: "Missing fileUrl/downloadUrl" }, { status: 400 });
+  }
+
+  // IMPORTANT: vendorProfileId must be taken from the approved vendorProfile (never from request body)
   const product = await prisma.product.create({
     data: {
-      title,
-      description,
-      priceCents,
-      fileUrl,
-      thumbnail,
-      category,
+      tenantKey,
       vendorId: userId,
       vendorProfileId: vendorProfile.id,
-      // status bleibt default "DRAFT"
+
+      title: String(body.title ?? "").trim(),
+      description: String(body.description ?? "").trim(),
+      priceCents,
+
+      fileUrl: String(body.fileUrl ?? body.downloadUrl ?? "").trim(),
+      thumbnail: body.thumbnailUrl ?? body.thumbnail ?? null,
+      category: String(body.category ?? "other").trim(),
+
+      // If marketplace enforces ACTIVE, default to ACTIVE; else keep DRAFT if you want manual publish
+      status: body.status ?? "ACTIVE",
+      isActive: true,
     },
     select: { id: true },
   });
 
-  return NextResponse.json({ ok: true, productId: product.id, tenant: key });
+  return NextResponse.json({ status: "CREATED", productId: product.id });
 }

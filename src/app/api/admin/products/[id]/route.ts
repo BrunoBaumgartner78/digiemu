@@ -7,71 +7,81 @@ import { prisma } from "@/lib/prisma";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+async function getTenantKeySafe(): Promise<string> {
+  try {
+    const mod = await import("@/lib/tenant-context");
+    const fn = (mod as any)?.currentTenant;
+    if (typeof fn === "function") {
+      const t = await fn();
+      const key = (t?.key || t?.tenantKey || "").toString().trim();
+      return key || "DEFAULT";
+    }
+  } catch {
+    // ignore
+  }
+  return "DEFAULT";
+}
+
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   const session = await getServerSession(authOptions);
-  if (!session) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
+  if (!session) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+
   const user = session.user as any;
-  if (user.role !== "ADMIN") {
-    return NextResponse.json({ message: "Forbidden" }, { status: 403 });
-  }
+  if (user.role !== "ADMIN") return NextResponse.json({ message: "Forbidden" }, { status: 403 });
+
+  const tenantKey = await getTenantKeySafe();
 
   const { id } = await Promise.resolve(params);
   const productId = String(id ?? "").trim();
-  if (!productId) {
-    return NextResponse.json({ message: "Missing product id" }, { status: 400 });
+  if (!productId) return NextResponse.json({ message: "Missing product id" }, { status: 400 });
+
+  // ✅ Tenant-Guard: Produkt muss zum aktuellen Tenant gehören
+  const existing = await prisma.product.findUnique({
+    where: { id: productId, tenantKey },
+    select: { id: true, tenantKey: true },
+  });
+
+  if (!existing) {
+    // 404 to avoid leaking info
+    return NextResponse.json({ message: "Not found" }, { status: 404 });
   }
 
   const body = await req.json().catch(() => null);
-  if (!body) {
-    return NextResponse.json({ message: "Invalid JSON" }, { status: 400 });
-  }
+  if (!body) return NextResponse.json({ message: "Invalid JSON" }, { status: 400 });
 
   const title = String(body.title ?? "").trim();
   const description = String(body.description ?? "").trim();
   const category = String(body.category ?? "other").trim() || "other";
   const status = String(body.status ?? "").trim();
-  const thumbnail =
-    body.thumbnail === null ? null : String(body.thumbnail ?? "").trim() || null;
+  const thumbnail = body.thumbnail === null ? null : String(body.thumbnail ?? "").trim() || null;
   const moderationNote =
-    body.moderationNote === null
-      ? null
-      : String(body.moderationNote ?? "").trim() || null;
+    body.moderationNote === null ? null : String(body.moderationNote ?? "").trim() || null;
 
   const priceCents = Number(body.priceCents);
 
   // ✅ Mindestpreis 1 CHF
   if (!Number.isFinite(priceCents) || priceCents < 100) {
-    return NextResponse.json(
-      { message: "Mindestpreis ist 1.00 CHF." },
-      { status: 400 }
-    );
+    return NextResponse.json({ message: "Mindestpreis ist 1.00 CHF." }, { status: 400 });
   }
 
   if (!title || !description) {
-    return NextResponse.json(
-      { message: "Titel und Beschreibung sind erforderlich." },
-      { status: 400 }
-    );
+    return NextResponse.json({ message: "Titel und Beschreibung sind erforderlich." }, { status: 400 });
   }
 
   if (!["ACTIVE", "DRAFT", "BLOCKED"].includes(status)) {
-    return NextResponse.json(
-      { message: "Ungültiger Status." },
-      { status: 400 }
-    );
+    return NextResponse.json({ message: "Ungültiger Status." }, { status: 400 });
   }
 
   const isActive = Boolean(body.isActive);
   const finalIsActive = status === "BLOCKED" ? false : isActive;
 
   const updated = await prisma.product.update({
-    where: { id: productId },
+    where: { id: productId, tenantKey },
     data: {
+      tenantKey,
       title,
       description,
       category,
@@ -81,7 +91,7 @@ export async function PATCH(
       isActive: finalIsActive,
       moderationNote,
     },
-    select: { id: true, status: true, isActive: true },
+    select: { id: true, status: true, isActive: true, tenantKey: true },
   });
 
   return NextResponse.json({ ok: true, product: updated });

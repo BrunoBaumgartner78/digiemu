@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { currentTenant } from "@/lib/tenant-context";
 
 export default async function RegisterVendorPage() {
   const session = await getServerSession(auth);
@@ -15,9 +16,10 @@ export default async function RegisterVendorPage() {
   const user = session.user as any;
   const userId = user.id;
 
-  // Prüfen, ob schon Vendor-Profil existiert
+  // Prüfen, ob schon Vendor-Profil existiert (tenant-scoped)
+  const { tenantKey } = await currentTenant();
   const existingVendor = await prisma.vendorProfile.findUnique({
-    where: { userId },
+    where: { tenantKey_userId: { tenantKey, userId } as any },
   });
 
   // ─────────────────────────────────────────────

@@ -143,7 +143,10 @@ export default function NewProductPage() {
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data?.message || "Produkt konnte nicht angelegt werden.");
+        throw new Error(
+          data?.message ||
+            "Produkt konnte nicht angelegt werden. (Hinweis: VendorProfile muss existieren & für ACTIVE muss es APPROVED+public sein.)"
+        );
       }
 
       setStatusMessage("Produkt erfolgreich angelegt.");

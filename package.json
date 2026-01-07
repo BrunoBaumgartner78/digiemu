@@ -3,9 +3,20 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "tenantmode:preflight": "tsx scripts/tenantmode-preflight.ts",
+    "tenantmode:enum:recreate": "tsx scripts/tenantmode-enum-recreate.ts",
+    "tenant:preflight": "tsx scripts/tenant-enforce-preflight.ts",
+    "backfill:tenantkey": "tsx scripts/backfill-tenantkey.ts",
+    "tenantmode:migrate": "tsx scripts/tenantmode-migrate.ts",
+    "tenantmode:verify": "tsx scripts/tenantmode-verify.ts",
+    "check:tenants": "node scripts/check-tenants.mjs",
+    "preflight:tenantkey:duplicates": "node scripts/preflight-tenantkey-duplicates.mjs",
+    "check:tenantkey": "tsx scripts/tenantkey-preflight.ts",
+    "dedupe:tenantkey": "tsx scripts/tenantkey-dedupe.ts",
     "knip": "knip -c knip.config.js",
     "knip:prod": "knip -c knip.config.js --production",
     "dev:admin": "cross-env NEXT_PUBLIC_FEATURE_ADMIN=true next dev",
+    "backfill:vendorprofile": "tsx scripts/vendorprofile-backfill.ts",
     "dev:community": "cross-env NEXT_PUBLIC_FEATURE_COMMUNITY=true next dev",
     "dev:allfeatures": "cross-env NEXT_PUBLIC_FEATURE_ADMIN=true NEXT_PUBLIC_FEATURE_COMMUNITY=true NEXT_PUBLIC_FEATURE_ANALYTICS=true next dev",
     "lint": "next lint",
@@ -13,8 +24,13 @@
     "build:local": "prisma generate && next build",
     "build:win": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"taskkill /F /IM node.exe /T 2>$null; taskkill /F /IM prisma.exe /T 2>$null; if (Test-Path .next\\dev\\lock) { Remove-Item .next\\dev\\lock -Force }; if (Test-Path node_modules\\.prisma\\client) { Remove-Item node_modules\\.prisma\\client -Recurse -Force }; npx prisma generate; npm run build\"",
     "dev": "next dev",
-    "build": "prisma generate && next build",
-    "start": "next start"
+    "build": "prisma generate && npm run tenant:preflight && next build",
+    "start": "next start",
+    "marketplace:routing-check": "powershell -ExecutionPolicy Bypass -File scripts/check-marketplace-routing.ps1",
+    "smoke:marketplace": "node scripts/smoke-marketplace.mjs",
+    "smoke:admin": "node scripts/smoke-admin-breadcrumbs.mjs",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {
     "@auth/core": "^0.34.3",
@@ -54,11 +70,15 @@
     "knip": "^5.76.2",
     "markdown-link-check": "^3.14.2",
     "prisma": "^6.19.1",
+    "tsx": "^3.14.0",
     "typescript": "^5.9.3"
   },
   "overrides": {
     "react-server-dom-turbopack": "19.2.2",
     "react-server-dom-webpack": "19.2.2",
     "react-server-dom-parcel": "19.2.2"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   }
 }

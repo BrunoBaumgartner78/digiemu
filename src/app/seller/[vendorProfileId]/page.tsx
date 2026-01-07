@@ -3,6 +3,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { ProductCard } from "@/components/product/ProductCard";
+import { MARKETPLACE_TENANT_KEY } from "@/lib/marketplaceTenant";
+import { isPublicVendor } from "@/lib/vendors/visibility";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +24,6 @@ export default async function SellerPage(
   const { vendorProfileId } = await props.params;
   const id = String(vendorProfileId ?? "").trim();
   if (!id) notFound();
-
   let vp: any = null;
   try {
     vp = await prisma.vendorProfile.findUnique({
@@ -35,6 +36,7 @@ export default async function SellerPage(
         avatarUrl: true,
         bannerUrl: true,
         isPublic: true,
+        status: true,
         ratingAvg: true,
         ratingCount: true,
         totalSales: true,
@@ -65,7 +67,8 @@ export default async function SellerPage(
     );
   }
 
-  if (!vp || vp.isPublic !== true) notFound();
+  // Marketplace seller page must only surface public, approved vendor profiles
+  if (!vp || !isPublicVendor(vp)) notFound();
 
   const vendorName = vp.displayName ?? vp.user?.name ?? "Verkäufer";
 
@@ -98,14 +101,12 @@ export default async function SellerPage(
     ? new Intl.DateTimeFormat("de-CH", { dateStyle: "medium" }).format(lastSaleAt)
     : "—";
 
+  // Marketplace only: restrict to MARKETPLACE tenant and published products
   const products = await prisma.product.findMany({
     where: {
-      OR: [
-        { vendorProfileId: vp.id },
-        { vendorId: vp.userId },
-      ],
-      isActive: true,
-      status: "ACTIVE",
+      tenantKey: MARKETPLACE_TENANT_KEY,
+      vendorProfileId: vp.id,
+      status: "PUBLISHED",
       vendor: { isBlocked: false },
     },
     orderBy: { createdAt: "desc" },

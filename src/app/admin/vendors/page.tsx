@@ -92,20 +92,18 @@ export default async function AdminVendorsPage(props: { searchParams: Promise<Se
   const pageCount = Math.max(1, Math.ceil(totalCount / pageSize));
   const page = clamp(requestedPage, 1, pageCount);
 
-  const [vendors] = await Promise.all([
-    prisma.user.findMany({
-      where,
-      skip: (page - 1) * pageSize,
-      take: pageSize,
-      orderBy: { name: "asc" },
-      include: {
-        products: {
-          include: { orders: { select: { vendorEarningsCents: true } } },
-        },
-        vendorProfile: true,
+  const vendors = await prisma.user.findMany({
+    where,
+    skip: (page - 1) * pageSize,
+    take: pageSize,
+    orderBy: { name: "asc" },
+    include: {
+      products: {
+        include: { orders: { select: { vendorEarningsCents: true } } },
       },
-    }),
-  ]);
+      vendorProfiles: true, // ✅ FIX: war vendorProfile
+    },
+  });
 
   const hasPrev = page > 1;
   const hasNext = page < pageCount;
@@ -239,7 +237,11 @@ export default async function AdminVendorsPage(props: { searchParams: Promise<Se
               {hasPrev ? (
                 <Link
                   className="neobtn-sm ghost"
-                  href={`/admin/vendors?${buildQuery({ q: search, status: statusFilter, page: page - 1 })}`}
+                  href={`/admin/vendors?${buildQuery({
+                    q: search,
+                    status: statusFilter,
+                    page: page - 1,
+                  })}`}
                 >
                   ← Zurück
                 </Link>
@@ -256,7 +258,11 @@ export default async function AdminVendorsPage(props: { searchParams: Promise<Se
                   ) : (
                     <Link
                       key={it}
-                      href={`/admin/vendors?${buildQuery({ q: search, status: statusFilter, page: it })}`}
+                      href={`/admin/vendors?${buildQuery({
+                        q: search,
+                        status: statusFilter,
+                        page: it,
+                      })}`}
                       className={`px-3 py-1 rounded-full border text-xs ${
                         it === page
                           ? "bg-[var(--accent)] text-white border-[var(--accent)]"
@@ -272,7 +278,11 @@ export default async function AdminVendorsPage(props: { searchParams: Promise<Se
               {hasNext ? (
                 <Link
                   className="neobtn-sm ghost"
-                  href={`/admin/vendors?${buildQuery({ q: search, status: statusFilter, page: page + 1 })}`}
+                  href={`/admin/vendors?${buildQuery({
+                    q: search,
+                    status: statusFilter,
+                    page: page + 1,
+                  })}`}
                 >
                   Weiter →
                 </Link>

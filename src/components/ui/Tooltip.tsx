@@ -1,32 +1,53 @@
 "use client";
 
-import React from "react";
+import React, { useId, useMemo, useState } from "react";
 
-export default function Tooltip({ id, label, children }: { id?: string; label: string; children: React.ReactNode }) {
-  const aid = id ?? `tooltip-${Math.random().toString(36).slice(2, 9)}`;
-  const [show, setShow] = React.useState(false);
+type TooltipProps = {
+  label: string;
+  children: React.ReactNode;
+};
+
+export default function Tooltip({ label, children }: TooltipProps) {
+  const [show, setShow] = useState(false);
+
+  // ✅ React 18: stabil zwischen SSR und Client -> verhindert Hydration mismatch
+  const reactId = useId();
+
+  // Optional: schöneres DOM id format
+  const aid = useMemo(() => `tooltip-${reactId.replace(/:/g, "")}`, [reactId]);
 
   return (
-    <span style={{ display: "inline-block", position: "relative" }} onMouseEnter={() => setShow(true)} onMouseLeave={() => setShow(false)}>
-      <span tabIndex={0} aria-describedby={aid} style={{ outline: "none" }} onFocus={() => setShow(true)} onBlur={() => setShow(false)}>
+    <span
+      style={{ display: "inline-block", position: "relative" }}
+      onMouseEnter={() => setShow(true)}
+      onMouseLeave={() => setShow(false)}
+    >
+      <span
+        tabIndex={0}
+        aria-describedby={show ? aid : undefined}
+        style={{ outline: "none" }}
+        onFocus={() => setShow(true)}
+        onBlur={() => setShow(false)}
+      >
         {children}
       </span>
+
       {show && (
         <span
-          role="tooltip"
           id={aid}
+          role="tooltip"
           style={{
             position: "absolute",
-            bottom: "120%",
+            bottom: "calc(100% + 8px)",
             left: "50%",
             transform: "translateX(-50%)",
-            background: "rgba(2,6,23,0.9)",
-            color: "#fff",
-            padding: "6px 8px",
-            borderRadius: 6,
+            padding: "6px 10px",
+            borderRadius: 10,
             fontSize: 12,
             whiteSpace: "nowrap",
-            zIndex: 60,
+            zIndex: 50,
+            background: "rgba(0,0,0,0.75)",
+            color: "white",
           }}
         >
           {label}

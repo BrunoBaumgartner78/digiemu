@@ -3,7 +3,6 @@ import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { Main } from "next/document";
 import MainFooter from "@/components/layout/MainFooter";
 
 export const dynamic = "force-dynamic";
@@ -140,30 +139,29 @@ export default async function HomePage() {
               border: "1px solid rgba(0,0,0,0.06)",
             }}
           >
-            DigiEmu · Digital Marketplace
+            DigiEmu · Marketplace + White-Label
           </span>
 
           {isLoggedIn ? (
-            <span style={{ fontSize: 12, opacity: 0.7 }}>
-              Eingeloggt{role ? ` · ${role}` : ""}
-            </span>
+            <span style={{ fontSize: 12, opacity: 0.7 }}>Eingeloggt{role ? ` · ${role}` : ""}</span>
           ) : (
             <span style={{ fontSize: 12, opacity: 0.7 }}>
-              Kaufen & verkaufen – ohne Umwege
+              Kaufen & verkaufen – oder deine eigene Plattform starten
             </span>
           )}
         </div>
 
         <h1 style={{ marginTop: 14, marginBottom: 10, fontSize: 40, fontWeight: 950, lineHeight: 1.05 }}>
-          Digitale Produkte.
+          Digitale Produkte verkaufen.
           <br />
-          Sofort verfügbar.
+          Oder deinen eigenen Shop betreiben.
         </h1>
 
-        <p style={{ marginTop: 0, opacity: 0.82, fontSize: 16, lineHeight: 1.6, maxWidth: 860 }}>
-          DigiEmu ist ein Marktplatz für digitale Downloads: Käufer finden hochwertige Dateien,
-          Verkäufer veröffentlichen Produkte in Minuten – inklusive Checkout, Download-Link und
-          klarer Abrechnung.
+        <p style={{ marginTop: 0, opacity: 0.82, fontSize: 16, lineHeight: 1.6, maxWidth: 920 }}>
+          DigiEmu hat zwei klare Modi:
+          <strong> Marketplace</strong> (80/20 – ohne Fixkosten) und{" "}
+          <strong>Tenants / White-Label</strong> (Miete – 0% Provision, 100% Einnahmen beim Kunden).
+          Wir halten das Modell bewusst einfach, damit es ruhig und stabil funktioniert.
         </p>
 
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 16 }}>
@@ -175,7 +173,7 @@ export default async function HomePage() {
           </Link>
 
           <Link href="/pricing" className="neobtn neobtn-ghost">
-            Preise
+            So funktioniert’s & Preise
           </Link>
           <Link href="/help" className="neobtn neobtn-ghost">
             Hilfe
@@ -193,24 +191,18 @@ export default async function HomePage() {
         }}
       >
         <div className="neo-card" style={{ padding: 18 }}>
-          <div style={{ fontSize: 12, opacity: 0.7 }}>Umsatz gesamt</div>
-          <div style={{ marginTop: 6, fontSize: 22, fontWeight: 950 }}>
-            {formatCHF(metrics.gmvCHF)}
-          </div>
+          <div style={{ fontSize: 12, opacity: 0.7 }}>GMV (Umsatz gesamt)</div>
+          <div style={{ marginTop: 6, fontSize: 22, fontWeight: 950 }}>{formatCHF(metrics.gmvCHF)}</div>
         </div>
 
         <div className="neo-card" style={{ padding: 18 }}>
           <div style={{ fontSize: 12, opacity: 0.7 }}>Plattform Einnahmen</div>
-          <div style={{ marginTop: 6, fontSize: 22, fontWeight: 950 }}>
-            {formatCHF(metrics.platformCHF)}
-          </div>
+          <div style={{ marginTop: 6, fontSize: 22, fontWeight: 950 }}>{formatCHF(metrics.platformCHF)}</div>
         </div>
 
         <div className="neo-card" style={{ padding: 18 }}>
           <div style={{ fontSize: 12, opacity: 0.7 }}>Vendor Einnahmen</div>
-          <div style={{ marginTop: 6, fontSize: 22, fontWeight: 950 }}>
-            {formatCHF(metrics.vendorCHF)}
-          </div>
+          <div style={{ marginTop: 6, fontSize: 22, fontWeight: 950 }}>{formatCHF(metrics.vendorCHF)}</div>
         </div>
 
         <div className="neo-card" style={{ padding: 18 }}>
@@ -229,18 +221,69 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* TWO MODES */}
+      <section
+        style={{
+          marginTop: 16,
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+          gap: 14,
+        }}
+      >
+        <div className="neo-card" style={{ padding: 22 }}>
+          <SectionTitle kicker="Modus 1" title="Marketplace (80/20 – keine Fixkosten)" />
+          <p style={{ opacity: 0.85, lineHeight: 1.75, marginTop: 0 }}>
+            Verkäufer zahlen <strong>0 CHF/Monat</strong>. Pro Verkauf gehen <strong>80%</strong> an den Vendor,
+            <strong> 20%</strong> finanzieren Betrieb, Zahlungsabwicklung, Infrastruktur und Weiterentwicklung.
+          </p>
+          <ul style={{ margin: 0, paddingLeft: 18, opacity: 0.88, lineHeight: 1.85 }}>
+            <li>Produkt hochladen, Preis setzen, live schalten</li>
+            <li>Checkout & Download-Flow inklusive</li>
+            <li>Transparente Auswertungen im Dashboard</li>
+          </ul>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 14 }}>
+            <Link href="/marketplace" className="neobtn">
+              Marketplace ansehen
+            </Link>
+            <Link href="/become-seller" className="neobtn neobtn-ghost">
+              Verkäufer werden
+            </Link>
+          </div>
+        </div>
+
+        <div className="neo-card" style={{ padding: 22 }}>
+          <SectionTitle kicker="Modus 2" title="Tenants / White-Label (Miete – 0% Provision)" />
+          <p style={{ opacity: 0.85, lineHeight: 1.75, marginTop: 0 }}>
+            Für Communities, Organisationen und Publisher: eigener Shop / eigene Plattform mit Branding.
+            Du zahlst eine <strong>fixe Monatsmiete</strong> – und behältst <strong>100%</strong> der Einnahmen.
+          </p>
+          <ul style={{ margin: 0, paddingLeft: 18, opacity: 0.88, lineHeight: 1.85 }}>
+            <li>Eigene Domain oder Subdomain</li>
+            <li>Eigene Admin-Rolle, eigene Verkäufer</li>
+            <li>Rechnung per E-Mail (10 Tage), Zahlung aufs Postkonto</li>
+          </ul>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 14 }}>
+            <Link href="/pricing#tenants" className="neobtn">
+              Tenant-Preise ansehen
+            </Link>
+            <Link href="/help" className="neobtn neobtn-ghost">
+              Fragen klären
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* ABOUT */}
       <section className="neo-card" style={{ padding: 22, marginTop: 16 }}>
-        <SectionTitle kicker="Über DigiEmu" title="Ein Marktplatz, der sofort funktioniert" />
+        <SectionTitle kicker="Über DigiEmu" title="Ein System, das bewusst ruhig bleibt" />
         <p style={{ opacity: 0.85, lineHeight: 1.75, marginTop: 0, maxWidth: 980 }}>
-          DigiEmu verbindet Käufer und Verkäufer digitaler Produkte – ohne komplizierte Setups.
-          Verkäufer laden Dateien hoch, definieren Preis und Beschreibung und können das Produkt
-          veröffentlichen. Käufer bezahlen sicher, erhalten einen gültigen Download-Link und können
-          ihre Käufe jederzeit im Account einsehen.
+          Viele verkaufen digitale Produkte über zusammengesetzte Tools: Payment hier, Datei dort, Support dazwischen.
+          DigiEmu bündelt die wichtigsten Bausteine in einem klaren Setup – damit Käufer weniger Reibung haben und
+          Verkäufer schnell starten können.
         </p>
         <p style={{ opacity: 0.85, lineHeight: 1.75, marginTop: 10, maxWidth: 980 }}>
-          Der Fokus liegt auf Klarheit: transparente Preise, nachvollziehbare Downloads, klare Rollen
-          (Buyer, Vendor, Admin) und ein sauberes Dashboard für Produkte, Einnahmen und Auszahlungen.
+          Unser Fokus ist Klarheit in der Abrechnung: Marketplace mit 80/20 – und White-Label/Tenants mit Miete (0%
+          Provision). Keine versteckten Stufen, keine unnötigen Billing-Komplexitäten.
         </p>
       </section>
 
@@ -256,97 +299,23 @@ export default async function HomePage() {
         <div className="neo-card" style={{ padding: 20 }}>
           <SectionTitle kicker="1" title="Entdecken & auswählen" />
           <p style={{ opacity: 0.85, lineHeight: 1.7, marginTop: 0 }}>
-            Im Marketplace findest du digitale Produkte mit Vorschaubild, Beschreibung und klarer
-            Preisangabe. Du kannst vergleichen, speichern und später kaufen.
+            Im Marketplace findest du digitale Produkte mit klarer Preisangabe und sauberer Produktseite.
           </p>
         </div>
 
         <div className="neo-card" style={{ padding: 20 }}>
           <SectionTitle kicker="2" title="Sicher bezahlen" />
           <p style={{ opacity: 0.85, lineHeight: 1.7, marginTop: 0 }}>
-            Nach dem Checkout wird die Bestellung erfasst und du bekommst Zugriff auf deine Downloads.
-            Der Prozess ist schnell, stabil und nachvollziehbar.
+            Der Checkout ist stabil und nachvollziehbar. Bestellungen werden sauber erfasst.
           </p>
         </div>
 
         <div className="neo-card" style={{ padding: 20 }}>
           <SectionTitle kicker="3" title="Sofort downloaden" />
           <p style={{ opacity: 0.85, lineHeight: 1.7, marginTop: 0 }}>
-            Deine Dateien sind direkt verfügbar. Im Account kannst du Downloads erneut aufrufen,
-            Bestellungen prüfen und deine Bibliothek verwalten.
+            Direkt nach dem Kauf sind Downloads verfügbar – ohne E-Mail-Chaos.
           </p>
         </div>
-      </section>
-
-      {/* FOR BUYERS / VENDORS */}
-      <section
-        style={{
-          marginTop: 16,
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-          gap: 14,
-        }}
-      >
-        <div className="neo-card" style={{ padding: 22 }}>
-          <SectionTitle kicker="Für Käufer" title="Einfach kaufen, sauber verwalten" />
-          <ul style={{ margin: 0, paddingLeft: 18, opacity: 0.88, lineHeight: 1.85 }}>
-            <li>Übersichtliche Produktseiten mit klaren Informationen</li>
-            <li>Bestellungen und Downloads im Account an einem Ort</li>
-            <li>Direkter Zugriff nach dem Kauf – ohne E-Mail-Chaos</li>
-          </ul>
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 14 }}>
-            <Link href="/marketplace" className="neobtn">
-              Marketplace
-            </Link>
-            {isLoggedIn ? (
-              <Link href="/account/downloads" className="neobtn neobtn-ghost">
-                Meine Downloads
-              </Link>
-            ) : (
-              <Link href="/login" className="neobtn neobtn-ghost">
-                Login
-              </Link>
-            )}
-          </div>
-        </div>
-
-        <div className="neo-card" style={{ padding: 22 }}>
-          <SectionTitle kicker="Für Verkäufer" title="Veröffentlichen, verkaufen, auswerten" />
-          <ul style={{ margin: 0, paddingLeft: 18, opacity: 0.88, lineHeight: 1.85 }}>
-            <li>Produkt erstellen, Datei hochladen, Preis setzen</li>
-            <li>Dashboard für Produkte, Einnahmen und Auszahlungen</li>
-            <li>Professioneller Kauf- & Download-Flow ohne Zusatztools</li>
-          </ul>
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 14 }}>
-            <Link href="/become-seller" className="neobtn">
-              Verkäufer werden
-            </Link>
-            {isLoggedIn ? (
-              <Link href="/dashboard" className="neobtn neobtn-ghost">
-                Dashboard
-              </Link>
-            ) : (
-              <Link href="/register" className="neobtn neobtn-ghost">
-                Konto erstellen
-              </Link>
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* ABOUT US */}
-      <section className="neo-card" style={{ padding: 22, marginTop: 16 }}>
-        <SectionTitle kicker="About us" title="Warum wir DigiEmu bauen" />
-        <p style={{ opacity: 0.85, lineHeight: 1.75, marginTop: 0, maxWidth: 980 }}>
-          Viele digitale Produkte werden heute über zusammengewürfelte Systeme verkauft: Payment hier,
-          Datei dort, Support irgendwo dazwischen. DigiEmu bündelt die wichtigsten Bausteine in einem
-          klaren, wartbaren Setup – damit Käufer weniger Reibung haben und Verkäufer schneller
-          Umsätze erzielen.
-        </p>
-        <p style={{ opacity: 0.85, lineHeight: 1.75, marginTop: 10, maxWidth: 980 }}>
-          Unser Anspruch ist ein Marktplatz, der nicht „laut“ sein muss, um zu funktionieren: saubere
-          Performance, klare Navigation, und ein Design, das sich angenehm anfühlt.
-        </p>
       </section>
 
       {/* FAQ */}
@@ -355,44 +324,39 @@ export default async function HomePage() {
 
         <div style={{ display: "grid", gap: 12, marginTop: 10 }}>
           <div>
-            <div style={{ fontWeight: 900 }}>Kann ich DigiEmu ohne Konto nutzen?</div>
+            <div style={{ fontWeight: 900 }}>Gibt es Vendor-Abos?</div>
             <div style={{ opacity: 0.85, lineHeight: 1.7, marginTop: 4 }}>
-              Ja – der Marketplace und Informationsseiten sind öffentlich. Für Käufe, Downloads und
-              das Dashboard brauchst du ein Konto.
+              Nein. Im Marketplace gibt es keine Fixkosten. Die Abrechnung erfolgt über die 80/20-Aufteilung pro Verkauf.
             </div>
           </div>
 
           <div>
-            <div style={{ fontWeight: 900 }}>Wie schnell erhalte ich meinen Download?</div>
+            <div style={{ fontWeight: 900 }}>Was ist der Unterschied zwischen Marketplace und Tenant?</div>
             <div style={{ opacity: 0.85, lineHeight: 1.7, marginTop: 4 }}>
-              Direkt nach dem Kauf. Im Account findest du deine Bestellungen und Downloads jederzeit
-              wieder.
+              Marketplace: 80/20 pro Verkauf. Tenant/White-Label: fixe Monatsmiete, 0% Provision – der Kunde behält 100%.
             </div>
           </div>
 
           <div>
-            <div style={{ fontWeight: 900 }}>Kann ich als Verkäufer mehrere Produkte anbieten?</div>
+            <div style={{ fontWeight: 900 }}>Wie bezahlen Tenants?</div>
             <div style={{ opacity: 0.85, lineHeight: 1.7, marginTop: 4 }}>
-              Ja. Du verwaltest Produkte, Status und Performance im Dashboard und kannst Inhalte
-              laufend erweitern.
+              Per Rechnung (PDF per E-Mail), zahlbar innert 10 Tagen, Zahlung auf PostFinance-IBAN. Optional später per
+              Stripe-Zahlungslink.
             </div>
           </div>
         </div>
 
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 14 }}>
-          <Link href="/help" className="neobtn neobtn-ghost">
-            Hilfe öffnen
-          </Link>
           <Link href="/pricing" className="neobtn neobtn-ghost">
-            Preise ansehen
+            So funktioniert’s & Preise
           </Link>
           <Link href="/marketplace" className="neobtn">
             Jetzt starten
           </Link>
         </div>
       </section>
-        <MainFooter />
+
+      <MainFooter />
     </main>
-  
   );
 }

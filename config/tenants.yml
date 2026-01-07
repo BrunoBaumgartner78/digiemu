@@ -1,0 +1,53 @@
+version: 1
+
+tenants:
+  digiemu:
+    name: "DigiEmu"
+    domains:
+      - "localhost"
+      - "digiemu.vercel.app"
+      - "digiemu.ch"
+      - "www.digiemu.ch"
+
+    vendorOnboarding: "OPEN_WITH_APPROVAL"
+    catalogMode: "MIXED"
+    payments: "ON"
+    visibility: "PUBLIC"
+
+    branding:
+      logoUrl: "/logo.svg"
+      primaryColor: "#8FB2FF"
+      accentColor: "#2E6BFF"
+
+    legal:
+      imprintUrl: "/impressum"
+      privacyUrl: "/datenschutz"
+
+    features:
+      showMarketplaceUI: true
+      allowBundles: true
+
+  bellu:
+    name: "Bellu"
+    domains:
+      - bellu.ch
+      - www.bellu.ch
+      - localhost
+
+    vendorOnboarding: OPEN_WITH_APPROVAL
+    catalogMode: MIXED
+    payments: ON
+    visibility: PUBLIC
+
+    branding:
+      logoUrl: "/logo.svg"
+      primaryColor: "#8FB2FF"
+      accentColor: "#2E6BFF"
+
+    legal:
+      imprintUrl: "/impressum"
+      privacyUrl: "/datenschutz"
+
+    features:
+      showMarketplaceUI: true
+      allowBundles: true

@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
+import { currentTenant } from "@/lib/tenant-context";
 
 function sanitizeSlug(input: string) {
   return (input || "")
@@ -24,6 +25,10 @@ async function handleUpsert(req: Request) {
       { status: 401 }
     );
   }
+
+  // Resolve tenantKey server-side (do not trust client headers)
+  const tenant = await currentTenant();
+  const tenantKey = tenant.key;
 
   const body = (await req.json().catch(() => null)) as Record<string, any> | null;
   if (!body) {
@@ -83,8 +88,8 @@ async function handleUpsert(req: Request) {
     data.slug = candidate;
 
     const saved = await prisma.vendorProfile.upsert({
-      where: { userId },
-      create: { userId, ...data },
+      where: { tenantKey_userId: { tenantKey, userId } },
+      create: { tenantKey, userId, ...data },
       update: { ...data },
     });
 

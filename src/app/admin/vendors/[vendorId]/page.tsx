@@ -2,6 +2,7 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { currentTenant } from "@/lib/tenant-context";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -29,11 +30,19 @@ export default async function AdminVendorDetailPage(props: { params: Promise<Par
 
   const { vendorId } = await props.params;
 
+  const tenant = await currentTenant();
+  const tenantKey = (tenant?.key ?? "DEFAULT").toString().trim() || "DEFAULT";
+
   const vendor = await prisma.user.findUnique({
     where: { id: vendorId },
-    include: {
-      vendorProfile: true,
-      products: {
+          include: {
+            // ✅ User has vendorProfiles[] (plural) in schema
+            vendorProfiles: {
+              where: { tenantKey },
+              orderBy: { createdAt: "desc" },
+              take: 1,
+            },
+            products: {
         orderBy: { createdAt: "desc" },
         include: {
           orders: { select: { vendorEarningsCents: true, createdAt: true } },
@@ -68,7 +77,8 @@ export default async function AdminVendorDetailPage(props: { params: Promise<Par
   const pendingCents = Math.max(totalEarningsCents - alreadyPaidCents, 0);
 
   const status = vendor.isBlocked ? "BLOCKED" : "ACTIVE";
-  const profileStatus = vendor.vendorProfile ? "PROFILE" : "NO_PROFILE";
+  const vp0 = vendor.vendorProfiles?.[0] ?? null;
+  const profileStatus = vp0 ? "PROFILE" : "NO_PROFILE";
 
   const statusBadge =
     status === "ACTIVE"
@@ -164,15 +174,15 @@ export default async function AdminVendorDetailPage(props: { params: Promise<Par
 
           <div className="rounded-2xl border border-[var(--neo-card-border)] bg-[var(--bg-soft)] p-4">
             <div className="text-xs text-[var(--text-muted)]">Öffentlicher Name</div>
-            <div className="mt-1 font-medium text-[var(--text-main)]">
-              {vendor.vendorProfile?.displayName || "—"}
+              <div className="mt-1 font-medium text-[var(--text-main)]">
+              {(vendor.vendorProfiles?.[0] ?? null)?.displayName || "—"}
             </div>
           </div>
 
           <div className="rounded-2xl border border-[var(--neo-card-border)] bg-[var(--bg-soft)] p-4">
             <div className="text-xs text-[var(--text-muted)]">Kurzbeschreibung</div>
             <div className="mt-1 font-medium text-[var(--text-main)]">
-              {vendor.vendorProfile?.bio || "—"}
+              {(vendor.vendorProfiles?.[0] ?? null)?.bio || "—"}
             </div>
           </div>
         </div>

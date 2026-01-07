@@ -1,80 +1,74 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { currentTenant } from "@/lib/tenant-context";
 
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
+export async function POST(req: Request) {
+  const session = await getServerSession(auth);
+  if (!session?.user?.id) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
 
-function toPriceCents(priceChf: unknown): number | null {
-  if (typeof priceChf !== "number" || !Number.isFinite(priceChf) || priceChf <= 0) return null;
-  return Math.round(priceChf * 100);
-}
+  const body = await req.json().catch(() => null);
+  const title = String(body?.title ?? "").trim();
+  const description = String(body?.description ?? "").trim();
+  const category = String(body?.category ?? "").trim() || "other";
 
-export async function POST(req: NextRequest) {
-  try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
+  const priceChf = Number(body?.priceChf);
+  const downloadUrl = String(body?.downloadUrl ?? "").trim();
+  const thumbnailUrl = body?.thumbnailUrl ? String(body.thumbnailUrl).trim() : null;
 
-    // ✅ DB-User über Email holen → garantiert FK korrekt
-    const dbUser = await prisma.user.findUnique({
-      where: { email: session.user.email },
-      select: { id: true, role: true },
-    });
+  if (!title) return NextResponse.json({ message: "title is required" }, { status: 400 });
+  if (!description) return NextResponse.json({ message: "description is required" }, { status: 400 });
+  if (!Number.isFinite(priceChf) || priceChf < 1) {
+    return NextResponse.json({ message: "priceChf must be a number >= 1" }, { status: 400 });
+  }
+  if (!downloadUrl) return NextResponse.json({ message: "downloadUrl is required" }, { status: 400 });
 
-    if (!dbUser) {
-      return NextResponse.json(
-        { message: "User nicht in DB gefunden (FK Problem). Bitte neu einloggen oder seed prüfen." },
-        { status: 400 }
-      );
-    }
+  // ✅ tenant scoping
+  const { tenantKey } = await currentTenant();
+  const tk = (tenantKey || "DEFAULT").trim() || "DEFAULT";
 
-    if (dbUser.role !== "VENDOR" && dbUser.role !== "ADMIN") {
-      return NextResponse.json({ message: "Forbidden" }, { status: 403 });
-    }
+  // ✅ vendor must have a profile in this tenant (Option B enforced in marketplace query)
+  const vp = await prisma.vendorProfile.findFirst({
+    where: { userId: session.user.id, tenantKey: tk },
+    select: { id: true, status: true, isPublic: true, tenantKey: true },
+  });
 
-    const body = await req.json().catch(() => ({}));
-
-    const title = typeof body.title === "string" ? body.title.trim() : "";
-    const description = typeof body.description === "string" ? body.description.trim() : "";
-    const category =
-      typeof body.category === "string" && body.category.trim() ? body.category.trim() : "other";
-
-    const fileUrl = typeof body.downloadUrl === "string" ? body.downloadUrl.trim() : "";
-    const priceCents = toPriceCents(body.priceChf);
-    const thumbnail =
-      typeof body.thumbnailUrl === "string" && body.thumbnailUrl.trim()
-        ? body.thumbnailUrl.trim()
-        : null;
-
-    if (!title) return NextResponse.json({ message: "Titel fehlt." }, { status: 400 });
-    if (!description) return NextResponse.json({ message: "Beschreibung fehlt." }, { status: 400 });
-    if (!fileUrl) return NextResponse.json({ message: "Download-URL fehlt." }, { status: 400 });
-    if (priceCents === null) return NextResponse.json({ message: "Ungültiger Preis." }, { status: 400 });
-
-    const created = await prisma.product.create({
-      data: {
-        title,
-        description,
-        category,
-        fileUrl,
-        priceCents,
-        thumbnail,
-        vendorId: dbUser.id,     // ✅ FIX: echte DB-User-ID
-        isActive: true,
-        status: "ACTIVE",
-      },
-      select: { id: true },
-    });
-
-    return NextResponse.json({ ok: true, id: created.id }, { status: 201 });
-  } catch (err: any) {
-    console.error("[API /products/create] Fehler:", err);
+  if (!vp?.id) {
     return NextResponse.json(
-      { message: "Interner Fehler beim Anlegen des Produkts." },
-      { status: 500 }
+      { message: "VendorProfile missing for this tenant. Create vendor profile first." },
+      { status: 400 }
     );
   }
+
+  // ✅ Only approved+public vendors can publish ACTIVE products under Option B
+  const canPublish = vp.status === "APPROVED" && vp.isPublic === true;
+
+  const priceCents = Math.round(priceChf * 100);
+
+  const created = await prisma.product.create({
+    data: {
+      tenantKey: vp.tenantKey ?? tk,
+      vendorId: session.user.id,
+
+      // ✅ always attach the vendor profile from (tenantKey,userId)
+      vendorProfileId: vp.id,
+
+      title: String(title ?? "").trim(),
+      description: String(description ?? "").trim(),
+      priceCents,
+      fileUrl: String(downloadUrl ?? "").trim(),
+      thumbnail: thumbnailUrl ?? null,
+      category: String(category ?? "other").trim(),
+
+      // ✅ default: always DRAFT — vendors must publish or admin approve
+      status: "DRAFT",
+      isActive: true,
+    },
+    select: { id: true, status: true, tenantKey: true, vendorProfileId: true },
+  });
+
+  return NextResponse.json({ ok: true, product: created });
 }

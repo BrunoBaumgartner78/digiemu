@@ -4,7 +4,7 @@ import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import AdminBreadcrumbs from "@/components/admin/AdminBredcrumbs";
+import AdminBreadcrumbs from "@/components/admin/AdminBreadcrumbs";
 
 export default async function AdminLayout({
   children,

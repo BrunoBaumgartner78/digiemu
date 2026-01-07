@@ -68,6 +68,18 @@ export function MainHeader() {
     </Link>
   );
 
+  // ✅ NEW: Tenants link (admin-only)
+  const TenantsLink = (
+    <Link
+      href="/admin/tenants"
+      className={
+        "nav-pill nav-pill-ghost" + (isActive("/admin/tenants") ? " nav-pill-active" : "")
+      }
+    >
+      Tenants
+    </Link>
+  );
+
   return (
     <header className="main-header" data-mobile-open={mobileOpen ? "true" : "false"}>
       <div className="header-inner">
@@ -97,7 +109,10 @@ export function MainHeader() {
             <>
               <Link
                 href="/account/downloads"
-                className={"nav-pill nav-pill-ghost" + (isActive("/account/downloads") ? " nav-pill-active" : "")}
+                className={
+                  "nav-pill nav-pill-ghost" +
+                  (isActive("/account/downloads") ? " nav-pill-active" : "")
+                }
               >
                 Downloads
               </Link>
@@ -105,7 +120,10 @@ export function MainHeader() {
               {isBuyer && (
                 <Link
                   href="/account/orders"
-                  className={"nav-pill nav-pill-ghost" + (isActive("/account/orders") ? " nav-pill-active" : "")}
+                  className={
+                    "nav-pill nav-pill-ghost" +
+                    (isActive("/account/orders") ? " nav-pill-active" : "")
+                  }
                 >
                   Bestellungen
                 </Link>
@@ -123,7 +141,10 @@ export function MainHeader() {
               {isVendor && (
                 <Link
                   href="/dashboard/products/top"
-                  className={"nav-pill nav-pill-ghost" + (isActive("/dashboard/products/top") ? " nav-pill-active" : "")}
+                  className={
+                    "nav-pill nav-pill-ghost" +
+                    (isActive("/dashboard/products/top") ? " nav-pill-active" : "")
+                  }
                 >
                   Top-Produkte
                 </Link>
@@ -133,16 +154,21 @@ export function MainHeader() {
               {role === "VENDOR" && (
                 <Link
                   href="/dashboard/vendor"
-                  className={"nav-pill nav-pill-ghost" + (isActive("/dashboard/vendor") ? " nav-pill-active" : "")}
+                  className={
+                    "nav-pill nav-pill-ghost" + (isActive("/dashboard/vendor") ? " nav-pill-active" : "")
+                  }
                 >
                   Analytics
                 </Link>
               )}
 
-              {/* Admin-only: erst Role prüfen, dann optional FeatureGate */}
+              {/* ✅ Admin-only: Admin + Tenants */}
               {isAdmin ? (
-                <FeatureGate feature="admin" fallback={AdminLink}>
-                  {AdminLink}
+                <FeatureGate feature="admin" fallback={<>{AdminLink}{TenantsLink}</>}>
+                  <>
+                    {AdminLink}
+                    {TenantsLink}
+                  </>
                 </FeatureGate>
               ) : null}
 
@@ -242,7 +268,9 @@ export function MainHeader() {
                   <Link
                     href="/account/downloads"
                     onClick={() => setMobileOpen(false)}
-                    className={"mobile-nav-pill" + (isActive("/account/downloads") ? " mobile-nav-pill-active" : "")}
+                    className={
+                      "mobile-nav-pill" + (isActive("/account/downloads") ? " mobile-nav-pill-active" : "")
+                    }
                   >
                     Downloads
                   </Link>
@@ -261,21 +289,36 @@ export function MainHeader() {
                     <Link
                       href="/dashboard/vendor"
                       onClick={() => setMobileOpen(false)}
-                      className={"mobile-nav-pill" + (isActive("/dashboard/vendor") ? " mobile-nav-pill-active" : "")}
+                      className={
+                        "mobile-nav-pill" + (isActive("/dashboard/vendor") ? " mobile-nav-pill-active" : "")
+                      }
                     >
                       Analytics
                     </Link>
                   )}
 
+                  {/* ✅ Admin-only: Admin + Tenants */}
                   {isAdmin ? (
                     <FeatureGate feature="admin" fallback={null}>
-                      <Link
-                        href="/admin"
-                        onClick={() => setMobileOpen(false)}
-                        className={"mobile-nav-pill" + (isActive("/admin") ? " mobile-nav-pill-active" : "")}
-                      >
-                        Admin
-                      </Link>
+                      <>
+                        <Link
+                          href="/admin"
+                          onClick={() => setMobileOpen(false)}
+                          className={"mobile-nav-pill" + (isActive("/admin") ? " mobile-nav-pill-active" : "")}
+                        >
+                          Admin
+                        </Link>
+
+                        <Link
+                          href="/admin/tenants"
+                          onClick={() => setMobileOpen(false)}
+                          className={
+                            "mobile-nav-pill" + (isActive("/admin/tenants") ? " mobile-nav-pill-active" : "")
+                          }
+                        >
+                          Tenants
+                        </Link>
+                      </>
                     </FeatureGate>
                   ) : null}
 

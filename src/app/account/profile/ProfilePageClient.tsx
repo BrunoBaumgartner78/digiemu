@@ -2,8 +2,9 @@
 
 import * as React from "react";
 import styles from "./profile.module.css";
+import { useToast } from "@/components/ui/use-toast";
 
-type InitialProfile = {
+export type InitialProfile = {
   displayName: string;
   bio: string;
   isPublic: boolean;
@@ -24,6 +25,7 @@ export default function ProfilePageClient({
 }: {
   initialProfile: InitialProfile;
 }) {
+  const { toast } = useToast();
   const [displayName, setDisplayName] = React.useState(initialProfile.displayName);
   const [bio, setBio] = React.useState(initialProfile.bio);
   const [isPublic, setIsPublic] = React.useState(initialProfile.isPublic);
@@ -32,7 +34,7 @@ export default function ProfilePageClient({
   const [bannerUrl, setBannerUrl] = React.useState(initialProfile.bannerUrl);
 
   const [saving, setSaving] = React.useState(false);
-  const [toast, setToast] = React.useState<string | null>(null);
+  const [inlineToast, setInlineToast] = React.useState<string | null>(null);
 
   const [uploadingAvatar, setUploadingAvatar] = React.useState(false);
   const [uploadingBanner, setUploadingBanner] = React.useState(false);
@@ -48,15 +50,15 @@ export default function ProfilePageClient({
   const pct = Math.round((progressValue / Math.max(1, nextGoal)) * 100);
 
   const showToast = (msg: string) => {
-    setToast(msg);
-    window.setTimeout(() => setToast(null), 2600);
+    setInlineToast(msg);
+    window.setTimeout(() => setInlineToast(null), 2600);
   };
 
   async function uploadViaApi(
     file: File,
     kind: "avatar" | "banner",
     onProgress: (pct: number) => void
-  ): Promise<string> {
+  ): Promise<string | null> {
     const maxMb = kind === "banner" ? 6 : 3;
     const maxBytes = maxMb * 1024 * 1024;
 
@@ -64,7 +66,12 @@ export default function ProfilePageClient({
       throw new Error("Bitte nur Bilddateien (PNG/JPG/WebP).");
     }
     if (file.size > maxBytes) {
-      throw new Error(`Datei zu gross. Max ${maxMb}MB.`);
+      toast({
+        variant: "destructive",
+        title: "Bild zu gross",
+        description: `Maximal ${maxMb}MB. Tipp: Bild verkleinern (Export "mittel"), als JPG/WebP speichern oder Screenshot verwenden.`,
+      });
+      return null;
     }
 
     // Progress fake (HTTP Upload kann man ohne XHR nicht sauber tracken)
@@ -98,6 +105,7 @@ export default function ProfilePageClient({
     setAvatarProgress(0);
     try {
       const url = await uploadViaApi(file, "avatar", setAvatarProgress);
+      if (!url) return;
       setAvatarUrl(url);
       showToast("✅ Avatar hochgeladen");
     } catch (e: any) {
@@ -114,6 +122,7 @@ export default function ProfilePageClient({
     setBannerProgress(0);
     try {
       const url = await uploadViaApi(file, "banner", setBannerProgress);
+      if (!url) return;
       setBannerUrl(url);
       showToast("✅ Banner hochgeladen");
     } catch (e: any) {
@@ -131,7 +140,7 @@ export default function ProfilePageClient({
 
   async function saveProfile() {
     setSaving(true);
-    setToast(null);
+    setInlineToast(null);
 
     try {
       if (isBlobUrl(avatarUrl) || isBlobUrl(bannerUrl)) {
@@ -256,6 +265,10 @@ export default function ProfilePageClient({
                 accept="image/*"
                 onChange={(e) => onPickBanner(e.target.files?.[0] ?? null)}
               />
+              <p className={styles.hint}>
+                Hinweis: Max. <strong>3&nbsp;MB</strong>. Am besten JPG/WebP (ca. 1200–2000px breit).
+                Wenn zu groß: Bild verkleinern/Export &quot;mittel&quot; oder Screenshot verwenden.
+              </p>
             </label>
 
             <button
@@ -303,6 +316,10 @@ export default function ProfilePageClient({
                 accept="image/*"
                 onChange={(e) => onPickAvatar(e.target.files?.[0] ?? null)}
               />
+              <p className={styles.hint}>
+                Hinweis: Max. <strong>3&nbsp;MB</strong>. Am besten JPG/WebP (ca. 800–1200px).
+                Wenn zu groß: Bild in der Galerie verkleinern/Export &quot;mittel&quot; oder Screenshot verwenden.
+              </p>
             </label>
 
             <button
@@ -393,7 +410,7 @@ export default function ProfilePageClient({
           </div>
         </div>
 
-        {toast ? <div className={styles.toast}>{toast}</div> : null}
+        {inlineToast ? <div className={styles.toast}>{inlineToast}</div> : null}
       </div>
     </div>
   );

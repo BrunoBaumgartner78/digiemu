@@ -140,4 +140,10 @@ export const authOptions: NextAuthOptions = {
 };
 
 // Alias
-export const auth = authOptions;
+// Export `auth` with optional host-trust configuration for dev LAN/IP usage.
+export const auth = {
+  ...authOptions,
+  // ✅ Allows LAN/IP/preview hosts in dev (prevents client_fetch_error for /api/auth/session)
+  // For next-auth/Auth.js setups that support it.
+  trustHost: true,
+};

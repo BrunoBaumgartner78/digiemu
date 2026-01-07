@@ -394,6 +394,13 @@ html[data-theme="dark"] .btnNeon {
     inset -8px -8px 14px var(--inset-a);
   transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
 }
+/* --- Option C: small upload hints --- */
+.hint {
+  margin-top: 8px;
+  font-size: 12px;
+  line-height: 1.5;
+  opacity: 0.75;
+}
 .input::placeholder, .textarea::placeholder { color: rgba(15, 23, 42, 0.38); }
 html[data-theme="dark"] .input::placeholder,
 html[data-theme="dark"] .textarea::placeholder { color: rgba(148, 163, 184, 0.55); }

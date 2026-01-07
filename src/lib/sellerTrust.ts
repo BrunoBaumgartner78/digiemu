@@ -1,104 +1,76 @@
+// src/lib/sellerTrust.ts
 import { prisma } from "@/lib/prisma";
+import { currentTenant } from "@/lib/tenant-context";
 
 export type SellerTrustInfo = {
-  level: "Starter" | "Creator" | "Pro" | "Elite";
-  nextLevelTarget: number; // number of products OR CHF amount depending on unit
-  nextLevelUnit: "products" | "chf";
-  progress: number; // 0..1
-  badges: string[];
+  level: string;
+  nextLevelTarget: number;
+  nextLevelUnit: "sales" | "revenue" | "products" | "profile";
 };
 
-type SellerTrustInput = {
+function getSellerTrustInfo(input: {
   activeProductCount: number;
   totalSalesCount: number;
   totalRevenueCents: number;
   profileComplete: boolean;
-};
+}): SellerTrustInfo {
+  const { activeProductCount, totalSalesCount, totalRevenueCents, profileComplete } = input;
 
-export function getSellerTrustInfo(input: SellerTrustInput): SellerTrustInfo {
-  const { activeProductCount, totalRevenueCents } = input;
-  const badges: string[] = [];
-
-  // Rules:
-  // - Starter: products_min 0
-  // - Creator: products_min 5
-  // - Pro: products_min 20
-  // - Elite: revenue_min_chf 10000
-
-  const ELITE_REVENUE_CHF = 10000;
-  const ELITE_REVENUE_CENTS = ELITE_REVENUE_CHF * 100;
-
-  let level: SellerTrustInfo["level"] = "Starter";
-  let nextLevelTarget = 5;
-  let nextLevelUnit: SellerTrustInfo["nextLevelUnit"] = "products";
-
-  if (input.totalRevenueCents >= ELITE_REVENUE_CENTS) {
-    level = "Elite";
-    // Elite is top - no next target, show full progress
-    nextLevelTarget = ELITE_REVENUE_CHF;
-    nextLevelUnit = "chf";
-    badges.push("Elite");
-  } else if (activeProductCount >= 20) {
-    level = "Pro";
-    // Next level is Elite (revenue)
-    nextLevelTarget = ELITE_REVENUE_CHF;
-    nextLevelUnit = "chf";
-    badges.push("Pro");
-  } else if (activeProductCount >= 5) {
-    level = "Creator";
-    nextLevelTarget = 20;
-    nextLevelUnit = "products";
-    badges.push("Creator");
-  } else {
-    level = "Starter";
-    nextLevelTarget = 5;
-    nextLevelUnit = "products";
-    badges.push("Neu");
-  }
-
-  if (activeProductCount > 0) badges.push("Aktiv");
-
-  // Progress: if next unit is products -> use activeProductCount / nextLevelTarget
-  // if next unit is chf -> use totalRevenueCents / (nextLevelTarget * 100)
-  let progress = 0;
-  if (nextLevelUnit === "products") {
-    progress = Math.min(1, input.activeProductCount / Math.max(1, nextLevelTarget));
-  } else {
-    progress = Math.min(1, input.totalRevenueCents / (nextLevelTarget * 100));
-  }
-
-  return { level, nextLevelTarget, nextLevelUnit, progress, badges };
+  if (!profileComplete) return { level: "Starter", nextLevelTarget: 1, nextLevelUnit: "profile" };
+  if (totalSalesCount < 5) return { level: "Starter", nextLevelTarget: 5, nextLevelUnit: "sales" };
+  if (totalRevenueCents < 50_00) return { level: "Trusted", nextLevelTarget: 50, nextLevelUnit: "revenue" };
+  if (activeProductCount < 10) return { level: "Pro", nextLevelTarget: 10, nextLevelUnit: "products" };
+  return { level: "Elite", nextLevelTarget: 0, nextLevelUnit: "sales" };
 }
 
-// Helper: fetches counts from DB and returns SellerTrustInfo
+/**
+ * Tenant-safe Trust berechnen:
+ * - tenantKey aus currentTenant()
+ * - VendorProfile über @@unique([tenantKey, userId]) → tenantKey_userId
+ */
 export async function computeSellerTrustFromDb(userId: string): Promise<SellerTrustInfo> {
-  // active products: use Product.status === 'ACTIVE' or isActive
-  const activeProductCount = await prisma.product.count({
-    where: {
-      vendorId: userId,
-      OR: [{ status: "ACTIVE" }, { isActive: true }],
-    },
+  const { key: tenantKey } = await currentTenant();
+
+  const [activeProductCount, salesAgg, vendorProfile] = await Promise.all([
+    prisma.product.count({
+      where: {
+        tenantKey,
+        vendorId: userId,
+        isActive: true,
+        status: "ACTIVE",
+      },
+    }),
+
+    prisma.order.aggregate({
+      where: {
+        tenantKey,
+        product: { vendorId: userId },
+        // optional: nur PAID zählen:
+        // status: "PAID",
+      },
+      _count: { _all: true },
+      _sum: { vendorEarningsCents: true },
+    }),
+
+    prisma.vendorProfile.findUnique({
+      where: {
+        tenantKey_userId: { tenantKey, userId },
+      },
+      select: { displayName: true, avatarUrl: true },
+    }),
+  ]);
+
+  const totalSalesCount = salesAgg._count?._all ?? 0;
+  const totalRevenueCents = salesAgg._sum?.vendorEarningsCents ?? 0;
+
+  const profileComplete = Boolean(
+    (vendorProfile?.displayName ?? "").trim() && (vendorProfile?.avatarUrl ?? "").trim()
+  );
+
+  return getSellerTrustInfo({
+    activeProductCount,
+    totalSalesCount,
+    totalRevenueCents,
+    profileComplete,
   });
-
-  // orders for vendor products
-  const orders = await prisma.order.findMany({
-    where: {
-      status: { in: ["PAID", "COMPLETED"] },
-      product: { vendorId: userId },
-    },
-    select: { vendorEarningsCents: true, amountCents: true },
-  });
-
-  const totalSalesCount = orders.length;
-  const totalRevenueCents = orders.reduce((sum, o) => {
-    const v = typeof o.vendorEarningsCents === "number" ? o.vendorEarningsCents : 0;
-    const fallback = typeof o.amountCents === "number" ? o.amountCents : 0;
-    return sum + (v > 0 ? v : fallback);
-  }, 0);
-
-  // profile complete heuristic
-  const vendorProfile = await prisma.vendorProfile.findUnique({ where: { userId } });
-  const profileComplete = Boolean(vendorProfile && vendorProfile.displayName && vendorProfile.avatarUrl);
-
-  return getSellerTrustInfo({ activeProductCount, totalSalesCount, totalRevenueCents, profileComplete });
 }

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 type Props = {
   userId: string;
@@ -8,43 +9,71 @@ type Props = {
 };
 
 export default function AdminUserStatusToggle({ userId, isBlocked }: Props) {
-  const [blocked, setBlocked] = useState<boolean>(!!isBlocked);
-  const [pending, setPending] = useState(false);
+  const router = useRouter();
 
-  async function handleClick() {
+  // ✅ local state
+  const [blocked, setBlocked] = useState(isBlocked);
+  const [pending, setPending] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  // ✅ IMPORTANT: sync when server props change (after refresh)
+  useEffect(() => {
+    setBlocked(isBlocked);
+  }, [isBlocked]);
+
+  async function toggle() {
+    setErr(null);
+    const next = !blocked;
+
+    // optimistic
+    setBlocked(next);
     setPending(true);
+
     try {
-      const res = await fetch("/api/admin/users/toggle-block", {
-        method: "POST",
+      const res = await fetch(`/api/admin/users/${userId}/status`, {
+        method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId }),
+        body: JSON.stringify({ isBlocked: next }),
+        cache: "no-store",
       });
 
       if (!res.ok) {
-        const txt = await res.text();
-        throw new Error(txt || "Toggle fehlgeschlagen");
+        const txt = await res.text().catch(() => "");
+        throw new Error(txt || `Request failed (${res.status})`);
       }
 
-      const data = await res.json();
-      setBlocked(!!data?.user?.isBlocked);
-    } catch (e) {
-      console.error(e);
-      alert("Konnte Sperrstatus nicht ändern. Schau Console/Serverlogs an.");
+      // ✅ ensure server data is used
+      router.refresh();
+    } catch (e: any) {
+      // rollback
+      setBlocked(!next);
+      setErr(e?.message ?? "Unbekannter Fehler");
     } finally {
       setPending(false);
     }
   }
 
   return (
-    <button
-      type="button"
-      onClick={handleClick}
-      disabled={pending}
-      className={`neobtn-sm ${
-        blocked ? "bg-rose-500/90 text-white" : "bg-emerald-500/90 text-white"
-      }`}
-    >
-      {pending ? "Aktualisiere…" : blocked ? "Entsperren" : "Sperren"}
-    </button>
+    <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+      <button
+        type="button"
+        onClick={toggle}
+        disabled={pending}
+        className="neobtn-sm"
+        style={{
+          opacity: pending ? 0.7 : 1,
+          cursor: pending ? "not-allowed" : "pointer",
+          border: "1px solid rgba(0,0,0,0.15)",
+        }}
+      >
+        {blocked ? "Entsperren" : "Sperren"}
+      </button>
+
+      {err && (
+        <span style={{ fontSize: 12, color: "crimson", maxWidth: 320, overflow: "hidden", textOverflow: "ellipsis" }}>
+          {err}
+        </span>
+      )}
+    </div>
   );
 }

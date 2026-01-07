@@ -607,3 +607,79 @@
 .cardSeller a {
   pointer-events: auto;
 }
+
+/* (add at end) */
+
+:global(.mk-filters){display:grid;gap:12px}
+:global(.mk-row){display:grid;gap:10px;grid-template-columns:1fr}
+:global(.mk-grid){display:grid;gap:10px;align-items:end;grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+:global(.mk-label){font-size:11px;opacity:.72;margin:0 0 6px 10px;letter-spacing:.35px;text-transform:uppercase}
+
+:global(.mk-pill){
+  width:100%;
+  border-radius:999px;
+  padding:10px 12px;
+  border:1px solid rgba(0,0,0,0.08);
+  background:rgba(255,255,255,0.72);
+  box-shadow:
+    6px 6px 16px rgba(0,0,0,0.10),
+    -6px -6px 16px rgba(255,255,255,0.9);
+  outline:none;
+  transition: box-shadow .18s ease, transform .18s ease, border-color .18s ease;
+}
+
+:global(.mk-pill:focus-visible){
+  border-color: rgba(var(--focus-rgb), 0.45);
+  box-shadow:
+    8px 8px 18px rgba(0,0,0,0.12),
+    -8px -8px 18px rgba(255,255,255,0.95),
+    0 0 0 4px var(--focus-ring),
+    0 0 18px var(--focus-glow);
+  transform: translateY(-1px);
+}
+
+:global(.mk-actions){display:flex;gap:10px;align-items:center}
+:global(.mk-actions .neobtn){border-radius:999px}
+:global(.mk-hint){font-size:12px;opacity:.72;padding-left:6px}
+
+/* Ensure neo-* helper classes used in markup are available globally
+   Minimal, non-breaking definitions so UI components relying on
+   `.neo-card`, `.neobtn`, `.neobtn-ghost`, and `.neo-input` render
+   consistently when this module is loaded. */
+
+:global(.neo-card){
+  padding: 14px;
+  margin-bottom: 14px;
+  border-radius: 18px;
+  background: rgba(255,255,255,0.85);
+  box-shadow: 0 10px 30px rgba(15,23,42,0.06);
+}
+
+:global(.neo-input){
+  width: 100%;
+  padding: 0.55rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148,163,184,0.6);
+  background: var(--bg-soft);
+  box-shadow: inset 6px 6px 12px var(--shadow-dark), inset -6px -6px 12px var(--shadow-light);
+}
+
+:global(.neobtn){
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  background: linear-gradient(145deg, var(--accent-strong), #8faeff);
+  color: #fff;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 10px 26px rgba(37,99,235,0.28);
+}
+
+:global(.neobtn-ghost){
+  background: transparent;
+  color: var(--color-text-primary);
+  border: 1px solid rgba(148,163,184,0.6);
+}

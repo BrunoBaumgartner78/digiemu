@@ -11,7 +11,6 @@ export const dynamic = "force-dynamic";
 type SearchParams = { [key: string]: string | string[] | undefined };
 
 type Props = {
-  // Next 15/16: searchParams kann Promise sein
   searchParams?: Promise<SearchParams>;
 };
 
@@ -36,7 +35,6 @@ function buildQuery(params: Record<string, string | undefined>) {
 }
 
 function paginationWindow(current: number, total: number) {
-  // nice window: 1 … c-2 c-1 c c+1 c+2 … total
   const pages: (number | "…")[] = [];
   const add = (p: number | "…") => pages.push(p);
 
@@ -58,29 +56,57 @@ function paginationWindow(current: number, total: number) {
   return pages;
 }
 
+// TenantKey Helper (works even if tenant-context is missing)
+async function getTenantKeySafe(): Promise<string> {
+  try {
+    const mod = await import("@/lib/tenant-context");
+    const fn = (mod as any)?.currentTenant;
+    if (typeof fn === "function") {
+      const t = await fn();
+      const key = (t?.key || t?.tenantKey || "").toString().trim();
+      return key || "DEFAULT";
+    }
+  } catch {
+    // ignore
+  }
+  return "DEFAULT";
+}
+
 export default async function AdminOrdersPage({ searchParams }: Props) {
   const session = await getServerSession(auth);
   if (!session || (session.user as any)?.role !== "ADMIN") {
     redirect("/login");
   }
 
+  const tenantKey = await getTenantKeySafe();
   const sp: SearchParams = searchParams ? await searchParams : {};
 
-  // Filters
   const status = pickFirst(sp.status) ?? "ALL";
   const vendor = pickFirst(sp.vendor) ?? "ALL";
 
-  // Pagination
   const page = clampInt(pickFirst(sp.page), 1, 1, 10_000);
   const pageSize = clampInt(pickFirst(sp.pageSize), 20, 5, 100);
 
-  const where: any = {};
+  // ✅ tenant-safe base
+  const where: any = { tenantKey };
+
   if (status !== "ALL") where.status = status;
-  // ✅ Product.vendorId ist bei dir User-ID des Vendors
-  if (vendor !== "ALL") where.product = { vendorId: vendor };
+
+  // ✅ vendor filter tenant-safe:
+  // Orders -> product -> vendorId, plus enforce product belongs to current tenant
+  if (vendor !== "ALL") {
+    where.product = {
+      vendorId: vendor,
+      tenantKey,
+    };
+  } else {
+    // still keep product tenantKey safety (defensive)
+    where.product = { tenantKey };
+  }
 
   const [total, orders, vendors] = await Promise.all([
     prisma.order.count({ where }),
+
     prisma.order.findMany({
       where,
       include: {
@@ -91,7 +117,13 @@ export default async function AdminOrdersPage({ searchParams }: Props) {
               select: {
                 id: true,
                 email: true,
-                vendorProfile: { select: { displayName: true } },
+                // ✅ tenant-filtered vendorProfiles
+                vendorProfiles: {
+                  where: { tenantKey },
+                  select: { displayName: true, tenantKey: true },
+                  take: 1,
+                  orderBy: { createdAt: "desc" },
+                },
               },
             },
           },
@@ -102,12 +134,18 @@ export default async function AdminOrdersPage({ searchParams }: Props) {
       skip: (page - 1) * pageSize,
       take: pageSize,
     }),
+
     prisma.user.findMany({
       where: { role: "VENDOR" },
       select: {
         id: true,
         email: true,
-        vendorProfile: { select: { displayName: true } },
+        vendorProfiles: {
+          where: { tenantKey },
+          select: { displayName: true, tenantKey: true },
+          take: 1,
+          orderBy: { createdAt: "desc" },
+        },
       },
       orderBy: { createdAt: "desc" },
     }),
@@ -122,15 +160,8 @@ export default async function AdminOrdersPage({ searchParams }: Props) {
     pageSize: String(pageSize),
   };
 
-  const prevHref =
-    safePage > 1
-      ? buildQuery({ ...baseParams, page: String(safePage - 1) })
-      : undefined;
-
-  const nextHref =
-    safePage < totalPages
-      ? buildQuery({ ...baseParams, page: String(safePage + 1) })
-      : undefined;
+  const prevHref = safePage > 1 ? buildQuery({ ...baseParams, page: String(safePage - 1) }) : undefined;
+  const nextHref = safePage < totalPages ? buildQuery({ ...baseParams, page: String(safePage + 1) }) : undefined;
 
   const pageItems = paginationWindow(safePage, totalPages);
 
@@ -148,11 +179,12 @@ export default async function AdminOrdersPage({ searchParams }: Props) {
       <header className="admin-header">
         <div className="admin-kicker">DigiEmu · Admin</div>
         <h1 className="admin-title">Bestellungen</h1>
-        <p className="admin-subtitle">Alle Bestellungen, Einnahmen-Aufteilung & Status.</p>
+        <p className="admin-subtitle">
+          Tenant: <span className="font-mono">{tenantKey}</span> · Alle Bestellungen, Einnahmen-Aufteilung & Status.
+        </p>
       </header>
 
       <section className="mb-6">
-        {/* ✅ Wenn Filter geändert werden: zurück auf Seite 1 */}
         <form className="flex flex-wrap gap-2 items-center">
           <input type="hidden" name="page" value="1" />
           <input type="hidden" name="pageSize" value={String(pageSize)} />
@@ -170,9 +202,9 @@ export default async function AdminOrdersPage({ searchParams }: Props) {
             Vendor:
             <select name="vendor" defaultValue={vendor} className="input-neu ml-2">
               <option value="ALL">Alle</option>
-              {vendors.map((v) => (
+              {vendors.map((v: any) => (
                 <option key={v.id} value={v.id}>
-                  {v.vendorProfile?.displayName || v.email}
+                  {v.vendorProfiles?.[0]?.displayName || v.email}
                 </option>
               ))}
             </select>
@@ -180,11 +212,7 @@ export default async function AdminOrdersPage({ searchParams }: Props) {
 
           <label>
             Pro Seite:
-            <select
-              name="pageSize"
-              defaultValue={String(pageSize)}
-              className="input-neu ml-2"
-            >
+            <select name="pageSize" defaultValue={String(pageSize)} className="input-neu ml-2">
               <option value="10">10</option>
               <option value="20">20</option>
               <option value="50">50</option>
@@ -202,17 +230,14 @@ export default async function AdminOrdersPage({ searchParams }: Props) {
             <>0 Bestellungen</>
           ) : (
             <>
-              Zeige <strong>{from}</strong>–<strong>{to}</strong> von{" "}
-              <strong>{total}</strong> Bestellungen
+              Zeige <strong>{from}</strong>–<strong>{to}</strong> von <strong>{total}</strong> Bestellungen
             </>
           )}
         </div>
       </section>
 
       {orders.length === 0 ? (
-        <div className="admin-card text-[var(--text-muted)]">
-          Keine Bestellungen gefunden.
-        </div>
+        <div className="admin-card text-[var(--text-muted)]">Keine Bestellungen gefunden.</div>
       ) : (
         <>
           <div className="overflow-x-auto">
@@ -231,19 +256,19 @@ export default async function AdminOrdersPage({ searchParams }: Props) {
                 </tr>
               </thead>
               <tbody>
-                {orders.map((order) => (
+                {orders.map((order: any) => (
                   <tr key={order.id}>
                     <td className="font-mono text-xs">{order.id.slice(0, 8)}…</td>
                     <td>{order.product?.title || "-"}</td>
                     <td>
-                      {order.product?.vendor?.vendorProfile?.displayName ||
+                      {order.product?.vendor?.vendorProfiles?.[0]?.displayName ||
                         order.product?.vendor?.email ||
                         "-"}
                     </td>
                     <td>{order.buyer?.email || "-"}</td>
-                    <td>{(order.amountCents / 100).toFixed(2)}</td>
-                    <td>{(order.platformEarningsCents / 100).toFixed(2)}</td>
-                    <td>{(order.vendorEarningsCents / 100).toFixed(2)}</td>
+                    <td>{((order.amountCents ?? 0) / 100).toFixed(2)}</td>
+                    <td>{((order.platformEarningsCents ?? 0) / 100).toFixed(2)}</td>
+                    <td>{((order.vendorEarningsCents ?? 0) / 100).toFixed(2)}</td>
                     <td>
                       <StatusBadge status={order.status} />
                     </td>
@@ -254,11 +279,7 @@ export default async function AdminOrdersPage({ searchParams }: Props) {
             </table>
           </div>
 
-          {/* Pagination */}
-          <nav
-            className="mt-5 flex flex-wrap items-center gap-2"
-            aria-label="Pagination"
-          >
+          <nav className="mt-5 flex flex-wrap items-center gap-2" aria-label="Pagination">
             {prevHref ? (
               <Link className="neobtn-sm" href={prevHref}>
                 ← Zurück
@@ -277,10 +298,7 @@ export default async function AdminOrdersPage({ searchParams }: Props) {
                   <Link
                     key={p}
                     href={buildQuery({ ...baseParams, page: String(p) })}
-                    className={
-                      "neobtn-sm " +
-                      (p === safePage ? " !bg-[var(--accent)] !text-white" : "")
-                    }
+                    className={"neobtn-sm " + (p === safePage ? " !bg-[var(--accent)] !text-white" : "")}
                     aria-current={p === safePage ? "page" : undefined}
                   >
                     {p}

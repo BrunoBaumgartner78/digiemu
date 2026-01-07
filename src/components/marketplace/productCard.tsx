@@ -2,45 +2,51 @@
 "use client";
 
 import Link from "next/link";
+import cardStyles from "./ProductCard.module.css";
 
 type ProductCardProps = {
   id: string;
   title: string;
-  price: number;
-  thumbSrc?: string | null; // ✅ signierter Proxy-URL vom Server
+  price?: number; // price in CHF (float) for backward compat
+  priceCents?: number; // optional cents value
+  category?: string;
+  thumbSrc?: string | null; // optional signed proxy URL
 };
 
-export function ProductCard({ id, title, price, thumbSrc }: ProductCardProps) {
+function formatCHF(priceOrCents: number) {
+  if (!priceOrCents) return "CHF 0.00";
+  // If value looks like cents (>=1000) treat as cents, otherwise treat as CHF
+  const chf = Math.abs(priceOrCents) >= 1000 ? priceOrCents / 100 : priceOrCents;
+  return new Intl.NumberFormat("de-CH", { style: "currency", currency: "CHF" }).format(chf);
+}
+
+export function ProductCard({ id, title, price = 0, priceCents, category, thumbSrc }: ProductCardProps) {
+  const src = thumbSrc && thumbSrc.trim().length > 0 ? thumbSrc : `/api/media/thumbnail/${encodeURIComponent(id)}?variant=blur`;
+  const cents = typeof priceCents === "number" ? priceCents : Math.round((price || 0) * 100);
+
   return (
-    <div className="neocard group">
-      <div className="relative aspect-square overflow-hidden rounded-2xl">
-        {thumbSrc ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={thumbSrc}
-            alt={title}
-            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-            loading="lazy"
-            referrerPolicy="no-referrer"
-            draggable={false}
-          />
-        ) : (
-          <div className="h-full w-full flex items-center justify-center text-3xl opacity-70">
-            💾
-          </div>
-        )}
+    <Link href={`/product/${id}`} className={cardStyles.card}>
+      <div className={cardStyles.media}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          className={cardStyles.img}
+          loading="lazy"
+          decoding="async"
+          src={src}
+          alt={title}
+          referrerPolicy="no-referrer"
+          draggable={false}
+        />
       </div>
 
-      <div className="mt-3 px-1 space-y-1">
-        <h3 className="text-sm font-medium text-[var(--text)] line-clamp-2">{title}</h3>
-        <p className="text-sm font-semibold text-[var(--text-soft)]">CHF {price.toFixed(2)}</p>
-      </div>
+      <div className={cardStyles.body}>
+        <h3 className={cardStyles.title}>{title}</h3>
 
-      <div className="mt-3">
-        <Link href={`/product/${id}`} className="neobutton w-full text-center">
-          Details
-        </Link>
+        <div className={cardStyles.metaRow}>
+          <span className={cardStyles.pill}>{category ?? "Produkt"}</span>
+          <span className={cardStyles.price}>{formatCHF(cents)}</span>
+        </div>
       </div>
-    </div>
+    </Link>
   );
 }

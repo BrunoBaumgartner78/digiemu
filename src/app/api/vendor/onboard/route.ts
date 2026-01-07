@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { currentTenant } from "@/lib/tenant-context";
 
 export async function POST() {
   const session = await getServerSession(authOptions);
@@ -37,14 +38,18 @@ export async function POST() {
 
   const userId = dbUser.id;
 
-  // VendorProfile suchen oder anlegen
+  // VendorProfile suchen oder anlegen (tenant-scoped)
+  const { tenantKey: rawTenantKey } = await currentTenant();
+  const tenantKey = rawTenantKey ?? "DEFAULT";
+
   let vendorProfile = await prisma.vendorProfile.findUnique({
-    where: { userId },
+    where: { tenantKey_userId: { tenantKey, userId } },
   });
 
   if (!vendorProfile) {
     vendorProfile = await prisma.vendorProfile.create({
       data: {
+        tenantKey,
         userId,
         displayName: dbUser.name ?? dbUser.email ?? "Vendor",
       },

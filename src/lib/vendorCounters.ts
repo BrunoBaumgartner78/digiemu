@@ -24,10 +24,11 @@ export async function recomputeVendorCounters(vendorUserId: string) {
   const totalRevenueCents = revenueAgg._sum.vendorEarningsCents ?? 0;
   const lastSaleAt = revenueAgg._max.createdAt ?? null;
 
-  // Ensure VendorProfile exists
+  // Ensure VendorProfile exists (tenant-scoped). Use DEFAULT tenant when no tenant context is available.
+  const tenantKey = process.env.DEFAULT_TENANT_KEY || "DEFAULT";
   const vp = await prisma.vendorProfile.upsert({
-    where: { userId: vendorUserId },
-    create: { userId: vendorUserId },
+    where: { tenantKey_userId: { tenantKey, userId: vendorUserId } as any },
+    create: { userId: vendorUserId, tenantKey },
     update: {},
     select: { id: true, userId: true },
   });

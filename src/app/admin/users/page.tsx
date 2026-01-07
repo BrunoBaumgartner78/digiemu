@@ -4,7 +4,9 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { currentTenant } from "@/lib/tenant-context";
 import AdminUserStatusToggle from "./AdminUserStatusToggle";
+import AdminVendorApprovalToggle from "./AdminVendorApprovalToggle";
 
 export const dynamic = "force-dynamic";
 
@@ -62,9 +64,10 @@ export default async function AdminUsersPage({
     redirect("/dashboard");
   }
 
-  // Next 16: searchParams kann ein Promise sein → immer unwrap
-  const params = await Promise.resolve(searchParams ?? {});
+  const { host, tenantKey } = await currentTenant();
+  console.log("[admin/users] host:", host, "tenantKey:", tenantKey);
 
+  const params = await Promise.resolve(searchParams ?? {});
   const search = String(params.q ?? "");
   const role = String(params.role ?? "ALL");
 
@@ -86,7 +89,14 @@ export default async function AdminUsersPage({
       orderBy: { createdAt: "desc" },
       take: pageSize,
       skip: (page - 1) * pageSize,
-      include: { orders: true, products: true },
+      include: {
+        orders: true,
+        products: true,
+        // ✅ multi-tenant relation
+        vendorProfiles: {
+          select: { id: true, status: true, tenantKey: true },
+        },
+      },
     }),
     prisma.user.count({ where }),
   ]);
@@ -104,9 +114,7 @@ export default async function AdminUsersPage({
     safePage > 1 ? buildQuery({ ...baseParams, page: String(safePage - 1) }) : undefined;
 
   const nextHref =
-    safePage < totalPages
-      ? buildQuery({ ...baseParams, page: String(safePage + 1) })
-      : undefined;
+    safePage < totalPages ? buildQuery({ ...baseParams, page: String(safePage + 1) }) : undefined;
 
   const pageItems = paginationWindow(safePage, totalPages);
 
@@ -122,13 +130,22 @@ export default async function AdminUsersPage({
       </div>
 
       <header className="admin-header">
+        {/* Maintenance helper */}
+        <form
+          action="/api/admin/maintenance/backfill-products"
+          method="POST"
+          style={{ marginTop: 12 }}
+        >
+          <button className="neobtn-sm" type="submit" title="Fix old products so they show up in Marketplace">
+            Produkte backfillen (tenantKey + vendorProfileId)
+          </button>
+        </form>
         <div className="admin-kicker">DigiEmu · Admin</div>
         <h1 className="admin-title">Userverwaltung</h1>
         <p className="admin-subtitle">Alle Nutzer, Rollen & Sperrstatus im Überblick.</p>
       </header>
 
       <div className="space-y-4">
-        {/* Filter (nur eine UI, wirkliches GET-Form) */}
         <form
           className="flex flex-wrap gap-3 items-center justify-between"
           method="GET"
@@ -158,11 +175,7 @@ export default async function AdminUsersPage({
 
                 <label className="flex items-center gap-2">
                   <span className="text-xs text-[var(--text-muted)]">Pro Seite</span>
-                  <select
-                    name="pageSize"
-                    defaultValue={String(pageSize)}
-                    className="input-neu w-24"
-                  >
+                  <select name="pageSize" defaultValue={String(pageSize)} className="input-neu w-24">
                     <option value="10">10</option>
                     <option value="25">25</option>
                     <option value="50">50</option>
@@ -170,7 +183,6 @@ export default async function AdminUsersPage({
                   </select>
                 </label>
 
-                {/* bei Filter immer auf Seite 1 */}
                 <input type="hidden" name="page" value="1" />
 
                 <button type="submit" className="neobtn-sm">
@@ -192,7 +204,6 @@ export default async function AdminUsersPage({
           </span>
         </form>
 
-        {/* Tabelle */}
         <div className="overflow-x-auto rounded-2xl border border-[var(--neo-card-border)] bg-[var(--neo-card-bg-soft)] shadow-[var(--neo-card-shadow-soft)]">
           <table className="min-w-full text-sm admin-table">
             <thead>
@@ -201,6 +212,7 @@ export default async function AdminUsersPage({
                 <th className="text-left py-2 px-4">Name</th>
                 <th className="text-left py-2 px-4">Rolle</th>
                 <th className="text-left py-2 px-4">Status</th>
+                <th className="text-left py-2 px-4">Vendor</th>
                 <th className="text-left py-2 px-4">Erstellt</th>
                 <th className="text-left py-2 px-4">Aktionen</th>
               </tr>
@@ -209,45 +221,90 @@ export default async function AdminUsersPage({
             <tbody>
               {users.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-6 text-center text-[var(--text-muted)] text-sm">
+                  <td colSpan={7} className="py-6 text-center text-[var(--text-muted)] text-sm">
                     Keine Nutzer gefunden.
                   </td>
                 </tr>
               ) : (
-                users.map((user) => (
-                  <tr key={user.id} className="border-b border-slate-200/40 last:border-0">
-                    <td className="text-[var(--text-main)] py-2 px-4">
-                      <Link href={`/admin/users/${user.id}`} className="underline">
-                        {user.email}
-                      </Link>
-                    </td>
-                    <td className="text-[var(--text-main)] py-2 px-4">{user.name ?? "—"}</td>
-                    <td className="text-[var(--text-main)] py-2 px-4">{user.role}</td>
-                    <td className="py-2 px-4">
-                      {user.isBlocked ? (
-                        <span className="inline-flex rounded-full bg-rose-500/10 text-rose-500 px-3 py-0.5 text-xs font-medium">
-                          Gesperrt
+                users.map((user) => {
+                  const vps = (user as any).vendorProfiles as
+                    | Array<{ id: string; status: string; tenantKey: string | null }>
+                    | undefined;
+
+                    const effectiveTenantKey = tenantKey ?? "DEFAULT";
+                    const vp =
+                      vps?.find((p) => (p.tenantKey ?? "DEFAULT") === effectiveTenantKey) ??
+                      vps?.find((p) => (p.tenantKey ?? "DEFAULT") === "DEFAULT") ??
+                      vps?.[0] ??
+                      null;
+
+                  // ✅ Vendor actions for role=VENDOR even if profile missing
+                  const isVendor = user.role === "VENDOR" || !!vp;
+                  const vendorStatus = vp ? vp.status : isVendor ? "NO_PROFILE" : "—";
+                  console.log("tenantKey:", tenantKey, "vps:", vps);
+
+                  return (
+                    <tr key={user.id} className="border-b border-slate-200/40 last:border-0">
+                      <td className="text-[var(--text-main)] py-2 px-4">
+                        <Link href={`/admin/users/${user.id}`} className="underline">
+                          {user.email}
+                        </Link>
+                      </td>
+
+                      <td className="text-[var(--text-main)] py-2 px-4">{user.name ?? "—"}</td>
+                      <td className="text-[var(--text-main)] py-2 px-4">{user.role}</td>
+
+                      <td className="py-2 px-4">
+                        {user.isBlocked ? (
+                          <span className="inline-flex rounded-full bg-rose-500/10 text-rose-500 px-3 py-0.5 text-xs font-medium">
+                            Gesperrt
+                          </span>
+                        ) : (
+                          <span className="inline-flex rounded-full bg-emerald-500/10 text-emerald-500 px-3 py-0.5 text-xs font-medium">
+                            Aktiv
+                          </span>
+                        )}
+                      </td>
+
+                      <td className="py-2 px-4">
+                        <span className="inline-flex rounded-full bg-slate-500/10 text-slate-700 px-3 py-0.5 text-xs font-medium">
+                          {vendorStatus}
                         </span>
-                      ) : (
-                        <span className="inline-flex rounded-full bg-emerald-500/10 text-emerald-500 px-3 py-0.5 text-xs font-medium">
-                          Aktiv
-                        </span>
-                      )}
-                    </td>
-                    <td className="text-[var(--text-muted)] text-xs py-2 px-4">
-                      {new Date(user.createdAt).toLocaleDateString("de-CH")}
-                    </td>
-                    <td className="py-2 px-4">
-                      <AdminUserStatusToggle userId={user.id} isBlocked={user.isBlocked} />
-                    </td>
-                  </tr>
-                ))
+                      </td>
+
+                      <td className="text-[var(--text-muted)] text-xs py-2 px-4">
+                        {new Date(user.createdAt).toLocaleDateString("de-CH")}
+                      </td>
+
+                      <td className="py-2 px-4 flex flex-wrap gap-2">
+                        <AdminUserStatusToggle userId={user.id} isBlocked={user.isBlocked} />
+
+                        {isVendor && (
+                          <>
+                            {!vp ? (
+                              <form action={`/api/admin/vendors/bootstrap`} method="POST">
+                                <input type="hidden" name="userId" value={user.id} />
+                                <button type="submit" className="neobtn-sm">
+                                  VendorProfile anlegen
+                                </button>
+                              </form>
+                            ) : (
+                              <AdminVendorApprovalToggle
+                                vendorProfileId={vp.id}
+                                status={(vp.status as any) ?? null}
+                              />
+                            )}
+                          </>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
         </div>
 
-        {/* Pagination */}
         {totalPages > 1 && (
           <nav className="flex flex-wrap items-center justify-end gap-2 mt-2" aria-label="Pagination">
             {prevHref ? (
@@ -268,9 +325,7 @@ export default async function AdminUsersPage({
                   <Link
                     key={p}
                     href={buildQuery({ ...baseParams, page: String(p) })}
-                    className={
-                      "neobtn-sm " + (p === safePage ? " !bg-[var(--accent)] !text-white" : "")
-                    }
+                    className={"neobtn-sm " + (p === safePage ? " !bg-[var(--accent)] !text-white" : "")}
                     aria-current={p === safePage ? "page" : undefined}
                   >
                     {p}

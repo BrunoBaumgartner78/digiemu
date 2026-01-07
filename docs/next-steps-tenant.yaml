@@ -1,0 +1,168 @@
+version: "1.0"
+project: "digiemu"
+scope:
+  tenant_key_strategy: "DEFAULT" # konsistent in DB, keine null-tenants
+  tenant_resolution_source: "TenantDomain.domain -> Tenant.key"
+  rule_of_thumb:
+    - "Public/Shop Queries IMMER mit tenantKey filtern."
+    - "User ist global, VendorProfile ist tenant-lokal (vendorProfiles plural)."
+    - "Kein findUnique(where: { userId }) auf VendorProfile (weil nicht unique global)."
+
+step_4_tenant_safe_queries:
+  goal: "Alle öffentlichen & shop-relevanten Datenzugriffe strikt tenant-isolieren."
+  core_patterns:
+    current_tenant:
+      description: "Tenant über Domain/Host auflösen und tenant.key verwenden."
+      usage:
+        - "const tenant = await currentTenant();"
+        - "tenantKey = tenant.key"
+    query_filters:
+      required_where:
+        - "tenantKey: tenant.key"
+      typical_marketplace_where:
+        - "tenantKey: tenant.key"
+        - "isActive: true"
+        - "status: 'ACTIVE'"
+        - "vendor: { isBlocked: false }"
+      vendor_profile_lookup:
+        do:
+          - method: "findFirst"
+            where:
+              userId: "<session.user.id>"
+              tenantKey: "<tenant.key>"
+        dont:
+          - method: "findUnique"
+            where:
+              userId: "<session.user.id>"
+            reason: "VendorProfile ist nur unique via (tenantKey, userId), nicht userId alleine."
+    write_operations:
+      description: "Beim Erstellen/Updaten immer tenantKey setzen (niemals default implizit verlassen)."
+      on_create:
+        - "Product.tenantKey = tenant.key"
+        - "VendorProfile.tenantKey = tenant.key"
+        - "Order.tenantKey = tenant.key (oder product.tenantKey übernehmen)"
+        - "DownloadLink.tenantKey = order.tenantKey"
+        - "Payout.tenantKey = vendorProfile.tenantKey"
+    relation_consistency_checks:
+      description: "Tenant-Leaks verhindern durch Cross-checks."
+      checks:
+        - name: "Order -> Product tenantKey match"
+          assert: "order.tenantKey == product.tenantKey"
+        - name: "Product -> VendorProfile tenantKey match (wenn vendorProfileId gesetzt)"
+          assert: "product.tenantKey == vendorProfile.tenantKey"
+        - name: "VendorProfile -> User global"
+          assert: "vendorProfile.userId exists (no tenant constraint)"
+  hotspots_to_patch_first:
+    - area: "Marketplace"
+      files:
+        - "src/lib/products.ts"
+        - "src/app/marketplace/page.tsx"
+      required_change: "where.tenantKey = tenant.key"
+    - area: "Account Vendor Profile"
+      files:
+        - "src/app/account/profile/page.tsx"
+        - "src/lib/sellerTrust.ts"
+      required_change: "VendorProfile findFirst by (userId, tenantKey)"
+    - area: "Admin filters (optional tenant-aware)"
+      files:
+        - "src/app/admin/orders/page.tsx"
+        - "src/app/admin/vendors/page.tsx"
+      recommendation: "Admin kann ALL tenants sehen; optional Tenant-Filter hinzufügen."
+  acceptance_criteria:
+    - "Marketplace zeigt nur Produkte des aktuellen tenantKey."
+    - "Vendor-Profil-Seite liest/schreibt nur VendorProfile des aktuellen tenantKey."
+    - "Keine Prisma Errors mehr wegen vendorProfile vs vendorProfiles."
+    - "Keine Cross-tenant Daten sichtbar (manuelle Test: Domain wechseln)."
+
+step_5_admin_ui_tenant_management:
+  goal: "Admin kann Tenants + Domains pflegen (Create/Update/Block/Domain-Mapping) ohne DB-Handarbeit."
+  routes_pages:
+    list_tenants:
+      path: "/admin/tenants"
+      type: "page"
+      features:
+        - "Suche: key/name/domain"
+        - "Filter: status, plan"
+        - "Tabelle: Name, Key, Primary Domain, Status, Plan, CreatedAt"
+        - "Aktionen: Open, Block/Unblock"
+    new_tenant:
+      path: "/admin/tenants/new"
+      type: "page"
+      features:
+        - "Create Tenant: key, name, plan"
+        - "Optional: primary domain hinzufügen"
+        - "Validierung: key slug (a-z0-9-), domain unique"
+    tenant_detail:
+      path: "/admin/tenants/{tenantId}"
+      type: "page"
+      features:
+        - "Tenant edit: name, status, plan, branding (logoUrl, themeJson)"
+        - "Domains: add/remove/setPrimary"
+        - "Optional: Stats (counts) + Quick links"
+  api_endpoints:
+    create_tenant:
+      method: "POST"
+      path: "/api/admin/tenants/create"
+      body:
+        key: "string"
+        name: "string"
+        plan: "FREE|PRO|ENTERPRISE (optional)"
+        domain: "string (optional)"
+      behavior:
+        - "tenant erstellen"
+        - "wenn domain: TenantDomain erstellen (isPrimary=true wenn erste Domain)"
+    update_tenant:
+      method: "POST"
+      path: "/api/admin/tenants/update"
+      body:
+        tenantId: "string"
+        name: "string (optional)"
+        status: "ACTIVE|BLOCKED (optional)"
+        plan: "FREE|PRO|ENTERPRISE (optional)"
+        logoUrl: "string (optional)"
+        themeJson: "json (optional)"
+    add_domain:
+      method: "POST"
+      path: "/api/admin/tenants/domain/add"
+      body:
+        tenantId: "string"
+        domain: "string"
+        isPrimary: "boolean (optional)"
+      behavior:
+        - "domain unique erzwingen"
+        - "wenn isPrimary true: alle anderen Domains dieses Tenants auf false setzen"
+        - "wenn noch keine Domain existiert: setze isPrimary=true"
+    remove_domain:
+      method: "POST"
+      path: "/api/admin/tenants/domain/remove"
+      body:
+        domainId: "string"
+      behavior:
+        - "Domain löschen"
+        - "wenn primary gelöscht: eine verbleibende Domain als primary setzen (z.B. neueste)"
+    set_primary_domain:
+      method: "POST"
+      path: "/api/admin/tenants/domain/set-primary"
+      body:
+        tenantId: "string"
+        domainId: "string"
+      behavior:
+        - "Alle Domains des Tenants isPrimary=false"
+        - "domainId isPrimary=true"
+  admin_security:
+    required:
+      - "Alle Pages: getServerSession + role === ADMIN"
+      - "Alle API Routes: session check + ADMIN check"
+      - "AuditLog optional: action, targetType='Tenant|TenantDomain', targetId, meta"
+  ui_style:
+    system: "Neumorphism"
+    components:
+      - "neumorph-card"
+      - "neobtn / neobtn-sm"
+      - "StatusBadge (ACTIVE/BLOCKED)"
+      - "PlanBadge (FREE/PRO/ENTERPRISE)"
+  acceptance_criteria:
+    - "Admin kann Tenant anlegen und Domain zuweisen."
+    - "Domain-Mapping steuert currentTenant() (Domain wechseln -> anderer tenantKey)."
+    - "Blockierter Tenant kann optional im Resolver abgewiesen werden (Phase 2)."
+    - "Keine Domain-Duplikate; primary Domain pro Tenant genau 1."

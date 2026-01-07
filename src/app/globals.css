@@ -4,11 +4,299 @@
   padding-bottom: calc(120px + env(safe-area-inset-bottom));
 }
 
-.neo-card {
-  position: relative;
-  isolation: isolate;
-  z-index: 0;
+/* === DigiEmu Neo / Neon Styles === */
+
+/* (removed duplicate pressed-state block; Step 5 below is the single source of truth) */
+
+
+/* =========================
+   Step 5: Pressed / Active State
+   - Subtiler "inset" Eindruck beim Klicken
+   - Kein Hover-Neon nötig
+   - Reduced-motion: keine Transforms
+   ========================= */
+
+/* Buttons */
+.neobtn:active {
+  transform: translateY(1px);
+  box-shadow:
+    inset 6px 6px 14px rgba(0,0,0,0.14),
+    inset -6px -6px 14px rgba(255,255,255,0.90);
 }
+
+.neobtn.neobtn-ghost:active {
+  transform: translateY(1px);
+  box-shadow:
+    inset 6px 6px 14px rgba(0,0,0,0.10),
+    inset -6px -6px 14px rgba(255,255,255,0.88);
+}
+
+/* Inputs / Pills (z.B. Marketplace Filter) */
+.neo-input:active,
+.mk-pill:active {
+  transform: translateY(1px);
+  box-shadow:
+    inset 6px 6px 14px rgba(0,0,0,0.12),
+    inset -6px -6px 14px rgba(255,255,255,0.90);
+}
+
+/* Reduced motion: keep inset, skip translate */
+@media (prefers-reduced-motion: reduce) {
+  .neobtn:active,
+  .neobtn.neobtn-ghost:active,
+  .neo-input:active,
+  .mk-pill:active {
+    transform: none !important;
+  }
+}
+
+/* Optional: Links/Chips (falls vorhanden) */
+.neo-link:active {
+  transform: translateY(1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .neobtn:active,
+  .neobtn.neobtn-ghost:active,
+  .neo-input:active,
+  .mk-pill:active,
+  .neo-link:active {
+    transform: none;
+  }
+}
+
+/* -----------------------------------------
+   Micro-Interactions (ruhig, a11y-first)
+   - Kein Neon-Glow bei Hover (Mouse)
+   - Neon-Glow nur bei :focus-visible (Keyboard)
+   ----------------------------------------- */
+
+:root {
+  /* Default focus glow (RGB only, used with alpha) */
+  --focus-glow-rgb: 55 125 255;
+  --focus-ring-alpha: 0.16;
+  --focus-glow-alpha: 0.22;
+}
+
+/* Tenant-specific focus glow */
+html[data-tenant="bellu"] {
+  --focus-glow-rgb: 55 125 255; /* electric blue */
+}
+html[data-tenant="blue-lotos"] {
+  --focus-glow-rgb: 0 200 170; /* teal / lotus */
+}
+html[data-tenant="default"] {
+  --focus-glow-rgb: 55 125 255;
+}
+
+/* Default: keine browser-outline */
+.neobtn, .neo-input, .neo-card, a.neobtn, button.neobtn {
+  outline: none;
+}
+
+/* Maus/Hover: nur subtiler Lift, kein Ring */
+.neobtn:hover,
+a.neobtn:hover,
+button.neobtn:hover {
+  transform: translateY(-1px);
+}
+
+/* Pressed (active): leichter “inset” Eindruck, ruhig */
+.neobtn:active,
+a.neobtn:active,
+button.neobtn:active {
+  transform: translateY(0px);
+  box-shadow:
+    inset 2px 2px 6px rgba(0,0,0,0.12),
+    inset -2px -2px 6px rgba(255,255,255,0.85);
+}
+
+/* Input pressed (optional, minimal) */
+.neo-input:active {
+  box-shadow:
+    inset 2px 2px 6px rgba(0,0,0,0.10),
+    inset -2px -2px 6px rgba(255,255,255,0.85);
+}
+
+/* Cards: Hover minimal (optional, ruhig) */
+.neo-card:hover {
+  transform: translateY(-1px);
+}
+
+/* Focus-visible glow (keyboard only) */
+.neobtn:focus-visible,
+.neobtn-ghost:focus-visible,
+.neo-input:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: none;
+  box-shadow:
+    8px 8px 18px rgba(0,0,0,0.12),
+    -8px -8px 18px rgba(255,255,255,0.95),
+    0 0 0 4px rgba(var(--focus-glow-rgb) / var(--focus-ring-alpha)),
+    0 0 18px rgba(var(--focus-glow-rgb) / var(--focus-glow-alpha));
+  transform: translateY(-1px);
+}
+
+/* keep mouse focus clean */
+.neobtn:focus,
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+}
+
+/* Inputs: Hover NICHT glowy, nur leicht */
+.neo-input:hover {
+  transform: translateY(-1px);
+}
+
+/* Bei Mouse Click (focus ohne focus-visible) keinen Ring */
+.neobtn:focus:not(:focus-visible),
+a.neobtn:focus:not(:focus-visible),
+button.neobtn:focus:not(:focus-visible),
+.neo-input:focus:not(:focus-visible),
+.neo-card:focus:not(:focus-visible),
+a:focus:not(:focus-visible) {
+  box-shadow: none;
+}
+
+/* Motion respektieren */
+@media (prefers-reduced-motion: reduce) {
+  .neobtn, .neo-input, .neo-card, a.neobtn, button.neobtn {
+    transition: none !important;
+    transform: none !important;
+  }
+}
+
+.neo-card {
+            /* ─────────────────────────────────────────────
+               DigiEmu Neon / Neumorph Baseline (global)
+               ───────────────────────────────────────────── */
+
+            /* Soft neon tokens (no CSS vars required) */
+            position: relative;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.72);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            box-shadow:
+              10px 10px 24px rgba(0, 0, 0, 0.10),
+              -10px -10px 24px rgba(255, 255, 255, 0.90);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+          }
+
+          /* subtle neon top line */
+          .neo-card::before {
+            content: "";
+            position: absolute;
+            left: 14px;
+            right: 14px;
+            top: 10px;
+            height: 2px;
+            border-radius: 999px;
+            background: linear-gradient(
+              90deg,
+              rgba(55, 125, 255, 0.0),
+              rgba(55, 125, 255, 0.55),
+              rgba(120, 200, 255, 0.35),
+              rgba(55, 125, 255, 0.0)
+            );
+            filter: blur(0.2px);
+            pointer-events: none;
+          }
+
+          /* Inputs/selects in neumorph + neon focus */
+          .neo-input,
+          select.neo-input,
+          input.neo-input,
+          textarea.neo-input {
+            width: 100%;
+            border-radius: 999px;
+            padding: 10px 12px;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            background: rgba(255, 255, 255, 0.78);
+            box-shadow:
+              6px 6px 16px rgba(0, 0, 0, 0.10),
+              -6px -6px 16px rgba(255, 255, 255, 0.92);
+            outline: none;
+            transition:
+              box-shadow 0.18s ease,
+              transform 0.18s ease,
+              border-color 0.18s ease;
+          }
+
+          .neo-input:focus,
+          select.neo-input:focus,
+          input.neo-input:focus,
+          textarea.neo-input:focus {
+            border-color: rgba(55, 125, 255, 0.45);
+            box-shadow:
+              8px 8px 18px rgba(0, 0, 0, 0.12),
+              -8px -8px 18px rgba(255, 255, 255, 0.95),
+              0 0 0 4px rgba(55, 125, 255, 0.14),
+              0 0 20px rgba(55, 125, 255, 0.22);
+            transform: translateY(-1px);
+          }
+
+          /* Buttons: neon primary + ghost */
+          .neobtn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border-radius: 999px;
+            padding: 10px 14px;
+            border: 1px solid rgba(55, 125, 255, 0.28);
+            background: rgba(255, 255, 255, 0.70);
+            box-shadow:
+              8px 8px 18px rgba(0, 0, 0, 0.12),
+              -8px -8px 18px rgba(255, 255, 255, 0.95),
+              0 0 0 0 rgba(55, 125, 255, 0.0);
+            cursor: pointer;
+            font-weight: 700;
+            transition:
+              transform 0.16s ease,
+              box-shadow 0.16s ease,
+              border-color 0.16s ease,
+              background 0.16s ease;
+            user-select: none;
+            text-decoration: none;
+          }
+
+          .neobtn:hover {
+            transform: translateY(-1px);
+            border-color: rgba(55, 125, 255, 0.45);
+            box-shadow:
+              10px 10px 22px rgba(0, 0, 0, 0.14),
+              -10px -10px 22px rgba(255, 255, 255, 0.98),
+              0 0 22px rgba(55, 125, 255, 0.22);
+          }
+
+          .neobtn:active {
+            transform: translateY(0px);
+            box-shadow:
+              6px 6px 14px rgba(0, 0, 0, 0.12),
+              -6px -6px 14px rgba(255, 255, 255, 0.92);
+          }
+
+          .neobtn-ghost {
+            border-color: rgba(0, 0, 0, 0.10);
+            background: rgba(255, 255, 255, 0.55);
+            box-shadow:
+              6px 6px 16px rgba(0, 0, 0, 0.10),
+              -6px -6px 16px rgba(255, 255, 255, 0.90);
+            font-weight: 700;
+          }
+
+          .neobtn-ghost:hover {
+            border-color: rgba(55, 125, 255, 0.35);
+            box-shadow:
+              8px 8px 18px rgba(0, 0, 0, 0.12),
+              -8px -8px 18px rgba(255, 255, 255, 0.95),
+              0 0 18px rgba(55, 125, 255, 0.18);
+          }
 
 .neo-card:has(.recharts-responsive-container) {
   overflow: hidden;

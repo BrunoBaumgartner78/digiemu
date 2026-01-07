@@ -6,8 +6,41 @@ import { getBadgesForVendors } from "@/lib/trustBadges";
 import BadgeRow from "@/components/marketplace/BadgeRow";
 import styles from "./page.module.css";
 import SellerLink from "@/components/seller/SellerLink";
+import { MARKETPLACE_TENANT_KEY } from "@/lib/marketplaceTenant";
 
 export const dynamic = "force-dynamic";
+
+function signThumbUrl(productId: string, variant: "blur" | "full" = "full") {
+  const secret = (process.env.THUMB_TOKEN_SECRET ?? "").trim();
+  const base = `/api/media/thumbnail/${encodeURIComponent(productId)}`;
+  if (!secret) return `${base}?variant=${variant}`;
+
+  const exp = Date.now() + 60 * 60 * 1000;
+  const payload = `${productId}.${variant}.${exp}`;
+  const sig = crypto.createHmac("sha256", secret).update(payload).digest("hex");
+  return `${base}?variant=${variant}&exp=${exp}&sig=${sig}`;
+}
+
+type MarketplaceSearchParams = Record<string, string | string[] | undefined>;
+
+function spGet(sp: MarketplaceSearchParams, key: string): string {
+  const v = sp[key];
+  if (Array.isArray(v)) return (v[0] ?? "").trim();
+  return (v ?? "").trim();
+}
+
+function toInt(v: string, fallback: number) {
+  const n = Number(v);
+  return Number.isFinite(n) ? Math.trunc(n) : fallback;
+}
+
+function toCentsCHF(v: string): number | undefined {
+  const s = v.replace(",", ".").trim();
+  if (!s) return undefined;
+  const n = Number(s);
+  if (!Number.isFinite(n)) return undefined;
+  return Math.max(0, Math.round(n * 100));
+}
 
 const CATEGORY_FILTERS = [
   { key: "all", label: "Alle" },
@@ -21,115 +54,139 @@ const CATEGORY_FILTERS = [
   { key: "other", label: "Sonstiges" },
 ];
 
-type SearchParams = { [key: string]: string | string[] | undefined };
-type MarketplacePageProps = { searchParams?: Promise<SearchParams> };
+function MarketplaceFilters({
+  search,
+  category,
+  priceMode,
+  sort,
+  minCHF,
+  maxCHF,
+  total,
+}: {
+  search?: string | null;
+  category?: string | null;
+  priceMode?: string | null;
+  sort?: string | null;
+  minCHF?: string | null;
+  maxCHF?: string | null;
+  total: number;
+}) {
+  return (
+    <section className="neo-card" style={{ padding: 14, marginBottom: 14, borderRadius: 8 }}>
+      <form method="GET" style={{ display: "grid", gap: 10 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 10 }}>
+          <input name="q" defaultValue={search ?? undefined} placeholder="Suche (Titel, Beschreibung)…" className="neo-input" style={{ width: "100%" }} />
+        </div>
 
-/**
- * ✅ Server-side Token-Signing für Thumbnail Proxy
- * - verhindert URL-Leaks (Firebase URLs tauchen nie im HTML auf)
- */
-function signThumbUrl(productId: string, variant: "blur" | "full" = "blur") {
-  const secret = (process.env.THUMB_TOKEN_SECRET ?? "").trim();
-  const base = `/api/media/thumbnail/${encodeURIComponent(productId)}`;
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))",
+            gap: 10,
+            alignItems: "end",
+          }}
+        >
+          <div>
+            <div style={{ fontSize: 12, opacity: 0.7, marginBottom: 6 }}>Kategorie</div>
+            <select name="category" defaultValue={category ?? "all"} className="neo-input" style={{ width: "100%" }}>
+              <option value="all">Alle</option>
+              <option value="ebook">E-Book</option>
+              <option value="template">Template</option>
+              <option value="course">Kurs</option>
+              <option value="audio">Audio</option>
+              <option value="video">Video</option>
+              <option value="coaching">Coaching</option>
+              <option value="bundle">Bundle</option>
+              <option value="other">Sonstiges</option>
+            </select>
+          </div>
 
-  // Dev-friendly
-  if (!secret) return `${base}?variant=${variant}`;
+          <div>
+            <div style={{ fontSize: 12, opacity: 0.7, marginBottom: 6 }}>Preis</div>
+            <select name="price" defaultValue={priceMode ?? "all"} className="neo-input" style={{ width: "100%" }}>
+              <option value="all">Alle</option>
+              <option value="free">Gratis</option>
+              <option value="paid">Kostenpflichtig</option>
+            </select>
+          </div>
 
-  const exp = Date.now() + 60 * 60 * 1000; // 60 Minuten
-  const payload = `${productId}.${variant}.${exp}`;
-  const sig = crypto.createHmac("sha256", secret).update(payload).digest("hex");
-  return `${base}?variant=${variant}&exp=${exp}&sig=${sig}`;
+          <div>
+            <div style={{ fontSize: 12, opacity: 0.7, marginBottom: 6 }}>Sortierung</div>
+            <select name="sort" defaultValue={sort ?? "newest"} className="neo-input" style={{ width: "100%" }}>
+              <option value="newest">Neueste</option>
+              <option value="price_asc">Preis ↑</option>
+              <option value="price_desc">Preis ↓</option>
+            </select>
+          </div>
+
+          <div>
+            <div style={{ fontSize: 12, opacity: 0.7, marginBottom: 6 }}>Min (CHF)</div>
+            <input name="min" defaultValue={minCHF ?? undefined} inputMode="decimal" placeholder="0.00" className="neo-input" style={{ width: "100%" }} />
+          </div>
+
+          <div>
+            <div style={{ fontSize: 12, opacity: 0.7, marginBottom: 6 }}>Max (CHF)</div>
+            <input name="max" defaultValue={maxCHF ?? undefined} inputMode="decimal" placeholder="99.00" className="neo-input" style={{ width: "100%" }} />
+          </div>
+
+          <div style={{ display: "flex", gap: 10 }}>
+            <button type="submit" className="neobtn" style={{ width: "100%" }}>
+              Filtern
+            </button>
+            <a href="/marketplace" className="neobtn neobtn-ghost" style={{ width: "100%", textAlign: "center" }}>
+              Reset
+            </a>
+          </div>
+
+          <input type="hidden" name="page" value="1" />
+        </div>
+
+        <div style={{ fontSize: 12, opacity: 0.7 }}>{total} Treffer</div>
+      </form>
+    </section>
+  );
 }
 
-export default async function MarketplacePage(props: MarketplacePageProps) {
-  const params: SearchParams = props.searchParams ? await props.searchParams : {};
+export default async function Page({ searchParams }: { searchParams?: MarketplaceSearchParams | Promise<MarketplaceSearchParams> }) {
+  const sp = (await (searchParams as Promise<MarketplaceSearchParams | undefined>)) ?? {};
 
-  const pageParam = params.page;
-  const categoryParam = params.category;
-  const qParam = params.q;
+  const page = Math.max(1, toInt(spGet(sp, "page"), 1));
+  const category = spGet(sp, "category") || "all";
+  const search = spGet(sp, "q") || "";
+  const sort = spGet(sp, "sort") || "newest";
+  const priceMode = spGet(sp, "price") || "all";
+  const minCHF = spGet(sp, "min") || undefined;
+  const maxCHF = spGet(sp, "max") || undefined;
 
-  const resolvedPageParam =
-    typeof pageParam === "string" ? pageParam : Array.isArray(pageParam) ? pageParam[0] : undefined;
+  const minPriceCents = typeof minCHF === "string" ? toCentsCHF(minCHF) : undefined;
+  const maxPriceCents = typeof maxCHF === "string" ? toCentsCHF(maxCHF) : undefined;
 
-  const resolvedCategoryParam =
-    typeof categoryParam === "string"
-      ? categoryParam
-      : Array.isArray(categoryParam)
-      ? categoryParam[0]
-      : undefined;
+  // NOTE: Marketplace is platform-wide, not host/white-label scoped
+  // For UI context you may still resolve the host tenant, but do NOT use host-scoped resolution for marketplace data scoping
+  const tenantKey = MARKETPLACE_TENANT_KEY;
 
-  const resolvedSearchParam =
-    typeof qParam === "string" ? qParam : Array.isArray(qParam) ? qParam[0] : "";
-
-  const page =
-    resolvedPageParam && !isNaN(Number(resolvedPageParam)) ? Math.max(1, Number(resolvedPageParam)) : 1;
-
-  const category = resolvedCategoryParam && resolvedCategoryParam.length > 0 ? resolvedCategoryParam : "all";
-  const search = resolvedSearchParam ?? "";
-
-  const resolvedSortParam =
-    typeof params.sort === "string" ? params.sort : Array.isArray(params.sort) ? params.sort[0] : undefined;
-
-  const resolvedMinPriceParam =
-    typeof params.minPrice === "string" ? params.minPrice : Array.isArray(params.minPrice) ? params.minPrice[0] : undefined;
-
-  const resolvedMaxPriceParam =
-    typeof params.maxPrice === "string" ? params.maxPrice : Array.isArray(params.maxPrice) ? params.maxPrice[0] : undefined;
-
-  const sort = resolvedSortParam && resolvedSortParam.length > 0 ? resolvedSortParam : "newest";
-  const minPrice = resolvedMinPriceParam ?? undefined;
-  const maxPrice = resolvedMaxPriceParam ?? undefined;
-
-  const parseCHFToCents = (v?: string | undefined): number | undefined => {
-    if (v === undefined || v === null) return undefined;
-    const s = String(v).trim();
-    if (s.length === 0) return undefined;
-    const n = Number(s);
-    if (Number.isNaN(n)) return undefined;
-    return Math.round(n * 100);
-  };
-
-  const minPriceCents = parseCHFToCents(minPrice as string | undefined);
-  const maxPriceCents = parseCHFToCents(maxPrice as string | undefined);
-
-  const { items: productsRaw, total: totalRaw, pageCount: pageCountRaw } = await getMarketplaceProducts({
+  const { items: products, total, pageCount } = await getMarketplaceProducts({
+    tenantKey,
     page,
     pageSize: PAGE_SIZE,
-    category,
-    search,
+    category: category === "all" ? undefined : category,
+    search: search ? search : undefined,
     sort: sort as any,
     minPriceCents,
     maxPriceCents,
   });
 
-  const products = productsRaw ?? [];
-  const total = typeof totalRaw === "number" ? totalRaw : products.length;
-  const pageCount = typeof pageCountRaw === "number" && pageCountRaw > 0 ? pageCountRaw : 1;
-
   const hasPrev = page > 1;
   const hasNext = page < pageCount;
 
-  const baseQuery = (extra: { page?: number; category?: string; q?: string; sort?: string; minPrice?: string; maxPrice?: string }) => {
-    const query: Record<string, string> = {};
-
-    const categoryToUse = extra.category !== undefined ? extra.category : category;
-    if (categoryToUse && categoryToUse !== "all") query.category = categoryToUse;
-
-    const searchToUse = extra.q !== undefined ? extra.q : search;
-    if (searchToUse && searchToUse.trim().length > 0) query.q = searchToUse.trim();
-
-    if (extra.page !== undefined) query.page = String(extra.page);
-
-    const sortToUse = extra.sort !== undefined ? extra.sort : sort;
-    if (sortToUse && String(sortToUse).length > 0 && sortToUse !== "newest") query.sort = String(sortToUse);
-
-    const minToUse = extra.minPrice !== undefined ? extra.minPrice : (minPrice as any);
-    if (minToUse !== undefined && String(minToUse).trim().length > 0) query.minPrice = String(minToUse);
-
-    const maxToUse = extra.maxPrice !== undefined ? extra.maxPrice : (maxPrice as any);
-    if (maxToUse !== undefined && String(maxToUse).trim().length > 0) query.maxPrice = String(maxToUse);
-
-    return query;
+  const baseQuery = (extra: Record<string, any> = {}) => {
+    const q: Record<string, any> = {};
+    if (category && category !== "all") q.category = category;
+    if (search && String(search).trim().length > 0) q.q = String(search).trim();
+    if (sort && String(sort) !== "newest") q.sort = String(sort);
+    if (minCHF !== undefined && minCHF !== "") q.min = String(minCHF);
+    if (maxCHF !== undefined && maxCHF !== "") q.max = String(maxCHF);
+    return { ...q, ...extra };
   };
 
   // Prepare badges for visible vendors (map vendorId -> vendorProfile)
@@ -143,6 +200,16 @@ export default async function MarketplacePage(props: MarketplacePageProps) {
 
   return (
     <div className={styles.page}>
+      <MarketplaceFilters
+        search={search}
+        category={category}
+        priceMode={priceMode}
+        sort={sort}
+        minCHF={minCHF}
+        maxCHF={maxCHF}
+        total={total}
+      />
+
       <div className={styles.inner}>
         <header className={styles.header}>
           <div>
@@ -151,18 +218,24 @@ export default async function MarketplacePage(props: MarketplacePageProps) {
             <div style={{ fontSize: 13, opacity: 0.75, marginTop: 6 }}>
               ✔ Verifizierte Verkäufer · ✔ Sichere Zahlungen · ✔ Sofortiger Download
             </div>
-            <p className={styles.subtitle}>
-              Digitale Produkte für Creator &amp; Coaches – sicher bezahlen und sofort herunterladen.
-            </p>
+            <p className={styles.subtitle}>Digitale Produkte für Creator &amp; Coaches – sicher bezahlen und sofort herunterladen.</p>
           </div>
 
           <form className={styles.searchBar} action="/marketplace">
             {category !== "all" && <input type="hidden" name="category" value={category} />}
             {sort && sort !== "newest" && <input type="hidden" name="sort" value={String(sort)} />}
-            {minPrice !== undefined && <input type="hidden" name="minPrice" value={String(minPrice)} />}
-            {maxPrice !== undefined && <input type="hidden" name="maxPrice" value={String(maxPrice)} />}
-            <input className={styles.searchInput} type="text" name="q" placeholder="Suche nach Titel oder Beschreibung …" defaultValue={search} />
-            <button className={styles.searchButton} type="submit">Suchen</button>
+              {minCHF !== undefined && minCHF !== "" && <input type="hidden" name="min" value={String(minCHF)} />}
+              {maxCHF !== undefined && maxCHF !== "" && <input type="hidden" name="max" value={String(maxCHF)} />}
+            <input
+              className={styles.searchInput}
+              type="text"
+              name="q"
+              placeholder="Suche nach Titel oder Beschreibung …"
+              defaultValue={search}
+            />
+            <button className={styles.searchButton} type="submit">
+              Suchen
+            </button>
           </form>
         </header>
 
@@ -189,7 +262,9 @@ export default async function MarketplacePage(props: MarketplacePageProps) {
           {search && search.trim().length > 0 && <input type="hidden" name="q" value={search} />}
 
           <div className={styles.controlGroup}>
-            <label className={styles.controlLabel} htmlFor="sort">Sortieren</label>
+            <label className={styles.controlLabel} htmlFor="sort">
+              Sortieren
+            </label>
             <select id="sort" name="sort" defaultValue={String(sort)} className={styles.controlSelect}>
               <option value="newest">Neueste</option>
               <option value="price_asc">Preis aufsteigend</option>
@@ -198,23 +273,43 @@ export default async function MarketplacePage(props: MarketplacePageProps) {
           </div>
 
           <div className={styles.controlGroup}>
-            <label className={styles.controlLabel} htmlFor="minPrice">Min CHF</label>
-            <input id="minPrice" name="minPrice" type="number" step="0.5" placeholder="Min CHF" defaultValue={minPrice ?? ""} className={styles.controlInput} />
+            <label className={styles.controlLabel} htmlFor="min">
+                Min CHF
+              </label>
+              <input
+                id="min"
+                name="min"
+                type="number"
+                step="0.5"
+                placeholder="Min CHF"
+                defaultValue={minCHF ?? ""}
+                className={styles.controlInput}
+              />
           </div>
 
           <div className={styles.controlGroup}>
-            <label className={styles.controlLabel} htmlFor="maxPrice">Max CHF</label>
-            <input id="maxPrice" name="maxPrice" type="number" step="0.5" placeholder="Max CHF" defaultValue={maxPrice ?? ""} className={styles.controlInput} />
+              <label className={styles.controlLabel} htmlFor="max">
+                Max CHF
+              </label>
+              <input
+                id="max"
+                name="max"
+                type="number"
+                step="0.5"
+                placeholder="Max CHF"
+                defaultValue={maxCHF ?? ""}
+                className={styles.controlInput}
+              />
           </div>
 
           <div>
-            <button type="submit" className={styles.searchButton}>Anwenden</button>
+            <button type="submit" className={styles.searchButton}>
+              Anwenden
+            </button>
           </div>
         </form>
 
-        {total === 0 && (
-          <div className={styles.emptyState}>Keine Produkte gefunden – passe deine Suche oder Kategorie an.</div>
-        )}
+        {total === 0 && <div className={styles.emptyState}>Keine Produkte gefunden – passe deine Suche oder Kategorie an.</div>}
 
         {products.length > 0 && (
           <section className={styles.gridSection}>
@@ -226,14 +321,15 @@ export default async function MarketplacePage(props: MarketplacePageProps) {
                 const thumbSrc = hasThumb ? signThumbUrl(p.id, "blur") : null;
 
                 const vendorProfile = p.vendorProfile ?? null;
+
                 const rawSellerName =
-                  (vendorProfile?.displayName as string | undefined) ||
-                  (vendorProfile?.user?.name as string | undefined) ||
-                  "Verkäufer";
+                  (vendorProfile?.displayName as string | undefined) || (vendorProfile?.user?.name as string | undefined) || "Verkäufer";
                 const sellerName = (rawSellerName || "Verkäufer").trim() || "Verkäufer";
                 const avatarUrl: string | undefined = vendorProfile?.avatarUrl ?? undefined;
 
+                // ✅ Option B: Marketplace liefert nur APPROVED + public, trotzdem defensiv:
                 const isPublic = vendorProfile?.isPublic === true;
+                const isApproved = vendorProfile?.status === "APPROVED";
                 const vendorProfileId: string | null = vendorProfile?.id ?? null;
 
                 return (
@@ -241,7 +337,6 @@ export default async function MarketplacePage(props: MarketplacePageProps) {
                     <Link href={`/product/${p.id}`} className={styles.cardBody}>
                       <div className={styles.cardImageWrapper}>
                         {thumbSrc ? (
-                          // ✅ bewusst <img> (kein Next/Image localPatterns Ärger + Querystrings ok)
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
                             src={thumbSrc}
@@ -249,11 +344,18 @@ export default async function MarketplacePage(props: MarketplacePageProps) {
                             className={`${styles.cardImage} ${styles.cardImageBlur}`}
                             loading="lazy"
                             referrerPolicy="no-referrer"
+                            // onError removed (Server Components cannot pass event handlers)
                           />
                         ) : (
                           <div className={styles.cardImagePlaceholder}>
-                            <span className={styles.cardImageIcon}>💾</span>
-                            <span className={styles.cardImageLabel}>Digitales Produkt</span>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src="/fallback-thumbnail.svg"
+                              alt=""
+                              className={styles.cardImage}
+                              loading="lazy"
+                              referrerPolicy="no-referrer"
+                            />
                           </div>
                         )}
                       </div>
@@ -304,16 +406,16 @@ export default async function MarketplacePage(props: MarketplacePageProps) {
                         )}
                       </div>
 
-                      {isPublic && vendorProfileId ? (
+                      {isPublic && isApproved && vendorProfileId ? (
                         <SellerLink vendorProfileId={vendorProfileId} productId={p.id} source="marketplace_card" className="neo-link">
                           {sellerName}
                         </SellerLink>
                       ) : (
                         <span style={{ fontWeight: 700 }}>
-                          {sellerName} <span style={{ fontSize: 11, opacity: 0.6 }}>(Profil privat)</span>
+                          {sellerName} <span style={{ fontSize: 11, opacity: 0.6 }}>(nicht freigeschaltet)</span>
                         </span>
                       )}
-                      {/* Badges (max 2) */}
+
                       <BadgeRow badges={badgesMap[p.vendorId] ?? []} max={2} />
                     </div>
 
@@ -335,7 +437,9 @@ export default async function MarketplacePage(props: MarketplacePageProps) {
 
         {pageCount > 1 && (
           <nav className={styles.pagination} aria-label="Seiten">
-            <div className={styles.paginationInfo}>Seite {page} von {pageCount} · {total} Produkte</div>
+            <div className={styles.paginationInfo}>
+              Seite {page} von {pageCount} · {total} Produkte
+            </div>
 
             <div className={styles.paginationButtons}>
               {hasPrev ? (

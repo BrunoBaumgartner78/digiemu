@@ -102,6 +102,7 @@ export async function POST(req: NextRequest) {
           priceCents: true,
           vendorId: true,
           vendorProfileId: true,
+          tenantKey: true,
         },
       });
 
@@ -166,8 +167,10 @@ export async function POST(req: NextRequest) {
         let vendorProfileId = product.vendorProfileId;
         if (!vendorProfileId) {
           const vp = await tx.vendorProfile.upsert({
-            where: { userId: product.vendorId },
-            create: { userId: product.vendorId },
+            where: {
+              tenantKey_userId: { tenantKey: product.tenantKey, userId: product.vendorId },
+            },
+            create: { userId: product.vendorId, tenantKey: product.tenantKey },
             update: {},
             select: { id: true },
           });

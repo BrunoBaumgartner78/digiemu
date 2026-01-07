@@ -17,34 +17,53 @@ export default async function AdminVendorEarningsPage() {
         <div className="neumorph-card max-w-md w-full p-8 text-center">
           <h1 className="text-xl font-bold mb-2">Kein Zugriff</h1>
           <p className="mb-4">Nur Admins dürfen diese Seite sehen.</p>
-          <Link href="/" className="neobtn">Zur Startseite</Link>
+          <Link href="/" className="neobtn">
+            Zur Startseite
+          </Link>
         </div>
       </main>
     );
   }
 
-  // Alle Orders mit Produkt und Vendor laden
+  // Nur benötigte Felder laden (performanter + stabiler)
   const orders = await prisma.order.findMany({
-    include: {
-      product: { include: { vendor: true } },
+    select: {
+      amountCents: true,
+      vendorEarningsCents: true,
+      platformEarningsCents: true,
+      product: {
+        select: {
+          vendor: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+        },
+      },
     },
     orderBy: { createdAt: "desc" },
   });
 
-  // Gruppieren nach vendorId
-  const vendorMap = new Map<string, {
-    vendorName: string;
-    vendorEmail: string;
-    totalOrders: number;
-    totalRevenueCents: number;
-    vendorEarningsCents: number;
-    platformEarningsCents: number;
-  }>();
+  const vendorMap = new Map<
+    string,
+    {
+      vendorName: string;
+      vendorEmail: string;
+      totalOrders: number;
+      totalRevenueCents: number;
+      vendorEarningsCents: number;
+      platformEarningsCents: number;
+    }
+  >();
 
   for (const order of orders) {
     const vendor = order.product?.vendor;
     if (!vendor) continue;
+
     const key = vendor.id;
+
     if (!vendorMap.has(key)) {
       vendorMap.set(key, {
         vendorName: vendor.name || vendor.email || key,
@@ -55,11 +74,12 @@ export default async function AdminVendorEarningsPage() {
         platformEarningsCents: 0,
       });
     }
+
     const entry = vendorMap.get(key)!;
     entry.totalOrders += 1;
-    entry.totalRevenueCents += order.amountCents;
-    entry.vendorEarningsCents += order.vendorEarningsCents;
-    entry.platformEarningsCents += order.platformEarningsCents;
+    entry.totalRevenueCents += order.amountCents ?? 0;
+    entry.vendorEarningsCents += order.vendorEarningsCents ?? 0;
+    entry.platformEarningsCents += order.platformEarningsCents ?? 0;
   }
 
   const vendors = Array.from(vendorMap.entries())
@@ -72,6 +92,7 @@ export default async function AdminVendorEarningsPage() {
         <h1 className="text-2xl md:text-3xl font-bold mb-2">Vendor Earnings Übersicht</h1>
         <p className="text-muted text-sm">Alle Einnahmen gruppiert nach Vendor.</p>
       </header>
+
       <div className="neumorph-card p-4 md:p-6">
         <table className="min-w-full text-sm">
           <thead>
@@ -85,13 +106,16 @@ export default async function AdminVendorEarningsPage() {
               <th className="py-2 pr-4"></th>
             </tr>
           </thead>
+
           <tbody>
             {vendors.length === 0 ? (
               <tr>
-                <td colSpan={7} className="text-center text-muted py-8">Noch keine Vendor-Einnahmen vorhanden.</td>
+                <td colSpan={7} className="text-center text-muted py-8">
+                  Noch keine Vendor-Einnahmen vorhanden.
+                </td>
               </tr>
             ) : (
-              vendors.map(vendor => (
+              vendors.map((vendor) => (
                 <tr key={vendor.id} className="border-b last:border-0">
                   <td className="py-2 pr-4">{vendor.vendorName}</td>
                   <td className="py-2 pr-4">{vendor.vendorEmail}</td>
@@ -100,7 +124,10 @@ export default async function AdminVendorEarningsPage() {
                   <td className="py-2 pr-4">{formatCHF(vendor.vendorEarningsCents)}</td>
                   <td className="py-2 pr-4">{formatCHF(vendor.platformEarningsCents)}</td>
                   <td className="py-2 pr-4">
-                    <Link href={`/admin/payouts/vendors/${vendor.id}`} className="neobtn-sm">Details</Link>
+                    {/* ✅ FIX: singular "vendor" (passt zu deinen anderen Pages) */}
+                    <Link href={`/admin/payouts/vendor/${vendor.id}`} className="neobtn-sm">
+                      Details
+                    </Link>
                   </td>
                 </tr>
               ))

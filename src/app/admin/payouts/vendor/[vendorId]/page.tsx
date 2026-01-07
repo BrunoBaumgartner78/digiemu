@@ -1,6 +1,6 @@
 // src/app/admin/payouts/vendor/[vendorId]/page.tsx
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 
@@ -10,7 +10,7 @@ export const runtime = "nodejs";
 type Params = { vendorId: string };
 
 export default async function VendorPayoutPage(props: { params: Promise<Params> }) {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession(auth);
   const user = session?.user as any;
 
   if (!user?.id || user.role !== "ADMIN") {
@@ -33,13 +33,27 @@ export default async function VendorPayoutPage(props: { params: Promise<Params> 
 
   const vendor = await prisma.user.findUnique({
     where: { id: vendorId },
+    // ✅ optional aber sinnvoll: sicherstellen, dass es wirklich ein Vendor ist
+    // findUnique kann kein AND im where, darum checken wir unten role zusätzlich.
     include: {
-      products: { include: { orders: { select: { vendorEarningsCents: true } } } },
-      payouts: { orderBy: { createdAt: "desc" } },
+      products: {
+        select: {
+          orders: { select: { vendorEarningsCents: true } },
+        },
+      },
+      payouts: {
+        select: {
+          id: true,
+          amountCents: true,
+          status: true,
+          createdAt: true,
+        },
+        orderBy: { createdAt: "desc" },
+      },
     },
   });
 
-  if (!vendor) {
+  if (!vendor || vendor.role !== "VENDOR") {
     return (
       <main className="p-8">
         <div className="neumorph-card p-6 max-w-md text-center">
@@ -53,12 +67,12 @@ export default async function VendorPayoutPage(props: { params: Promise<Params> 
   }
 
   const totalEarnings = vendor.products
-    .flatMap((p) => p.orders.map((o) => o.vendorEarningsCents ?? 0))
-    .reduce((a, b) => a + b, 0);
+    .flatMap((p: any) => p.orders.map((o: any) => o.vendorEarningsCents ?? 0))
+    .reduce((a: number, b: number) => a + b, 0);
 
   const alreadyPaid = vendor.payouts
-    .filter((p) => p.status === "PAID")
-    .reduce((sum, p) => sum + p.amountCents, 0);
+    .filter((p: any) => p.status === "PAID")
+    .reduce((sum: number, p: any) => sum + (p.amountCents ?? 0), 0);
 
   const pendingAmount = Math.max(totalEarnings - alreadyPaid, 0);
   const returnTo = `/admin/payouts/vendor/${vendor.id}`;
@@ -119,15 +133,15 @@ export default async function VendorPayoutPage(props: { params: Promise<Params> 
           <p className="opacity-70 text-sm">Noch keine Auszahlungen.</p>
         ) : (
           <div className="space-y-3">
-            {vendor.payouts.map((payout) => (
+            {vendor.payouts.map((payout: any) => (
               <div
                 key={payout.id}
                 className="flex justify-between items-center p-3 rounded-2xl bg-white/30 dark:bg-slate-900/40 border border-[var(--neo-card-border)]"
               >
                 <div>
-                  <p className="font-semibold">CHF {(payout.amountCents / 100).toFixed(2)}</p>
+                  <p className="font-semibold">CHF {((payout.amountCents ?? 0) / 100).toFixed(2)}</p>
                   <p className="text-xs text-[var(--text-muted)]">
-                    {payout.createdAt.toLocaleDateString("de-CH")}
+                    {new Date(payout.createdAt).toLocaleDateString("de-CH")}
                   </p>
                 </div>
 

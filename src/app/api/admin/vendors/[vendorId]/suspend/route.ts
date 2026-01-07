@@ -3,22 +3,22 @@ import { getServerSession } from "next-auth";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-export async function POST(
-  _req: Request,
-  { params }: { params: { vendorId: string } }
-) {
+export async function POST(req: Request, ctx: { params: Promise<{ vendorId: string }> }) {
   const session = await getServerSession(auth);
-  const role = (session?.user as any)?.role as string | undefined;
+  if (!session?.user || session.user.role !== "ADMIN") {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
-  if (role !== "ADMIN") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  const { vendorId } = await ctx.params;
+  if (!vendorId) {
+    return NextResponse.json({ error: "Missing vendorId param" }, { status: 400 });
   }
 
   const updated = await prisma.vendorProfile.update({
-    where: { id: params.vendorId },
+    where: { id: vendorId },
     data: { status: "SUSPENDED" },
     select: { id: true, status: true },
   });
 
-  return NextResponse.json({ ok: true, vendorProfileId: updated.id, status: updated.status });
+  return NextResponse.json(updated, { headers: { "Cache-Control": "no-store" } });
 }

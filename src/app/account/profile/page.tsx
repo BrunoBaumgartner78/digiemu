@@ -3,10 +3,26 @@ import { getServerSession } from "next-auth";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import ProfilePageClient from "./ProfilePageClient";
+import type { InitialProfile } from "./ProfilePageClient";
 import styles from "./profile.module.css";
 import { computeSellerTrustFromDb } from "@/lib/sellerTrust";
 
 export const dynamic = "force-dynamic";
+
+async function getTenantKeySafe(): Promise<string> {
+  try {
+    const mod = await import("@/lib/tenant-context");
+    const fn = (mod as any)?.currentTenant;
+    if (typeof fn === "function") {
+      const t = await fn();
+      const key = (t?.key || t?.tenantKey || "").toString().trim();
+      return key || "DEFAULT";
+    }
+  } catch {
+    // ignore
+  }
+  return "DEFAULT";
+}
 
 export default async function Page() {
   const session = await getServerSession(auth);
@@ -25,20 +41,27 @@ export default async function Page() {
     );
   }
 
+  const tenantKey = await getTenantKeySafe();
+
   const vendorProfile = await prisma.vendorProfile.findUnique({
-    where: { userId },
+    where: {
+      tenantKey_userId: {
+        tenantKey,
+        userId,
+      },
+    },
   });
 
-  // Produktanzahl (passe Feldnamen ggf. an!)
-  // Häufig: Product.vendorId oder Product.userId oder Product.vendorProfileId
-  // Wir versuchen vendorId=userId (typisch) – wenn es bei dir anders ist, sag kurz Bescheid.
+  // Produktanzahl tenant-safe
   const productCount = await prisma.product.count({
     where: {
-      vendorId: userId as any,
-    } as any,
+      tenantKey,
+      vendorId: userId,
+    },
   });
 
-  const trust = await computeSellerTrustFromDb(userId);
+  // Trust/Level (ist in sellerTrust.ts bereits tenant-safe)
+  const sellerTrust = await computeSellerTrustFromDb(userId);
 
   const initialProfile = {
     displayName: vendorProfile?.displayName ?? (session?.user as any)?.name ?? "",
@@ -46,16 +69,27 @@ export default async function Page() {
     isPublic: vendorProfile?.isPublic ?? true,
     avatarUrl: vendorProfile?.avatarUrl ?? "",
     bannerUrl: vendorProfile?.bannerUrl ?? "",
-    levelName: trust.level,
+    levelName: sellerTrust.level,
     productCount,
-    nextGoal: trust.nextLevelTarget,
-    nextGoalUnit: trust.nextLevelUnit,
+    nextGoal: sellerTrust.nextLevelTarget,
+    nextGoalUnit: sellerTrust.nextLevelUnit,
   };
 
   return (
     <div className={styles.pageWrap}>
       <div className={styles.container}>
-        <ProfilePageClient initialProfile={initialProfile} />
+        {/* Prisma/Type safety: InitialProfile.nextGoalUnit only supports "products" | "chf" | undefined */}
+        {(() => {
+          const unitRaw = (initialProfile as any)?.nextGoalUnit;
+
+          const normalized: InitialProfile = {
+            ...(initialProfile as any),
+            nextGoalUnit:
+              unitRaw === "products" ? "products" : unitRaw ? "chf" : undefined,
+          };
+
+          return <ProfilePageClient initialProfile={normalized} />;
+        })()}
       </div>
     </div>
   );

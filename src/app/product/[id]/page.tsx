@@ -1,6 +1,5 @@
 // src/app/product/[id]/page.tsx
 import Link from "next/link";
-import Image from "next/image";
 import crypto from "crypto";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
@@ -12,36 +11,41 @@ import ProductViewTracker from "@/components/analytics/ProductViewTracker";
 import BadgeRow from "@/components/marketplace/BadgeRow";
 import { getBadgesForVendors } from "@/lib/trustBadges";
 import styles from "./page.module.css";
+import { MARKETPLACE_TENANT_KEY } from "@/lib/marketplaceTenant";
 
 export const dynamic = "force-dynamic";
 
 type ProductPageProps = { params: Promise<{ id: string }> };
 
-function signThumbUrl(productId: string, variant?: "blur" | "full") {
+function signThumbUrl(productId: string, variant: "blur" | "full" = "full") {
   const secret = (process.env.THUMB_TOKEN_SECRET ?? "").trim();
-  const v = variant && variant.length > 0 ? variant : "full";
   const base = `/api/media/thumbnail/${encodeURIComponent(productId)}`;
-  if (!secret) return `${base}?variant=${v}`;
+  if (!secret) return `${base}?variant=${variant}`;
 
   const exp = Date.now() + 60 * 60 * 1000;
-  const payload = `${productId}.${v}.${exp}`;
+  const payload = `${productId}.${variant}.${exp}`;
   const sig = crypto.createHmac("sha256", secret).update(payload).digest("hex");
-  return `${base}?variant=${v}&exp=${exp}&sig=${sig}`;
+  return `${base}?variant=${variant}&exp=${exp}&sig=${sig}`;
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
   const { id } = await params;
-
   const pid = String(id ?? "").trim();
   if (!pid) notFound();
 
+  // Marketplace product pages are platform-wide (host independent)
+  const tenantKey = MARKETPLACE_TENANT_KEY;
+
   const session = await getServerSession(auth);
   const userId = ((session?.user as any)?.id as string | undefined) ?? null;
+  const role = ((session?.user as any)?.role as string | undefined) ?? null;
+  const isAdmin = role === "ADMIN";
 
   const p = await prisma.product.findUnique({
     where: { id: pid },
     select: {
       id: true,
+      tenantKey: true,
       title: true,
       description: true,
       priceCents: true,
@@ -58,7 +62,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
         select: {
           id: true,
           userId: true,
+          tenantKey: true,
           isPublic: true,
+          status: true,
           slug: true,
           displayName: true,
           avatarUrl: true,
@@ -66,7 +72,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
           totalSales: true,
           refundsCount: true,
           activeProductsCount: true,
-          lastSaleAt: true,
           user: { select: { name: true } },
         },
       },
@@ -78,47 +83,76 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   if (!p) notFound();
 
-  const role = ((session?.user as any)?.role as string | undefined) ?? null;
-  const isAdmin = role === "ADMIN";
+  // ✅ Tenant scoping
+  if ((p.tenantKey ?? "DEFAULT") !== tenantKey) notFound();
+
   const isOwner = !!userId && userId === p.vendorId;
 
-  const isPublicVisible = p.isActive === true && p.status === "ACTIVE" && !p.vendor?.isBlocked;
+  // ✅ OPTION B: Approval enforced
+  const isVendorApproved =
+    p.vendorProfile?.status === "APPROVED" && p.vendorProfile?.isPublic === true;
+
+  const isPublicVisible =
+    p.isActive === true &&
+    p.status === "ACTIVE" &&
+    !p.vendor?.isBlocked &&
+    p.vendorProfileId !== null &&
+    isVendorApproved;
+
   const canPreview = isAdmin || isOwner;
 
   if (!isPublicVisible && !canPreview) notFound();
 
+  // ✅ VendorProfile fallback (tenant-aware + Prisma-safe)
+  // Falls Product.vendorProfileId null ist (alte Produkte), holen wir trotzdem das Profil des Vendors im aktuellen Tenant.
   const vendorProfile =
     p.vendorProfile ??
     (await prisma.vendorProfile.findUnique({
-      where: { userId: p.vendorId },
+      where: { tenantKey_userId: { tenantKey, userId: p.vendorId } },
       select: {
         id: true,
         userId: true,
+        tenantKey: true,
         isPublic: true,
+        status: true,
         slug: true,
         displayName: true,
         avatarUrl: true,
         bannerUrl: true,
+        totalSales: true,
+        refundsCount: true,
+        activeProductsCount: true,
         user: { select: { name: true } },
       },
     }));
 
-  // Prepare badges for this vendor (pass vendorProfile object including counters)
   const badgesMap = await getBadgesForVendors({ [p.vendorId]: vendorProfile ?? {} });
   const badgesForVendor = badgesMap[p.vendorId] ?? [];
 
+  // ✅ related products: use relation filter to guarantee vendorProfile exists and is approved/public
   const relatedProducts = await prisma.product.findMany({
     where: {
+      tenantKey,
       id: { not: p.id },
       isActive: true,
       status: "ACTIVE",
       vendor: { isBlocked: false },
+
+      // ✅ Relation filter enforces "has profile" without null comparisons
+      vendorProfile: {
+        is: {
+          status: "APPROVED",
+          isPublic: true,
+          tenantKey,
+        },
+      },
+
       OR: [
         ...(p.vendorProfileId ? [{ vendorProfileId: p.vendorProfileId }] : []),
         { vendorId: p.vendorId },
       ],
     },
-    select: { id: true, title: true, priceCents: true, thumbnail: true, category: true },
+    select: { id: true, title: true, priceCents: true, thumbnail: true, category: true, createdAt: true },
     orderBy: { createdAt: "desc" },
     take: 3,
   });
@@ -126,11 +160,17 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const price = (p.priceCents ?? 0) / 100;
   const hasThumb = typeof p.thumbnail === "string" && p.thumbnail.trim().length > 0;
 
-  // determine if buyer has purchased -> enable full mode
+  // ✅ full image allowed for admin/owner or buyer who purchased
   let canFull = isAdmin || isOwner;
+
   if (!canFull && userId) {
     const buyerOrder = await prisma.order.findFirst({
-      where: { buyerId: userId, productId: pid, status: { in: ["PAID", "paid", "COMPLETED", "completed"] } },
+      where: {
+        tenantKey,
+        buyerId: userId,
+        productId: pid,
+        status: { in: ["PAID", "paid", "COMPLETED", "completed"] },
+      },
       select: { id: true },
     });
     if (buyerOrder) canFull = true;
@@ -148,7 +188,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
     "Verkäufer";
 
   const sellerHref =
-    vendorProfile?.isPublic === true && vendorProfile.id
+    vendorProfile?.isPublic === true && vendorProfile?.id
       ? `/seller/${encodeURIComponent(vendorProfile.id)}`
       : null;
 
@@ -159,18 +199,18 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <ProductViewTracker productId={p.id} />
 
           <section className={styles.mediaCard}>
-              {thumbSrc ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={thumbSrc}
-                  alt={p.title}
-                  className={styles.mediaImage}
-                  loading="eager"
-                  referrerPolicy="no-referrer"
-                />
-              ) : (
-                <div className={styles.mediaPlaceholder}>💾</div>
-              )}
+            {thumbSrc ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={thumbSrc}
+                alt={p.title}
+                className={styles.mediaImage}
+                loading="eager"
+                referrerPolicy="no-referrer"
+              />
+            ) : (
+              <div className={styles.mediaPlaceholder}>💾</div>
+            )}
           </section>
 
           <section className={styles.buyCard}>
@@ -192,6 +232,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
                   {vendorProfile.isPublic === false && (
                     <span style={{ fontSize: 12, opacity: 0.65 }}>(Profil privat)</span>
                   )}
+                  {vendorProfile.status !== "APPROVED" && (
+                    <span style={{ fontSize: 12, opacity: 0.65 }}>
+                      (Status: {vendorProfile.status})
+                    </span>
+                  )}
                 </div>
                 <div style={{ marginTop: 8 }}>
                   <BadgeRow badges={badgesForVendor} max={3} />
@@ -200,23 +245,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
             )}
 
             <p className={styles.priceLine}>CHF {price.toFixed(2)}</p>
-
-            <div className="neo-card" style={{ padding: 12, marginTop: 10 }}>
-              <div style={{ fontWeight: 900 }}>Digitale Inhalte · Sofortiger Download</div>
-              <div style={{ marginTop: 6, opacity: 0.85, lineHeight: 1.5, fontSize: 13 }}>
-                Mit dem Kauf stimmst du zu, dass der Download sofort startet.
-                Dadurch erlischt dein Widerrufsrecht.
-              </div>
-
-              <details style={{ marginTop: 10, opacity: 0.8 }}>
-                <summary style={{ cursor: "pointer", fontWeight: 800 }}>Rechtliche Hinweise</summary>
-                <div style={{ marginTop: 6, fontSize: 12, lineHeight: 1.6 }}>
-                  Bei digitalen Inhalten erlischt das Widerrufsrecht,
-                  sobald du dem sofortigen Beginn der Ausführung zustimmst
-                  (§ 356 Abs. 5 BGB / OR).
-                </div>
-              </details>
-            </div>
 
             {p.isActive && p.status === "ACTIVE" ? (
               <BuyButtonClient productId={p.id} />

@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { currentTenant } from "@/lib/tenant-context";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -86,6 +87,9 @@ export async function PATCH(req: Request, ctx: Ctx) {
   const thumbnailRaw = body.thumbnail;
   const thumbnail = typeof thumbnailRaw === "string" ? thumbnailRaw.trim() : "";
 
+  const { tenantKey: rawTenantKey } = await currentTenant();
+  const tenantKey = rawTenantKey ?? "DEFAULT";
+
   // Update product and adjust vendorProfile.activeProductsCount if isActive changed
   const updated = await prisma.$transaction(async (tx) => {
     const upd = await tx.product.update({
@@ -102,7 +106,7 @@ export async function PATCH(req: Request, ctx: Ctx) {
     });
 
     if (typeof existing.isActive === "boolean" && typeof upd.isActive === "boolean" && existing.isActive !== upd.isActive) {
-      const vp = await tx.vendorProfile.findUnique({ where: { userId: upd.vendorId }, select: { id: true, activeProductsCount: true } });
+      const vp = await tx.vendorProfile.findUnique({ where: { tenantKey_userId: { tenantKey, userId: upd.vendorId } }, select: { id: true, activeProductsCount: true } });
       if (vp) {
         if (upd.isActive) {
           await tx.vendorProfile.update({ where: { id: vp.id }, data: { activeProductsCount: { increment: 1 } } });

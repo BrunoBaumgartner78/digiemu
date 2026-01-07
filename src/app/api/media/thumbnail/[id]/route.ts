@@ -179,57 +179,61 @@ export async function GET(
     return res;
   }
 
-  // 5) Fetch upstream server-side
-  let upstream: Response;
+  // 5) Fetch upstream server-side + processing with fallback on errors
   try {
-    upstream = await fetch(p.thumbnail, { cache: "no-store" });
-  } catch {
-    return new NextResponse("Upstream error", { status: 502 });
-  }
+    const upstream = await fetch(p.thumbnail, { cache: "no-store" });
+    if (!upstream.ok) {
+      const url = new URL("/fallback-thumbnail.svg", req.url);
+      return NextResponse.redirect(url, 307);
+    }
 
-  if (!upstream.ok) {
+    const inputBuf = Buffer.from(await upstream.arrayBuffer());
+
+    // 6) Process (variant-aware: blur=card preview, full=sharp)
+    const variantParam = req.nextUrl.searchParams.get("variant");
+    const variant: "blur" | "full" = variantParam === "blur" ? "blur" : "full";
+
+    let outBuf: Buffer | Uint8Array = inputBuf;
+    let outType = upstream.headers.get("content-type") || "image/jpeg";
+    let transformed = false;
+    try {
+      const processed = await processIfPossible(inputBuf, productId, variant);
+      outBuf = processed.buf;
+      outType = processed.contentType;
+      transformed = processed.transformed === true;
+    } catch {
+      outBuf = inputBuf;
+      outType = upstream.headers.get("content-type") || "image/jpeg";
+      transformed = false;
+    }
+
+    const res = new NextResponse(outBuf as any, {
+      status: 200,
+      headers: {
+        "Content-Type": outType,
+        "Cross-Origin-Resource-Policy": "same-site",
+        "Referrer-Policy": "no-referrer",
+        "X-Robots-Tag": "noindex, nofollow",
+        "Content-Disposition": 'inline; filename="thumb.jpg"',
+      },
+    });
+
+    res.headers.set("Cache-Control", isPublicVisible ? "public, max-age=3600, s-maxage=3600" : "no-store");
+    res.headers.set("X-RateLimit-Limit", String(RL_MAX));
+    res.headers.set("X-RateLimit-Remaining", String(rl.remaining));
+    res.headers.set("X-RateLimit-Reset", String(rl.resetAt));
+    // Debug headers
+    res.headers.set("X-Thumb-Variant", variant);
+    res.headers.set("X-Thumb-Transformed", transformed ? "1" : "0");
+
+    return res;
+  } catch {
     const url = new URL("/fallback-thumbnail.svg", req.url);
-    return NextResponse.redirect(url, 307);
+    const rr = NextResponse.redirect(url, 307);
+    rr.headers.set("Cross-Origin-Resource-Policy", "same-site");
+    rr.headers.set("Referrer-Policy", "no-referrer");
+    rr.headers.set("X-Robots-Tag", "noindex, nofollow");
+    rr.headers.set("Cache-Control", "public, max-age=3600, s-maxage=3600");
+    return rr;
   }
-
-  const inputBuf = Buffer.from(await upstream.arrayBuffer());
-
-  // 6) Process (variant-aware: blur=card preview, full=sharp)
-  const variantParam = req.nextUrl.searchParams.get("variant");
-  const variant: "blur" | "full" = variantParam === "blur" ? "blur" : "full";
-
-  let outBuf: Buffer | Uint8Array = inputBuf;
-  let outType = upstream.headers.get("content-type") || "image/jpeg";
-  let transformed = false;
-  try {
-    const processed = await processIfPossible(inputBuf, productId, variant);
-    outBuf = processed.buf;
-    outType = processed.contentType;
-    transformed = processed.transformed === true;
-  } catch {
-    outBuf = inputBuf;
-    outType = upstream.headers.get("content-type") || "image/jpeg";
-    transformed = false;
-  }
-
-  const res = new NextResponse(outBuf as any, {
-    status: 200,
-    headers: {
-      "Content-Type": outType,
-      "Cross-Origin-Resource-Policy": "same-site",
-      "Referrer-Policy": "no-referrer",
-      "X-Robots-Tag": "noindex, nofollow",
-      "Content-Disposition": 'inline; filename="thumb.jpg"',
-    },
-  });
-
-  res.headers.set("Cache-Control", isPublicVisible ? "public, max-age=3600, s-maxage=3600" : "no-store");
-  res.headers.set("X-RateLimit-Limit", String(RL_MAX));
-  res.headers.set("X-RateLimit-Remaining", String(rl.remaining));
-  res.headers.set("X-RateLimit-Reset", String(rl.resetAt));
-  // Debug headers
-  res.headers.set("X-Thumb-Variant", variant);
-  res.headers.set("X-Thumb-Transformed", transformed ? "1" : "0");
-
-  return res;
 }

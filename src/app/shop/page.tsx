@@ -9,9 +9,23 @@ import Link from "next/link";
 import Image from "next/image";
 import styles from "./ShopPage.module.css";
 import { cookies } from "next/headers";
+import { currentTenant } from "@/lib/tenant-context";
+import { resolveTenantWithCapabilities } from "@/lib/tenants/tenant-resolver";
+import { notFound } from "next/navigation";
+import { requireCap } from "@/lib/tenants/gates";
 
 export default async function ShopPage() {
   cookies(); // ✅ MUSS im Function Body sein
+
+  // Guard: only accessible if tenant has whiteLabelStore capability
+  const ct = await currentTenant();
+  try {
+    const resolved = await resolveTenantWithCapabilities(ct.key);
+    requireCap(resolved.capabilities, "whiteLabelStore", { mode: "notFound" });
+  } catch (err) {
+    // if resolver fails, hide the page
+    notFound();
+  }
 
   const products = await prisma.product.findMany({
     where: { isActive: true },

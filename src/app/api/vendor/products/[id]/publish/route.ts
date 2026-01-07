@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { currentTenant } from "@/lib/tenant-context";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -46,11 +47,13 @@ export async function POST(
       ? { status: "ACTIVE", isActive: true }
       : { status: "DRAFT", isActive: false };
 
+  const { tenantKey: rawTenantKey } = await currentTenant();
+  const tenantKey = rawTenantKey ?? "DEFAULT";
+
   // Update product and maintain vendorProfile.activeProductsCount atomically
   const updated = await prisma.$transaction(async (tx) => {
     const upd = await tx.product.update({ where: { id }, data, select: { id: true, status: true, isActive: true, title: true, vendorId: true } });
-
-    const vp = await tx.vendorProfile.findUnique({ where: { userId: upd.vendorId }, select: { id: true, activeProductsCount: true } });
+    const vp = await tx.vendorProfile.findUnique({ where: { tenantKey_userId: { tenantKey, userId: upd.vendorId } }, select: { id: true, activeProductsCount: true } });
     if (vp) {
       if (action === "publish") {
         await tx.vendorProfile.update({ where: { id: vp.id }, data: { activeProductsCount: { increment: 1 } } });

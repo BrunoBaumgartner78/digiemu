@@ -1,172 +1,114 @@
 // src/lib/products.ts
 import { prisma } from "@/lib/prisma";
 
-// Wie viele Produkte pro Seite im Marketplace
-export const PAGE_SIZE = 9;
+export const PAGE_SIZE = 12 as const;
 
-export type MarketplaceProduct = {
-  id: string;
-  title: string;
-  description: string | null;
-  category: string | null;
-  priceCents: number | null;
-  thumbnail: string | null;
-  vendorId: string;
-  vendorProfileId?: string | null;
+export type MarketplaceSort = "newest" | "price_asc" | "price_desc";
 
-  // ✅ IMMER befüllt, egal ob Product.vendorProfileId gesetzt ist oder nicht
-  vendorProfile?: {
-    id: string;
-    isPublic: boolean;
-    displayName: string | null;
-    avatarUrl: string | null;
-    user?: { name: string | null } | null;
-  } | null;
-};
-
-export type MarketplaceQueryResult = {
-  items: MarketplaceProduct[];
-  total: number;
+type GetMarketplaceProductsArgs = {
+  tenantKey: string; // ✅ required: tenant scoping
   page: number;
-  pageCount: number;
-};
-
-type GetMarketplaceProductsParams = {
-  page?: number;
-  pageSize?: number;
-  category?: string;
+  pageSize: number;
+  category?: string; // "all" | ...
   search?: string;
-  sort?: "newest" | "price_asc" | "price_desc";
-  /** min/max price in cents (integer) */
-  minPriceCents?: number | undefined;
-  maxPriceCents?: number | undefined;
+  sort?: MarketplaceSort;
+  minPriceCents?: number;
+  maxPriceCents?: number;
 };
 
-export async function getMarketplaceProducts(
-  params: GetMarketplaceProductsParams
-): Promise<MarketplaceQueryResult> {
-  const {
-    page = 1,
-    pageSize = PAGE_SIZE,
-    category = "all",
-    search = "",
-    sort = "newest",
-    minPriceCents,
-    maxPriceCents,
-  } = params;
+export async function getMarketplaceProducts(args: GetMarketplaceProductsArgs) {
+  const tenantKey = (args.tenantKey || "DEFAULT").trim() || "DEFAULT";
+  const pageSize = Math.max(1, Math.min(48, Number(args.pageSize || PAGE_SIZE)));
+  const page = Math.max(1, Number(args.page || 1));
+  const skip = (page - 1) * pageSize;
 
-  const safePage = Number.isFinite(page) && page > 0 ? page : 1;
-  const safePageSize =
-    Number.isFinite(pageSize) && pageSize > 0 && pageSize <= 48 ? pageSize : PAGE_SIZE;
+  const category = (args.category ?? "all").trim();
+  const search = (args.search ?? "").trim();
+  const sort: MarketplaceSort = (args.sort ?? "newest") as MarketplaceSort;
 
+  const minPriceCents = typeof args.minPriceCents === "number" ? args.minPriceCents : undefined;
+  const maxPriceCents = typeof args.maxPriceCents === "number" ? args.maxPriceCents : undefined;
+
+  // ✅ Option B enforced here:
+  // - Product must be ACTIVE + isActive
+  // - Vendor not blocked
+  // - VendorProfile must exist + isPublic + APPROVED
   const where: any = {
+    tenantKey,
     isActive: true,
     status: "ACTIVE",
-    // Exclude products whose vendor was blocked by admin
     vendor: { isBlocked: false },
+
+    vendorProfile: {
+      is: {
+        isPublic: true,
+        status: "APPROVED",
+        tenantKey,
+      },
+    },
   };
 
-  if (category && category !== "all") where.category = category;
+  if (category && category !== "all") {
+    where.category = category;
+  }
 
-  const trimmedSearch = search.trim();
-  if (trimmedSearch.length > 0) {
+  if (search.length > 0) {
     where.OR = [
-      { title: { contains: trimmedSearch, mode: "insensitive" } },
-      { description: { contains: trimmedSearch, mode: "insensitive" } },
+      { title: { contains: search, mode: "insensitive" } },
+      { description: { contains: search, mode: "insensitive" } },
     ];
   }
 
-  if (typeof minPriceCents === "number" || typeof maxPriceCents === "number") {
-    where.priceCents = {} as any;
-    if (typeof minPriceCents === "number") where.priceCents.gte = Math.round(minPriceCents);
-    if (typeof maxPriceCents === "number") where.priceCents.lte = Math.round(maxPriceCents);
+  if (minPriceCents !== undefined || maxPriceCents !== undefined) {
+    where.priceCents = {};
+    if (minPriceCents !== undefined) where.priceCents.gte = minPriceCents;
+    if (maxPriceCents !== undefined) where.priceCents.lte = maxPriceCents;
   }
 
-  let orderBy: any = { createdAt: "desc" };
-  if (sort === "price_asc") orderBy = { priceCents: "asc" };
-  else if (sort === "price_desc") orderBy = { priceCents: "desc" };
+  const orderBy =
+    sort === "price_asc"
+      ? ({ priceCents: "asc" } as const)
+      : sort === "price_desc"
+      ? ({ priceCents: "desc" } as const)
+      : ({ createdAt: "desc" } as const);
 
-  const [total, rows] = await Promise.all([
+  const [total, items] = await Promise.all([
     prisma.product.count({ where }),
     prisma.product.findMany({
       where,
       orderBy,
-      skip: (safePage - 1) * safePageSize,
-      take: safePageSize,
+      skip,
+      take: pageSize,
       select: {
         id: true,
+        tenantKey: true,
         title: true,
         description: true,
-        category: true,
         priceCents: true,
         thumbnail: true,
+        category: true,
+        isActive: true,
+        status: true,
         vendorId: true,
         vendorProfileId: true,
+        createdAt: true,
 
-        // 1) falls Product.vendorProfileId vorhanden ist
         vendorProfile: {
           select: {
             id: true,
             isPublic: true,
+            status: true,
+            tenantKey: true,
             displayName: true,
             avatarUrl: true,
-            totalSales: true,
-            refundsCount: true,
-            activeProductsCount: true,
-            lastSaleAt: true,
             user: { select: { name: true } },
-          },
-        },
-
-        // 2) ✅ fallback: immer über vendorId -> User -> vendorProfile holen
-        vendor: {
-          select: {
-            name: true,
-            vendorProfile: {
-              select: {
-                id: true,
-                isPublic: true,
-                displayName: true,
-                avatarUrl: true,
-                    totalSales: true,
-                    refundsCount: true,
-                    activeProductsCount: true,
-                    lastSaleAt: true,
-                user: { select: { name: true } },
-              },
-            },
           },
         },
       },
     }),
   ]);
 
-  // ✅ normalize: vendorProfile ist immer aus einer der beiden Quellen
-  const items: MarketplaceProduct[] = rows.map((p: any) => {
-    const vp =
-      p.vendorProfile ??
-      p.vendor?.vendorProfile ??
-      null;
+  const pageCount = Math.max(1, Math.ceil(total / pageSize));
 
-    return {
-      id: p.id,
-      title: p.title,
-      description: p.description ?? null,
-      category: p.category ?? null,
-      priceCents: typeof p.priceCents === "number" ? p.priceCents : null,
-      thumbnail: p.thumbnail ?? null,
-      vendorId: p.vendorId,
-      vendorProfileId: p.vendorProfileId ?? vp?.id ?? null,
-      vendorProfile: vp,
-    };
-  });
-
-  const pageCount = total === 0 ? 1 : Math.ceil(total / safePageSize);
-
-  return {
-    items,
-    total,
-    page: safePage,
-    pageCount,
-  };
+  return { items, total, pageCount };
 }

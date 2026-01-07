@@ -1,0 +1,5 @@
+-- CreateEnum
+CREATE TYPE "TenantMode" AS ENUM ('SINGLE_VENDOR', 'MIXED', 'MULTI_VENDOR', 'MARKETPLACE');
+
+-- AlterTable
+ALTER TABLE "Tenant" ADD COLUMN     "mode" "TenantMode" NOT NULL DEFAULT 'SINGLE_VENDOR';
