@@ -26,11 +26,13 @@ export default async function SellerPage(
   if (!id) notFound();
   let vp: any = null;
   try {
-    vp = await prisma.vendorProfile.findFirst({
-      where: { id, tenantKey: MARKETPLACE_TENANT_KEY },
+    // Load vendor profile by id (do not assume MARKETPLACE tenant here)
+    vp = await prisma.vendorProfile.findUnique({
+      where: { id },
       select: {
         id: true,
         userId: true,
+        tenantKey: true,
         displayName: true,
         bio: true,
         avatarUrl: true,
@@ -101,12 +103,14 @@ export default async function SellerPage(
     ? new Intl.DateTimeFormat("de-CH", { dateStyle: "medium" }).format(lastSaleAt)
     : "—";
 
-  // Marketplace only: restrict to MARKETPLACE tenant and published products
+  // Use vendorProfile tenantKey to find products that belong to the same scope
+  // Product.status is a string in the schema; use ACTIVE for marketplace-visible items.
   const products = await prisma.product.findMany({
     where: {
-      tenantKey: MARKETPLACE_TENANT_KEY,
+      tenantKey: vp.tenantKey,
       vendorProfileId: vp.id,
-      status: "PUBLISHED",
+      isActive: true,
+      status: { in: ["ACTIVE"] },
       vendor: { isBlocked: false },
     },
     orderBy: { createdAt: "desc" },

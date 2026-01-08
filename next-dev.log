@@ -1,0 +1,29 @@
+▲ Next.js 16.1.0 (Turbopack)
+- Local:         http://127.0.0.1:3000
+- Network:       http://127.0.0.1:3000
+- Environments: .env.local, .env
+
+✓ Starting...
+⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+✓ Ready in 1198ms
+ GET /api/health 200 in 727ms (compile: 195ms, proxy.ts: 60ms, render: 473ms)
+ POST /api/admin/maintenance/backfill-products 401 in 238ms (compile: 209ms, proxy.ts: 8ms, render: 21ms)
+ GET /api/debug/products 200 in 172ms (compile: 111ms, proxy.ts: 4ms, render: 58ms)
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+tenant home routing failed: Error: NEXT_REDIRECT
+    at HomePage (src\app\page.tsx:123:47)
+  121 |     const tenant = await currentTenant();
+  122 |     const { homePath } = await resolveTenantHomePath(tenant.key);
+> 123 |     if (homePath && homePath !== "/") redirect(homePath);
+      |                                               ^
+  124 |   } catch (e) {
+  125 |     // Non-fatal: if tenant resolution fails, fall back to rendering the home page
+  126 |     console.warn("tenant home routing failed:", e); {
+  digest: 'NEXT_REDIRECT;replace;/shop;307;'
+}
+ GET / 200 in 2.6s (compile: 1173ms, proxy.ts: 8ms, render: 1468ms)
+ GET /api/auth/session 200 in 819ms (compile: 798ms, proxy.ts: 6ms, render: 16ms)
+ GET /marketplace 200 in 271ms (compile: 61ms, proxy.ts: 6ms, render: 204ms)
+ GET /api/media/thumbnail/cmk26cpxw0002c6l47x8b1fpg?variant=blur&exp=1767898257708&sig=0a21f1fd0da18924f9dda6885b055a19cf02b286503729ac34614a2a6f9e05c0 307 in 960ms (compile: 841ms, proxy.ts: 7ms, render: 112ms)
+ GET /api/media/thumbnail/cmk2ju59j0001c63gxgpf5vy0?variant=blur&exp=1767898257707&sig=251163fe1256b00241268e6e30f3c4e894b3c2eede5dfa08e1b1fb984d0db4db 307 in 965ms (compile: 844ms, proxy.ts: 7ms, render: 114ms)
+ GET /seller/cmk5pmil20001c6lcsvhugx58 200 in 853ms (compile: 614ms, proxy.ts: 5ms, render: 235ms)
