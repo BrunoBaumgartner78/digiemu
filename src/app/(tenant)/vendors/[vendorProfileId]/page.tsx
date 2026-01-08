@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { currentTenant } from "@/lib/tenant-context";
+import { getSellerStats } from "@/lib/vendors/stats";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -44,6 +45,12 @@ export default async function VendorPage(props: { params: Promise<Params> }) {
     orderBy: { createdAt: "desc" },
     take: 48,
   });
+
+  // Aggregate stats for UI (fall back to product counts when orders are zero)
+  const stats = await getSellerStats({ tenantKey: tenant.key, vendorProfileId: vendor.id });
+  const totalSales = stats.totalSales;
+  const totalRevenueCents = stats.totalRevenueCents;
+  const activeProducts = stats.activeProducts;
 
   return (
     <main className="p-8 max-w-5xl mx-auto">

@@ -27,3 +27,14 @@ tenant home routing failed: Error: NEXT_REDIRECT
  GET /api/media/thumbnail/cmk26cpxw0002c6l47x8b1fpg?variant=blur&exp=1767898257708&sig=0a21f1fd0da18924f9dda6885b055a19cf02b286503729ac34614a2a6f9e05c0 307 in 960ms (compile: 841ms, proxy.ts: 7ms, render: 112ms)
  GET /api/media/thumbnail/cmk2ju59j0001c63gxgpf5vy0?variant=blur&exp=1767898257707&sig=251163fe1256b00241268e6e30f3c4e894b3c2eede5dfa08e1b1fb984d0db4db 307 in 965ms (compile: 844ms, proxy.ts: 7ms, render: 114ms)
  GET /seller/cmk5pmil20001c6lcsvhugx58 200 in 853ms (compile: 614ms, proxy.ts: 5ms, render: 235ms)
+✓ Compiled in 262ms
+ GET /marketplace 200 in 241ms (compile: 4ms, proxy.ts: 4ms, render: 233ms)
+ GET /api/media/thumbnail/cmk26cpxw0002c6l47x8b1fpg?variant=blur&exp=1767898444222&sig=24988531923451eff0ff3db87d93f851b27ec281f1fcd13869097a7d3290b955 307 in 109ms (compile: 43ms, proxy.ts: 6ms, render: 60ms)
+ GET /api/media/thumbnail/cmk2ju59j0001c63gxgpf5vy0?variant=blur&exp=1767898444222&sig=4abe002f9dc3ac29ebe11b7e39c5e3037ef3bf8d8ec321bc029906509ceeceab 307 in 159ms (compile: 37ms, proxy.ts: 7ms, render: 114ms)
+ GET /seller/cmk5pmil20001c6lcsvhugx58 200 in 420ms (compile: 118ms, proxy.ts: 7ms, render: 294ms)
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+✓ Compiled in 222ms
+ GET /seller/cmk5pmil20001c6lcsvhugx58 200 in 1407ms (compile: 15ms, proxy.ts: 3ms, render: 1389ms)

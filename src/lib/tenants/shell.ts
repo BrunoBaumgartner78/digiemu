@@ -1,3 +1,13 @@
+// Build tenant-aware paths without hardcoding hostnames
+export function tenantPath(tenantKey: string, path: string) {
+  const p = path.startsWith("/") ? path : `/${path}`;
+  // Marketplace is platform-wide; keep it root-scoped
+  if (tenantKey === "MARKETPLACE") return p;
+  // Tenant shells live under /(tenant) routing; keep it as-is if already prefixed
+  return p;
+}
+
+// (no default export) export named helpers only
 // src/lib/tenants/shell.ts
 import { resolveTenantWithCapabilities } from "@/lib/tenants/tenant-resolver";
 import { normalizeTenantMode } from "@/lib/tenantMode";
@@ -170,4 +180,12 @@ export function resolveShellUiConfig(tenant: { themeJson?: any; logoUrl?: string
   return { headerVariant, footerVariant, showAuthLinks, showNavLinks, logoUrl };
 }
 
-export default {} as const;
+// end of tenant shell helpers
+
+export function sellerProfilePath(args: { tenantKey: string; vendorProfileId: string }) {
+  // Marketplace ist global
+  if (args.tenantKey === "MARKETPLACE") return `/seller/${args.vendorProfileId}`;
+  // White-label: unter /vendors/... (dein Tenant-Routing)
+  return `/vendors/${args.vendorProfileId}`;
+
+}

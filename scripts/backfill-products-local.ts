@@ -67,7 +67,7 @@ async function main() {
     where: {
       tenantKey: { in: ["DEFAULT", ""] },
       isActive: true,
-      status: { in: ["ACTIVE", "PUBLISHED", "APPROVED"] },
+      status: { in: ["ACTIVE", "PUBLISHED"] },
     },
     data: {
       tenantKey: mpKey,

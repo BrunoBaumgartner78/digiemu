@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import type { ProductStatus } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { currentTenant } from "@/lib/tenant-context";
@@ -52,6 +53,7 @@ export async function POST(req: Request) {
   }
 
   const status = data.status ?? "DRAFT";
+  const statusValue = status as unknown as ProductStatus;
 
   try {
     const { tenantKey: rawTenantKey } = await currentTenant();
@@ -73,7 +75,7 @@ export async function POST(req: Request) {
         thumbnail: data.thumbnail ?? null,
         vendorId, // comes from session
         vendorProfileId: vp?.id ?? "",
-        status: vp?.status === "APPROVED" ? "ACTIVE" : status,
+        status: vp?.status === "APPROVED" ? ("ACTIVE" as ProductStatus) : statusValue,
         isActive: true,
       },
     });

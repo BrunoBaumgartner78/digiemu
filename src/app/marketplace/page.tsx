@@ -175,7 +175,8 @@ export default async function Page({ searchParams }: { searchParams?: Marketplac
     minPriceCents,
     maxPriceCents,
     // permissive fallback: accept common published-like product statuses (apply only to Product.status)
-    acceptProductStatuses: ["ACTIVE", "PUBLISHED", "APPROVED"], // adjust if needed
+    // NOTE: VendorProfile.status (APPROVED) is a separate enum and is enforced in `getMarketplaceProducts`
+    acceptProductStatuses: ["ACTIVE", "PUBLISHED"],
   });
 
   const hasPrev = page > 1;
@@ -333,6 +334,7 @@ export default async function Page({ searchParams }: { searchParams?: Marketplac
                 const isPublic = vendorProfile?.isPublic === true;
                 const isApproved = vendorProfile?.status === "APPROVED";
                 const vendorProfileId: string | null = vendorProfile?.id ?? null;
+                const canLinkSeller = Boolean(isPublic && isApproved && vendorProfileId);
 
                 return (
                   <article key={p.id} className={styles.card}>
@@ -408,15 +410,15 @@ export default async function Page({ searchParams }: { searchParams?: Marketplac
                         )}
                       </div>
 
-                      {isPublic && isApproved && vendorProfileId ? (
-                        <SellerLink vendorProfileId={vendorProfileId} productId={p.id} source="marketplace_card" className="neo-link">
-                          {sellerName}
-                        </SellerLink>
-                      ) : (
-                        <span style={{ fontWeight: 700 }}>
-                          {sellerName} <span style={{ fontSize: 11, opacity: 0.6 }}>(nicht freigeschaltet)</span>
-                        </span>
-                      )}
+                            {canLinkSeller ? (
+                              <SellerLink tenantKey={mp.key} vendorProfileId={vendorProfileId!} slug={vendorProfile?.slug ?? null} productId={p.id} source="marketplace_card" className="neo-link">
+                                {sellerName}
+                              </SellerLink>
+                            ) : (
+                              <span style={{ fontWeight: 700 }}>
+                                {sellerName} <span style={{ fontSize: 11, opacity: 0.6 }}>(nicht freigeschaltet)</span>
+                              </span>
+                            )}
 
                       <BadgeRow badges={badgesMap[p.vendorId] ?? []} max={2} />
                     </div>

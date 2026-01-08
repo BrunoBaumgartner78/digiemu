@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import type { ProductStatus } from "@prisma/client";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -74,7 +75,8 @@ export async function PATCH(
   if (!["ACTIVE", "DRAFT", "BLOCKED"].includes(status)) {
     return NextResponse.json({ message: "Ungültiger Status." }, { status: 400 });
   }
-
+  // cast the validated string to the Prisma ProductStatus enum type
+  const statusValue = status as unknown as ProductStatus;
   const isActive = Boolean(body.isActive);
   const finalIsActive = status === "BLOCKED" ? false : isActive;
 
@@ -87,7 +89,7 @@ export async function PATCH(
       category,
       priceCents: Math.round(priceCents),
       thumbnail,
-      status,
+      status: statusValue,
       isActive: finalIsActive,
       moderationNote,
     },

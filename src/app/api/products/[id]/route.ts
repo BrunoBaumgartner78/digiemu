@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { ProductStatus } from "@prisma/client";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -37,7 +38,7 @@ export async function PUT(req: Request, ctx: Ctx) {
   }
 
   // If the product itself is BLOCKED, non-admins may not modify or delete it
-  if (product.status === "BLOCKED" && user.role !== "ADMIN") {
+  if (product.status === ProductStatus.BLOCKED && user.role !== "ADMIN") {
     return json("Product is blocked", 403);
   }
 
@@ -101,10 +102,10 @@ export async function DELETE(req: Request, ctx: Ctx) {
     return json("Forbidden", 403);
   }
 
-  // „Löschen“ = archivieren
+  // „Löschen“ = archivieren (use enum)
   await prisma.product.update({
     where: { id },
-    data: { status: "ARCHIVED", isActive: false },
+    data: { status: ProductStatus.ARCHIVED, isActive: false },
     select: { id: true },
   });
 

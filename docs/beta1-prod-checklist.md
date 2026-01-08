@@ -92,6 +92,16 @@ curl.exe -i -X POST "http://localhost:3000/api/admin/tenants/update" `
 Erwartung:
 - 303 Redirect zurück auf `/admin/tenants/<id>` (oder 200/JSON je nach Handler)
 
+## Playwright: Dev vs Prod (quick)
+- Dev-mode (no build): `npm run test:e2e:dev` — starts `next dev` and runs Playwright against it.
+- Prod-mode (build+start): `npm run test:e2e` — runs `npm run build` then starts server and runs Playwright.
+- Override base URL: set `PW_BASE_URL` to change the URL Playwright targets (default `http://127.0.0.1:3000`).
+
+### E2E
+- Dev (ohne Build): `npm run test:e2e:dev`
+- Prod (mit Build): `npm run test:e2e` (alias `test:e2e:prod`)
+- Prod only (setzt vorhandenen Build voraus): `npm run test:e2e:prod:only`
+
 ## 4) “Ready to deploy” Definition (Beta 1.0)
 ✅ Mindestkriterien:
 - `npm run build` (oder `build:prod:win` auf Windows) ist grün

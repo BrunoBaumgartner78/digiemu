@@ -1,5 +1,3 @@
-// prisma/schema.prisma
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,47 +8,17 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-//
-// ──────────────────────────────────────────────────────────────────────────────
-//  TENANTS (White-Label / Domain-Mapping)
-// ──────────────────────────────────────────────────────────────────────────────
-//
-
-enum TenantStatus {
-  ACTIVE
-  BLOCKED
-}
-
-enum TenantPlan {
-  FREE
-  PRO
-  ENTERPRISE
-}
-
-// ✅ How the tenant sells (business mode), NOT billing plan
-enum TenantMode {
-  WHITE_LABEL
-  MARKETPLACE
-}
-
 model Tenant {
-  id        String       @id @default(cuid())
-  key       String       @unique // "DEFAULT", "bellu", "blue-lotos", ...
+  id        String         @id @default(cuid())
+  key       String         @unique
   name      String
-  status    TenantStatus @default(ACTIVE)
-  // White-Label plan (only for own-shop tenants)
-  plan      TenantPlan   @default(FREE)
-
-  // ✅ Business mode (how selling works)
-  mode      TenantMode   @default(WHITE_LABEL)
-
-  // optional branding
+  status    TenantStatus   @default(ACTIVE)
+  plan      TenantPlan     @default(FREE)
   logoUrl   String?
   themeJson Json?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  mode      TenantMode     @default(WHITE_LABEL)
   domains   TenantDomain[]
 
   @@index([status])
@@ -58,24 +26,16 @@ model Tenant {
 }
 
 model TenantDomain {
-  id        String  @id @default(cuid())
+  id        String   @id @default(cuid())
   tenantId  String
-  domain    String  @unique // "bellu.ch", "www.bellu.ch", "localhost", ...
-  isPrimary Boolean @default(false)
-
+  domain    String   @unique
+  isPrimary Boolean  @default(false)
   createdAt DateTime @default(now())
-
-  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@index([tenantId])
   @@index([isPrimary])
 }
-
-//
-// ──────────────────────────────────────────────────────────────────────────────
-//  AUDIT
-// ──────────────────────────────────────────────────────────────────────────────
-//
 
 model AuditLog {
   id         String   @id @default(cuid())
@@ -87,8 +47,7 @@ model AuditLog {
   ipAddress  String?
   userAgent  String?
   createdAt  DateTime @default(now())
-
-  actor User @relation("AuditActor", fields: [actorId], references: [id])
+  actor      User     @relation("AuditActor", fields: [actorId], references: [id])
 
   @@index([actorId])
   @@index([action])
@@ -97,162 +56,123 @@ model AuditLog {
   @@index([createdAt])
 }
 
-//
-// ──────────────────────────────────────────────────────────────────────────────
-//  USERS / PROFILES
-// ──────────────────────────────────────────────────────────────────────────────
-//
-
-enum Role {
-  BUYER
-  VENDOR
-  ADMIN
-}
-
-enum VendorStatus {
-  PENDING
-  APPROVED
-  REJECTED
-  SUSPENDED
-}
-
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  password  String?
-  role      Role     @default(BUYER)
-  isBlocked Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  comments Comment[]
-  likes    Like[]
-  orders   Order[]
-  payouts  Payout[]
-  products Product[] @relation("VendorProducts")
-  reviews  Review[]
-
-  // ✅ Multi-tenant: ein User kann mehrere VendorProfiles haben (pro tenantKey)
-  vendorProfiles VendorProfile[]
-
-  buyerProfile BuyerProfile?
-  adminProfile AdminProfile?
-
+  id             String          @id @default(cuid())
+  email          String          @unique
+  name           String?
+  password       String?
+  role           Role            @default(BUYER)
+  isBlocked      Boolean         @default(false)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  adminProfile   AdminProfile?
   auditLogs      AuditLog[]      @relation("AuditActor")
+  buyerProfile   BuyerProfile?
+  comments       Comment[]
+  likes          Like[]
+  orders         Order[]
   passwordResets PasswordReset[]
-
-  views ProductView[]
+  payouts        Payout[]
+  products       Product[]       @relation("VendorProducts")
+  views          ProductView[]
+  reviews        Review[]
+  vendorProfiles VendorProfile[]
 }
 
 model VendorProfile {
-  id        String @id @default(cuid())
-  userId    String
-
-  /// ✅ Multi-tenant scope key
-  tenantKey String @default("DEFAULT")
-
-  displayName  String? @db.VarChar(120)
-  bio          String?
-  avatarUrl    String? @db.VarChar(500)
-  bannerUrl    String? @db.VarChar(500)
-  websiteUrl   String? @db.VarChar(500)
-  twitterUrl   String? @db.VarChar(500)
-  instagramUrl String? @db.VarChar(500)
-  tiktokUrl    String? @db.VarChar(500)
-  facebookUrl  String? @db.VarChar(500)
-
-  slug     String?
-  isPublic Boolean @default(true)
-
-  // ✅ Vendor muss zuerst durch Admin freigeschaltet werden
-  status VendorStatus @default(PENDING)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  ratingAvg           Float?
-  ratingCount         Int      @default(0)
-  totalSales          Int      @default(0)
-  totalRevenueCents   Int      @default(0)
-  refundsCount        Int      @default(0)
-  activeProductsCount Int      @default(0)
+  id                  String       @id @default(cuid())
+  userId              String
+  displayName         String?      @db.VarChar(120)
+  bio                 String?
+  avatarUrl           String?      @db.VarChar(500)
+  bannerUrl           String?      @db.VarChar(500)
+  websiteUrl          String?      @db.VarChar(500)
+  twitterUrl          String?      @db.VarChar(500)
+  instagramUrl        String?      @db.VarChar(500)
+  tiktokUrl           String?      @db.VarChar(500)
+  facebookUrl         String?      @db.VarChar(500)
+  slug                String?
+  isPublic            Boolean      @default(true)
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+  activeProductsCount Int          @default(0)
   lastSaleAt          DateTime?
+  ratingAvg           Float?
+  ratingCount         Int          @default(0)
+  refundsCount        Int          @default(0)
+  totalRevenueCents   Int          @default(0)
+  totalSales          Int          @default(0)
+  status              VendorStatus @default(PENDING)
+  /// ✅ Multi-tenant scope key
+  tenantKey           String       @default("DEFAULT")
+  products            Product[]    @relation("VendorProfileProducts")
+  user                User         @relation(fields: [userId], references: [id])
 
-  products Product[] @relation("VendorProfileProducts")
-  user     User      @relation(fields: [userId], references: [id])
-
-  @@index([tenantKey])
-  @@index([tenantKey, status])
   @@unique([tenantKey, userId])
   @@unique([tenantKey, slug])
+  @@index([tenantKey])
+  @@index([tenantKey, status])
 }
 
 model BuyerProfile {
   id          String   @id @default(cuid())
   userId      String   @unique
-  user        User     @relation(fields: [userId], references: [id])
   displayName String   @default("")
   bio         String   @default("")
   avatarUrl   String   @default("")
   isPublic    Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id])
 }
 
 model AdminProfile {
   id                    String   @id @default(cuid())
   userId                String   @unique
-  user                  User     @relation(fields: [userId], references: [id])
   displayName           String   @default("")
   signature             String   @default("")
   notifyOnDownload      Boolean  @default(true)
   notifyOnPayoutRequest Boolean  @default(true)
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
+  user                  User     @relation(fields: [userId], references: [id])
 }
 
-//
-// ──────────────────────────────────────────────────────────────────────────────
-//  PRODUCTS / MARKETPLACE
-// ──────────────────────────────────────────────────────────────────────────────
-//
+// Product status enum: replaces string-based `status` on Product
+enum ProductStatus {
+  DRAFT
+  ACTIVE
+  BLOCKED
+  PUBLISHED
+  ARCHIVED
+}
 
 model Product {
-  id        String @id @default(cuid())
-
-  /// ✅ Multi-tenant scope key
-  tenantKey String @default("DEFAULT")
-
-  title       String
-  description String
-  priceCents  Int
-  fileUrl     String
-  thumbnail   String?
-  category    String
-  isActive    Boolean @default(true)
-
+  id              String        @id @default(cuid())
+  title           String
+  description     String
+  priceCents      Int
+  fileUrl         String
+  thumbnail       String?
+  category        String
+  isActive        Boolean       @default(true)
   vendorId        String
   vendorProfileId String
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
   /// Produktstatus (Konvention):
-  /// - "DRAFT" | "ACTIVE" | "BLOCKED"
-  status String @default("DRAFT")
-
-  moderationNote String?
-
-  comments Comment[]
-  likes    Like[]
-  orders   Order[]
-
-  vendor        User         @relation("VendorProducts", fields: [vendorId], references: [id])
-  vendorProfile VendorProfile @relation("VendorProfileProducts", fields: [vendorProfileId], references: [id])
-
-  views   ProductView[]
-  reviews Review[]
+  /// - DRAFT | ACTIVE | BLOCKED | PUBLISHED
+  status          ProductStatus @default(DRAFT)
+  moderationNote  String?
+  /// ✅ Multi-tenant scope key
+  tenantKey       String        @default("DEFAULT")
+  comments        Comment[]
+  likes           Like[]
+  orders          Order[]
+  vendor          User          @relation("VendorProducts", fields: [vendorId], references: [id])
+  vendorProfile   VendorProfile @relation("VendorProfileProducts", fields: [vendorProfileId], references: [id])
+  views           ProductView[]
+  reviews         Review[]
 
   @@index([tenantKey])
   @@index([tenantKey, vendorId])
@@ -265,9 +185,8 @@ model ProductView {
   productId String
   viewerId  String?
   createdAt DateTime @default(now())
-
-  product Product @relation(fields: [productId], references: [id])
-  viewer  User?   @relation(fields: [viewerId], references: [id], onDelete: SetNull)
+  product   Product  @relation(fields: [productId], references: [id])
+  viewer    User?    @relation(fields: [viewerId], references: [id])
 
   @@index([productId])
   @@index([viewerId])
@@ -279,9 +198,8 @@ model Like {
   userId    String
   productId String
   createdAt DateTime @default(now())
-
-  product Product @relation(fields: [productId], references: [id])
-  user    User    @relation(fields: [userId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
 
   @@unique([userId, productId])
 }
@@ -292,9 +210,8 @@ model Comment {
   productId String
   content   String
   createdAt DateTime @default(now())
-
-  product Product @relation(fields: [productId], references: [id])
-  user    User    @relation(fields: [userId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
 }
 
 model Review {
@@ -304,64 +221,45 @@ model Review {
   rating    Int
   content   String?
   createdAt DateTime @default(now())
-
-  product Product @relation(fields: [productId], references: [id])
-  user    User    @relation(fields: [userId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
 
   @@unique([userId, productId])
 }
 
-//
-// ──────────────────────────────────────────────────────────────────────────────
-//  ORDERS / DOWNLOADS / PAYOUTS
-// ──────────────────────────────────────────────────────────────────────────────
-//
-
 model Order {
-  id        String @id @default(cuid())
-
+  id                    String        @id @default(cuid())
+  buyerId               String
+  productId             String
+  stripeSessionId       String        @unique
+  amountCents           Int
+  status                String
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+  platformEarningsCents Int           @default(0)
+  vendorEarningsCents   Int           @default(0)
   /// ✅ Multi-tenant scope key
-  tenantKey String @default("DEFAULT")
-
-  buyerId   String
-  productId String
-
-  stripeSessionId String @unique
-  amountCents     Int
-  status          String
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  platformEarningsCents Int @default(0)
-  vendorEarningsCents   Int @default(0)
-
-  downloadLink DownloadLink?
-
-  buyer   User    @relation(fields: [buyerId], references: [id])
-  product Product @relation(fields: [productId], references: [id])
+  tenantKey             String        @default("DEFAULT")
+  downloadLink          DownloadLink?
+  buyer                 User          @relation(fields: [buyerId], references: [id])
+  product               Product       @relation(fields: [productId], references: [id])
 
   @@index([tenantKey])
   @@index([tenantKey, buyerId])
 }
 
 model DownloadLink {
-  id        String @id @default(cuid())
-
-  /// ✅ Multi-tenant scope key
-  tenantKey String @default("DEFAULT")
-
-  orderId String @unique
-  fileUrl  String
-
+  id            String   @id @default(cuid())
+  orderId       String   @unique
+  fileUrl       String
   expiresAt     DateTime
-  downloadCount Int     @default(0)
-  maxDownloads  Int     @default(3)
-  isActive      Boolean @default(true)
-
-  createdAt DateTime @default(now())
-
-  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now())
+  downloadCount Int      @default(0)
+  isActive      Boolean  @default(true)
+  maxDownloads  Int      @default(3)
+  /// ✅ Multi-tenant scope key
+  tenantKey     String   @default("DEFAULT")
+  order         Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@index([tenantKey])
   @@index([orderId])
@@ -369,38 +267,56 @@ model DownloadLink {
 }
 
 model Payout {
-  id        String @id @default(cuid())
-
-  /// ✅ Multi-tenant scope key
-  tenantKey String @default("DEFAULT")
-
+  id          String    @id @default(cuid())
   vendorId    String
   amountCents Int
-  status      String @default("PENDING")
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  paidAt    DateTime?
-
-  vendor User @relation(fields: [vendorId], references: [id])
+  status      String    @default("PENDING")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  paidAt      DateTime?
+  /// ✅ Multi-tenant scope key
+  tenantKey   String    @default("DEFAULT")
+  vendor      User      @relation(fields: [vendorId], references: [id])
 
   @@index([tenantKey])
   @@index([tenantKey, vendorId])
 }
-
-//
-// ──────────────────────────────────────────────────────────────────────────────
-//  AUTH / SECURITY
-// ──────────────────────────────────────────────────────────────────────────────
-//
 
 model PasswordReset {
   id        String   @id @default(cuid())
   token     String   @unique
   userId    String
   expiresAt DateTime
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+enum TenantStatus {
+  ACTIVE
+  BLOCKED
+}
+
+enum TenantPlan {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
+enum TenantMode {
+  WHITE_LABEL
+  MARKETPLACE
+}
+
+enum Role {
+  BUYER
+  VENDOR
+  ADMIN
+}
+
+enum VendorStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SUSPENDED
 }

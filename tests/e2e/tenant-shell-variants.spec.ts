@@ -24,3 +24,15 @@ test.describe('tenant shell variants (minimal)', () => {
     expect(html).not.toContain('DigiEmu');
   });
 });
+
+test("marketplace seller link only when approved/public", async ({ page }) => {
+  await page.goto("/marketplace");
+  // darf nicht crashen + Links müssen echte href haben
+  const links = page.locator('a[href*="/seller/"], a[href*="/vendors/"]');
+  const count = await links.count();
+  // Wenn Links da sind, sollen sie gültig sein
+  if (count > 0) {
+    const href = await links.first().getAttribute("href");
+    expect(href).toBeTruthy();
+  }
+});

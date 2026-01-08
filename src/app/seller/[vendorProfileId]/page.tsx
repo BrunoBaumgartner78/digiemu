@@ -1,10 +1,11 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { ProductCard } from "@/components/product/ProductCard";
 import { MARKETPLACE_TENANT_KEY } from "@/lib/marketplaceTenant";
 import { isPublicVendor } from "@/lib/vendors/visibility";
+import { getSellerStats } from "@/lib/vendors/stats";
 
 export const dynamic = "force-dynamic";
 
@@ -31,6 +32,7 @@ export default async function SellerPage(
       where: { id },
       select: {
         id: true,
+        slug: true,
         userId: true,
         tenantKey: true,
         displayName: true,
@@ -69,27 +71,19 @@ export default async function SellerPage(
     );
   }
 
+  // If this vendor profile has a public slug, redirect to canonical profile path
+  if (vp && typeof vp.slug === "string" && vp.slug.trim().length > 0) {
+    return redirect(`/profile/${encodeURIComponent(vp.slug)}`);
+  }
+
   // Marketplace seller page must only surface public, approved vendor profiles
   if (!vp || String(vp.status || "").toUpperCase() !== "APPROVED" || !Boolean(vp.isPublic)) notFound();
 
   const vendorName = vp.displayName ?? vp.user?.name ?? "Verkäufer";
 
-  // ✅ Stats using your schema: Order + Product (no OrderItem model)
-  const [salesCount, revenueAgg, activeProducts, lastSale] = await Promise.all([
-    prisma.order.count({
-      where: { status: "PAID", product: { vendorId: vp.userId } },
-    }),
-    prisma.order.aggregate({
-      where: { status: "PAID", product: { vendorId: vp.userId } },
-      _sum: { amountCents: true },
-    }),
-    prisma.product.count({
-      where: {
-        vendorId: vp.userId,
-        isActive: true,
-        status: "ACTIVE",
-      },
-    }),
+  // Aggregate stable stats from products + orders (reduces reliance on cached fields)
+  const [stats, lastSale] = await Promise.all([
+    getSellerStats({ tenantKey: vp.tenantKey ?? MARKETPLACE_TENANT_KEY, vendorProfileId: vp.id }),
     prisma.order.findFirst({
       where: { status: "PAID", product: { vendorId: vp.userId } },
       orderBy: { createdAt: "desc" },
@@ -97,7 +91,9 @@ export default async function SellerPage(
     }),
   ]);
 
-  const revenueCents = revenueAgg?._sum?.amountCents ?? 0;
+  const salesCount = stats.totalSales;
+  const revenueCents = stats.totalRevenueCents;
+  const activeProducts = stats.activeProducts;
   const lastSaleAt = lastSale?.createdAt ?? null;
   const lastSaleLabel = lastSaleAt
     ? new Intl.DateTimeFormat("de-CH", { dateStyle: "medium" }).format(lastSaleAt)

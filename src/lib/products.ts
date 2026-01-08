@@ -1,5 +1,6 @@
 // src/lib/products.ts
 import { prisma } from "@/lib/prisma";
+import { ProductStatus, VendorStatus } from "@prisma/client";
 
 export const PAGE_SIZE = 12 as const;
 
@@ -18,8 +19,8 @@ type GetMarketplaceProductsArgs = {
   minPriceCents?: number;
   maxPriceCents?: number;
 
-  // Product.status is a String in schema (NOT enum)
-  acceptProductStatuses?: string[];
+  // Product.status is now an enum ProductStatus
+  acceptProductStatuses?: Array<import('@prisma/client').ProductStatus>;
 };
 
 export async function getMarketplaceProducts(args: GetMarketplaceProductsArgs) {
@@ -43,7 +44,7 @@ export async function getMarketplaceProducts(args: GetMarketplaceProductsArgs) {
   const skip = (page - 1) * pageSize;
 
   const productStatuses =
-    acceptProductStatuses?.length ? acceptProductStatuses : ["ACTIVE"];
+    acceptProductStatuses?.length ? acceptProductStatuses : [ProductStatus.ACTIVE];
 
   const priceWhere: any = {};
   if (typeof minPriceCents === "number") priceWhere.gte = minPriceCents;
@@ -74,7 +75,7 @@ export async function getMarketplaceProducts(args: GetMarketplaceProductsArgs) {
     vendorProfile: {
       is: {
         isPublic: true,
-        status: "APPROVED",
+        status: VendorStatus.APPROVED,
       },
     },
   };

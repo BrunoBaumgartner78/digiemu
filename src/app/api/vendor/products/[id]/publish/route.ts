@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import type { ProductStatus } from "@prisma/client";
 import { currentTenant } from "@/lib/tenant-context";
 
 export const runtime = "nodejs";
@@ -44,8 +45,8 @@ export async function POST(
 
   const data =
     action === "publish"
-      ? { status: "ACTIVE", isActive: true }
-      : { status: "DRAFT", isActive: false };
+      ? { status: ("ACTIVE" as ProductStatus), isActive: true }
+      : { status: ("DRAFT" as ProductStatus), isActive: false };
 
   const { tenantKey: rawTenantKey } = await currentTenant();
   const tenantKey = rawTenantKey ?? "DEFAULT";
