@@ -103,11 +103,19 @@ export async function DELETE(req: Request, ctx: Ctx) {
   }
 
   // „Löschen“ = archivieren (use enum)
-  await prisma.product.update({
+  const updated = await prisma.product.update({
     where: { id },
     data: { status: ProductStatus.ARCHIVED, isActive: false },
     select: { id: true },
   });
 
-  return NextResponse.json({ ok: true });
+  try {
+    const actorId = (user as any)?.id ?? null;
+    const { logAudit } = await import("@/lib/security/audit");
+    await logAudit({ actorId, action: "PRODUCT_ARCHIVE", targetType: "Product", targetId: id, meta: { archivedBy: actorId } });
+  } catch (e) {
+    console.error("audit failed", e);
+  }
+
+  return NextResponse.json({ ok: true, product: updated });
 }

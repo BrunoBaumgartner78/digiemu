@@ -25,5 +25,15 @@ export async function POST(req: Request, ctx: { params: Promise<{ vendorId: stri
     select: { id: true, status: true },
   });
 
+  // Audit vendor approval
+  try {
+    const session = await getServerSession(auth);
+    const actorId = (session?.user as any)?.id ?? null;
+    const { logAudit } = await import("@/lib/security/audit");
+    await logAudit({ actorId, action: "ADMIN_VENDOR_APPROVE", targetType: "VendorProfile", targetId: vendorId, meta: { tenantKey } });
+  } catch (e) {
+    console.error("audit failed", e);
+  }
+
   return NextResponse.json({ ok: true, updated }, { headers: { "Cache-Control": "no-store" } });
 }

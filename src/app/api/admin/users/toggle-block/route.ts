@@ -65,6 +65,22 @@ export async function POST(req: NextRequest) {
       return u;
     });
 
+    // Audit the admin action
+    try {
+      const actorId = (session.user as any)?.id ?? null;
+      const { logAudit } = await import("@/lib/security/audit");
+      await logAudit({
+        actorId,
+        action: nextBlocked ? "ADMIN_USER_BLOCK" : "ADMIN_USER_UNBLOCK",
+        targetType: "User",
+        targetId: userId,
+        meta: { changedBy: actorId, blocked: nextBlocked },
+      });
+    } catch (e) {
+      // don't fail on audit errors
+      console.error("audit log failed", e);
+    }
+
     return NextResponse.json({ ok: true, user: updated });
   } catch (e: any) {
     console.error("[toggle-block]", e);
