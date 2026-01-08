@@ -74,5 +74,5 @@ test("archived products are not visible", async ({ page }) => {
 
 test("seller stats do not crash marketplace", async ({ page }) => {
   await page.goto("/marketplace");
-  await expect(page.locator("text=Verkäufe")).toBeVisible();
+  await expect(page.locator("text=Verkäufe").first()).toBeVisible();
 });
