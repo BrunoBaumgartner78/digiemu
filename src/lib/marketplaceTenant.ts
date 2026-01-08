@@ -1,10 +1,17 @@
 // Global tenant key used for platform-wide marketplace pages & queries
-export const MARKETPLACE_TENANT_KEY = "DEFAULT" as const;
+export const MARKETPLACE_TENANT_KEY = "MARKETPLACE" as const;
 
-// Helper to return a stable marketplace tenant object.
-// Reads `process.env.MARKETPLACE_TENANT_KEY` as an override if present.
-export async function marketplaceTenant() {
-  const envKey = String(process.env.MARKETPLACE_TENANT_KEY ?? "").trim();
-  const key = envKey || MARKETPLACE_TENANT_KEY;
-  return { key } as const;
+// In current data, products may still live under DEFAULT.
+// Allow an override and a fallback list for queries.
+export function marketplaceTenant() {
+  const key =
+    String(process.env.MARKETPLACE_TENANT_KEY ?? MARKETPLACE_TENANT_KEY).trim() ||
+    MARKETPLACE_TENANT_KEY;
+
+  const fallbackKeys = String(process.env.MARKETPLACE_TENANT_FALLBACK_KEYS ?? "DEFAULT")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+  return { key, fallbackKeys } as const;
 }

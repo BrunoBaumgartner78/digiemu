@@ -278,11 +278,11 @@ export default async function AdminUsersPage({
 
                       <td className="py-2 px-4 flex flex-wrap gap-2">
                        <AdminUserStatusToggle
-  userId={user.id}
-  isBlocked={user.isBlocked}
-  targetRole={user.role}
-  currentUserId={(session.user as any)?.id ?? null}
-/>
+                          userId={user.id}
+                          isBlocked={user.isBlocked}
+                          currentUserId={(session.user as any).id}
+                          targetRole={user.role}
+                        />
 
 
                         {isVendor && (

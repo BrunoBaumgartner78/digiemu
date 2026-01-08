@@ -6,22 +6,25 @@ export const PAGE_SIZE = 12 as const;
 export type MarketplaceSort = "newest" | "price_asc" | "price_desc";
 
 type GetMarketplaceProductsArgs = {
-  tenantKey: string;
+  // NEW: allow multiple tenant keys (useful while migrating data)
+  tenantKeys?: string[];
+  tenantKey?: string;
+
   page: number;
   pageSize: number;
   category?: string;
   search?: string;
-  sort?: "newest" | "price_asc" | "price_desc";
+  sort?: MarketplaceSort;
   minPriceCents?: number;
   maxPriceCents?: number;
 
-  // ✅ NEW: getrennte Enums
-  acceptProductStatuses?: string[]; // ProductStatus values
-  acceptVendorStatuses?: string[]; // VendorStatus values
+  // Product.status is a String in schema (NOT enum)
+  acceptProductStatuses?: string[];
 };
 
 export async function getMarketplaceProducts(args: GetMarketplaceProductsArgs) {
   const {
+    tenantKeys,
     tenantKey,
     page,
     pageSize,
@@ -31,22 +34,26 @@ export async function getMarketplaceProducts(args: GetMarketplaceProductsArgs) {
     minPriceCents,
     maxPriceCents,
     acceptProductStatuses,
-    acceptVendorStatuses,
   } = args;
+
+  const keys =
+    (tenantKeys?.length ? tenantKeys : undefined) ??
+    (tenantKey ? [tenantKey] : ["MARKETPLACE"]);
 
   const skip = (page - 1) * pageSize;
 
-  // ✅ sichere Defaults
-  const productStatuses = acceptProductStatuses?.length
-    ? acceptProductStatuses
-    : (["PUBLISHED"] as const);
+  const productStatuses =
+    acceptProductStatuses?.length ? acceptProductStatuses : ["ACTIVE"];
+
+  const priceWhere: any = {};
+  if (typeof minPriceCents === "number") priceWhere.gte = minPriceCents;
+  if (typeof maxPriceCents === "number") priceWhere.lte = maxPriceCents;
 
   const where: any = {
-    tenantKey,
+    tenantKey: { in: keys },
     isActive: true,
     ...(category ? { category } : {}),
-    ...(typeof minPriceCents === "number" ? { priceCents: { gte: minPriceCents } } : {}),
-    ...(typeof maxPriceCents === "number" ? { priceCents: { ...(typeof minPriceCents === "number" ? { gte: minPriceCents } : {}), lte: maxPriceCents } } : {}),
+    ...(Object.keys(priceWhere).length ? { priceCents: priceWhere } : {}),
     ...(search
       ? {
           OR: [
@@ -56,15 +63,16 @@ export async function getMarketplaceProducts(args: GetMarketplaceProductsArgs) {
         }
       : {}),
 
-    // ProductStatus (string values)
+    // Product is string status
     status: { in: productStatuses },
 
-    // Vendor/VendorProfile Guards - vendorProfile.status is an enum (VendorStatus).
-    // Only allow APPROVED vendor profiles to be shown in marketplace.
+    // marketplace safety
     vendor: { isBlocked: false },
+
+    // VendorProfile.status is enum VendorStatus -> must be a single enum value (not list of strings)
+    // We only show approved + public profiles.
     vendorProfile: {
       is: {
-        tenantKey,
         isPublic: true,
         status: "APPROVED",
       },
@@ -94,3 +102,4 @@ export async function getMarketplaceProducts(args: GetMarketplaceProductsArgs) {
   const pageCount = Math.max(1, Math.ceil(total / pageSize));
   return { total, items, pageCount };
 }
+

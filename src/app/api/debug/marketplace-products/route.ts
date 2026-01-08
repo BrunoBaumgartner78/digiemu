@@ -5,10 +5,10 @@ import { marketplaceTenant } from "@/lib/marketplaceTenant";
 export const runtime = "nodejs";
 
 export async function GET() {
-  const mp = await marketplaceTenant();
+  const mp = marketplaceTenant();
 
   const latest = await prisma.product.findMany({
-    where: { tenantKey: mp.key },
+    where: { tenantKey: { in: [mp.key, ...(mp.fallbackKeys ?? [])] } },
     select: { id: true, title: true, status: true, tenantKey: true, createdAt: true },
     orderBy: { createdAt: "desc" },
     take: 20,
@@ -22,6 +22,7 @@ export async function GET() {
 
   return NextResponse.json({
     marketplaceKey: mp.key,
+    fallbackKeys: mp.fallbackKeys,
     latestInMarketplace: latest,
     countsByTenantKeyAndStatus: counts,
   });

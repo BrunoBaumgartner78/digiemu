@@ -163,10 +163,10 @@ export default async function Page({ searchParams }: { searchParams?: Marketplac
 
   // NOTE: Marketplace is platform-wide, not host/white-label scoped
   // Resolve the marketplace tenant via helper (allows ENV override)
-  const mp = await marketplaceTenant();
+  const mp = marketplaceTenant();
 
   const { items: products, total, pageCount } = await getMarketplaceProducts({
-    tenantKey: mp.key,
+    tenantKeys: [mp.key, ...(mp.fallbackKeys ?? [])],
     page,
     pageSize: PAGE_SIZE,
     category: category === "all" ? undefined : category,
@@ -175,7 +175,7 @@ export default async function Page({ searchParams }: { searchParams?: Marketplac
     minPriceCents,
     maxPriceCents,
     // permissive fallback: accept common published-like product statuses (apply only to Product.status)
-    acceptProductStatuses: ["ACTIVE", "PUBLISHED"], // adjust to your Product enum if needed
+    acceptProductStatuses: ["ACTIVE", "PUBLISHED", "APPROVED"], // adjust if needed
   });
 
   const hasPrev = page > 1;

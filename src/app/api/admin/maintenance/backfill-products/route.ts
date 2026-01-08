@@ -2,82 +2,60 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { currentTenant } from "@/lib/tenant-context";
+import { MARKETPLACE_TENANT_KEY } from "@/lib/marketplaceTenant";
 
-/**
- * POST /api/admin/maintenance/backfill-products
- * Fixes old products so they can appear in Marketplace (Option B).
- */
-export async function POST(req: Request) {
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+// Optional: if someone hits it in browser directly, show method not allowed.
+export async function GET() {
+  return NextResponse.json({ ok: false, error: "Use POST" }, { status: 405 });
+}
+
+export async function POST() {
   const session = await getServerSession(auth);
-  if (!session?.user || (session.user as any).role !== "ADMIN") {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session?.user || (session.user as any)?.role !== "ADMIN") {
+    return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }
 
-  const body = await req.json().catch(() => ({} as any));
+  // Backfill strategy:
+  // - products that should be in marketplace must have tenantKey = MARKETPLACE
+  // - must have vendorProfileId pointing to an APPROVED+public vendor profile in MARKETPLACE
+  //
+  // Your current debug shows products are in DEFAULT with status ACTIVE.
+  // We keep it safe: only update products that are ACTIVE + isActive=true and missing marketplace tenantKey.
 
-  const { tenantKey: detectedTenantKey } = await currentTenant();
-  const tenantKey = String(body?.tenantKey ?? detectedTenantKey ?? "DEFAULT").trim() || "DEFAULT";
-  const onlyMissing = body?.onlyMissing !== false; // default true
+  const mpKey = MARKETPLACE_TENANT_KEY;
 
-  // Load vendorProfiles for this tenant keyed by userId
-  const vendorProfiles = await prisma.vendorProfile.findMany({
-    where: { tenantKey },
-    select: { id: true, userId: true, status: true, isPublic: true },
+  // 1) find an approved marketplace vendor profile to attach products to if needed
+  const mpVendorProfile = await prisma.vendorProfile.findFirst({
+    where: { tenantKey: mpKey, status: "APPROVED", isPublic: true, user: { isBlocked: false } },
+    select: { id: true, userId: true },
   });
 
-  const vpByUserId = new Map<string, { id: string; status: string; isPublic: boolean }>();
-  for (const vp of vendorProfiles) {
-    vpByUserId.set(vp.userId, { id: vp.id, status: vp.status, isPublic: vp.isPublic });
+  if (!mpVendorProfile) {
+    return NextResponse.json(
+      { ok: false, error: "No APPROVED marketplace vendorProfile found. Approve a vendor in tenantKey=MARKETPLACE first." },
+      { status: 400 }
+    );
   }
 
-  // Find products that are candidates for backfill
-  // Note: `vendorProfileId` is non-nullable in schema; legacy missing values are empty string.
-  const products = await prisma.product.findMany({
+  // 2) move legacy products into marketplace tenantKey and ensure vendorProfileId is set
+  const res = await prisma.product.updateMany({
     where: {
-      ...(onlyMissing
-        ? {
-            OR: [
-              { vendorProfileId: "" },
-              { tenantKey: { equals: "" } },
-              { tenantKey: { equals: "DEFAULT" } },
-            ],
-          }
-        : {}),
+      tenantKey: { in: ["DEFAULT", ""] },
+      isActive: true,
+      status: { in: ["ACTIVE", "PUBLISHED", "APPROVED"] }, // tolerate your existing strings
     },
-    select: { id: true, vendorId: true, vendorProfileId: true, tenantKey: true, status: true },
+    data: {
+      tenantKey: mpKey,
+      vendorProfileId: mpVendorProfile.id,
+      vendorId: mpVendorProfile.userId,
+    },
   });
 
-  let updatedCount = 0;
-  let skippedNoProfile = 0;
-
-  for (const p of products) {
-    const vp = vpByUserId.get(p.vendorId);
-    if (!vp) {
-      skippedNoProfile++;
-      continue;
-    }
-
-    const canBeActive = vp.status === "APPROVED" && vp.isPublic === true;
-
-    await prisma.product.update({
-      where: { id: p.id },
-      data: {
-        tenantKey: p.tenantKey && p.tenantKey.trim().length > 0 ? p.tenantKey : tenantKey,
-        vendorProfileId: p.vendorProfileId && p.vendorProfileId.trim().length > 0 ? p.vendorProfileId : vp.id,
-        status: canBeActive ? "ACTIVE" : p.status,
-        isActive: true,
-      },
-    });
-
-    updatedCount++;
-  }
-
-  return NextResponse.json({
-    ok: true,
-    tenantKey,
-    updatedCount,
-    skippedNoProfile,
-    totalChecked: products.length,
-  });
+  return NextResponse.json(
+    { ok: true, updatedCount: res.count, marketplaceTenantKey: mpKey, vendorProfileId: mpVendorProfile.id },
+    { headers: { "Cache-Control": "no-store" } }
+  );
 }
