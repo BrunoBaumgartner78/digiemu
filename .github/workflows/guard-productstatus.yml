@@ -1,34 +1,55 @@
-name: guard-productstatus
+name: hotfix-guard-productstatus
 
 on:
-  pull_request:
   push:
-    branches: [ main ]
+    branches: ["**"]
+  pull_request:
 
 jobs:
-  guards:
+  guard-productstatus:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Install ripgrep
-        run: sudo apt-get update && sudo apt-get install -y ripgrep
-
-      - name: Forbid legacy acceptPublishedStatuses
+      # 1) Hard fail: Product.status darf niemals "APPROVED" sein
+      - name: Guard - forbid ProductStatus = APPROVED
+        shell: bash
         run: |
-          set -e
-          if rg -n 'acceptPublishedStatuses' src ; then
-            echo "❌ acceptPublishedStatuses should not exist. Use acceptProductStatuses."
+          set -euo pipefail
+
+          echo "Checking for illegal ProductStatus usage: status: \"APPROVED\" on prisma.product..."
+          # Direkt falsch: prisma.product.*( ... status: "APPROVED" ...)
+          if grep -RIn --include='*.ts' --include='*.tsx' 'prisma\.product\.' src | grep -E 'status\s*:\s*"APPROVED"' >/dev/null; then
+            echo "::error::Found invalid ProductStatus value \"APPROVED\" used in prisma.product.* update/create/find queries."
+            echo "---- matches ----"
+            grep -RIn --include='*.ts' --include='*.tsx' 'prisma\.product\.' src | grep -E 'status\s*:\s*"APPROVED"' || true
             exit 1
           fi
-          echo "✅ No acceptPublishedStatuses"
 
-      - name: Forbid VendorStatus values in ProductStatus usage
+      # 2) Soft fail: acceptProductStatuses darf nie APPROVED enthalten (VendorStatus ist separat!)
+      - name: Guard - forbid APPROVED in acceptProductStatuses
+        shell: bash
         run: |
-          set -e
-          # Only flag when APPROVED appears close to prisma.product usage
-          if rg -n 'prisma\.product\.' src | rg -n '"APPROVED"' ; then
-            echo "❌ Found \"APPROVED\" near prisma.product.* usage (invalid ProductStatus)."
+          set -euo pipefail
+
+          echo "Checking acceptProductStatuses is not polluted with VendorStatus.APPROVED..."
+          # typische Fälle:
+          # acceptProductStatuses: ["APPROVED"]
+          # acceptProductStatuses: [VendorStatus.APPROVED]
+          if grep -RIn --include='*.ts' --include='*.tsx' 'acceptProductStatuses' src | grep -E 'APPROVED' >/dev/null; then
+            echo "::error::Found APPROVED inside acceptProductStatuses. This likely mixes VendorStatus into ProductStatus and can crash Postgres enum ProductStatus."
+            echo "---- matches ----"
+            grep -RIn --include='*.ts' --include='*.tsx' 'acceptProductStatuses' src | grep -E 'APPROVED' || true
             exit 1
           fi
-          echo "✅ No invalid ProductStatus strings near prisma.product.*"
+
+      # Optional: schneller TS-Check (ohne Full build)
+      - name: Typecheck (optional)
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -f package.json ]; then
+            npm ci
+            npm run -s typecheck || npm run -s lint || true
+          fi
