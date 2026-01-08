@@ -197,9 +197,130 @@ export default async function TenantDetailPage(props: { params: Promise<Params> 
                 className="input-neu w-full min-h-[140px] font-mono text-xs"
                 placeholder='{"accent":"#..."}'
               />
-              <p className="text-xs text-[var(--text-muted)] mt-1">
-                JSON – leer lassen, wenn du es nicht nutzt.
-              </p>
+              <p className="text-xs text-[var(--text-muted)] mt-1">JSON – leer lassen, wenn du es nicht nutzt.</p>
+              <div className="mt-2 text-xs text-[var(--text-muted)]">
+                Beispiel (Shell minimal):
+                <pre className="bg-gray-50 p-2 rounded text-xs mt-1">{
+`{
+  "shell": { "minimal": true }
+}`
+                }</pre>
+                Oder feiner gesteuert:
+                <pre className="bg-gray-50 p-2 rounded text-xs mt-1">{
+`{
+  "shell": { "header": "MINIMAL", "footer": "MINIMAL" }
+}`
+                }</pre>
+                
+                {/* GRID landing examples */}
+                <div className="mt-3">
+                  <div className="text-xs font-semibold">GRID Landing (white-label shop)</div>
+                  <pre className="bg-gray-50 p-2 rounded text-xs mt-1">{
+`{
+  "shell": {
+    "landing": "GRID",
+    "landingTitle": "Blue Lotos Shop",
+    "landingSubtitle": "Digitale Produkte & Downloads"
+  }
+}`
+                  }</pre>
+
+                  <div className="text-xs font-semibold mt-2">GRID Landing with featured products</div>
+                  <pre className="bg-gray-50 p-2 rounded text-xs mt-1">{
+`{
+  "shell": {
+    "landing": "GRID",
+    "featuredProductIds": ["prod_1","prod_2"]
+  }
+}`
+                  }</pre>
+                </div>
+
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-3 mt-4">
+                <div>
+                  <label className="block text-sm mb-1">Shell</label>
+                  <select
+                    name="shell"
+                    defaultValue={
+                      (tenant.themeJson as any)?.shellVariant === "MINIMAL" ? "MINIMAL" : "FULL"
+                    }
+                    className="input-neu w-full"
+                  >
+                    <option value="FULL">FULL</option>
+                    <option value="MINIMAL">MINIMAL</option>
+                  </select>
+                  <p className="text-xs text-[var(--text-muted)] mt-1">Wähle <strong>FULL</strong> oder <strong>MINIMAL</strong> Header/Footer.</p>
+                </div>
+
+                <div>
+                  <label className="block text-sm mb-1">Home Path (optional)</label>
+                  <input
+                    name="homePath"
+                    defaultValue={(tenant.themeJson as any)?.homePath ?? ""}
+                    placeholder="/shop"
+                    className="input-neu w-full"
+                  />
+                  <p className="text-xs text-[var(--text-muted)] mt-1">Optionaler interner Pfad für Tenant-Root (z.B. /shop).</p>
+                </div>
+              </div>
+              <div className="grid md:grid-cols-2 gap-3 mt-4">
+                <div>
+                  <label className="block text-sm mb-1">Shell Toggles</label>
+                  <div className="flex flex-col gap-2 text-sm">
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        name="showAuthLinks"
+                        defaultChecked={Boolean((tenant.themeJson as any)?.shell?.showAuthLinks)}
+                        value="1"
+                      />
+                      Zeige Login/Register Links
+                    </label>
+
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        name="showRegister"
+                        defaultChecked={Boolean((tenant.themeJson as any)?.shell?.showRegister)}
+                        value="1"
+                      />
+                      Enable Registrierung anzeigen
+                    </label>
+
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        name="poweredBy"
+                        defaultChecked={Boolean((tenant.themeJson as any)?.shell?.poweredBy)}
+                        value="1"
+                      />
+                      Powered by DigiEmu anzeigen
+                    </label>
+
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        name="hideInfoPages"
+                        defaultChecked={Boolean((tenant.themeJson as any)?.shell?.hideInfoPages)}
+                        value="1"
+                      />
+                      Info-Seiten (Terms/Privacy) ausblenden
+                    </label>
+
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        name="showLogo"
+                        defaultChecked={Boolean((tenant.themeJson as any)?.shell?.showLogo)}
+                        value="1"
+                      />
+                      Logo im Header anzeigen
+                    </label>
+                  </div>
+                </div>
+              </div>
             </div>
           ) : (
             <div className="rounded-2xl border border-[var(--neo-card-border)] p-3 text-sm text-[var(--text-muted)]">

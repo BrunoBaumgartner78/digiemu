@@ -42,6 +42,13 @@ export async function POST(req: Request) {
   let mode: string | undefined;
   let logoUrl: string | undefined;
   let themeJsonRaw: string | undefined;
+  let shellRaw: string | undefined;
+  let homePathRaw: string | undefined;
+  let showAuthLinksRaw: string | undefined;
+  let showRegisterRaw: string | undefined;
+  let poweredByRaw: string | undefined;
+  let hideInfoPagesRaw: string | undefined;
+  let showLogoRaw: string | undefined;
 
   if (ct.includes("application/json")) {
     const body = await req.json().catch(() => ({}));
@@ -59,6 +66,18 @@ export async function POST(req: Request) {
     mode = isNonEmptyString(body.mode) ? body.mode.trim().toUpperCase() : undefined;
     logoUrl = typeof body.logoUrl === "string" ? body.logoUrl.trim() : undefined;
     themeJsonRaw = typeof body.themeJson === "string" ? body.themeJson : undefined;
+    // shell can be either a string or an object with detailed flags
+    if (typeof body.shell === "string") {
+      shellRaw = body.shell.trim().toUpperCase();
+    } else if (body.shell && typeof body.shell === "object") {
+      shellRaw = typeof body.shell.shellVariant === "string" ? String(body.shell.shellVariant).trim().toUpperCase() : undefined;
+      showAuthLinksRaw = typeof body.shell.showAuthLinks === "boolean" ? String(body.shell.showAuthLinks) : undefined;
+      showRegisterRaw = typeof body.shell.showRegister === "boolean" ? String(body.shell.showRegister) : undefined;
+      poweredByRaw = typeof body.shell.poweredBy === "boolean" ? String(body.shell.poweredBy) : undefined;
+      hideInfoPagesRaw = typeof body.shell.hideInfoPages === "boolean" ? String(body.shell.hideInfoPages) : undefined;
+      showLogoRaw = typeof body.shell.showLogo === "boolean" ? String(body.shell.showLogo) : undefined;
+    }
+    homePathRaw = typeof body.homePath === "string" ? body.homePath.trim() : undefined;
 
     // ✅ Guard: only allow known values (blocks legacy SINGLE_VENDOR etc.)
     if (body?.mode !== undefined) {
@@ -83,6 +102,13 @@ export async function POST(req: Request) {
     const m = toStr(fd.get("mode"));
     const l = toStr(fd.get("logoUrl"));
     const t = toStr(fd.get("themeJson"));
+    const shellF = toStr(fd.get("shell"));
+    const h = toStr(fd.get("homePath"));
+    const showAuth = toStr(fd.get("showAuthLinks"));
+    const showReg = toStr(fd.get("showRegister"));
+    const powered = toStr(fd.get("poweredBy"));
+    const hideInfo = toStr(fd.get("hideInfoPages"));
+    const showLg = toStr(fd.get("showLogo"));
 
     name = n.trim() ? n.trim() : undefined;
     status = s.trim() ? s.trim().toUpperCase() : undefined;
@@ -91,6 +117,13 @@ export async function POST(req: Request) {
     mode = m.trim() ? m.trim().toUpperCase() : undefined;
     logoUrl = l.trim() ? l.trim() : undefined;
     themeJsonRaw = t.trim() ? t.trim() : undefined;
+    shellRaw = shellF.trim() ? shellF.trim().toUpperCase() : undefined;
+    homePathRaw = h.trim() ? h.trim() : undefined;
+    showAuthLinksRaw = showAuth.trim() ? showAuth.trim() : undefined;
+    showRegisterRaw = showReg.trim() ? showReg.trim() : undefined;
+    poweredByRaw = powered.trim() ? powered.trim() : undefined;
+    hideInfoPagesRaw = hideInfo.trim() ? hideInfo.trim() : undefined;
+    showLogoRaw = showLg.trim() ? showLg.trim() : undefined;
   }
 
   if (!tenantId) {
@@ -142,6 +175,7 @@ export async function POST(req: Request) {
   }
 
   // Branding enforcement (capabilities): forbid setting logo/theme if not allowed
+  // Note: shell toggles (header/footer behavior) are allowed even when branding is disabled.
   if (!capabilities.branding && (logoUrl !== undefined || themeJsonRaw !== undefined)) {
     return NextResponse.json({ ok: false, error: "BRANDING_NOT_ALLOWED" }, { status: 403 });
   }
@@ -167,6 +201,53 @@ export async function POST(req: Request) {
       }
       data.themeJson = parsed;
     }
+  }
+
+  // Accept shell/homePath as standalone fields and merge into themeJson
+  if (
+    shellRaw !== undefined ||
+    homePathRaw !== undefined ||
+    showAuthLinksRaw !== undefined ||
+    showRegisterRaw !== undefined ||
+    poweredByRaw !== undefined ||
+    hideInfoPagesRaw !== undefined ||
+    showLogoRaw !== undefined
+  ) {
+    // Validate shell value when provided
+    if (shellRaw !== undefined) {
+      const allowed = new Set(["FULL", "MINIMAL"]);
+      if (!allowed.has(shellRaw)) {
+        return NextResponse.json({ ok: false, error: "Invalid shell value" }, { status: 400 });
+      }
+    }
+
+    // start from existing themeJson (tenant.themeJson may be null)
+    const baseTheme = (data.themeJson !== undefined ? data.themeJson : (tenant.themeJson ?? {})) as any;
+    const nextTheme = { ...(baseTheme || {}) };
+    // Ensure shell object exists
+    nextTheme.shell = nextTheme.shell || {};
+    if (shellRaw !== undefined) nextTheme.shell.shellVariant = shellRaw === "MINIMAL" ? "MINIMAL" : "DEFAULT";
+    if (homePathRaw !== undefined) nextTheme.shell.homePath = homePathRaw === "" ? null : homePathRaw;
+
+    // boolean toggles (form values come as strings)
+    const toBool = (v: string | undefined) => {
+      if (v === undefined) return undefined;
+      const s = String(v).toLowerCase();
+      return s === "1" || s === "true" || s === "on";
+    };
+
+    const sb = toBool(showAuthLinksRaw);
+    const sr = toBool(showRegisterRaw);
+    const pb = toBool(poweredByRaw);
+    const hi = toBool(hideInfoPagesRaw);
+    const sl = toBool(showLogoRaw);
+
+    if (sb !== undefined) nextTheme.shell.showAuthLinks = sb;
+    if (sr !== undefined) nextTheme.shell.showRegister = sr;
+    if (pb !== undefined) nextTheme.shell.poweredBy = pb;
+    if (hi !== undefined) nextTheme.shell.hideInfoPages = hi;
+    if (sl !== undefined) nextTheme.shell.showLogo = sl;
+    data.themeJson = nextTheme;
   }
 
   await prisma.tenant.update({

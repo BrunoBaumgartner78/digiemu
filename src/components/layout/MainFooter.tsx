@@ -1,4 +1,3 @@
-import Link from "next/link";
 import styles from "./mainFooter.module.css";
 import { LEGAL } from "@/lib/legal";
 
@@ -22,16 +21,34 @@ const QUICK: FooterLink[] = [
   { label: "Hilfe", href: "/help" },
 ];
 
-export default function MainFooter() {
+export default function MainFooter({ variant = "DEFAULT" }: { variant?: "DEFAULT" | "MINIMAL" }) {
+  const isMinimal = variant === "MINIMAL";
   const year = new Date().getFullYear();
+
+  if (isMinimal) {
+    return (
+      <footer className="site-footer p-6 border-t bg-white mt-8">
+        <div className="max-w-6xl mx-auto text-sm text-[var(--text-muted)] flex items-center justify-between">
+          <div>
+            <span>Powered by </span>
+            <a href="https://digiemu.example" className="underline">
+              DigiEmu
+            </a>
+          </div>
+
+          <div>© {year}</div>
+        </div>
+      </footer>
+    );
+  }
 
   return (
     <footer className={styles.wrap} aria-label="Footer">
       <div className={styles.container}>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", fontSize: 13, marginBottom: 8 }}>
-          <Link href="/impressum">Impressum</Link>
-          <Link href="/datenschutz">Datenschutz</Link>
-          <Link href="/help">Hilfe</Link>
+          <a href="/impressum">Impressum</a>
+          <a href="/datenschutz">Datenschutz</a>
+          <a href="/help">Hilfe</a>
         </div>
         <div className={styles.card}>
           <div className={styles.top}>
@@ -49,9 +66,9 @@ export default function MainFooter() {
 
                 <div className={styles.quick}>
                   {QUICK.map((l) => (
-                    <Link key={l.href} href={l.href} className={styles.pill}>
+                    <a key={l.href} href={l.href} className={styles.pill}>
                       {l.label}
-                    </Link>
+                    </a>
                   ))}
                 </div>
               </div>
@@ -64,9 +81,9 @@ export default function MainFooter() {
                 <ul className={styles.list}>
                   {LEGAL_LINKS.map((l) => (
                     <li key={l.href}>
-                      <Link href={l.href} className={styles.link}>
+                      <a href={l.href} className={styles.link}>
                         {l.label}
-                      </Link>
+                      </a>
                     </li>
                   ))}
                 </ul>
@@ -77,9 +94,9 @@ export default function MainFooter() {
                 <ul className={styles.list}>
                   {INFO.map((l) => (
                     <li key={l.href}>
-                      <Link href={l.href} className={styles.link}>
+                      <a href={l.href} className={styles.link}>
                         {l.label}
-                      </Link>
+                      </a>
                     </li>
                   ))}
                 </ul>
@@ -92,11 +109,11 @@ export default function MainFooter() {
             <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center", justifyContent: "center", padding: "14px 10px", fontSize: 13, opacity: 0.9 }}>
               <span style={{ opacity: 0.7 }}>© {year} {LEGAL.companyName}</span>
               {LEGAL_LINKS.map((l) => (
-                <Link key={l.href} href={l.href} className={styles.link}>
+                <a key={l.href} href={l.href} className={styles.link}>
                   {l.label}
-                </Link>
+                </a>
               ))}
-              <Link href="/help" className={styles.link}>Hilfe</Link>
+              <a href="/help" className={styles.link}>Hilfe</a>
             </div>
 
             <div className={styles.meta}>

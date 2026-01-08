@@ -9,6 +9,7 @@ const nextConfig = {
       { protocol: "https", hostname: "storage.googleapis.com", pathname: "/**" },
     ],
   },
+  // Security headers are applied via middleware (`src/middleware.ts`) to keep logic centralized.
 };
 
 module.exports = nextConfig;

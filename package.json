@@ -22,6 +22,8 @@
     "lint": "next lint",
     "postinstall": "prisma generate",
     "build:local": "prisma generate && next build",
+    "prisma:generate:win": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/prisma-generate-win.ps1",
+    "build:prod:win": "npm run prisma:generate:win && npm run tenant:preflight && next build",
     "build:win": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"taskkill /F /IM node.exe /T 2>$null; taskkill /F /IM prisma.exe /T 2>$null; if (Test-Path .next\\dev\\lock) { Remove-Item .next\\dev\\lock -Force }; if (Test-Path node_modules\\.prisma\\client) { Remove-Item node_modules\\.prisma\\client -Recurse -Force }; npx prisma generate; npm run build\"",
     "dev": "next dev",
     "build": "prisma generate && npm run tenant:preflight && next build",
@@ -32,7 +34,9 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "start:e2e": "next start -p 3000",
-    "test:e2e:prod": "npm run build && cross-env PW_BASE_URL=http://127.0.0.1:3000 playwright test"
+    "test:e2e:prod": "npm run build && cross-env PW_BASE_URL=http://127.0.0.1:3000 playwright test",
+    "test:e2e:prod:win": "npm run build:prod:win && cross-env PW_BASE_URL=http://127.0.0.1:3000 playwright test",
+    "smoke:prod": "node scripts/smoke-prod.mjs"
   },
   "dependencies": {
     "@auth/core": "^0.34.3",

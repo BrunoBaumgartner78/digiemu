@@ -41,8 +41,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const role = ((session?.user as any)?.role as string | undefined) ?? null;
   const isAdmin = role === "ADMIN";
 
-  const p = await prisma.product.findUnique({
-    where: { id: pid },
+  const p = await prisma.product.findFirst({
+    where: { id: pid, tenantKey },
     select: {
       id: true,
       tenantKey: true,
@@ -83,25 +83,12 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   if (!p) notFound();
 
-  // ✅ Tenant scoping
-  if ((p.tenantKey ?? "DEFAULT") !== tenantKey) notFound();
+  // Marketplace-only: require published products
+  if (p.status !== "PUBLISHED") notFound();
 
-  const isOwner = !!userId && userId === p.vendorId;
-
-  // ✅ OPTION B: Approval enforced
-  const isVendorApproved =
-    p.vendorProfile?.status === "APPROVED" && p.vendorProfile?.isPublic === true;
-
-  const isPublicVisible =
-    p.isActive === true &&
-    p.status === "ACTIVE" &&
-    !p.vendor?.isBlocked &&
-    p.vendorProfileId !== null &&
-    isVendorApproved;
-
-  const canPreview = isAdmin || isOwner;
-
-  if (!isPublicVisible && !canPreview) notFound();
+  // Require vendor profile exists and is approved + public
+  if (!p.vendorProfile) notFound();
+  if (String(p.vendorProfile.status || "").toUpperCase() !== "APPROVED" || !Boolean(p.vendorProfile.isPublic)) notFound();
 
   // ✅ VendorProfile fallback (tenant-aware + Prisma-safe)
   // Falls Product.vendorProfileId null ist (alte Produkte), holen wir trotzdem das Profil des Vendors im aktuellen Tenant.
@@ -129,16 +116,14 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const badgesMap = await getBadgesForVendors({ [p.vendorId]: vendorProfile ?? {} });
   const badgesForVendor = badgesMap[p.vendorId] ?? [];
 
-  // ✅ related products: use relation filter to guarantee vendorProfile exists and is approved/public
+  // Related products: same tenant, published, from same vendor/profile
   const relatedProducts = await prisma.product.findMany({
     where: {
       tenantKey,
       id: { not: p.id },
-      isActive: true,
-      status: "ACTIVE",
+      status: "PUBLISHED",
       vendor: { isBlocked: false },
 
-      // ✅ Relation filter enforces "has profile" without null comparisons
       vendorProfile: {
         is: {
           status: "APPROVED",
@@ -159,6 +144,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   const price = (p.priceCents ?? 0) / 100;
   const hasThumb = typeof p.thumbnail === "string" && p.thumbnail.trim().length > 0;
+
+  const isOwner = !!userId && userId === p.vendorId;
 
   // ✅ full image allowed for admin/owner or buyer who purchased
   let canFull = isAdmin || isOwner;
@@ -246,7 +233,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
             <p className={styles.priceLine}>CHF {price.toFixed(2)}</p>
 
-            {p.isActive && p.status === "ACTIVE" ? (
+            {p.isActive && p.status === "PUBLISHED" ? (
               <BuyButtonClient productId={p.id} />
             ) : (
               <div className="neo-card" style={{ padding: 12, marginTop: 10, opacity: 0.85 }}>

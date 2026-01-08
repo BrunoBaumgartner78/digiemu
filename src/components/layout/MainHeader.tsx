@@ -26,7 +26,22 @@ const dbg = (...args: any[]) => {
   if (isDebug) console.log(...args);
 };
 
-export function MainHeader() {
+type Props = {
+  variant?: "DEFAULT" | "MINIMAL";
+  tenantBrand?: { name?: string; logoUrl?: string | null } | null;
+  showAuthLinks?: boolean;
+  showNavLinks?: boolean;
+  headerVariantName?: string | undefined;
+};
+
+export function MainHeader(props: Props) {
+  const {
+    variant = "DEFAULT",
+    tenantBrand = null,
+    showAuthLinks = true,
+    showNavLinks = true,
+  } = props;
+
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const { data: session, status } = useSession();
@@ -68,40 +83,61 @@ export function MainHeader() {
     </Link>
   );
 
-  // ✅ NEW: Tenants link (admin-only)
+  // ✅ Tenants link (admin-only)
   const TenantsLink = (
     <Link
       href="/admin/tenants"
-      className={
-        "nav-pill nav-pill-ghost" + (isActive("/admin/tenants") ? " nav-pill-active" : "")
-      }
+      className={"nav-pill nav-pill-ghost" + (isActive("/admin/tenants") ? " nav-pill-active" : "")}
     >
       Tenants
     </Link>
   );
 
+  const isMinimal = variant === "MINIMAL";
+
   return (
     <header className="main-header" data-mobile-open={mobileOpen ? "true" : "false"}>
       <div className="header-inner">
         <Link href="/" className="logo-lockup" onClick={() => setMobileOpen(false)}>
-          <span className="logo-main">DigiEmu</span>
-          <span className="logo-sub">Digital Marketplace</span>
+          {tenantBrand?.logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={tenantBrand.logoUrl} alt={tenantBrand?.name || ""} className="logo-main" />
+          ) : (
+            <>
+              <span className="logo-main">{tenantBrand?.name || "DigiEmu"}</span>
+              {!isMinimal && <span className="logo-sub">Digital Marketplace</span>}
+            </>
+          )}
         </Link>
 
-        <nav className="primary-nav" aria-label="Navigation">
-          {mainLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={"nav-pill nav-pill-small" + (isActive(link.href) ? " nav-pill-active" : "")}
-            >
-              {link.label}
-            </Link>
-          ))}
-        </nav>
+        {/* NAV LINKS */}
+        {showNavLinks ? (
+          <nav className="primary-nav" aria-label="Navigation">
+            {isMinimal ? (
+              <ul className="flex items-center gap-4 text-sm">
+                <li>
+                  <Link href="/shop">Shop</Link>
+                </li>
+              </ul>
+            ) : (
+              mainLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={"nav-pill nav-pill-small" + (isActive(link.href) ? " nav-pill-active" : "")}
+                >
+                  {link.label}
+                </Link>
+              ))
+            )}
+          </nav>
+        ) : (
+          <div />
+        )}
 
+        {/* AUTH LINKS / ACCOUNT LINKS */}
         <div className="header-actions">
-          {isAuthLoading ? (
+          {!showAuthLinks ? null : isAuthLoading ? (
             <span className="nav-pill nav-pill-ghost" aria-label="Lade Session…">
               …
             </span>
@@ -120,10 +156,7 @@ export function MainHeader() {
               {isBuyer && (
                 <Link
                   href="/account/orders"
-                  className={
-                    "nav-pill nav-pill-ghost" +
-                    (isActive("/account/orders") ? " nav-pill-active" : "")
-                  }
+                  className={"nav-pill nav-pill-ghost" + (isActive("/account/orders") ? " nav-pill-active" : "")}
                 >
                   Bestellungen
                 </Link>
@@ -154,9 +187,7 @@ export function MainHeader() {
               {role === "VENDOR" && (
                 <Link
                   href="/dashboard/vendor"
-                  className={
-                    "nav-pill nav-pill-ghost" + (isActive("/dashboard/vendor") ? " nav-pill-active" : "")
-                  }
+                  className={"nav-pill nav-pill-ghost" + (isActive("/dashboard/vendor") ? " nav-pill-active" : "")}
                 >
                   Analytics
                 </Link>
@@ -179,7 +210,10 @@ export function MainHeader() {
                 Profil
               </Link>
 
-              <button className="nav-pill nav-pill-outline" onClick={() => signOut({ callbackUrl: "/" })}>
+              <button
+                className="nav-pill nav-pill-outline"
+                onClick={() => signOut({ callbackUrl: "/" })}
+              >
                 Logout
               </button>
             </>
@@ -236,20 +270,23 @@ export function MainHeader() {
             </div>
 
             <nav className="mobile-nav-list">
-              {mainLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={"mobile-nav-pill" + (isActive(link.href) ? " mobile-nav-pill-active" : "")}
-                  onClick={() => setMobileOpen(false)}
-                >
-                  {link.label}
-                </Link>
-              ))}
+              {showNavLinks ? (
+                <>
+                  {mainLinks.map((link) => (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className={"mobile-nav-pill" + (isActive(link.href) ? " mobile-nav-pill-active" : "")}
+                      onClick={() => setMobileOpen(false)}
+                    >
+                      {link.label}
+                    </Link>
+                  ))}
+                  <div className="mobile-nav-divider" />
+                </>
+              ) : null}
 
-              <div className="mobile-nav-divider" />
-
-              {isAuthLoading ? (
+              {!showAuthLinks ? null : isAuthLoading ? (
                 <span className="mobile-nav-pill" aria-label="Lade Session…">
                   …
                 </span>
@@ -268,9 +305,7 @@ export function MainHeader() {
                   <Link
                     href="/account/downloads"
                     onClick={() => setMobileOpen(false)}
-                    className={
-                      "mobile-nav-pill" + (isActive("/account/downloads") ? " mobile-nav-pill-active" : "")
-                    }
+                    className={"mobile-nav-pill" + (isActive("/account/downloads") ? " mobile-nav-pill-active" : "")}
                   >
                     Downloads
                   </Link>
@@ -289,9 +324,7 @@ export function MainHeader() {
                     <Link
                       href="/dashboard/vendor"
                       onClick={() => setMobileOpen(false)}
-                      className={
-                        "mobile-nav-pill" + (isActive("/dashboard/vendor") ? " mobile-nav-pill-active" : "")
-                      }
+                      className={"mobile-nav-pill" + (isActive("/dashboard/vendor") ? " mobile-nav-pill-active" : "")}
                     >
                       Analytics
                     </Link>
@@ -312,9 +345,7 @@ export function MainHeader() {
                         <Link
                           href="/admin/tenants"
                           onClick={() => setMobileOpen(false)}
-                          className={
-                            "mobile-nav-pill" + (isActive("/admin/tenants") ? " mobile-nav-pill-active" : "")
-                          }
+                          className={"mobile-nav-pill" + (isActive("/admin/tenants") ? " mobile-nav-pill-active" : "")}
                         >
                           Tenants
                         </Link>

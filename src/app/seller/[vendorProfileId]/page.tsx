@@ -26,8 +26,8 @@ export default async function SellerPage(
   if (!id) notFound();
   let vp: any = null;
   try {
-    vp = await prisma.vendorProfile.findUnique({
-      where: { id },
+    vp = await prisma.vendorProfile.findFirst({
+      where: { id, tenantKey: MARKETPLACE_TENANT_KEY },
       select: {
         id: true,
         userId: true,
@@ -68,7 +68,7 @@ export default async function SellerPage(
   }
 
   // Marketplace seller page must only surface public, approved vendor profiles
-  if (!vp || !isPublicVendor(vp)) notFound();
+  if (!vp || String(vp.status || "").toUpperCase() !== "APPROVED" || !Boolean(vp.isPublic)) notFound();
 
   const vendorName = vp.displayName ?? vp.user?.name ?? "Verkäufer";
 

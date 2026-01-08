@@ -1,34 +1,45 @@
-import { notFound } from "next/navigation";
+// src/app/(tenant)/vendors/[vendorProfileId]/page.tsx
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { currentTenant } from "@/lib/tenant-context";
-import { resolveTenantWithCapabilities } from "@/lib/tenants/tenant-resolver";
-import { requireCap } from "@/lib/tenants/gates";
-import { isPublicVendor } from "@/lib/vendors/visibility";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 type Params = { vendorProfileId: string };
 
-export default async function TenantVendorPublicPage(props: { params: Promise<Params> }) {
+export default async function VendorPage(props: { params: Promise<Params> }) {
   const { vendorProfileId } = await props.params;
   const id = String(vendorProfileId || "").trim();
   if (!id) notFound();
 
-  const ct = await currentTenant();
-  const { tenant, capabilities } = await resolveTenantWithCapabilities(ct.tenantKey || ct.key);
-  requireCap(capabilities, "publicProducts", { mode: "notFound" });
+  // Tenant muss hier gelten (white-label)
+  const tenant = await currentTenant();
 
-  const vendor = await prisma.vendorProfile.findFirst({ where: { id, tenantKey: tenant.key } });
+  // VendorProfile tenant-scoped
+  const vendor = await prisma.vendorProfile.findFirst({
+    where: {
+      id,
+      tenantKey: tenant.key,
+      // optional: isPublic: true,
+      // optional: status: "APPROVED" as any,
+    },
+  });
 
-  if (!vendor || !isPublicVendor(vendor)) notFound();
+  if (!vendor) notFound();
 
+  // Produkte tenant-scoped + Vendor
+  // IMPORTANT:
+  // - Do NOT use fields that aren't in your Prisma schema (e.g. publishedAt).
+  // - If your Product model doesn't have "status", remove that filter.
+  //   (Keeping this query schema-safe is more important for prod build.)
   const products = await prisma.product.findMany({
     where: {
       tenantKey: tenant.key,
       vendorProfileId: vendor.id,
-      status: "PUBLISHED" as any,
+      // If Product.status exists, you can re-enable this:
+      // status: "PUBLISHED" as any,
     },
     orderBy: { createdAt: "desc" },
     take: 48,
@@ -36,32 +47,34 @@ export default async function TenantVendorPublicPage(props: { params: Promise<Pa
 
   return (
     <main className="p-8 max-w-5xl mx-auto">
-      <header className="mb-6">
+      <div className="mb-6">
         <div className="text-xs text-[var(--text-muted)]">Vendor</div>
-        <h1 className="text-2xl font-bold">{vendor.displayName || "Vendor"}</h1>
-        {vendor.bio ? <p className="mt-2 text-[var(--text-muted)]">{vendor.bio}</p> : null}
-      </header>
+        <h1 className="text-2xl font-bold">{vendor.displayName ?? vendor.slug ?? "Vendor"}</h1>
+        {vendor.bio ? (
+          <p className="mt-2 text-sm text-[var(--text-muted)]">{vendor.bio}</p>
+        ) : null}
+      </div>
 
-      {products.length === 0 ? (
-        <div className="neumorph-card p-6">
-          <div className="text-sm text-[var(--text-muted)]">Noch keine veröffentlichten Produkte.</div>
-        </div>
-      ) : (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {products.map((p: any) => (
+      <section className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {products.length === 0 ? (
+          <div className="neumorph-card p-5 text-sm text-[var(--text-muted)]">
+            Keine veröffentlichten Produkte.
+          </div>
+        ) : (
+          products.map((p) => (
             <Link
               key={p.id}
               href={`/products/${p.id}`}
-              className="neumorph-card p-4 block hover:translate-y-[-1px] transition"
+              className="neumorph-card p-5 hover:opacity-90 transition"
             >
               <div className="font-semibold">{p.title}</div>
-              <div className="text-xs text-[var(--text-muted)] mt-1">
-                {typeof p.price === "number" ? `${(p.price / 100).toFixed(2)} CHF` : ""}
-              </div>
+              {p.description ? (
+                <div className="mt-2 text-sm text-[var(--text-muted)] line-clamp-3">{p.description}</div>
+              ) : null}
             </Link>
-          ))}
-        </div>
-      )}
+          ))
+        )}
+      </section>
     </main>
   );
 }

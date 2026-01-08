@@ -1,5 +1,8 @@
 // src/app/page.tsx
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { currentTenant } from "@/lib/tenant-context";
+import { resolveTenantHomePath } from "@/lib/tenants/home";
 import { getServerSession } from "next-auth";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -113,6 +116,16 @@ function SectionTitle({ kicker, title }: { kicker?: string; title: string }) {
 }
 
 export default async function HomePage() {
+  // Tenant-aware home routing: allow white-label tenants to default to /shop
+  try {
+    const tenant = await currentTenant();
+    const { homePath } = await resolveTenantHomePath(tenant.key);
+    if (homePath && homePath !== "/") redirect(homePath);
+  } catch (e) {
+    // Non-fatal: if tenant resolution fails, fall back to rendering the home page
+    console.warn("tenant home routing failed:", e);
+  }
+
   const session = await getServerSession(auth);
   const isLoggedIn = !!(session?.user as any)?.id;
   const role = ((session?.user as any)?.role as string | undefined) ?? undefined;
