@@ -1,6 +1,7 @@
 // src/lib/products.ts
 import { prisma } from "@/lib/prisma";
 import { ProductStatus, VendorStatus } from "@prisma/client";
+import { MARKETPLACE_VISIBLE } from "./products/status";
 
 export const PAGE_SIZE = 12 as const;
 
@@ -43,8 +44,8 @@ export async function getMarketplaceProducts(args: GetMarketplaceProductsArgs) {
 
   const skip = (page - 1) * pageSize;
 
-  const productStatuses =
-    acceptProductStatuses?.length ? acceptProductStatuses : [ProductStatus.ACTIVE];
+  // Marketplace-visible statuses are centrally defined
+  const productStatuses = acceptProductStatuses?.length ? acceptProductStatuses : MARKETPLACE_VISIBLE;
 
   const priceWhere: any = {};
   if (typeof minPriceCents === "number") priceWhere.gte = minPriceCents;
@@ -64,7 +65,7 @@ export async function getMarketplaceProducts(args: GetMarketplaceProductsArgs) {
         }
       : {}),
 
-    // Product is string status
+    // Product status must be one of marketplace-visible statuses
     status: { in: productStatuses },
 
     // marketplace safety

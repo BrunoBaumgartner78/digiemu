@@ -12,3 +12,8 @@
   - `User.isBlocked = false`
 - Seller-Profilseiten zeigen Produkte nur aus **dem tenantKey des VendorProfiles**.
 - Legacy-Fix: Backfill setzt fehlende `tenantKey`/`vendorProfileId` und kopiert Marketplace-Produkte in `MARKETPLACE`.
+
+### ProductStatus
+- ACTIVE: sichtbar im Marketplace
+- DRAFT/BLOCKED: nur Seller/Admin
+- ARCHIVED: soft-deleted, unsichtbar für Käufer

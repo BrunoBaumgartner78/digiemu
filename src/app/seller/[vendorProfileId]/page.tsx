@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { ProductStatus } from "@prisma/client";
 import { ProductCard } from "@/components/product/ProductCard";
 import { MARKETPLACE_TENANT_KEY } from "@/lib/marketplaceTenant";
 import { isPublicVendor } from "@/lib/vendors/visibility";
@@ -106,7 +107,7 @@ export default async function SellerPage(
       tenantKey: vp.tenantKey,
       vendorProfileId: vp.id,
       isActive: true,
-      status: { in: ["ACTIVE"] },
+      status: { in: [ProductStatus.ACTIVE] },
       vendor: { isBlocked: false },
     },
     orderBy: { createdAt: "desc" },
