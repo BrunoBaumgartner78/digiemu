@@ -6,64 +6,70 @@ export const PAGE_SIZE = 12 as const;
 export type MarketplaceSort = "newest" | "price_asc" | "price_desc";
 
 type GetMarketplaceProductsArgs = {
-  tenantKey: string; // ✅ required: tenant scoping
+  tenantKey: string;
   page: number;
   pageSize: number;
-  category?: string; // "all" | ...
+  category?: string;
   search?: string;
-  sort?: MarketplaceSort;
+  sort?: "newest" | "price_asc" | "price_desc";
   minPriceCents?: number;
   maxPriceCents?: number;
+
+  // ✅ NEW: getrennte Enums
+  acceptProductStatuses?: string[]; // ProductStatus values
+  acceptVendorStatuses?: string[]; // VendorStatus values
 };
 
 export async function getMarketplaceProducts(args: GetMarketplaceProductsArgs) {
-  const tenantKey = (args.tenantKey || "DEFAULT").trim() || "DEFAULT";
-  const pageSize = Math.max(1, Math.min(48, Number(args.pageSize || PAGE_SIZE)));
-  const page = Math.max(1, Number(args.page || 1));
+  const {
+    tenantKey,
+    page,
+    pageSize,
+    category,
+    search,
+    sort = "newest",
+    minPriceCents,
+    maxPriceCents,
+    acceptProductStatuses,
+    acceptVendorStatuses,
+  } = args;
+
   const skip = (page - 1) * pageSize;
 
-  const category = (args.category ?? "all").trim();
-  const search = (args.search ?? "").trim();
-  const sort: MarketplaceSort = (args.sort ?? "newest") as MarketplaceSort;
+  // ✅ sichere Defaults
+  const productStatuses = acceptProductStatuses?.length
+    ? acceptProductStatuses
+    : (["PUBLISHED"] as const);
 
-  const minPriceCents = typeof args.minPriceCents === "number" ? args.minPriceCents : undefined;
-  const maxPriceCents = typeof args.maxPriceCents === "number" ? args.maxPriceCents : undefined;
-
-  // ✅ Option B enforced here:
-  // - Product must be ACTIVE + isActive
-  // - Vendor not blocked
-  // - VendorProfile must exist + isPublic + APPROVED
   const where: any = {
     tenantKey,
     isActive: true,
-    status: "ACTIVE",
-    vendor: { isBlocked: false },
+    ...(category ? { category } : {}),
+    ...(typeof minPriceCents === "number" ? { priceCents: { gte: minPriceCents } } : {}),
+    ...(typeof maxPriceCents === "number" ? { priceCents: { ...(typeof minPriceCents === "number" ? { gte: minPriceCents } : {}), lte: maxPriceCents } } : {}),
+    ...(search
+      ? {
+          OR: [
+            { title: { contains: search, mode: "insensitive" } },
+            { description: { contains: search, mode: "insensitive" } },
+          ],
+        }
+      : {}),
 
+    // ProductStatus (string values)
+    status: { in: productStatuses },
+
+    // Vendor/VendorProfile Guards - vendorProfile.status is an enum (VendorStatus).
+    // Only allow APPROVED vendor profiles to be shown in marketplace.
+    vendor: { isBlocked: false },
     vendorProfile: {
       is: {
+        tenantKey,
         isPublic: true,
         status: "APPROVED",
-        tenantKey,
       },
     },
   };
-
-  if (category && category !== "all") {
-    where.category = category;
-  }
-
-  if (search.length > 0) {
-    where.OR = [
-      { title: { contains: search, mode: "insensitive" } },
-      { description: { contains: search, mode: "insensitive" } },
-    ];
-  }
-
-  if (minPriceCents !== undefined || maxPriceCents !== undefined) {
-    where.priceCents = {};
-    if (minPriceCents !== undefined) where.priceCents.gte = minPriceCents;
-    if (maxPriceCents !== undefined) where.priceCents.lte = maxPriceCents;
-  }
 
   const orderBy =
     sort === "price_asc"
@@ -79,36 +85,12 @@ export async function getMarketplaceProducts(args: GetMarketplaceProductsArgs) {
       orderBy,
       skip,
       take: pageSize,
-      select: {
-        id: true,
-        tenantKey: true,
-        title: true,
-        description: true,
-        priceCents: true,
-        thumbnail: true,
-        category: true,
-        isActive: true,
-        status: true,
-        vendorId: true,
-        vendorProfileId: true,
-        createdAt: true,
-
-        vendorProfile: {
-          select: {
-            id: true,
-            isPublic: true,
-            status: true,
-            tenantKey: true,
-            displayName: true,
-            avatarUrl: true,
-            user: { select: { name: true } },
-          },
-        },
+      include: {
+        vendorProfile: { include: { user: true } },
       },
     }),
   ]);
 
   const pageCount = Math.max(1, Math.ceil(total / pageSize));
-
-  return { items, total, pageCount };
+  return { total, items, pageCount };
 }

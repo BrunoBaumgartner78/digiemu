@@ -22,6 +22,15 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     return NextResponse.json({ error: "Du kannst dich nicht selbst sperren." }, { status: 400 });
   }
 
+  // HARD GUARD: do not allow blocking ADMIN users
+  const target = await prisma.user.findUnique({ where: { id }, select: { id: true, role: true } });
+  if (!target) {
+    return NextResponse.json({ error: "User not found" }, { status: 404 });
+  }
+  if (target.role === "ADMIN") {
+    return NextResponse.json({ error: "Blocking ADMIN users is forbidden" }, { status: 403 });
+  }
+
   const updated = await prisma.user.update({
     where: { id },
     data: { isBlocked },

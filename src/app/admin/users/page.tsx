@@ -277,7 +277,13 @@ export default async function AdminUsersPage({
                       </td>
 
                       <td className="py-2 px-4 flex flex-wrap gap-2">
-                        <AdminUserStatusToggle userId={user.id} isBlocked={user.isBlocked} />
+                       <AdminUserStatusToggle
+  userId={user.id}
+  isBlocked={user.isBlocked}
+  targetRole={user.role}
+  currentUserId={(session.user as any)?.id ?? null}
+/>
+
 
                         {isVendor && (
                           <>

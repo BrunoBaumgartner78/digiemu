@@ -6,7 +6,7 @@ import { getBadgesForVendors } from "@/lib/trustBadges";
 import BadgeRow from "@/components/marketplace/BadgeRow";
 import styles from "./page.module.css";
 import SellerLink from "@/components/seller/SellerLink";
-import { MARKETPLACE_TENANT_KEY } from "@/lib/marketplaceTenant";
+import { marketplaceTenant } from "@/lib/marketplaceTenant";
 
 export const dynamic = "force-dynamic";
 
@@ -162,11 +162,11 @@ export default async function Page({ searchParams }: { searchParams?: Marketplac
   const maxPriceCents = typeof maxCHF === "string" ? toCentsCHF(maxCHF) : undefined;
 
   // NOTE: Marketplace is platform-wide, not host/white-label scoped
-  // For UI context you may still resolve the host tenant, but do NOT use host-scoped resolution for marketplace data scoping
-  const tenantKey = MARKETPLACE_TENANT_KEY;
+  // Resolve the marketplace tenant via helper (allows ENV override)
+  const mp = await marketplaceTenant();
 
   const { items: products, total, pageCount } = await getMarketplaceProducts({
-    tenantKey,
+    tenantKey: mp.key,
     page,
     pageSize: PAGE_SIZE,
     category: category === "all" ? undefined : category,
@@ -174,6 +174,8 @@ export default async function Page({ searchParams }: { searchParams?: Marketplac
     sort: sort as any,
     minPriceCents,
     maxPriceCents,
+    // permissive fallback: accept common published-like product statuses (apply only to Product.status)
+    acceptProductStatuses: ["ACTIVE", "PUBLISHED"], // adjust to your Product enum if needed
   });
 
   const hasPrev = page > 1;

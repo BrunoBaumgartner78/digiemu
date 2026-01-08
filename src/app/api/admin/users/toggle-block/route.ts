@@ -17,35 +17,42 @@ export async function POST(req: NextRequest) {
   if (!userId) {
     return NextResponse.json({ message: "Missing userId" }, { status: 400 });
   }
+  // HARD GUARD #1: cannot target self
+  if ((session.user as any)?.id === userId) {
+    return NextResponse.json({ message: "You cannot block/unblock yourself" }, { status: 400 });
+  }
 
   try {
+    // fetch target user and role first (server-side guard)
+    const target = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, isBlocked: true, role: true },
+    });
+
+    if (!target) {
+      return NextResponse.json({ message: "User not found" }, { status: 404 });
+    }
+
+    // HARD GUARD #2: forbid blocking ADMIN users
+    if (target.role === "ADMIN") {
+      return NextResponse.json({ message: "Blocking ADMIN users is forbidden" }, { status: 403 });
+    }
+
+    const nextBlocked = !target.isBlocked;
+
     const updated = await prisma.$transaction(async (tx) => {
-      const user = await tx.user.findUnique({
-        where: { id: userId },
-        select: { id: true, isBlocked: true },
-      });
-
-      if (!user) throw new Error("User not found");
-
-      const nextBlocked = !user.isBlocked;
-
-      // 1) User sperren/entsperren
       const u = await tx.user.update({
         where: { id: userId },
         data: { isBlocked: nextBlocked },
         select: { id: true, isBlocked: true },
       });
 
-      // 2) Produkte moderieren
       if (nextBlocked) {
-        // Sperren => Produkte sofort unsichtbar
         await tx.product.updateMany({
           where: { vendorId: userId },
           data: { isActive: false, status: "BLOCKED" },
         });
       } else {
-        // Entsperren => Produkte wieder sichtbar machen,
-        // aber nur die, die durch Sperre BLOCKED wurden:
         await tx.product.updateMany({
           where: {
             vendorId: userId,
