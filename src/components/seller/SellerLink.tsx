@@ -16,7 +16,7 @@ type Props = {
   source?: string;
 };
 
-export default function SellerLink({ vendorProfileId, slug, children, className, productId, source }: Props) {
+export default function SellerLink({ vendorProfileId, slug, tenantKey, children, className, productId, source }: Props) {
   if (!vendorProfileId) return <>{children}</>;
 
   // Build path via tenant shell helper

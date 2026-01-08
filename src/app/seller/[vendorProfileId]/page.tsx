@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { ProductCard } from "@/components/product/ProductCard";
 import { MARKETPLACE_TENANT_KEY } from "@/lib/marketplaceTenant";
 import { isPublicVendor } from "@/lib/vendors/visibility";
-import { getSellerStats } from "@/lib/vendors/stats";
+import { getSellerStats, getVendorStats } from "@/lib/vendors/stats";
 
 export const dynamic = "force-dynamic";
 
@@ -83,7 +83,7 @@ export default async function SellerPage(
 
   // Aggregate stable stats from products + orders (reduces reliance on cached fields)
   const [stats, lastSale] = await Promise.all([
-    getSellerStats({ tenantKey: vp.tenantKey ?? MARKETPLACE_TENANT_KEY, vendorProfileId: vp.id }),
+    getVendorStats(vp.id),
     prisma.order.findFirst({
       where: { status: "PAID", product: { vendorId: vp.userId } },
       orderBy: { createdAt: "desc" },
@@ -93,7 +93,7 @@ export default async function SellerPage(
 
   const salesCount = stats.totalSales;
   const revenueCents = stats.totalRevenueCents;
-  const activeProducts = stats.activeProducts;
+  const activeProducts = stats.activeProductsCount;
   const lastSaleAt = lastSale?.createdAt ?? null;
   const lastSaleLabel = lastSaleAt
     ? new Intl.DateTimeFormat("de-CH", { dateStyle: "medium" }).format(lastSaleAt)

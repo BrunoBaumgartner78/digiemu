@@ -49,4 +49,29 @@ export function formatCHF(cents: number) {
   return `CHF ${v}`;
 }
 
+// Compatibility helper: lightweight vendor-only aggregation
+export async function getVendorStats(vendorProfileId: string) {
+  const activeProducts = await prisma.product.count({
+    where: {
+      vendorProfileId,
+      isActive: true,
+      status: ProductStatus.ACTIVE,
+    },
+  });
+
+  const orders = await prisma.order.findMany({
+    where: { product: { vendorProfileId }, status: "PAID" },
+    select: { amountCents: true },
+  });
+
+  const totalSales = orders.length;
+  const totalRevenueCents = orders.reduce((s, o) => s + (o.amountCents ?? 0), 0);
+
+  return {
+    activeProductsCount: activeProducts,
+    totalSales,
+    totalRevenueCents,
+  } as const;
+}
+
 export default getSellerStats;
