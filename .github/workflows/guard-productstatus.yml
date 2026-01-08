@@ -1,0 +1,34 @@
+name: guard-productstatus
+
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+
+jobs:
+  guards:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install ripgrep
+        run: sudo apt-get update && sudo apt-get install -y ripgrep
+
+      - name: Forbid legacy acceptPublishedStatuses
+        run: |
+          set -e
+          if rg -n 'acceptPublishedStatuses' src ; then
+            echo "❌ acceptPublishedStatuses should not exist. Use acceptProductStatuses."
+            exit 1
+          fi
+          echo "✅ No acceptPublishedStatuses"
+
+      - name: Forbid VendorStatus values in ProductStatus usage
+        run: |
+          set -e
+          # Only flag when APPROVED appears close to prisma.product usage
+          if rg -n 'prisma\.product\.' src | rg -n '"APPROVED"' ; then
+            echo "❌ Found \"APPROVED\" near prisma.product.* usage (invalid ProductStatus)."
+            exit 1
+          fi
+          echo "✅ No invalid ProductStatus strings near prisma.product.*"
