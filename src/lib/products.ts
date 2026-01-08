@@ -45,7 +45,14 @@ export async function getMarketplaceProducts(args: GetMarketplaceProductsArgs) {
   const skip = (page - 1) * pageSize;
 
   // Marketplace-visible statuses are centrally defined
-  const productStatuses = acceptProductStatuses?.length ? acceptProductStatuses : MARKETPLACE_VISIBLE;
+  // Sanitize incoming `acceptProductStatuses` to prevent VendorStatus values
+  const fallbackStatuses: ProductStatus[] = [ProductStatus.ACTIVE];
+
+  const sanitized = (acceptProductStatuses ?? [])
+    .map((s) => String(s).toUpperCase())
+    .filter((s): s is ProductStatus => (Object.values(ProductStatus) as string[]).includes(s));
+
+  const productStatuses: ProductStatus[] = sanitized.length ? sanitized : fallbackStatuses;
 
   const priceWhere: any = {};
   if (typeof minPriceCents === "number") priceWhere.gte = minPriceCents;
