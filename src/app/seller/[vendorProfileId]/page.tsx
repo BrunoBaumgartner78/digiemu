@@ -111,7 +111,7 @@ export default async function SellerPage(
       vendorProfileId: vp.id,
       isActive: true,
       status: { in: ["ACTIVE"] },
-      vendor: { isBlocked: false },
+      vendor: { is: { isBlocked: false } },
     },
     orderBy: { createdAt: "desc" },
     select: {

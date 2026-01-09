@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { ProductStatus } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { currentTenant } from "@/lib/tenant-context";
@@ -62,6 +63,13 @@ export async function POST(req: Request) {
       select: { id: true, status: true },
     });
 
+    // --- status validation (enum safe) ---
+    const allowedStatus = new Set(Object.values(ProductStatus));
+    const requestedStatus = typeof status === "string" ? String(status).trim() : "";
+    const safeRequestedStatus = allowedStatus.has(requestedStatus as any)
+      ? (requestedStatus as ProductStatus)
+      : ProductStatus.DRAFT;
+
     const product = await prisma.product.create({
       data: {
         tenantKey,
@@ -73,8 +81,10 @@ export async function POST(req: Request) {
         thumbnail: data.thumbnail ?? null,
         vendorId, // comes from session
         vendorProfileId: vp?.id ?? "",
-        status: vp?.status === "APPROVED" ? "ACTIVE" : status,
-        isActive: true,
+        // Contract: New products start as DRAFT. Vendor cannot set moderation status.
+        status: ProductStatus.DRAFT,
+        // Start deactivated; vendor can request publish (toggle isActive) after approval.
+        isActive: false,
       },
     });
 

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { ProductStatus } from "@prisma/client";
 import { currentTenant } from "@/lib/tenant-context";
 
 export const runtime = "nodejs";
@@ -26,6 +27,9 @@ export async function POST(
   const body = await request.json().catch(() => ({}));
   const action = body.action === "unpublish" ? "unpublish" : "publish";
 
+  // ensure publish is a boolean (body.publish takes precedence)
+  const publish: boolean = typeof body.publish === "boolean" ? body.publish : action === "publish";
+
   const product = await prisma.product.findUnique({
     where: { id },
     select: { vendorId: true },
@@ -42,20 +46,25 @@ export async function POST(
     return NextResponse.json({ error: "FORBIDDEN" }, { status: 403 });
   }
 
-  const data =
-    action === "publish"
-      ? { status: "ACTIVE", isActive: true }
-      : { status: "DRAFT", isActive: false };
+  // Vendor publish toggles only `isActive`. Moderation `status` is admin-only.
+  const data = { isActive: publish };
 
   const { tenantKey: rawTenantKey } = await currentTenant();
   const tenantKey = rawTenantKey ?? "DEFAULT";
 
   // Update product and maintain vendorProfile.activeProductsCount atomically
   const updated = await prisma.$transaction(async (tx) => {
+    // Enforce: can only publish if product is APPROVED
+    const current = await tx.product.findUnique({ where: { id }, select: { id: true, status: true, isActive: true, title: true, vendorId: true } });
+    if (!current) throw new Error("NOT_FOUND");
+    if (publish && current.status !== ProductStatus.APPROVED) {
+      throw new Error("NOT_APPROVED");
+    }
+
     const upd = await tx.product.update({ where: { id }, data, select: { id: true, status: true, isActive: true, title: true, vendorId: true } });
     const vp = await tx.vendorProfile.findUnique({ where: { tenantKey_userId: { tenantKey, userId: upd.vendorId } }, select: { id: true, activeProductsCount: true } });
     if (vp) {
-      if (action === "publish") {
+      if (publish) {
         await tx.vendorProfile.update({ where: { id: vp.id }, data: { activeProductsCount: { increment: 1 } } });
       } else {
         const newCount = Math.max(0, (vp.activeProductsCount ?? 0) - 1);

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { ProductStatus } from "@prisma/client";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -50,20 +51,36 @@ export async function POST(req: NextRequest) {
       if (nextBlocked) {
         await tx.product.updateMany({
           where: { vendorId: userId },
-          data: { isActive: false, status: "BLOCKED" },
+          data: { isActive: false, status: ProductStatus.BLOCKED },
         });
       } else {
         await tx.product.updateMany({
           where: {
             vendorId: userId,
-            status: "BLOCKED",
+            status: ProductStatus.BLOCKED,
           },
-          data: { isActive: true, status: "ACTIVE" },
+          // When unblocking, restore moderation state to APPROVED and reactivate
+          data: { isActive: true, status: ProductStatus.APPROVED },
         });
       }
 
       return u;
     });
+
+    // Audit the admin action
+    try {
+      const actorId = (session.user as any)?.id ?? null;
+      const { logAudit } = await import("@/lib/security/audit");
+      await logAudit({
+        actorId,
+        action: nextBlocked ? "ADMIN_USER_BLOCK" : "ADMIN_USER_UNBLOCK",
+        targetUserId: userId,
+        meta: { changedBy: actorId, blocked: nextBlocked },
+      });
+    } catch (e) {
+      // don't fail on audit errors
+      console.error("audit log failed", e);
+    }
 
     return NextResponse.json({ ok: true, user: updated });
   } catch (e: any) {

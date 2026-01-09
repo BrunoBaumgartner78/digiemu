@@ -1,6 +1,7 @@
 #!/usr/bin/env -S npx tsx
 import { prisma } from "../src/lib/prisma";
 import { MARKETPLACE_TENANT_KEY } from "../src/lib/marketplaceTenant";
+import { ProductStatus, VendorStatus } from "@prisma/client";
 
 async function main() {
   console.log("Marketplace tenant key:", MARKETPLACE_TENANT_KEY);
@@ -8,14 +9,25 @@ async function main() {
   const mpKey = MARKETPLACE_TENANT_KEY;
 
   let mpVendorProfile = await prisma.vendorProfile.findFirst({
-    where: { tenantKey: mpKey, status: "APPROVED", isPublic: true, user: { isBlocked: false } },
+    where: {
+      tenantKey: mpKey,
+      status: VendorStatus.APPROVED,
+      isPublic: true,
+      user: { isBlocked: false },
+    },
     select: { id: true, userId: true },
   });
 
   if (!mpVendorProfile) {
     console.log("No existing APPROVED marketplace vendorProfile found — attempting to copy one from DEFAULT.");
+
     const base = await prisma.vendorProfile.findFirst({
-      where: { tenantKey: "DEFAULT", status: "APPROVED", isPublic: true, user: { isBlocked: false } },
+      where: {
+        tenantKey: "DEFAULT",
+        status: VendorStatus.APPROVED,
+        isPublic: true,
+        user: { isBlocked: false },
+      },
       select: {
         userId: true,
         displayName: true,
@@ -53,7 +65,7 @@ async function main() {
         facebookUrl: base.facebookUrl ?? null,
         slug: base.slug ?? null,
         isPublic: base.isPublic ?? true,
-        status: "APPROVED",
+        status: VendorStatus.APPROVED,
       },
       select: { id: true, userId: true },
     });
@@ -63,11 +75,14 @@ async function main() {
     console.log("Using vendorProfile:", mpVendorProfile);
   }
 
+  // ✅ IMPORTANT:
+  // Contract: Product.status is an ENUM (ProductStatus). Legacy strings like "PUBLISHED"/"ACTIVE"
+  // are not valid. We only operate on approved products here when backfilling marketplace tenantKey.
   const res = await prisma.product.updateMany({
     where: {
       tenantKey: { in: ["DEFAULT", ""] },
       isActive: true,
-      status: { in: ["ACTIVE", "PUBLISHED", "APPROVED"] },
+      status: { in: [ProductStatus.APPROVED] },
     },
     data: {
       tenantKey: mpKey,

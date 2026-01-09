@@ -216,7 +216,13 @@ model AdminProfile {
 // ──────────────────────────────────────────────────────────────────────────────
 //  PRODUCTS / MARKETPLACE
 // ──────────────────────────────────────────────────────────────────────────────
-//
+enum ProductStatus {
+  DRAFT
+  ACTIVE
+  APPROVED
+  BLOCKED
+}
+
 
 model Product {
   id        String @id @default(cuid())
@@ -239,8 +245,8 @@ model Product {
   updatedAt DateTime @updatedAt
 
   /// Produktstatus (Konvention):
-  /// - "DRAFT" | "ACTIVE" | "BLOCKED"
-  status String @default("DRAFT")
+  /// - DRAFT | ACTIVE | APPROVED | BLOCKED
+  status ProductStatus @default(DRAFT)
 
   moderationNote String?
 

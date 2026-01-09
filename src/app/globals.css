@@ -40,30 +40,11 @@
     inset -6px -6px 14px rgba(255,255,255,0.90);
 }
 
-/* Reduced motion: keep inset, skip translate */
-@media (prefers-reduced-motion: reduce) {
-  .neobtn:active,
-  .neobtn.neobtn-ghost:active,
-  .neo-input:active,
-  .mk-pill:active {
-    transform: none !important;
-  }
-}
-
 /* Optional: Links/Chips (falls vorhanden) */
 .neo-link:active {
   transform: translateY(1px);
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .neobtn:active,
-  .neobtn.neobtn-ghost:active,
-  .neo-input:active,
-  .mk-pill:active,
-  .neo-link:active {
-    transform: none;
-  }
-}
 
 /* -----------------------------------------
    Micro-Interactions (ruhig, a11y-first)
@@ -101,15 +82,7 @@ button.neobtn:hover {
   transform: translateY(-1px);
 }
 
-/* Pressed (active): leichter “inset” Eindruck, ruhig */
-.neobtn:active,
-a.neobtn:active,
-button.neobtn:active {
-  transform: translateY(0px);
-  box-shadow:
-    inset 2px 2px 6px rgba(0,0,0,0.12),
-    inset -2px -2px 6px rgba(255,255,255,0.85);
-}
+
 
 /* Input pressed (optional, minimal) */
 .neo-input:active {
@@ -170,22 +143,24 @@ a:focus:not(:focus-visible) {
   }
 }
 
-.neo-card {
+
             /* ─────────────────────────────────────────────
                DigiEmu Neon / Neumorph Baseline (global)
                ───────────────────────────────────────────── */
 
             /* Soft neon tokens (no CSS vars required) */
-            position: relative;
-            border-radius: 20px;
-            background: rgba(255, 255, 255, 0.72);
-            border: 1px solid rgba(0, 0, 0, 0.06);
-            box-shadow:
-              10px 10px 24px rgba(0, 0, 0, 0.10),
-              -10px -10px 24px rgba(255, 255, 255, 0.90);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-          }
+           .neo-card {
+  position: relative;
+  border-radius: 20px;
+  background: var(--card-bg, rgba(255,255,255,0.72));
+  border: 1px solid var(--card-border, rgba(0,0,0,0.06));
+  box-shadow:
+    10px 10px 24px var(--nm-lo, rgba(0,0,0,0.10)),
+    -10px -10px 24px var(--nm-hi, rgba(255,255,255,0.90));
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
 
           /* subtle neon top line */
           .neo-card::before {
@@ -748,7 +723,10 @@ img {
     margin: 0 auto;
     padding-inline: 0.9rem;
     padding-block: 1.4rem 2.6rem;
+  }
+}
 
+/* Desktop: Inhalt nicht breiter als Viewport machen */
   /* === Product card equal height === */
   .product-card{
     display:flex;
@@ -785,9 +763,7 @@ img {
     min-height: 2.8em;
     line-height: 1.4;
   }
-  }
-}
-
+  
 /* ===== Neumorph Card ===== */
 
 .neumorph-card {
@@ -912,13 +888,6 @@ textarea.input-neu {
     -10px -10px 20px var(--shadow-light);
 }
 
-.neobtn:active,
-.neobtn-sm:active {
-  transform: translateY(0);
-  box-shadow:
-    4px 4px 10px var(--shadow-dark),
-    -4px -4px 10px var(--shadow-light);
-}
 
 .neobtn.primary,
 .neobtn-sm.primary {
@@ -1671,13 +1640,28 @@ textarea.input-neu {
     -10px -10px 20px var(--shadow-light);
 }
 
+/* === Single source of truth: Pressed / Active === */
 .neobtn:active,
-.neobtn-sm:active {
-  transform: translateY(0);
+a.neobtn:active,
+button.neobtn:active,
+.neo-input:active,
+.mk-pill:active {
+  transform: translateY(1px);
   box-shadow:
-    4px 4px 10px var(--shadow-dark),
-    -4px -4px 10px var(--shadow-light);
+    inset 6px 6px 14px rgba(0,0,0,0.14),
+    inset -6px -6px 14px rgba(255,255,255,0.90);
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .neobtn:active,
+  a.neobtn:active,
+  button.neobtn:active,
+  .neo-input:active,
+  .mk-pill:active {
+    transform: none !important;
+  }
+}
+
 
 .neobtn.primary,
 .neobtn-sm.primary {

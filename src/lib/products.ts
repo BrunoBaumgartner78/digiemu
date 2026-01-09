@@ -1,5 +1,6 @@
 // src/lib/products.ts
 import { prisma } from "@/lib/prisma";
+import { ProductStatus } from "@prisma/client";
 
 export const PAGE_SIZE = 12 as const;
 
@@ -42,8 +43,14 @@ export async function getMarketplaceProducts(args: GetMarketplaceProductsArgs) {
 
   const skip = (page - 1) * pageSize;
 
-  const productStatuses =
-    acceptProductStatuses?.length ? acceptProductStatuses : ["ACTIVE"];
+  // Product.status is a ProductStatus enum. Be defensive: allow only valid enum values
+  // and drop legacy values like "PUBLISHED".
+  const allowed = new Set(Object.values(ProductStatus));
+
+  const productStatuses = (acceptProductStatuses?.length
+    ? acceptProductStatuses
+    : [ProductStatus.ACTIVE]
+  ).filter((s) => allowed.has(s as ProductStatus)) as ProductStatus[];
 
   const priceWhere: any = {};
   if (typeof minPriceCents === "number") priceWhere.gte = minPriceCents;
@@ -63,11 +70,11 @@ export async function getMarketplaceProducts(args: GetMarketplaceProductsArgs) {
         }
       : {}),
 
-    // Product is string status
+    // Product is enum status
     status: { in: productStatuses },
 
     // marketplace safety
-    vendor: { isBlocked: false },
+    vendor: { is: { isBlocked: false } },
 
     // VendorProfile.status is enum VendorStatus -> must be a single enum value (not list of strings)
     // We only show approved + public profiles.

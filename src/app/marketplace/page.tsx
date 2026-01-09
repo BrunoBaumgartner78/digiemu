@@ -7,6 +7,7 @@ import BadgeRow from "@/components/marketplace/BadgeRow";
 import styles from "./page.module.css";
 import SellerLink from "@/components/seller/SellerLink";
 import { marketplaceTenant } from "@/lib/marketplaceTenant";
+import { ProductStatus } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
 
@@ -175,7 +176,7 @@ export default async function Page({ searchParams }: { searchParams?: Marketplac
     minPriceCents,
     maxPriceCents,
     // permissive fallback: accept common published-like product statuses (apply only to Product.status)
-    acceptProductStatuses: ["ACTIVE", "PUBLISHED", "APPROVED"], // adjust if needed
+    acceptProductStatuses: [ProductStatus.ACTIVE], // ProductStatus.APPROVED omitted to avoid DB enum mismatch
   });
 
   const hasPrev = page > 1;

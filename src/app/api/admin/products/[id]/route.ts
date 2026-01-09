@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { ProductStatus } from "@prisma/client";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -55,7 +56,19 @@ export async function PATCH(
   const title = String(body.title ?? "").trim();
   const description = String(body.description ?? "").trim();
   const category = String(body.category ?? "other").trim() || "other";
-  const status = String(body.status ?? "").trim();
+  const rawStatus = typeof body?.status === "string" ? body.status.trim() : "";
+
+  // Optional: include APPROVED here if admins are allowed to set it.
+  const allowedStatuses: ProductStatus[] = [
+    ProductStatus.DRAFT,
+    ProductStatus.ACTIVE,
+    ProductStatus.BLOCKED,
+    ProductStatus.APPROVED,
+  ];
+
+  const nextStatus: ProductStatus | undefined =
+    (allowedStatuses as string[]).includes(rawStatus) ? (rawStatus as ProductStatus) : undefined;
+
   const thumbnail = body.thumbnail === null ? null : String(body.thumbnail ?? "").trim() || null;
   const moderationNote =
     body.moderationNote === null ? null : String(body.moderationNote ?? "").trim() || null;
@@ -71,12 +84,13 @@ export async function PATCH(
     return NextResponse.json({ message: "Titel und Beschreibung sind erforderlich." }, { status: 400 });
   }
 
-  if (!["ACTIVE", "DRAFT", "BLOCKED"].includes(status)) {
+  // Validate status against allowed list
+  if (!nextStatus) {
     return NextResponse.json({ message: "Ungültiger Status." }, { status: 400 });
   }
 
   const isActive = Boolean(body.isActive);
-  const finalIsActive = status === "BLOCKED" ? false : isActive;
+  const finalIsActive = nextStatus === ProductStatus.BLOCKED ? false : isActive;
 
   const updated = await prisma.product.update({
     where: { id: productId, tenantKey },
@@ -87,7 +101,7 @@ export async function PATCH(
       category,
       priceCents: Math.round(priceCents),
       thumbnail,
-      status,
+      status: nextStatus,
       isActive: finalIsActive,
       moderationNote,
     },

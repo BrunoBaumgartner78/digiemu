@@ -5,16 +5,20 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { auth } from "@/lib/auth";
+import { marketplaceTenant } from "@/lib/marketplaceTenant";
+import { ProductStatus, VendorStatus } from "@prisma/client";
+
 import LikeButtonClient from "@/components/product/LikeButtonClient";
 import BuyButtonClient from "@/components/checkout/BuyButtonClient";
 import ProductViewTracker from "@/components/analytics/ProductViewTracker";
 import BadgeRow from "@/components/marketplace/BadgeRow";
 import { getBadgesForVendors } from "@/lib/trustBadges";
+
 import styles from "./page.module.css";
-import { MARKETPLACE_TENANT_KEY } from "@/lib/marketplaceTenant";
 
 export const dynamic = "force-dynamic";
 
+// ✅ Next 16.1: params ist Promise
 type ProductPageProps = { params: Promise<{ id: string }> };
 
 function signThumbUrl(productId: string, variant: "blur" | "full" = "full") {
@@ -29,73 +33,79 @@ function signThumbUrl(productId: string, variant: "blur" | "full" = "full") {
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
+  // ✅ unwrap
   const { id } = await params;
   const pid = String(id ?? "").trim();
   if (!pid) notFound();
 
-  // Marketplace product pages are platform-wide (host independent)
-  const tenantKey = MARKETPLACE_TENANT_KEY;
+  const mp = marketplaceTenant();
+  const tenantKeys = Array.from(new Set([mp.key, ...(mp.fallbackKeys ?? []), "DEFAULT"]));
 
   const session = await getServerSession(auth);
   const userId = ((session?.user as any)?.id as string | undefined) ?? null;
   const role = ((session?.user as any)?.role as string | undefined) ?? null;
   const isAdmin = role === "ADMIN";
 
-  const p = await prisma.product.findFirst({
-    where: { id: pid, tenantKey },
-    select: {
-      id: true,
-      tenantKey: true,
-      title: true,
-      description: true,
-      priceCents: true,
-      thumbnail: true,
-      category: true,
-      isActive: true,
-      status: true,
-      vendorId: true,
-      vendorProfileId: true,
-
-      vendor: { select: { name: true, isBlocked: true } },
-
-      vendorProfile: {
-        select: {
-          id: true,
-          userId: true,
-          tenantKey: true,
-          isPublic: true,
-          status: true,
-          slug: true,
-          displayName: true,
-          avatarUrl: true,
-          bannerUrl: true,
-          totalSales: true,
-          refundsCount: true,
-          activeProductsCount: true,
-          user: { select: { name: true } },
-        },
+  // 1) Produkt locker laden
+  let p: any = null;
+  try {
+    p = await prisma.product.findFirst({
+      where: {
+        id: pid,
+        tenantKey: { in: tenantKeys },
       },
+      select: {
+        id: true,
+        tenantKey: true,
+        title: true,
+        description: true,
+        priceCents: true,
+        thumbnail: true,
+        category: true,
+        isActive: true,
+        status: true,
+        vendorId: true,
+        vendorProfileId: true,
 
-      _count: { select: { likes: true } },
-      likes: userId ? { where: { userId }, select: { id: true } } : undefined,
-    },
-  });
+        vendor: { select: { name: true, isBlocked: true } },
+
+        vendorProfile: {
+          select: {
+            id: true,
+            userId: true,
+            tenantKey: true,
+            isPublic: true,
+            status: true,
+            slug: true,
+            displayName: true,
+            avatarUrl: true,
+            bannerUrl: true,
+            totalSales: true,
+            refundsCount: true,
+            activeProductsCount: true,
+            user: { select: { name: true } },
+          },
+        },
+
+        _count: { select: { likes: true } },
+        likes: userId ? { where: { userId }, select: { id: true } } : undefined,
+      },
+    });
+  } catch (err) {
+    console.error("product/findFirst error:", err);
+    notFound();
+  }
 
   if (!p) notFound();
 
-  // Marketplace-only: require published products
-  if (p.status !== "PUBLISHED") notFound();
-
-  // Require vendor profile exists and is approved + public
-  if (!p.vendorProfile) notFound();
-  if (String(p.vendorProfile.status || "").toUpperCase() !== "APPROVED" || !Boolean(p.vendorProfile.isPublic)) notFound();
-
-  // ✅ VendorProfile fallback (tenant-aware + Prisma-safe)
-  // Falls Product.vendorProfileId null ist (alte Produkte), holen wir trotzdem das Profil des Vendors im aktuellen Tenant.
+  // 2) VendorProfile fallback (legacy)
   const vendorProfile =
     p.vendorProfile ??
-    (await prisma.vendorProfile.findUnique({
-      where: { tenantKey_userId: { tenantKey, userId: p.vendorId } },
+    (await prisma.vendorProfile.findFirst({
+      where: {
+        tenantKey: { in: tenantKeys },
+        userId: p.vendorId,
+      },
       select: {
         id: true,
         userId: true,
@@ -113,25 +123,34 @@ export default async function ProductPage({ params }: ProductPageProps) {
       },
     }));
 
+  // 3) Visibility
+  const isOwner = !!userId && userId === p.vendorId;
+  const canBypassVisibility = isAdmin || isOwner;
+
+  if (!canBypassVisibility) {
+    const vpOk = !!vendorProfile && vendorProfile.isPublic === true && vendorProfile.status === VendorStatus.APPROVED;
+    const vendorOk = p.vendor?.isBlocked !== true;
+
+    // ✅ Detailseite darf ACTIVE + APPROVED anzeigen
+    const productOk =
+      p.isActive === true &&
+      (p.status === ProductStatus.ACTIVE || p.status === ProductStatus.APPROVED);
+
+    if (!vpOk || !vendorOk || !productOk) notFound();
+  }
+
   const badgesMap = await getBadgesForVendors({ [p.vendorId]: vendorProfile ?? {} });
   const badgesForVendor = badgesMap[p.vendorId] ?? [];
 
-  // Related products: same tenant, published, from same vendor/profile
+  // Related products (public only)
   const relatedProducts = await prisma.product.findMany({
     where: {
-      tenantKey,
+      tenantKey: { in: tenantKeys },
       id: { not: p.id },
-      status: "PUBLISHED",
-      vendor: { isBlocked: false },
-
-      vendorProfile: {
-        is: {
-          status: "APPROVED",
-          isPublic: true,
-          tenantKey,
-        },
-      },
-
+      isActive: true,
+      status: ProductStatus.ACTIVE,
+      vendor: { is: { isBlocked: false } },
+      vendorProfile: { is: { isPublic: true, status: VendorStatus.APPROVED } },
       OR: [
         ...(p.vendorProfileId ? [{ vendorProfileId: p.vendorProfileId }] : []),
         { vendorId: p.vendorId },
@@ -145,15 +164,13 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const price = (p.priceCents ?? 0) / 100;
   const hasThumb = typeof p.thumbnail === "string" && p.thumbnail.trim().length > 0;
 
-  const isOwner = !!userId && userId === p.vendorId;
-
-  // ✅ full image allowed for admin/owner or buyer who purchased
+  // 4) Full thumb rules
   let canFull = isAdmin || isOwner;
 
   if (!canFull && userId) {
     const buyerOrder = await prisma.order.findFirst({
       where: {
-        tenantKey,
+        tenantKey: p.tenantKey,
         buyerId: userId,
         productId: pid,
         status: { in: ["PAID", "paid", "COMPLETED", "completed"] },
@@ -219,12 +236,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
                   {vendorProfile.isPublic === false && (
                     <span style={{ fontSize: 12, opacity: 0.65 }}>(Profil privat)</span>
                   )}
-                  {vendorProfile.status !== "APPROVED" && (
-                    <span style={{ fontSize: 12, opacity: 0.65 }}>
-                      (Status: {vendorProfile.status})
-                    </span>
+                  {vendorProfile.status !== VendorStatus.APPROVED && (
+                    <span style={{ fontSize: 12, opacity: 0.65 }}>(Status: {vendorProfile.status})</span>
                   )}
                 </div>
+
                 <div style={{ marginTop: 8 }}>
                   <BadgeRow badges={badgesForVendor} max={3} />
                 </div>
@@ -233,11 +249,12 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
             <p className={styles.priceLine}>CHF {price.toFixed(2)}</p>
 
-            {p.isActive && p.status === "PUBLISHED" ? (
+            {/* Kaufen bleibt ACTIVE-only */}
+            {p.isActive && p.status === ProductStatus.ACTIVE ? (
               <BuyButtonClient productId={p.id} />
             ) : (
               <div className="neo-card" style={{ padding: 12, marginTop: 10, opacity: 0.85 }}>
-                <strong>Vorschau</strong> – Dieses Produkt ist noch nicht öffentlich (Status: {p.status}).
+                <strong>Vorschau</strong> – Dieses Produkt ist noch nicht kaufbar (Status: {p.status}).
               </div>
             )}
 
@@ -260,7 +277,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <section className={styles.relatedSection}>
             <h2>Mehr Produkte dieses Anbieters</h2>
             <div className={styles.relatedGrid}>
-              {relatedProducts.map((rp) => (
+              {relatedProducts.map((rp: any) => (
                 <Link key={rp.id} href={`/product/${rp.id}`} className={styles.relatedCard}>
                   <h3>{rp.title}</h3>
                   <span>CHF {(rp.priceCents / 100).toFixed(2)}</span>

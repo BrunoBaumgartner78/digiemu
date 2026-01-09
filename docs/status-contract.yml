@@ -1,0 +1,206 @@
+# DigiEmu — Product Moderation & Visibility Contract
+# Goal: Keep moderation (status) and visibility (publish) strictly separated.
+
+version: 1
+updated_at: "2026-01-09"
+owner: "digiemu"
+
+principles:
+  - status_is_moderation: "Product.status describes moderation state, never 'archive' or 'published'."
+  - isActive_is_visibility: "Product.isActive is the only vendor-controlled publish switch."
+  - vendor_never_sets_status: "Vendor routes MUST NOT update Product.status."
+  - blocked_forces_hidden: "If Product.status == BLOCKED then Product.isActive must be false."
+  - public_requires_all_checks:
+      - "product.status == APPROVED"
+      - "product.isActive == true"
+      - "vendor.isBlocked == false"
+      - "vendorProfile.status == APPROVED"
+      - "vendorProfile.isPublic == true"
+
+enums:
+  ProductStatus:
+    values: ["DRAFT", "APPROVED", "BLOCKED"]
+    meaning:
+      DRAFT: "Not approved yet. Not publicly eligible."
+      APPROVED: "Approved by admin. Eligible to be published via isActive=true."
+      BLOCKED: "Banned. Must never be public."
+  VendorStatus:
+    values: ["PENDING", "APPROVED", "REJECTED", "BLOCKED"]
+    meaning:
+      APPROVED: "Vendor profile is approved for marketplace visibility."
+
+fields:
+  Product:
+    status:
+      type: "enum(ProductStatus)"
+      controlled_by: ["admin"]
+      note: "Do not overload with ARCHIVED/PUBLISHED/ACTIVE."
+    isActive:
+      type: "boolean"
+      controlled_by: ["vendor", "admin"]
+      note: "Visibility toggle (Publish/Unpublish)."
+    archivedAt:
+      type: "datetime|null"
+      controlled_by: ["vendor", "admin"]
+      optional: true
+      note: "Optional soft-archive marker. If not implemented, use isActive=false only."
+  VendorProfile:
+    status:
+      type: "enum(VendorStatus)"
+      controlled_by: ["admin"]
+    isPublic:
+      type: "boolean"
+      controlled_by: ["vendor", "admin"]
+  User:
+    isBlocked:
+      type: "boolean"
+      controlled_by: ["admin"]
+
+roles:
+  VENDOR:
+    allowed_actions:
+      - "toggle publish (isActive) for own products"
+      - "edit own product fields (title, description, price, category, thumbnail)"
+      - "archive own product (archivedAt set OR isActive=false)"
+    forbidden_actions:
+      - "set moderation status"
+      - "publish when product.status != APPROVED"
+      - "modify product when user.isBlocked == true"
+      - "modify BLOCKED product"
+  ADMIN:
+    allowed_actions:
+      - "set product.status (DRAFT/APPROVED/BLOCKED)"
+      - "toggle isActive for any product"
+      - "block/unblock users and vendors"
+      - "force-hide blocked products (status=BLOCKED => isActive=false)"
+
+state_machine:
+  # moderation transitions (admin only)
+  product_status_transitions:
+    - from: "DRAFT"
+      to: ["APPROVED", "BLOCKED"]
+      by: ["ADMIN"]
+    - from: "APPROVED"
+      to: ["DRAFT", "BLOCKED"]
+      by: ["ADMIN"]
+    - from: "BLOCKED"
+      to: ["DRAFT", "APPROVED"]
+      by: ["ADMIN"]
+  # visibility transitions (vendor/admin)
+  publish_transitions:
+    - name: "publish"
+      effect: "isActive: false -> true"
+      by: ["VENDOR", "ADMIN"]
+      preconditions:
+        - "product.status == APPROVED"
+        - "vendor.isBlocked == false"
+        - "vendorProfile.status == APPROVED"
+        - "vendorProfile.isPublic == true"
+    - name: "unpublish"
+      effect: "isActive: true -> false"
+      by: ["VENDOR", "ADMIN"]
+      preconditions: []
+
+invariants:
+  - name: "blocked_forces_inactive"
+    rule: "If product.status == BLOCKED then product.isActive must be false"
+    enforcement_points:
+      - "admin product update route"
+      - "vendor publish route (reject publish)"
+      - "scheduled/maintenance backfill (optional)"
+  - name: "public_query_contract"
+    rule: "Every public listing/detail query MUST enforce public_requires_all_checks."
+
+query_contracts:
+  marketplace_list:
+    description: "Public marketplace listing"
+    where:
+      product:
+        status: "APPROVED"
+        isActive: true
+      vendor:
+        isBlocked: false
+      vendorProfile:
+        status: "APPROVED"
+        isPublic: true
+  product_detail_public:
+    description: "Public product page access"
+    where:
+      product:
+        status: "APPROVED"
+        isActive: true
+      vendor:
+        isBlocked: false
+      vendorProfile:
+        status: "APPROVED"
+        isPublic: true
+  product_detail_bypass:
+    description: "Admin/Owner may view even if not public"
+    rules:
+      - "ADMIN always bypasses"
+      - "Owner bypasses (userId == product.vendorId) unless user is blocked"
+
+routes_contract:
+  vendor_publish_route:
+    path: "/api/vendor/products/[id]/publish"
+    allowed_updates: ["isActive"]
+    forbidden_updates: ["status", "tenantKey", "vendorId", "vendorProfileId"]
+    publish_preconditions_ref: "publish_transitions.publish.preconditions"
+    unpublish_allowed: true
+  vendor_edit_route:
+    path: "/api/products/[id] (PUT)"
+    allowed_updates: ["title", "description", "category", "thumbnail", "priceCents", "isActive? (optional)"]
+    forbidden_updates: ["status"]
+    extra_rules:
+      - "if product.status == BLOCKED and not ADMIN => 403"
+      - "if currentUser.isBlocked => 403"
+  admin_product_route:
+    path: "/api/admin/products/[id]"
+    allowed_updates: ["status", "isActive", "moderationNote", "title", "description", "category", "thumbnail", "priceCents"]
+    required_enforcements:
+      - "if status becomes BLOCKED => set isActive=false"
+      - "validate status against enum(ProductStatus)"
+  delete_semantics:
+    description: "No ARCHIVED enum. Soft delete only."
+    recommended:
+      - "Set isActive=false"
+      - "Optionally set archivedAt=now()"
+    dashboard_filter:
+      - "archivedAt is null (if exists)"
+      - "otherwise show all but prefer isActive filter in UI"
+
+migration_notes:
+  - "Remove any legacy strings: PUBLISHED/ARCHIVED from code and scripts."
+  - "Backfill: map legacy PUBLISHED -> APPROVED (or APPROVED+isActive=true) depending on chosen model."
+  - "Prefer: status=APPROVED, isActive=true for previously published products."
+
+test_matrix:
+  - name: "public_product_visible"
+    setup:
+      product: { status: "APPROVED", isActive: true }
+      vendor: { isBlocked: false }
+      vendorProfile: { status: "APPROVED", isPublic: true }
+    expect:
+      marketplace_list: "included"
+      product_detail_public: "200"
+  - name: "approved_but_unpublished_hidden"
+    setup:
+      product: { status: "APPROVED", isActive: false }
+    expect:
+      marketplace_list: "excluded"
+      product_detail_public: "404"
+      product_detail_bypass_owner: "200"
+  - name: "blocked_always_hidden"
+    setup:
+      product: { status: "BLOCKED", isActive: true }
+    expect:
+      enforcement: "isActive forced to false OR request rejected"
+      marketplace_list: "excluded"
+      product_detail_public: "404"
+  - name: "vendor_profile_not_public_hidden"
+    setup:
+      vendorProfile: { status: "APPROVED", isPublic: false }
+      product: { status: "APPROVED", isActive: true }
+    expect:
+      marketplace_list: "excluded"
+      product_detail_public: "404"

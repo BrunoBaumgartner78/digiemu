@@ -45,7 +45,7 @@ export async function POST() {
     where: {
       tenantKey: { in: ["DEFAULT", ""] },
       isActive: true,
-      status: { in: ["ACTIVE", "PUBLISHED", "APPROVED"] }, // tolerate your existing strings
+      status: { in: ["ACTIVE", "APPROVED"] }, // tolerate your existing strings
     },
     data: {
       tenantKey: mpKey,

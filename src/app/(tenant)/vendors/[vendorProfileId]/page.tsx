@@ -23,7 +23,6 @@ export default async function VendorPage(props: { params: Promise<Params> }) {
       id,
       tenantKey: tenant.key,
       // optional: isPublic: true,
-      // optional: status: "APPROVED" as any,
     },
   });
 
@@ -38,8 +37,8 @@ export default async function VendorPage(props: { params: Promise<Params> }) {
     where: {
       tenantKey: tenant.key,
       vendorProfileId: vendor.id,
-      // If Product.status exists, you can re-enable this:
-      // status: "PUBLISHED" as any,
+      // If Product.status exists, you can re-enable this (use APPROVED/ACTIVE):
+      // status: "APPROVED" as any,
     },
     orderBy: { createdAt: "desc" },
     take: 48,

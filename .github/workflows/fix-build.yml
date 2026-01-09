@@ -1,0 +1,99 @@
+name: Fix Build (audit + ProductStatus)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  fix-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install deps
+        run: npm ci
+
+      # 1) Create missing audit module (prevents "Can't resolve '@/lib/security/audit'")
+      - name: Ensure audit module exists
+        shell: bash
+        run: |
+          mkdir -p src/lib/security
+          if [ ! -f src/lib/security/audit.ts ]; then
+            cat > src/lib/security/audit.ts <<'EOF'
+            // src/lib/security/audit.ts
+            import { prisma } from "@/lib/prisma";
+
+            /**
+             * Minimal Audit-Logger.
+             * If you don't have an Audit table yet, this is a safe noop.
+             */
+            export async function logAudit(args: {
+              actorId: string | null;
+              action: string;
+              targetUserId?: string | null;
+              meta?: Record<string, any>;
+            }) {
+              try {
+                // Enable later if you add a table:
+                // await prisma.auditLog.create({
+                //   data: {
+                //     actorId: args.actorId,
+                //     action: args.action,
+                //     targetUserId: args.targetUserId ?? null,
+                //     meta: args.meta ?? {},
+                //   },
+                // });
+
+                void prisma;
+                return;
+              } catch (e) {
+                console.warn("audit/logAudit failed:", e);
+              }
+            }
+            EOF
+          fi
+
+      # 2) Remove illegal enum value "PUBLISHED" from typed ProductStatus filters
+      #    (Your build fails because "PUBLISHED" is not assignable to ProductStatus)
+      - name: Patch backfill script to not use PUBLISHED
+        shell: bash
+        run: |
+          FILE="scripts/backfill-products-local.ts"
+          if [ -f "$FILE" ]; then
+            # Replace the common pattern: ["ACTIVE","PUBLISHED","APPROVED"] -> [ProductStatus.ACTIVE, ProductStatus.APPROVED]
+            # Also replace plain string in case of ["ACTIVE","PUBLISHED"]
+            sed -i \
+              -e 's/status:\s*{\s*in:\s*\[\s*["'"']ACTIVE["'"']\s*,\s*["'"']PUBLISHED["'"']\s*,\s*["'"']APPROVED["'"']\s*\]\s*}/status: { in: [ProductStatus.ACTIVE, ProductStatus.APPROVED] }/g' \
+              -e 's/status:\s*{\s*in:\s*\[\s*["'"']ACTIVE["'"']\s*,\s*["'"']PUBLISHED["'"']\s*\]\s*}/status: { in: [ProductStatus.ACTIVE] }/g' \
+              "$FILE" || true
+
+            # Ensure ProductStatus import exists if the script now references it
+            if ! grep -q 'from "@prisma/client"' "$FILE"; then
+              echo "⚠️ $FILE has no prisma client import. Please add: import { ProductStatus } from \"@prisma/client\";"
+            else
+              # If there's already an import from @prisma/client but not ProductStatus, try to add it.
+              if ! grep -q 'ProductStatus' "$FILE"; then
+                # naive-but-effective: add ProductStatus to the first import line from @prisma/client
+                sed -i '0,/from "@prisma\/client"/s/import { \([^}]*\) } from "@prisma\/client";/import { \1, ProductStatus } from "@prisma/client";/' "$FILE" || true
+                sed -i '0,/from "@prisma\/client"/s/import { } from "@prisma\/client";/import { ProductStatus } from "@prisma/client";/' "$FILE" || true
+              fi
+            fi
+          else
+            echo "ℹ️ $FILE not found. Skipping."
+          fi
+
+      - name: Typecheck + Build
+        run: npm run build
+
+      - name: Show git diff (for review)
+        run: |
+          git status --porcelain
+          git diff --stat
+          git diff

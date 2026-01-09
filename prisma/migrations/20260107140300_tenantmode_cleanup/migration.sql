@@ -1,7 +1,9 @@
 -- 1) Rewrite any legacy values (defensive)
+-- Use text comparison to avoid casting the literal to enum (shadow-db safe)
+-- Map any non-final values to WHITE_LABEL (covers SINGLE_VENDOR, MULTI_VENDOR, etc.)
 UPDATE "Tenant"
 SET "mode" = 'WHITE_LABEL'
-WHERE "mode" IN ('SINGLE_VENDOR','MULTI_VENDOR');
+WHERE "mode"::text NOT IN ('WHITE_LABEL', 'MARKETPLACE');
 
 -- 2) Recreate enum with final values (Postgres)
 --    (Drop/recreate pattern because removing enum values isn't supported directly)

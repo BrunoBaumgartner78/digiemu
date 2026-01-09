@@ -106,7 +106,7 @@ export default async function SellerPage(
       ],
       isActive: true,
       status: "ACTIVE",
-      vendor: { isBlocked: false },
+      vendor: { is: { isBlocked: false } },
     },
     orderBy: { createdAt: "desc" },
     select: {

@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { ProductStatus } from "@prisma/client";
 import Link from "next/link";
 import styles from "./ProductsPage.module.css";
 
@@ -42,7 +43,7 @@ export default async function ProductsOverviewPage(props: PageProps) {
       : "all";
 
   const allProducts = await prisma.product.findMany({
-    where: { vendorId, status: { not: "ARCHIVED" } },
+    where: { vendorId, status: { not: ProductStatus.BLOCKED } },
     orderBy: { updatedAt: "desc" },
     select: {
       id: true,
@@ -58,19 +59,19 @@ export default async function ProductsOverviewPage(props: PageProps) {
 
   const statusCounts = {
     all: allProducts.length,
-    active: allProducts.filter((p) => p.isActive === true && p.status !== "BLOCKED").length,
-    draft: allProducts.filter((p) => p.isActive === false || p.status === "DRAFT").length,
-    blocked: allProducts.filter((p) => p.status === "BLOCKED").length,
+    active: allProducts.filter((p) => p.isActive === true && p.status !== ProductStatus.BLOCKED).length,
+    draft: allProducts.filter((p) => p.isActive === false || p.status === ProductStatus.DRAFT).length,
+    blocked: allProducts.filter((p) => p.status === ProductStatus.BLOCKED).length,
   };
 
   let products = allProducts;
 
   if (statusFilter === "active") {
-    products = allProducts.filter((p) => p.isActive === true && p.status !== "BLOCKED");
+    products = allProducts.filter((p) => p.isActive === true && p.status !== ProductStatus.BLOCKED);
   } else if (statusFilter === "draft") {
-    products = allProducts.filter((p) => p.isActive === false || p.status === "DRAFT");
+    products = allProducts.filter((p) => p.isActive === false || p.status === ProductStatus.DRAFT);
   } else if (statusFilter === "blocked") {
-    products = allProducts.filter((p) => p.status === "BLOCKED");
+    products = allProducts.filter((p) => p.status === ProductStatus.BLOCKED);
   }
 
   const downloads = await prisma.downloadLink.findMany({
@@ -145,7 +146,7 @@ export default async function ProductsOverviewPage(props: PageProps) {
               const price = product.priceCents / 100;
               const downloadsCount = downloadCounts[product.id] ?? 0;
 
-              const isBlocked = product.status === "BLOCKED";
+              const isBlocked = product.status === ProductStatus.BLOCKED;
               const isPublished = product.isActive && !isBlocked;
 
               const desc = (product.description ?? "").trim();

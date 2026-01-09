@@ -1,0 +1,77 @@
+name: Fix build (remove PUBLISHED from backfill script)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  fix-backfill:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Patch scripts/backfill-products-local.ts (remove "PUBLISHED")
+        shell: bash
+        run: |
+          set -euo pipefail
+          FILE="scripts/backfill-products-local.ts"
+
+          if [ ! -f "$FILE" ]; then
+            echo "❌ $FILE not found"
+            exit 1
+          fi
+
+          # 1) Ensure we import ProductStatus from @prisma/client
+          if ! grep -q 'ProductStatus' "$FILE"; then
+            if grep -q 'from "@prisma/client"' "$FILE"; then
+              # add ProductStatus into existing import { ... } from "@prisma/client";
+              sed -i '0,/from "@prisma\/client"/s/import { \([^}]*\) } from "@prisma\/client";/import { \1, ProductStatus } from "@prisma/client";/' "$FILE"
+              # handle empty braces just in case
+              sed -i '0,/from "@prisma\/client"/s/import { *} from "@prisma\/client";/import { ProductStatus } from "@prisma/client";/' "$FILE"
+            else
+              # prepend import if none exists
+              sed -i '1i import { ProductStatus } from "@prisma/client";\n' "$FILE"
+            fi
+          fi
+
+          # 2) Replace the problematic list with enum-safe values
+          #    - remove "PUBLISHED"
+          #    - convert to ProductStatus.* to satisfy TS
+          #
+          # Common pattern:
+          #   status: { in: ["ACTIVE", "PUBLISHED", "APPROVED"] },
+          # becomes:
+          #   status: { in: [ProductStatus.ACTIVE, ProductStatus.APPROVED] },
+          #
+          # Also handle variant with different whitespace.
+          perl -0777 -i -pe '
+            s/status\s*:\s*\{\s*in\s*:\s*\[\s*["\x27]ACTIVE["\x27]\s*,\s*["\x27]PUBLISHED["\x27]\s*,\s*["\x27]APPROVED["\x27]\s*\]\s*\}\s*,/status: { in: [ProductStatus.ACTIVE, ProductStatus.APPROVED] },/g;
+            s/status\s*:\s*\{\s*in\s*:\s*\[\s*["\x27]ACTIVE["\x27]\s*,\s*["\x27]PUBLISHED["\x27]\s*\]\s*\}\s*,/status: { in: [ProductStatus.ACTIVE] },/g;
+          ' "$FILE"
+
+          # 3) As a final guard: remove any remaining literal "PUBLISHED" inside status lists
+          # (does NOT touch other strings)
+          perl -0777 -i -pe '
+            s/\[\s*([^\]]*?)['"']PUBLISHED['"']\s*,\s*/[\1/g;
+            s/\[\s*([^\]]*?)\s*,\s*['"']PUBLISHED['"']\s*/[\1/g;
+          ' "$FILE"
+
+          echo "✅ patched $FILE"
+          grep -n 'status: { in:' "$FILE" || true
+
+      - name: Build
+        run: npm run build
+
+      - name: Diff
+        run: |
+          git status --porcelain
+          git diff -- scripts/backfill-products-local.ts
