@@ -42,7 +42,7 @@ export default function LandingTestPage() {
         <section className="grid gap-12 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:items-center">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
-              Digital Marketplace
+              Digital Content OS
             </p>
 
             <h1 className="mt-5 text-4xl font-semibold leading-tight tracking-tight text-slate-900 sm:text-5xl">
@@ -150,11 +150,11 @@ export default function LandingTestPage() {
         {/* FOOTER TEXT BLOCK */}
         <section className="mt-24 border-t border-slate-200 pt-12">
           <h2 className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
-            DigiEmu – dein Marktplatz für digitale Produkte
+            DigiEmu – dein Content OS für digitale Produkte
           </h2>
 
           <p className="mt-5 max-w-3xl text-sm leading-relaxed text-slate-600">
-            DigiEmu ist ein kuratierter Multivendor-Marktplatz für digitale
+            DigiEmu ist ein kuratierter Multivendor-Content OS für digitale
             Produkte wie E-Books, Online-Kurse, Templates, Presets, Musik und
             mehr. Creator:innen verkaufen ihre Dateien direkt an Kund:innen,
             während DigiEmu sich um sichere Zahlungen, automatische
@@ -170,7 +170,7 @@ export default function LandingTestPage() {
           </p>
 
           <p className="mt-8 text-xs text-slate-400">
-            © 2025 DigiEmu – Digital Marketplace for Creators
+            © 2025 DigiEmu – Digital Content OS for Creators
           </p>
         </section>
       </div>

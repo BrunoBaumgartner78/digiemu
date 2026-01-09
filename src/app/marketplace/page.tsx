@@ -2,6 +2,7 @@
 import Link from "next/link";
 import crypto from "crypto";
 import { getMarketplaceProducts, PAGE_SIZE } from "@/lib/products";
+
 import { getBadgesForVendors } from "@/lib/trustBadges";
 import BadgeRow from "@/components/marketplace/BadgeRow";
 import styles from "./page.module.css";
@@ -22,6 +23,7 @@ function signThumbUrl(productId: string, variant: "blur" | "full" = "full") {
   return `${base}?variant=${variant}&exp=${exp}&sig=${sig}`;
 }
 
+// ✅ identifiers must NOT contain spaces
 type MarketplaceSearchParams = Record<string, string | string[] | undefined>;
 
 function spGet(sp: MarketplaceSearchParams, key: string): string {
@@ -55,6 +57,7 @@ const CATEGORY_FILTERS = [
   { key: "other", label: "Sonstiges" },
 ];
 
+// ✅ identifiers must NOT contain spaces
 function MarketplaceFilters({
   search,
   category,
@@ -76,7 +79,13 @@ function MarketplaceFilters({
     <section className="neo-card" style={{ padding: 14, marginBottom: 14, borderRadius: 8 }}>
       <form method="GET" style={{ display: "grid", gap: 10 }}>
         <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 10 }}>
-          <input name="q" defaultValue={search ?? undefined} placeholder="Suche (Titel, Beschreibung)…" className="neo-input" style={{ width: "100%" }} />
+          <input
+            name="q"
+            defaultValue={search ?? undefined}
+            placeholder="Suche (Titel, Beschreibung)…"
+            className="neo-input"
+            style={{ width: "100%" }}
+          />
         </div>
 
         <div
@@ -122,12 +131,26 @@ function MarketplaceFilters({
 
           <div>
             <div style={{ fontSize: 12, opacity: 0.7, marginBottom: 6 }}>Min (CHF)</div>
-            <input name="min" defaultValue={minCHF ?? undefined} inputMode="decimal" placeholder="0.00" className="neo-input" style={{ width: "100%" }} />
+            <input
+              name="min"
+              defaultValue={minCHF ?? undefined}
+              inputMode="decimal"
+              placeholder="0.00"
+              className="neo-input"
+              style={{ width: "100%" }}
+            />
           </div>
 
           <div>
             <div style={{ fontSize: 12, opacity: 0.7, marginBottom: 6 }}>Max (CHF)</div>
-            <input name="max" defaultValue={maxCHF ?? undefined} inputMode="decimal" placeholder="99.00" className="neo-input" style={{ width: "100%" }} />
+            <input
+              name="max"
+              defaultValue={maxCHF ?? undefined}
+              inputMode="decimal"
+              placeholder="99.00"
+              className="neo-input"
+              style={{ width: "100%" }}
+            />
           </div>
 
           <div style={{ display: "flex", gap: 10 }}>
@@ -148,7 +171,11 @@ function MarketplaceFilters({
   );
 }
 
-export default async function Page({ searchParams }: { searchParams?: MarketplaceSearchParams | Promise<MarketplaceSearchParams> }) {
+export default async function Page({
+  searchParams,
+}: {
+  searchParams?: MarketplaceSearchParams | Promise<MarketplaceSearchParams>;
+}) {
   const sp = (await (searchParams as Promise<MarketplaceSearchParams | undefined>)) ?? {};
 
   const page = Math.max(1, toInt(spGet(sp, "page"), 1));
@@ -162,8 +189,7 @@ export default async function Page({ searchParams }: { searchParams?: Marketplac
   const minPriceCents = typeof minCHF === "string" ? toCentsCHF(minCHF) : undefined;
   const maxPriceCents = typeof maxCHF === "string" ? toCentsCHF(maxCHF) : undefined;
 
-  // NOTE: Marketplace is platform-wide, not host/white-label scoped
-  // Resolve the marketplace tenant via helper (allows ENV override)
+  // NOTE: The public "Content OS" listing is platform-wide (marketplace tenant), not host/white-label scoped.
   const mp = marketplaceTenant();
 
   const { items: products, total, pageCount } = await getMarketplaceProducts({
@@ -175,7 +201,6 @@ export default async function Page({ searchParams }: { searchParams?: Marketplac
     sort: sort as any,
     minPriceCents,
     maxPriceCents,
-    // permissive fallback: accept common published-like product statuses (apply only to Product.status)
     acceptProductStatuses: [ProductStatus.ACTIVE], // ProductStatus.APPROVED omitted to avoid DB enum mismatch
   });
 
@@ -216,8 +241,8 @@ export default async function Page({ searchParams }: { searchParams?: Marketplac
       <div className={styles.inner}>
         <header className={styles.header}>
           <div>
-            <p className={styles.eyebrow}>Digital Marketplace</p>
-            <h1 className={styles.title}>Marketplace</h1>
+            <p className={styles.eyebrow}>Digital Content OS</p>
+            <h1 className={styles.title}>Content OS</h1>
             <div style={{ fontSize: 13, opacity: 0.75, marginTop: 6 }}>
               ✔ Verifizierte Verkäufer · ✔ Sichere Zahlungen · ✔ Sofortiger Download
             </div>
@@ -227,8 +252,8 @@ export default async function Page({ searchParams }: { searchParams?: Marketplac
           <form className={styles.searchBar} action="/marketplace">
             {category !== "all" && <input type="hidden" name="category" value={category} />}
             {sort && sort !== "newest" && <input type="hidden" name="sort" value={String(sort)} />}
-              {minCHF !== undefined && minCHF !== "" && <input type="hidden" name="min" value={String(minCHF)} />}
-              {maxCHF !== undefined && maxCHF !== "" && <input type="hidden" name="max" value={String(maxCHF)} />}
+            {minCHF !== undefined && minCHF !== "" && <input type="hidden" name="min" value={String(minCHF)} />}
+            {maxCHF !== undefined && maxCHF !== "" && <input type="hidden" name="max" value={String(maxCHF)} />}
             <input
               className={styles.searchInput}
               type="text"
@@ -277,32 +302,32 @@ export default async function Page({ searchParams }: { searchParams?: Marketplac
 
           <div className={styles.controlGroup}>
             <label className={styles.controlLabel} htmlFor="min">
-                Min CHF
-              </label>
-              <input
-                id="min"
-                name="min"
-                type="number"
-                step="0.5"
-                placeholder="Min CHF"
-                defaultValue={minCHF ?? ""}
-                className={styles.controlInput}
-              />
+              Min CHF
+            </label>
+            <input
+              id="min"
+              name="min"
+              type="number"
+              step="0.5"
+              placeholder="Min CHF"
+              defaultValue={minCHF ?? ""}
+              className={styles.controlInput}
+            />
           </div>
 
           <div className={styles.controlGroup}>
-              <label className={styles.controlLabel} htmlFor="max">
-                Max CHF
-              </label>
-              <input
-                id="max"
-                name="max"
-                type="number"
-                step="0.5"
-                placeholder="Max CHF"
-                defaultValue={maxCHF ?? ""}
-                className={styles.controlInput}
-              />
+            <label className={styles.controlLabel} htmlFor="max">
+              Max CHF
+            </label>
+            <input
+              id="max"
+              name="max"
+              type="number"
+              step="0.5"
+              placeholder="Max CHF"
+              defaultValue={maxCHF ?? ""}
+              className={styles.controlInput}
+            />
           </div>
 
           <div>
@@ -326,11 +351,12 @@ export default async function Page({ searchParams }: { searchParams?: Marketplac
                 const vendorProfile = p.vendorProfile ?? null;
 
                 const rawSellerName =
-                  (vendorProfile?.displayName as string | undefined) || (vendorProfile?.user?.name as string | undefined) || "Verkäufer";
+                  (vendorProfile?.displayName as string | undefined) ||
+                  (vendorProfile?.user?.name as string | undefined) ||
+                  "Verkäufer";
                 const sellerName = (rawSellerName || "Verkäufer").trim() || "Verkäufer";
                 const avatarUrl: string | undefined = vendorProfile?.avatarUrl ?? undefined;
 
-                // ✅ Option B: Marketplace liefert nur APPROVED + public, trotzdem defensiv:
                 const isPublic = vendorProfile?.isPublic === true;
                 const isApproved = vendorProfile?.status === "APPROVED";
                 const vendorProfileId: string | null = vendorProfile?.id ?? null;
@@ -347,7 +373,6 @@ export default async function Page({ searchParams }: { searchParams?: Marketplac
                             className={`${styles.cardImage} ${styles.cardImageBlur}`}
                             loading="lazy"
                             referrerPolicy="no-referrer"
-                            // onError removed (Server Components cannot pass event handlers)
                           />
                         ) : (
                           <div className={styles.cardImagePlaceholder}>
@@ -410,7 +435,12 @@ export default async function Page({ searchParams }: { searchParams?: Marketplac
                       </div>
 
                       {isPublic && isApproved && vendorProfileId ? (
-                        <SellerLink vendorProfileId={vendorProfileId} productId={p.id} source="marketplace_card" className="neo-link">
+                        <SellerLink
+                          vendorProfileId={vendorProfileId}
+                          productId={p.id}
+                          source="marketplace_card"
+                          className="neo-link"
+                        >
                           {sellerName}
                         </SellerLink>
                       ) : (

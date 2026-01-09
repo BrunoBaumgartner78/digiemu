@@ -68,7 +68,7 @@ export default async function ProductPage(props: ProductPageProps) {
           href="/marketplace"
           className="inline-flex text-sm text-slate-300 hover:text-white"
         >
-          ← Zurück zum Marktplatz
+          ← Zurück zum Content OS
         </Link>
 
         <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 shadow-lg shadow-slate-950/60">

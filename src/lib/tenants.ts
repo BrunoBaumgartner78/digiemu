@@ -27,7 +27,7 @@ export type TenantConfig = {
 		privacyUrl?: string;
 	};
 	features?: {
-		showMarketplaceUI?: boolean;
+			showContentOSUI?: boolean;
 		allowBundles?: boolean;
 	};
 };
@@ -61,7 +61,7 @@ const DEFAULT_CONFIG: TenantsConfig = {
 				accentColor: "#2E6BFF",
 			},
 			legal: { imprintUrl: "/impressum", privacyUrl: "/datenschutz" },
-			features: { showMarketplaceUI: true, allowBundles: true },
+			features: { showContentOSUI: true, allowBundles: true },
 		},
 	},
 };
@@ -147,9 +147,9 @@ function validateConfig(raw: any): TenantsConfig | null {
 
 		const features = isObj(t.features)
 			? {
-					showMarketplaceUI:
-						typeof t.features.showMarketplaceUI === "boolean"
-							? t.features.showMarketplaceUI
+					showContentOSUI:
+						typeof t.features.showContentOSUI === "boolean"
+							? t.features.showContentOSUI
 							: undefined,
 					allowBundles:
 						typeof t.features.allowBundles === "boolean" ? t.features.allowBundles : undefined,

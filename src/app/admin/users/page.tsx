@@ -136,7 +136,7 @@ export default async function AdminUsersPage({
           method="POST"
           style={{ marginTop: 12 }}
         >
-          <button className="neobtn-sm" type="submit" title="Fix old products so they show up in Marketplace">
+          <button className="neobtn-sm" type="submit" title="Fix old products so they show up in Content OS">
             Produkte backfillen (tenantKey + vendorProfileId)
           </button>
         </form>

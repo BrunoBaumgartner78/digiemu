@@ -179,7 +179,7 @@ export default async function TenantDetailPage(props: { params: Promise<Params> 
               <option value="MARKETPLACE">{TENANT_MODE_LABEL.MARKETPLACE}</option>
             </select>
             <div className="mt-1 text-xs text-[var(--text-muted)]">
-              White-Label = eigener Shop (Tenant). Marketplace = Multi-Vendor Modus (80/20).
+              White-Label = eigener Shop (Tenant). Content OS = Multi-Vendor Modus (80/20).
             </div>
           </div>
 

@@ -70,7 +70,7 @@ export default async function TopLikedProductsPage() {
               Sobald Käufer:innen die Merkliste nutzen, erscheinen hier deine Top-Produkte.
             </p>
             <Link href="/marketplace" className={styles.emptyBtn}>
-              Marketplace ansehen
+              Content OS ansehen
             </Link>
           </div>
         )}

@@ -14,5 +14,5 @@ export function tenantPlanLabel(plan: TenantPlan): string {
 }
 
 export function tenantPlanHint(): string {
-  return "Hinweis: Marketplace ist ein separater Modus (80/20) und hat keinen Tenant-Plan.";
+  return "Hinweis: Content OS ist ein separater Modus (80/20) und hat keinen Tenant-Plan.";
 }

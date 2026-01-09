@@ -11,11 +11,11 @@ export default function Page() {
           <div className={styles.kicker}>DIGIEMU · INFO</div>
           <h1 className={styles.title}>About us</h1>
           <p className={styles.subtitle}>
-            DigiEmu ist ein digitaler Marktplatz für Creators – sicher kaufen, einfach verkaufen.
+            DigiEmu ist ein digitaler Content OS für Creators – sicher kaufen, einfach verkaufen.
           </p>
 
           <div className={styles.pillRow}>
-            <Link className={styles.pill} href="/marketplace">Marketplace</Link>
+            <Link className={styles.pill} href="/marketplace">Content OS</Link>
             <Link className={styles.pill} href="/preise">Preise</Link>
             <Link className={styles.pill} href="/help">Hilfe</Link>
           </div>

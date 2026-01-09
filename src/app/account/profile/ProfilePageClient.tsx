@@ -190,7 +190,7 @@ export default function ProfilePageClient({
 
         <h1 className={styles.h1}>Dein Verkäufer-Profil</h1>
         <p className={styles.p}>
-          Banner, Avatar und Profilinfos – so sehen dich deine Kunden auf dem Marktplatz.
+          Banner, Avatar und Profilinfos – so sehen dich deine Kunden auf dem Content OS.
         </p>
 
         <div className={styles.actionRow}>
@@ -345,7 +345,7 @@ export default function ProfilePageClient({
             <div className={styles.avatarRow}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img className={styles.avatarImg} src={avatarUrl} alt="Avatar preview" />
-              <div className={styles.smallHint}>Wird im Marketplace rund angezeigt.</div>
+              <div className={styles.smallHint}>Wird im Content OS rund angezeigt.</div>
             </div>
           ) : null}
         </div>
@@ -379,7 +379,7 @@ export default function ProfilePageClient({
       {/* Preview */}
       <div id="live-preview" className={styles.card}>
         <h2 className={styles.h2}>Live Vorschau</h2>
-        <p className={styles.small}>So wirkt dein Profil im Marketplace.</p>
+        <p className={styles.small}>So wirkt dein Profil im Content OS.</p>
 
         <div className={styles.previewCard}>
           <div

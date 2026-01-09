@@ -122,7 +122,7 @@ export default async function AccountDownloadsPage({
               Du hast bisher noch keine digitalen Produkte gekauft.
             </p>
             <Link href="/marketplace" className="neobtn primary">
-              Zum Marketplace
+              Zum Content OS
             </Link>
           </section>
         ) : (

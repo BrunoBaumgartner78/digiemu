@@ -2,7 +2,7 @@
 // UI labels for internal enum (English) -> DE Admin UI
 export const TENANT_MODE_LABEL = {
   WHITE_LABEL: "White-Label Shop",
-  MARKETPLACE: "Marketplace (Multi-Vendor)",
+  MARKETPLACE: "Content OS (Multi-Vendor)",
 } as const;
 
 export function tenantModeBadge(mode: string) {
@@ -16,5 +16,5 @@ export function tenantModeBadge(mode: string) {
 // Short helper hints for each mode shown in the admin UI
 export const TENANT_MODE_HINT = {
   WHITE_LABEL: "White-Label Shop — eigener Shop, keine Multi-Vendor-Funktionen.",
-  MARKETPLACE: "Marktplatz mit mehreren Verkäufern und Monetarisierung.",
+  MARKETPLACE: "Content OS mit mehreren Verkäufern und Monetarisierung.",
 } as const;

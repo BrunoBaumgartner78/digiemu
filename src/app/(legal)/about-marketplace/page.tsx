@@ -9,11 +9,11 @@ export default function Page() {
       <div className={styles.container}>
         <section className={styles.card}>
           <div className={styles.kicker}>DIGIEMU · INFO</div>
-          <h1 className={styles.title}>About marketplace</h1>
+          <h1 className={styles.title}>Über das Content OS</h1>
           <p className={styles.subtitle}>Kurz erklärt, wie DigiEmu funktioniert – für Käufer:innen und Verkäufer:innen.</p>
 
           <div className={styles.pillRow}>
-            <Link className={styles.pill} href="/marketplace">Marketplace</Link>
+            <Link className={styles.pill} href="/marketplace">Content OS</Link>
             <Link className={styles.pill} href="/preise">Preise</Link>
             <Link className={styles.pill} href="/help">Hilfe</Link>
           </div>

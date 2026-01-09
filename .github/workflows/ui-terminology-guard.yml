@@ -1,0 +1,124 @@
+name: UI Terminology Guard
+
+on:
+  pull_request:
+  push:
+    branches: ["main", "dev"]
+
+jobs:
+  ui-terminology-guard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install deps
+        run: npm ci
+
+      # Optional: only run if script exists
+      - name: Generate branding (if used)
+        run: |
+          set -euo pipefail
+          if node -e "const p=require('./package.json'); process.exit(p.scripts && p.scripts['gen:branding'] ? 0 : 1)"; then
+            npm run gen:branding
+          else
+            echo "Skipping gen:branding (script not found)"
+          fi
+
+      # Guard 1: "Content OS" accidentally used inside identifiers / generics / declarations
+      - name: Guard - no broken identifiers containing "Content OS"
+        run: |
+          set -euo pipefail
+          echo "Scanning for broken identifiers like 'Content OSFilters', 'Content OSSearchParams', 'getContent OSProducts'…"
+          if grep -RIn --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" -E 'Content[[:space:]]+OS[A-Za-z0-9_]' src; then
+            echo ""
+            echo "❌ Found broken identifiers (space inside identifier)."
+            echo "Fix: keep 'Content OS' only in UI strings; identifiers must stay Marketplace* or ContentOS (no space)."
+            exit 1
+          fi
+          echo "✅ OK"
+
+      # Guard 2: JSX tag breakage: <Content OSFilters ...>
+      - name: Guard - no JSX tags split by space (e.g. <Content OSFilters>)
+        run: |
+          set -euo pipefail
+          echo "Scanning for JSX tag breakage '<Content OS…'…"
+          if grep -RIn --include="*.tsx" --include="*.jsx" -E '<[[:space:]]*Content[[:space:]]+OS[A-Za-z0-9_]' src; then
+            echo ""
+            echo "❌ Found JSX tag split by space: '<Content OS…>'"
+            echo "Fix: rename component identifiers back to MarketplaceFilters etc."
+            exit 1
+          fi
+          echo "✅ OK"
+
+      # Guard 3: Import/export specifiers broken: import { Content OSFilters } ...
+      - name: Guard - no broken import/export specifiers containing "Content OS"
+        run: |
+          set -euo pipefail
+          echo "Scanning for broken import/export specifiers '{ ... Content OS ... }'…"
+          if grep -RIn --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" -E '(\bimport\b|\bexport\b)[^;\n]*\{[^}]*Content[[:space:]]+OS[^}]*\}' src; then
+            echo ""
+            echo "❌ Found broken import/export specifier containing 'Content OS'."
+            echo "Fix: keep identifiers without spaces; use 'Content OS' only in UI strings."
+            exit 1
+          fi
+          echo "✅ OK"
+
+      # Guard 4: Ensure core function name still exists (prevents accidental rename)
+      - name: Guard - core marketplace API name intact (getMarketplaceProducts)
+        run: |
+          set -euo pipefail
+          echo "Checking for getMarketplaceProducts…"
+          if ! grep -RIn --include="*.ts" --include="*.tsx" -E '\bgetMarketplaceProducts\b' src/lib src/app; then
+            echo "❌ getMarketplaceProducts not found. It may have been renamed by a replace."
+            exit 1
+          fi
+          echo "✅ OK"
+
+      # Guard 5: UI text must not contain old terms (marketplace/marktplatz) – catches missed renames
+      # NOTE: This intentionally scans *all* files (tsx/css/md). Add exceptions in the regex if needed.
+      - name: Guard - no leftover UI wording "marketplace/marktplatz" (case-insensitive)
+        run: |
+          set -euo pipefail
+          echo "Scanning for leftover UI wording 'marketplace' or 'marktplatz'…"
+          # Exclude obvious non-UI locations if needed:
+          # - routes (/src/app/marketplace) are allowed
+          # - API/DB technical identifiers are allowed
+          #
+          # We therefore ignore:
+          #  - file paths containing '/app/marketplace/' (route folder)
+          #  - imports like '@/components/marketplace/...'
+          #
+          if grep -RIn \
+            --exclude-dir=".next" --exclude-dir="node_modules" --exclude-dir="dist" \
+            --exclude="package-lock.json" \
+            -iE '\b(marktplatz|marketplace)\b' src \
+            | grep -vE 'src/app/marketplace/|@/components/marketplace/|/marketplace\b'; then
+            echo ""
+            echo "❌ Found leftover UI wording 'marketplace/marktplatz' outside allowed technical places."
+            echo "Fix: rename visible UI text to 'Content OS' (or your chosen term)."
+            echo "If a hit is a false positive, extend the grep -v exceptions."
+            exit 1
+          fi
+          echo "✅ OK"
+
+      # Guard 6: Prevent accidental route rename: we EXPECT /marketplace route folder to exist
+      - name: Guard - marketplace route folder must exist
+        run: |
+          set -euo pipefail
+          if [ ! -d "src/app/marketplace" ]; then
+            echo "❌ src/app/marketplace is missing. A replace may have renamed/moved the route unexpectedly."
+            exit 1
+          fi
+          echo "✅ OK"
+
+      - name: Build (Turbopack)
+        run: npm run build

@@ -150,7 +150,7 @@ export default function NewProductForm() {
             <div className={styles.infoTitle}>Veröffentlichung</div>
             <p className={styles.infoText}>
               Neue Produkte starten standardmäßig als <strong>aktiv</strong>{" "}
-              (sichtbar im Marketplace), sobald Preis und Download-Datei
+              (sichtbar im Content OS), sobald Preis und Download-Datei
               korrekt hinterlegt sind. Du kannst den Status später jederzeit in
               der Produkt-Bearbeitung anpassen.
             </p>

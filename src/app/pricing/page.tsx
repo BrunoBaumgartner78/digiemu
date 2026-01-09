@@ -26,9 +26,9 @@ const ModeBadge = ({ children }: { children: React.ReactNode }) => (
 );
 
 export const metadata: Metadata = {
-  title: "So funktioniert DigiEmu – Marketplace & White-Label",
+  title: "So funktioniert DigiEmu – Content OS & White-Label",
   description:
-    "DigiEmu hat zwei Modi: Marketplace (80/20, keine Fixkosten) und Tenants/White-Label (Miete, 0% Provision, 100% Einnahmen beim Kunden).",
+    "DigiEmu hat zwei Modi: Content OS (80/20, keine Fixkosten) und Tenants/White-Label (Miete, 0% Provision, 100% Einnahmen beim Kunden).",
 };
 
 export default function PricingPage() {
@@ -44,19 +44,19 @@ export default function PricingPage() {
             <div style={{ fontSize: 12, opacity: 0.75, lineHeight: 1.6 }}>
               <strong>Wichtig:</strong> <span style={{ opacity: 0.9 }}>“Tenant-Plan”</span> gilt nur für
               <strong> White-Label/Tenants</strong> (eigener Shop mit Branding).
-              Der <strong>Marketplace</strong> ist ein separater Modus (80/20) und hat keinen Tenant-Plan.
+              Der <strong>Content OS</strong> ist ein separater Modus (80/20) und hat keinen Tenant-Plan.
             </div>
           </div>
 
           <h1 className={styles.title}>Zwei klare Modelle. Keine Billing-Komplexität.</h1>
           <p className={styles.lead}>
-            DigiEmu ist bewusst einfach: <strong>Marketplace</strong> für digitale Produkte (80/20) – oder{" "}
+            DigiEmu ist bewusst einfach: <strong>Content OS</strong> für digitale Produkte (80/20) – oder{" "}
             <strong>Tenants / White-Label</strong> für Communities und Organisationen (Miete, 0% Provision).
           </p>
 
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 14 }}>
             <Link href="/marketplace" className="neobtn">
-              Marketplace öffnen
+              Content OS öffnen
             </Link>
             <Link href="#tenants" className="neobtn neobtn-ghost">
               Tenant-Modelle
@@ -64,17 +64,17 @@ export default function PricingPage() {
           </div>
         </header>
 
-        {/* Marketplace (80/20) */}
+        {/* Content OS (80/20) */}
         <section className={styles.cardSection}>
           <article className={styles.planCard}>
             <div className={styles.planHeader}>
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", marginBottom: 10 }}>
-                <ModeBadge>Modus: Marketplace</ModeBadge>
+                <ModeBadge>Modus: Content OS</ModeBadge>
                 <ModeBadge>Split: 80/20</ModeBadge>
                 <ModeBadge>0 CHF/Monat</ModeBadge>
               </div>
 
-              <p className={styles.planBadge}>Marketplace · 0 CHF / Monat · 20% Plattformanteil</p>
+              <p className={styles.planBadge}>Content OS · 0 CHF / Monat · 20% Plattformanteil</p>
               <h2 className={styles.planTitle}>80% für Vendoren, 20% für Betrieb & Infrastruktur</h2>
               <p className={styles.planIntro}>
                 Verkäufer:innen zahlen keine Fixkosten. Pro Verkauf behältst du <strong>80%</strong>.{" "}
@@ -201,7 +201,7 @@ export default function PricingPage() {
           </p>
         </section>
 
-        <footer className={styles.footer}>© {year} DigiEmu – Marketplace & White-Label</footer>
+        <footer className={styles.footer}>© {year} DigiEmu – Content OS & White-Label</footer>
       </section>
     </main>
   );

@@ -58,7 +58,7 @@ export default function HelpPage() {
                   </summary>
                   <div className={styles.faqBody}>
                     <p>
-                      Du wählst im Marketplace ein Produkt aus, klickst auf{" "}
+                      Du wählst im Content OS ein Produkt aus, klickst auf{" "}
                       <strong>„Einmal zahlen · sofort laden“</strong> und wirst
                       zum sicheren Stripe-Checkout weitergeleitet. Nach
                       erfolgreicher Zahlung wirst du automatisch auf die

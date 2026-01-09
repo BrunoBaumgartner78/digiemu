@@ -58,7 +58,7 @@ export default async function SellerPage(
             Bitte lade die Seite neu. Wenn es bleibt, ist die Datenbank gerade kurz beschäftigt.
           </p>
           <div style={{ marginTop: 12 }}>
-            <Link className="neobtn" href="/marketplace">← Marketplace</Link>
+            <Link className="neobtn" href="/marketplace">← Content OS</Link>
           </div>
         </section>
       </main>
@@ -183,7 +183,7 @@ export default async function SellerPage(
               ) : null}
 
               <div style={{ marginTop: 12, display: "flex", gap: 10, flexWrap: "wrap" }}>
-                <Link className="neobtn neobtn-ghost" href="/marketplace">← Marketplace</Link>
+                <Link className="neobtn neobtn-ghost" href="/marketplace">← Content OS</Link>
                 <Link className="neobtn neobtn-ghost" href="/help">Hilfe</Link>
               </div>
             </div>

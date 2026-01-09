@@ -12,8 +12,8 @@ const OPTIONS: Array<{ value: TenantMode; label: string; hint: string }> = [
   },
   {
     value: "MARKETPLACE",
-    label: "Marktplatz",
-    hint: "Mehrere Verkäufer, Marktplatz-Funktionen.",
+    label: "Content OS",
+    hint: "Mehrere Verkäufer, Content OS-Funktionen.",
   },
 ];
 

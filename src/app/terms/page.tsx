@@ -9,7 +9,7 @@ export default function TermsPage() {
         </h1>
 
         <p style={{ opacity: 0.85, lineHeight: 1.75 }}>
-          DigiEmu ist ein Marktplatz für digitale Produkte. Verkäufer stellen Inhalte bereit,
+          DigiEmu ist ein Content OS für digitale Produkte. Verkäufer stellen Inhalte bereit,
           Käufer erwerben Nutzungsrechte bzw. Downloads gemäss Produktbeschreibung.
         </p>
 

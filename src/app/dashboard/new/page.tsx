@@ -176,7 +176,7 @@ export default function NewProductPage() {
           <p className="text-sm text-[var(--color-text-muted)] max-w-2xl mt-1.5">
             Trage Titel, Beschreibung und Preis ein. Lade anschließend deine Datei
             (z. B. PDF, ZIP oder Bild) hoch. Nach dem Speichern erscheint dein Produkt
-            im Marketplace.
+            im Content OS.
           </p>
         </header>
 
@@ -219,7 +219,7 @@ export default function NewProductPage() {
                 ))}
               </select>
               <p className={styles.priceHint}>
-                Die Kategorie wird für Filter im Marketplace verwendet (z.B. E-Books,
+                Die Kategorie wird für Filter im Content OS verwendet (z.B. E-Books,
                 Kurse, Audio, Templates …).
               </p>
             </div>
@@ -369,7 +369,7 @@ export default function NewProductPage() {
               <h2 className={styles.infoTitle}>Veröffentlichung</h2>
               <p className={styles.infoText}>
                 Neue Produkte starten standardmäßig als <strong>aktiv</strong> (sichtbar im
-                Marketplace), sobald Preis und Download-Datei korrekt hinterlegt sind.
+                Content OS), sobald Preis und Download-Datei korrekt hinterlegt sind.
               </p>
               <p className={styles.infoText} style={{ marginTop: "0.8rem" }}>
                 Für die ersten Tests genügt ein PDF oder ZIP. Später kannst du professionelle

@@ -1,0 +1,79 @@
+name: Fix broken Content OS identifiers
+
+on:
+  push:
+    branches: ["main", "dev"]
+  pull_request:
+
+jobs:
+  fix-broken-content-os-identifiers:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install deps
+        run: npm ci
+
+      # --- FIX 1: showContent OSUI -> showContentOSUI
+      # --- FIX 2: latestInContent OS -> latestInContentOS
+      - name: Auto-fix broken identifiers (spaces inside identifiers)
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          echo "🔧 Fixing: showContent OSUI -> showContentOSUI"
+          # replace ONLY the broken property token
+          find src -type f \( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" \) -print0 \
+            | xargs -0 perl -0777 -i -pe 's/showContent\s+OSUI/showContentOSUI/g'
+
+          echo "🔧 Fixing: latestInContent OS -> latestInContentOS"
+          find src -type f \( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" \) -print0 \
+            | xargs -0 perl -0777 -i -pe 's/latestInContent\s+OS/latestInContentOS/g'
+
+          echo "✅ Done"
+
+      - name: Guard - no broken identifiers like 'Content OSX' or 'XContent OSY'
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "🔎 Scanning for broken identifiers 'Content OS' followed by identifier chars…"
+          # This guard is for *code breakage* patterns, not UI strings.
+          # It flags: Content OSFilters, getContent OSProducts, <Content OSFilters>, etc.
+          if grep -RIn --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" -E 'Content[[:space:]]+OS[A-Za-z0-9_]' src; then
+            echo ""
+            echo "❌ Found broken identifiers containing 'Content OS' with spaces."
+            echo "Fix: keep 'Content OS' only in UI strings; identifiers must be ContentOS or Marketplace*."
+            exit 1
+          fi
+          echo "✅ OK"
+
+      - name: Commit fixes (push only)
+        if: github.event_name == 'push'
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add -A
+          git commit -m "chore: fix broken Content OS identifiers (no spaces in code)"
+          git push
+
+      - name: Build
+        run: npm run build

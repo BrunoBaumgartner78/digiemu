@@ -6,7 +6,7 @@ export const PAGE_SIZE = 12 as const;
 
 export type MarketplaceSort = "newest" | "price_asc" | "price_desc";
 
-type GetMarketplaceProductsArgs = {
+export type GetMarketplaceProductsArgs = {
   // NEW: allow multiple tenant keys (useful while migrating data)
   tenantKeys?: string[];
   tenantKey?: string;
@@ -19,7 +19,8 @@ type GetMarketplaceProductsArgs = {
   minPriceCents?: number;
   maxPriceCents?: number;
 
-  // Product.status is a String in schema (NOT enum)
+  // Product.status is enum ProductStatus in DB.
+  // Be defensive: caller may pass strings; we filter to valid enum values.
   acceptProductStatuses?: string[];
 };
 
@@ -43,8 +44,7 @@ export async function getMarketplaceProducts(args: GetMarketplaceProductsArgs) {
 
   const skip = (page - 1) * pageSize;
 
-  // Product.status is a ProductStatus enum. Be defensive: allow only valid enum values
-  // and drop legacy values like "PUBLISHED".
+  // Product.status is a ProductStatus enum. Be defensive: allow only valid enum values.
   const allowed = new Set(Object.values(ProductStatus));
 
   const productStatuses = (acceptProductStatuses?.length
@@ -76,8 +76,7 @@ export async function getMarketplaceProducts(args: GetMarketplaceProductsArgs) {
     // marketplace safety
     vendor: { is: { isBlocked: false } },
 
-    // VendorProfile.status is enum VendorStatus -> must be a single enum value (not list of strings)
-    // We only show approved + public profiles.
+    // VendorProfile.status is enum VendorStatus
     vendorProfile: {
       is: {
         isPublic: true,
@@ -109,4 +108,3 @@ export async function getMarketplaceProducts(args: GetMarketplaceProductsArgs) {
   const pageCount = Math.max(1, Math.ceil(total / pageSize));
   return { total, items, pageCount };
 }
-

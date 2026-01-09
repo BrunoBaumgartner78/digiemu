@@ -182,7 +182,7 @@ export default function ProfileImageUploader({
             ) : (
               <div className={styles.placeholder}>
                 Kein Avatar
-                <div className={styles.placeholderSub}>Wird im Marketplace angezeigt</div>
+                <div className={styles.placeholderSub}>Wird im Content OS angezeigt</div>
               </div>
             )}
             {uploadingAvatar && <div className={styles.uploadOverlay}>UPLOADING</div>}

@@ -16,7 +16,7 @@ export async function resolveTenantWithCapabilities(tenantKey: string): Promise<
   const key = String(tenantKey || "").trim() || DEFAULT_TENANT_KEY;
 
   if (key === MARKETPLACE_TENANT_KEY) {
-    const virtual = { id: "marketplace", key: MARKETPLACE_TENANT_KEY, name: "Marketplace", mode: "MARKETPLACE", plan: null };
+    const virtual = { id: "marketplace", key: MARKETPLACE_TENANT_KEY, name: "Content OS", mode: "MARKETPLACE", plan: null };
     const caps = computeCapabilities({ mode: "MARKETPLACE" as TenantMode, plan: "FREE" as TenantPlan });
     return { tenant: virtual, capabilities: caps as TenantCapabilities };
   }

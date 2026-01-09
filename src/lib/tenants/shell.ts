@@ -78,7 +78,7 @@ export async function resolveTenantShell(tenantKey: string) {
   const mode = normalizeTenantMode(tenant.mode ?? "WHITE_LABEL");
   const cfg = (tenant.themeJson ?? {}) as any;
 
-  // Marketplace never uses tenant shell overrides
+  // Content OS never uses tenant shell overrides
   if (mode === "MARKETPLACE") {
     return { mode, shellVariant: "DEFAULT" as ShellVariant, footerVariant: "DEFAULT" as FooterVariant, cfg };
   }

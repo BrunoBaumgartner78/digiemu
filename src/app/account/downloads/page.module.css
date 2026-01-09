@@ -71,7 +71,7 @@
   gap: 1.8rem;
 }
 
-/* Eine Card, Light-Mode ähnlich wie Marketplace-Karten */
+/* Eine Card, Light-Mode ähnlich wie Content OS-Karten */
 .card {
   position: relative;
   display: grid;
@@ -275,7 +275,7 @@
   color: #9ca3af;
 }
 
-/* Karten im Marketplace-Stil (dunkelblau, glowy) */
+/* Karten im Content OS-Stil (dunkelblau, glowy) */
 :global(.dark) .card {
   background: radial-gradient(
     circle at top left,

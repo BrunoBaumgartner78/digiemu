@@ -15,7 +15,7 @@ export default function Page() {
           </p>
 
           <div className={styles.pillRow}>
-            <Link className={styles.pill} href="/marketplace">Marketplace</Link>
+            <Link className={styles.pill} href="/marketplace">Content OS</Link>
             <Link className={styles.pill} href="/preise">Preise</Link>
             <Link className={styles.pill} href="/help">Hilfe</Link>
           </div>

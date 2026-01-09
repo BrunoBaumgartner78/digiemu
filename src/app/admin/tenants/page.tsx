@@ -81,7 +81,7 @@ export default async function AdminTenantsPage(props: { searchParams?: Promise<S
         <p className="admin-subtitle">
           Mandanten verwalten (Domains, Status, Plan für White-Label).
           <span className="ml-2 text-xs text-[var(--text-muted)]">
-            Hinweis: Tenant-Plan betrifft nur White-Label (eigener Shop). Marketplace ist davon unabhängig (80/20).
+            Hinweis: Tenant-Plan betrifft nur White-Label (eigener Shop). Content OS ist davon unabhängig (80/20).
           </span>
         </p>
       </header>

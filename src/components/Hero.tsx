@@ -46,7 +46,7 @@ export default function Hero() {
     <div className="relative w-full h-[320px] overflow-hidden flex items-center justify-center">
       <canvas ref={canvasRef} className="absolute inset-0" />
       <h1 className="relative text-5xl font-bold text-center drop-shadow-xl">
-        DigiEmu Marketplace
+        DigiEmu Content OS
       </h1>
     </div>
   );

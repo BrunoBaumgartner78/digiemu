@@ -1,0 +1,79 @@
+# config/ui-replace.yml
+# UI-visible wording replacements (keep technical routes/DB/keys like /marketplace, MARKETPLACE enum)
+
+ui_replace:
+  rules:
+    # DE
+    - from: "Marktplatz"
+      to_de: "Content OS"
+      to_en: "Content OS"
+
+    - from: "digitaler Marktplatz"
+      to_de: "Digital Content & Asset Operating System"
+      to_en: "Digital Content & Asset Operating System"
+
+    - from: "Digitaler Marktplatz"
+      to_de: "Betriebssystem für digitale Inhalte & Assets"
+      to_en: "Digital Content & Asset Operating System"
+
+    - from: "Zum Marketplace"
+      to_de: "Zum Content OS"
+      to_en: "To the Content OS"
+
+    - from: "Marketplace öffnen"
+      to_de: "Content OS öffnen"
+      to_en: "Open Content OS"
+
+    - from: "Marketplace ansehen"
+      to_de: "Content OS ansehen"
+      to_en: "View Content OS"
+
+    # EN
+    - from: "Marketplace"
+      to_de: "Content OS"
+      to_en: "Content OS"
+
+    - from: "About marketplace"
+      to_de: "Über das Content OS"
+      to_en: "About Content OS"
+
+    - from: "About Marketplace"
+      to_de: "Über das Content OS"
+      to_en: "About Content OS"
+
+    - from: "Digital Marketplace"
+      to_de: "Digital Content & Asset OS"
+      to_en: "Digital Content & Asset OS"
+
+  notes:
+    keep_as_is:
+      - "/marketplace (route)"
+      - "MARKETPLACE (enum/tenantKey)"
+      - "getMarketplaceProducts (function name)"
+      - "marketplaceBuy/marketplaceSell (capability keys)"
+      - "scripts/*marketplace* (maintenance scripts)"
+      - "tests/*marketplace* (e2e/smoke tests)"
+
+ui_strings:
+  # Use these in UI instead of hardcoded text
+  labels:
+    content_os:
+      de: "Content OS"
+      en: "Content OS"
+    content_os_long:
+      de: "Digital Content & Asset Operating System"
+      en: "Digital Content & Asset Operating System"
+    content_os_tagline:
+      de: "Betriebssystem für digitale Inhalte & Assets"
+      en: "Digital Content & Asset Operating System"
+
+  cta:
+    open:
+      de: "Content OS öffnen"
+      en: "Open Content OS"
+    view:
+      de: "Content OS ansehen"
+      en: "View Content OS"
+    back_to:
+      de: "Zurück zum Content OS"
+      en: "Back to Content OS"

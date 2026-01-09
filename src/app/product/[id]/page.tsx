@@ -289,7 +289,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
         <div style={{ marginTop: 18 }}>
           <Link href="/marketplace" className="neobtn">
-            ← Zum Marketplace
+            ← Zum Content OS
           </Link>
         </div>
       </div>

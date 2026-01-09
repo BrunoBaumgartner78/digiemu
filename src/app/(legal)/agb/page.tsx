@@ -27,7 +27,7 @@ export default function Page() {
 
           <div className={styles.pillRow}>
             <Link className={styles.pill} href="/marketplace">
-              Marketplace
+              Content OS
             </Link>
             <Link className={styles.pill} href="/preise">
               Preise
@@ -44,7 +44,7 @@ export default function Page() {
             <p className={styles.p}>
               Diese Allgemeinen Geschäftsbedingungen (AGB) regeln die Nutzung der Plattform DigiEmu
               (nachfolgend „Plattform“) durch Käufer:innen („Kund:innen“) und Verkäufer:innen
-              („Anbieter:innen“). DigiEmu betreibt einen digitalen Marktplatz, auf dem Anbieter:innen
+              („Anbieter:innen“). DigiEmu betreibt einen digitalen Content OS, auf dem Anbieter:innen
               digitale Produkte (z. B. Dateien, Inhalte, Software, Konzepte) anbieten können.
               Abweichende Bedingungen der Nutzer:innen finden keine Anwendung, es sei denn, DigiEmu
               stimmt ihrer Geltung ausdrücklich schriftlich zu.

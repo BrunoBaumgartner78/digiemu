@@ -218,7 +218,7 @@
   backdrop-filter: blur(8px);
 }
 
-/* ===== Preview Card (Marketplace-like) ===== */
+/* ===== Preview Card (Content OS-like) ===== */
 .preview-card{
   border-radius: var(--radius-xl, 1.4rem);
   overflow: hidden;

@@ -12,11 +12,11 @@ const LEGAL_LINKS: FooterLink[] = [
 const INFO: FooterLink[] = [
   { label: "Kontakt", href: "/contact" },
   { label: "About us", href: "/about" },
-  { label: "About marketplace", href: "/about-marketplace" },
+  { label: "Über das Content OS", href: "/about-marketplace" },
 ];
 
 const QUICK: FooterLink[] = [
-  { label: "Marketplace", href: "/marketplace" },
+  { label: "Content OS", href: "/marketplace" },
   { label: "Preise", href: "/preise" },
   { label: "Hilfe", href: "/help" },
 ];
@@ -59,7 +59,7 @@ export default function MainFooter({ variant = "DEFAULT" }: { variant?: "DEFAULT
               </div>
               <div>
                 <div className={styles.kicker}>DIGIEMU</div>
-                <div className={styles.title}>Digitaler Marktplatz</div>
+                <div className={styles.title}>Digitaler Content OS</div>
                 <p className={styles.tagline}>
                   Digitale Produkte von Creators – sicher kaufen, einfach verkaufen.
                 </p>

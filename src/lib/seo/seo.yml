@@ -7,7 +7,7 @@ site:
   themeColor: "#e5ecf5"
 seo:
   title:
-    default: "DigiEmu – Digitaler Marktplatz"
+    default: "DigiEmu – Digitaler Content OS"
     template: "%s | DigiEmu"
     maxLength: 60
   description:
@@ -35,17 +35,17 @@ openGraph:
   type: "website"
   
   siteName: "DigiEmu"
-  title: "DigiEmu – Digitaler Marktplatz"
+  title: "DigiEmu – Digitaler Content OS"
   description: "Verkaufe digitale Produkte auf DigiEmu. Multi-Vendor Plattform mit Stripe & sicheren Downloads."
   locale: "de_CH"
   images:
     - url: "/og-image.png"
       width: 1200
       height: 630
-      alt: "DigiEmu – Digitaler Marktplatz"
+      alt: "DigiEmu – Digitaler Content OS"
 twitter:
   card: "summary_large_image"
-  title: "DigiEmu – Digitaler Marktplatz"
+  title: "DigiEmu – Digitaler Content OS"
   description: "Multi-Vendor Plattform für digitale Produkte."
   images:
     - "/og-image.png"
@@ -75,7 +75,7 @@ assets:
     - "/site.webmanifest"
 routes:
   "/":
-    title: "DigiEmu – Digitaler Marktplatz"
+    title: "DigiEmu – Digitaler Content OS"
     description: "Multi-Vendor Plattform für digitale Produkte. Verkaufen, bezahlen, downloaden – einfach & sicher."
     robots:
       index: true

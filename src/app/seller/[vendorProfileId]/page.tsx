@@ -62,14 +62,14 @@ export default async function SellerPage(
             Bitte lade die Seite neu. Wenn es bleibt, ist die Datenbank gerade kurz beschäftigt.
           </p>
           <div style={{ marginTop: 12 }}>
-            <Link className="neobtn" href="/marketplace">← Marketplace</Link>
+            <Link className="neobtn" href="/marketplace">← Content OS</Link>
           </div>
         </section>
       </main>
     );
   }
 
-  // Marketplace seller page must only surface public, approved vendor profiles
+  // Content OS seller page must only surface public, approved vendor profiles
   if (!vp || String(vp.status || "").toUpperCase() !== "APPROVED" || !Boolean(vp.isPublic)) notFound();
 
   const vendorName = vp.displayName ?? vp.user?.name ?? "Verkäufer";
@@ -188,7 +188,7 @@ export default async function SellerPage(
               ) : null}
 
               <div style={{ marginTop: 12, display: "flex", gap: 10, flexWrap: "wrap" }}>
-                <Link className="neobtn neobtn-ghost" href="/marketplace">← Marketplace</Link>
+                <Link className="neobtn neobtn-ghost" href="/marketplace">← Content OS</Link>
                 <Link className="neobtn neobtn-ghost" href="/help">Hilfe</Link>
               </div>
             </div>

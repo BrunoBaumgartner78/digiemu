@@ -15,11 +15,11 @@ export const TENANT_PLAN_LABEL = {
 // ✅ Shop/Betriebsmodus (independent from plan)
 export const TENANT_MODE_LABEL = {
   WHITE_LABEL: "White-Label Shop (eigener Shop)",
-  MARKETPLACE: "Marketplace (Multi-Vendor 80/20)",
+  MARKETPLACE: "Content OS (Multi-Vendor 80/20)",
 } as const;
 
 export const TENANT_PLAN_HELP =
-  "Hinweis: Marketplace ist ein separater Modus (80/20) und nicht an diesen Plan gekoppelt.";
+  "Hinweis: Content OS ist ein separater Modus (80/20) und nicht an diesen Plan gekoppelt.";
 
 export const TENANT_PLAN_HINT: Record<TenantPlanKey, string> = {
   FREE: "Für kleine Shops / Tests. Branding + Domain-Mapping möglich.",

@@ -23,7 +23,7 @@ export async function GET() {
   return NextResponse.json({
     marketplaceKey: mp.key,
     fallbackKeys: mp.fallbackKeys,
-    latestInMarketplace: latest,
+    latestInContent OS: latest,
     countsByTenantKeyAndStatus: counts,
   });
 }

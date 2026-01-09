@@ -135,7 +135,7 @@ export default async function HomePage() {
   const primaryCTA = isLoggedIn ? "/marketplace" : "/register";
   const secondaryCTA = isLoggedIn ? "/dashboard" : "/login";
 
-  const primaryLabel = isLoggedIn ? "Marketplace öffnen" : "Konto erstellen";
+  const primaryLabel = isLoggedIn ? "Content OS öffnen" : "Konto erstellen";
   const secondaryLabel = isLoggedIn ? "Zum Dashboard" : "Login";
 
   return (
@@ -152,7 +152,7 @@ export default async function HomePage() {
               border: "1px solid rgba(0,0,0,0.06)",
             }}
           >
-            DigiEmu · Marketplace + White-Label
+            DigiEmu · Content OS + White-Label
           </span>
 
           {isLoggedIn ? (
@@ -172,7 +172,7 @@ export default async function HomePage() {
 
         <p style={{ marginTop: 0, opacity: 0.82, fontSize: 16, lineHeight: 1.6, maxWidth: 920 }}>
           DigiEmu hat zwei klare Modi:
-          <strong> Marketplace</strong> (80/20 – ohne Fixkosten) und{" "}
+          <strong> Content OS</strong> (80/20 – ohne Fixkosten) und{" "}
           <strong>Tenants / White-Label</strong> (Miete – 0% Provision, 100% Einnahmen beim Kunden).
           Wir halten das Modell bewusst einfach, damit es ruhig und stabil funktioniert.
         </p>
@@ -244,7 +244,7 @@ export default async function HomePage() {
         }}
       >
         <div className="neo-card" style={{ padding: 22 }}>
-          <SectionTitle kicker="Modus 1" title="Marketplace (80/20 – keine Fixkosten)" />
+          <SectionTitle kicker="Modus 1" title="Content OS (80/20 – keine Fixkosten)" />
           <p style={{ opacity: 0.85, lineHeight: 1.75, marginTop: 0 }}>
             Verkäufer zahlen <strong>0 CHF/Monat</strong>. Pro Verkauf gehen <strong>80%</strong> an den Vendor,
             <strong> 20%</strong> finanzieren Betrieb, Zahlungsabwicklung, Infrastruktur und Weiterentwicklung.
@@ -256,7 +256,7 @@ export default async function HomePage() {
           </ul>
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 14 }}>
             <Link href="/marketplace" className="neobtn">
-              Marketplace ansehen
+              Content OS ansehen
             </Link>
             <Link href="/become-seller" className="neobtn neobtn-ghost">
               Verkäufer werden
@@ -295,7 +295,7 @@ export default async function HomePage() {
           Verkäufer schnell starten können.
         </p>
         <p style={{ opacity: 0.85, lineHeight: 1.75, marginTop: 10, maxWidth: 980 }}>
-          Unser Fokus ist Klarheit in der Abrechnung: Marketplace mit 80/20 – und White-Label/Tenants mit Miete (0%
+          Unser Fokus ist Klarheit in der Abrechnung: Content OS mit 80/20 – und White-Label/Tenants mit Miete (0%
           Provision). Keine versteckten Stufen, keine unnötigen Billing-Komplexitäten.
         </p>
       </section>
@@ -312,7 +312,7 @@ export default async function HomePage() {
         <div className="neo-card" style={{ padding: 20 }}>
           <SectionTitle kicker="1" title="Entdecken & auswählen" />
           <p style={{ opacity: 0.85, lineHeight: 1.7, marginTop: 0 }}>
-            Im Marketplace findest du digitale Produkte mit klarer Preisangabe und sauberer Produktseite.
+            Im Content OS findest du digitale Produkte mit klarer Preisangabe und sauberer Produktseite.
           </p>
         </div>
 
@@ -339,14 +339,14 @@ export default async function HomePage() {
           <div>
             <div style={{ fontWeight: 900 }}>Gibt es Vendor-Abos?</div>
             <div style={{ opacity: 0.85, lineHeight: 1.7, marginTop: 4 }}>
-              Nein. Im Marketplace gibt es keine Fixkosten. Die Abrechnung erfolgt über die 80/20-Aufteilung pro Verkauf.
+              Nein. Im Content OS gibt es keine Fixkosten. Die Abrechnung erfolgt über die 80/20-Aufteilung pro Verkauf.
             </div>
           </div>
 
           <div>
-            <div style={{ fontWeight: 900 }}>Was ist der Unterschied zwischen Marketplace und Tenant?</div>
+            <div style={{ fontWeight: 900 }}>Was ist der Unterschied zwischen Content OS und Tenant?</div>
             <div style={{ opacity: 0.85, lineHeight: 1.7, marginTop: 4 }}>
-              Marketplace: 80/20 pro Verkauf. Tenant/White-Label: fixe Monatsmiete, 0% Provision – der Kunde behält 100%.
+              Content OS: 80/20 pro Verkauf. Tenant/White-Label: fixe Monatsmiete, 0% Provision – der Kunde behält 100%.
             </div>
           </div>
 

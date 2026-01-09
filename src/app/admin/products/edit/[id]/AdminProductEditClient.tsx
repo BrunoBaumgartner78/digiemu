@@ -251,7 +251,7 @@ export default function AdminProductEditClient({
                   onChange={(e) => setIsActive(e.target.checked)}
                 />
                 <label htmlFor="isActive" className="text-xs text-[var(--text-muted)]">
-                  isActive (Marketplace-Sichtbarkeit)
+                  isActive (Content OS-Sichtbarkeit)
                 </label>
               </div>
             </div>

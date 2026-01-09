@@ -15,7 +15,7 @@ type Role = "ADMIN" | "VENDOR" | "BUYER" | undefined;
 
 const mainLinks = [
   { href: "/", label: "Home" },
-  { href: "/marketplace", label: "Marketplace" },
+  { href: "/marketplace", label: "Content OS" },
   { href: "/pricing", label: "Preise" },
   { href: "/help", label: "Hilfe" },
 ];
@@ -105,7 +105,7 @@ export function MainHeader(props: Props) {
           ) : (
             <>
               <span className="logo-main">{tenantBrand?.name || "DigiEmu"}</span>
-              {!isMinimal && <span className="logo-sub">Digital Marketplace</span>}
+              {!isMinimal && <span className="logo-sub">Digital Content OS</span>}
             </>
           )}
         </Link>
@@ -262,7 +262,7 @@ export function MainHeader(props: Props) {
             <div className="mobile-nav-header">
               <div className="mobile-nav-title">
                 <span className="mobile-nav-kicker">Navigation</span>
-                <span className="mobile-nav-brand">Digital Marketplace</span>
+                <span className="mobile-nav-brand">Digital Content OS</span>
               </div>
               <button className="mobile-nav-close" onClick={() => setMobileOpen(false)}>
                 Schließen

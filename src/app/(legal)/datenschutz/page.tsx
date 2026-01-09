@@ -15,7 +15,7 @@ export default function Page() {
           </p>
 
           <div className={styles.pillRow}>
-            <Link className={styles.pill} href="/marketplace">Marketplace</Link>
+            <Link className={styles.pill} href="/marketplace">Content OS</Link>
             <Link className={styles.pill} href="/preise">Preise</Link>
             <Link className={styles.pill} href="/help">Hilfe</Link>
           </div>
@@ -32,7 +32,7 @@ export default function Page() {
 
             <h2 className={styles.h2}>Zwecke</h2>
             <ul className={styles.list}>
-              <li>Login, Marketplace, Dashboard</li>
+              <li>Login, Content OS, Dashboard</li>
               <li>Zahlungsabwicklung & Betrugsprävention</li>
               <li>Bereitstellung von Downloads & Support</li>
             </ul>
