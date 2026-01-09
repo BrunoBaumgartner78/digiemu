@@ -48,7 +48,7 @@
     "src/**/*.d.ts",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts"
-, "scripts/smoke-admin-breadcrumbs.mjs"  ],
+, "scripts/smoke-admin-breadcrumbs.mjs", "scripts/check-productstatus.js"  ],
   "exclude": [
     "node_modules",
     ".next",
