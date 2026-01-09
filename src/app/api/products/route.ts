@@ -51,11 +51,12 @@ export async function getContentOSProducts(args: GetContentOSProductsArgs) {
   }
 
   const orderBy =
-    sort === "price_asc"
-      ? { priceCents: "asc" }
-      : sort === "price_desc"
-      ? { priceCents: "desc" }
-      : { createdAt: "desc" };
+  sort === "price_asc"
+    ? ({ priceCents: "asc" } as const)
+    : sort === "price_desc"
+    ? ({ priceCents: "desc" } as const)
+    : ({ createdAt: "desc" } as const);
+
 
   const skip = (page - 1) * pageSize;
 
