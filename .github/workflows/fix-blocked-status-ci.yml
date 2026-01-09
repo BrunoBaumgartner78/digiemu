@@ -1,0 +1,72 @@
+name: fix-blocked-status-ci
+
+on:
+  push:
+    branches: [main, develop, staging]
+  pull_request:
+    branches: [main, develop, staging]
+
+jobs:
+  verify:
+    name: Verify blocked-status consistency (build/lint/test)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Prisma Generate
+        run: npx prisma generate
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+        continue-on-error: false
+
+      - name: Unit / integration tests
+        run: npm test --if-present
+
+      - name: Build
+        run: npm run build
+
+  # Optional: DB consistency guard (only if you add a script for it)
+  # This job is safe to keep disabled until you have the script.
+  db_guard:
+    name: DB guard (blocked status) - optional
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [verify]
+    if: ${{ false }} # set to true when ready
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Prisma Generate
+        run: npx prisma generate
+
+      - name: Run blocked-status consistency script
+        run: node scripts/guard-blocked-status.mjs

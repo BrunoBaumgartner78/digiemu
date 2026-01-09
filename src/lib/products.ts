@@ -1,111 +1,105 @@
 // src/lib/products.ts
 import { prisma } from "@/lib/prisma";
 
-// Wie viele Produkte pro Seite im Marketplace
-export const PAGE_SIZE = 9;
+export const PAGE_SIZE = 12 as const;
 
-export type MarketplaceProduct = {
-  id: string;
-  title: string;
-  description: string | null;
-  category: string | null;
-  priceCents: number | null;
-  thumbnail: string | null;
-};
+export type MarketplaceSort = "newest" | "price_asc" | "price_desc";
 
-export type MarketplaceQueryResult = {
-  items: MarketplaceProduct[];
-  total: number;
+type GetMarketplaceProductsArgs = {
+  // NEW: allow multiple tenant keys (useful while migrating data)
+  tenantKeys?: string[];
+  tenantKey?: string;
+
   page: number;
-  pageCount: number;
-};
-
-type GetMarketplaceProductsParams = {
-  page?: number;
-  pageSize?: number;
+  pageSize: number;
   category?: string;
   search?: string;
+  sort?: MarketplaceSort;
+  minPriceCents?: number;
+  maxPriceCents?: number;
+
+  // Product.status is a String in schema (NOT enum)
+  acceptProductStatuses?: string[];
 };
 
-/**
- * Liefert Produkte für den Marketplace:
- * - paginiert
- * - optional nach Kategorie gefiltert
- * - optional mit Textsuche
- * - nur aktive & nicht blockierte Produkte
- */
-export async function getMarketplaceProducts(
-  params: GetMarketplaceProductsParams
-): Promise<MarketplaceQueryResult> {
+export async function getMarketplaceProducts(args: GetMarketplaceProductsArgs) {
   const {
-    page = 1,
-    pageSize = PAGE_SIZE,
-    category = "all",
-    search = "",
-  } = params;
+    tenantKeys,
+    tenantKey,
+    page,
+    pageSize,
+    category,
+    search,
+    sort = "newest",
+    minPriceCents,
+    maxPriceCents,
+    acceptProductStatuses,
+  } = args;
 
-  const safePage =
-    Number.isFinite(page) && page > 0 ? page : 1;
+  const keys =
+    (tenantKeys?.length ? tenantKeys : undefined) ??
+    (tenantKey ? [tenantKey] : ["MARKETPLACE"]);
 
-  const safePageSize =
-    Number.isFinite(pageSize) && pageSize > 0 && pageSize <= 48
-      ? pageSize
-      : PAGE_SIZE;
+  const skip = (page - 1) * pageSize;
 
-  // 🔹 Basis-Filter: Nur sichtbare Produkte im Marketplace
+  const productStatuses =
+    acceptProductStatuses?.length ? acceptProductStatuses : ["ACTIVE"];
+
+  const priceWhere: any = {};
+  if (typeof minPriceCents === "number") priceWhere.gte = minPriceCents;
+  if (typeof maxPriceCents === "number") priceWhere.lte = maxPriceCents;
+
   const where: any = {
-    isActive: true,             // Vendor hat Produkt aktiviert
-    status: { not: "BLOCKED" }, // nicht vom Admin blockiert
+    tenantKey: { in: keys },
+    isActive: true,
+    ...(category ? { category } : {}),
+    ...(Object.keys(priceWhere).length ? { priceCents: priceWhere } : {}),
+    ...(search
+      ? {
+          OR: [
+            { title: { contains: search, mode: "insensitive" } },
+            { description: { contains: search, mode: "insensitive" } },
+          ],
+        }
+      : {}),
+
+    // Product is string status
+    status: { in: productStatuses },
+
+    // marketplace safety
+    vendor: { isBlocked: false },
+
+    // VendorProfile.status is enum VendorStatus -> must be a single enum value (not list of strings)
+    // We only show approved + public profiles.
+    vendorProfile: {
+      is: {
+        isPublic: true,
+        status: "APPROVED",
+      },
+    },
   };
 
-  // 🔹 Kategorie-Filter
-  if (category && category !== "all") {
-    where.category = category;
-  }
+  const orderBy =
+    sort === "price_asc"
+      ? ({ priceCents: "asc" } as const)
+      : sort === "price_desc"
+      ? ({ priceCents: "desc" } as const)
+      : ({ createdAt: "desc" } as const);
 
-  // 🔹 Textsuche (Titel + Beschreibung)
-  const trimmedSearch = search.trim();
-  if (trimmedSearch.length > 0) {
-    where.OR = [
-      {
-        title: {
-          contains: trimmedSearch,
-          mode: "insensitive",
-        },
-      },
-      {
-        description: {
-          contains: trimmedSearch,
-          mode: "insensitive",
-        },
-      },
-    ];
-  }
-
-  const [total, products] = await Promise.all([
+  const [total, items] = await Promise.all([
     prisma.product.count({ where }),
     prisma.product.findMany({
       where,
-      orderBy: { createdAt: "desc" },
-      skip: (safePage - 1) * safePageSize,
-      take: safePageSize,
-      select: {
-        id: true,
-        title: true,
-        description: true,
-        category: true,
-        priceCents: true,
-        thumbnail: true,
+      orderBy,
+      skip,
+      take: pageSize,
+      include: {
+        vendorProfile: { include: { user: true } },
       },
     }),
   ]);
 
-  const pageCount = total === 0 ? 1 : Math.ceil(total / safePageSize);
-
-  return {
-    items: products,
-    total,
-    page: safePage,
-    pageCount,
-  };
+  const pageCount = Math.max(1, Math.ceil(total / pageSize));
+  return { total, items, pageCount };
 }
+

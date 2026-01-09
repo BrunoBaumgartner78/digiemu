@@ -1,111 +1,124 @@
+// src/app/api/vendor/products/[id]/route.ts
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { authOptions } from "../../../auth/[...nextauth]/route";
+import { currentTenant } from "@/lib/tenant-context";
 
-// Hilfsfunktion: User aus Session holen
-async function getDbUserFromSession() {
-  const session = await getServerSession(authOptions);
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
-  if (!session?.user?.email) return null;
+type Ctx = { params: Promise<{ id: string }> };
 
-  const user = await prisma.user.findUnique({
-    where: { email: session.user.email },
-  });
-
-  return user;
+function toInt(v: unknown): number | null {
+  const n = Number(v);
+  return Number.isFinite(n) ? Math.trunc(n) : null;
 }
 
+export async function PATCH(req: Request, ctx: Ctx) {
+  const session = await getServerSession(auth);
+  const userId = (session?.user as any)?.id as string | undefined;
+  const role = (session?.user as any)?.role as string | undefined;
 
-// PATCH = Produkt updaten (z.B. Titel, Preis, isActive)
-export async function PATCH(
-  req: Request,
-  context: { params: Promise<{ id: string }> }
-) {
-  const user = await getDbUserFromSession();
-
-  if (!user) {
-    return NextResponse.json(
-      { ok: false, error: "Not authenticated" },
-      { status: 401 }
-    );
+  if (!session || !userId) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
+  if (role !== "VENDOR" && role !== "ADMIN") {
+    return NextResponse.json({ message: "Forbidden" }, { status: 403 });
   }
 
-  const { id: productId } = await context.params;
-  const body = await req.json(); // z.B. { title, description, priceCents, isActive }
+  const { id } = await ctx.params;
+  const productId = String(id ?? "").trim();
+  if (!productId) {
+    return NextResponse.json({ message: "Missing product id" }, { status: 400 });
+  }
 
-  // Produkt gehört diesem User?
-  const product = await prisma.product.findFirst({
-    where: {
-      id: productId,
-      OR: [
-        { vendorId: user.id },
-        // Admin darf auch bearbeiten
-        { vendorId: { not: user.id }, AND: user.role === "ADMIN" ? {} : { id: productId } },
-      ],
+  // Produkt + Vendor holen
+  const existing = await prisma.product.findUnique({
+    where: { id: productId },
+    select: {
+      id: true,
+      vendorId: true,
+      status: true,
+      isActive: true,
+      vendor: { select: { isBlocked: true } },
     },
   });
 
-  if (!product) {
-    return NextResponse.json(
-      { ok: false, error: "Produkt nicht gefunden oder keine Berechtigung." },
-      { status: 404 }
-    );
+  if (!existing) {
+    return NextResponse.json({ message: "Produkt nicht gefunden." }, { status: 404 });
   }
 
-  const data: Record<string, unknown> = {};
-
-  if (typeof body.title === "string") data.title = body.title;
-  if (typeof body.description === "string") data.description = body.description;
-  if (typeof body.priceCents === "number") data.priceCents = body.priceCents;
-  if (typeof body.isActive === "boolean") data.isActive = body.isActive;
-  if (typeof body.thumbnail === "string") data.thumbnail = body.thumbnail;
-
-  const updated = await prisma.product.update({
-    where: { id: productId },
-    data,
-  });
-
-  return NextResponse.json({ ok: true, product: updated });
-}
-
-// DELETE = Produkt löschen
-export async function DELETE(
-  req: Request,
-  context: { params: Promise<{ id: string }> }
-) {
-  const user = await getDbUserFromSession();
-
-  if (!user) {
-    return NextResponse.json(
-      { ok: false, error: "Not authenticated" },
-      { status: 401 }
-    );
+  // Nur Owner (oder Admin) darf bearbeiten
+  const isAdmin = role === "ADMIN";
+  const isOwner = existing.vendorId === userId;
+  if (!isAdmin && !isOwner) {
+    return NextResponse.json({ message: "Forbidden" }, { status: 403 });
   }
 
-  const { id: productId } = await context.params;
-
-  // nur Owner oder Admin
-  const product = await prisma.product.findFirst({
-    where: {
-      id: productId,
-      OR: [
-        { vendorId: user.id },
-        user.role === "ADMIN" ? {} : { id: productId },
-      ],
-    },
-  });
-
-  if (!product) {
-    return NextResponse.json(
-      { ok: false, error: "Produkt nicht gefunden oder keine Berechtigung." },
-      { status: 404 }
-    );
+  // Vendor ist gesperrt -> darf nichts speichern
+  if (existing.vendor?.isBlocked) {
+    return NextResponse.json({ message: "Account gesperrt." }, { status: 403 });
   }
 
-  await prisma.product.delete({
-    where: { id: productId },
+  // BLOCKED-Produkte sind hart gesperrt (Vendor kann NICHT entsperren)
+  if (!isAdmin && existing.status === "BLOCKED") {
+    return NextResponse.json({ message: "Produkt ist gesperrt." }, { status: 403 });
+  }
+
+  const body = await req.json().catch(() => ({}));
+
+  const title = String(body.title ?? "").trim();
+  const description = String(body.description ?? "").trim();
+  const category = String(body.category ?? "").trim() || "other";
+
+  if (!title) return NextResponse.json({ message: "Titel fehlt." }, { status: 400 });
+  if (!description) return NextResponse.json({ message: "Beschreibung fehlt." }, { status: 400 });
+
+  const priceCents = toInt(body.priceCents);
+  if (priceCents === null || priceCents < 100) {
+    return NextResponse.json({ message: "Mindestpreis ist 1.00 CHF." }, { status: 400 });
+  }
+
+  // Vendor darf status NICHT setzen.
+  // Vendor darf isActive ändern – aber nur wenn nicht BLOCKED (s.o.)
+  const requestedIsActive = Boolean(body.isActive);
+
+  const thumbnailRaw = body.thumbnail;
+  const thumbnail = typeof thumbnailRaw === "string" ? thumbnailRaw.trim() : "";
+
+  const { tenantKey: rawTenantKey } = await currentTenant();
+  const tenantKey = rawTenantKey ?? "DEFAULT";
+
+  // Update product and adjust vendorProfile.activeProductsCount if isActive changed
+  const updated = await prisma.$transaction(async (tx) => {
+    const upd = await tx.product.update({
+      where: { id: productId },
+      data: {
+        title,
+        description,
+        category,
+        priceCents,
+        isActive: requestedIsActive,
+        thumbnail: thumbnail.length > 0 ? thumbnail : null,
+      },
+      select: { id: true, status: true, isActive: true, vendorId: true, title: true },
+    });
+
+    if (typeof existing.isActive === "boolean" && typeof upd.isActive === "boolean" && existing.isActive !== upd.isActive) {
+      const vp = await tx.vendorProfile.findUnique({ where: { tenantKey_userId: { tenantKey, userId: upd.vendorId } }, select: { id: true, activeProductsCount: true } });
+      if (vp) {
+        if (upd.isActive) {
+          await tx.vendorProfile.update({ where: { id: vp.id }, data: { activeProductsCount: { increment: 1 } } });
+        } else {
+          const newCount = Math.max(0, (vp.activeProductsCount ?? 0) - 1);
+          await tx.vendorProfile.update({ where: { id: vp.id }, data: { activeProductsCount: newCount } as any });
+        }
+      }
+    }
+
+    return upd;
   });
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, updated });
 }

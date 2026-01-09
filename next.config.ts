@@ -1,21 +1,15 @@
-// next.config.ts
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   images: {
-    // Neue, empfohlene Schreibweise statt `domains`
+    localPatterns: [
+      { pathname: "/api/media/thumbnail/**", search: "**" },
+    ],
     remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "firebasestorage.googleapis.com",
-        port: "",
-        pathname: "/v0/b/**",
-      },
+      { protocol: "https", hostname: "firebasestorage.googleapis.com", pathname: "/v0/b/**" },
+      { protocol: "https", hostname: "storage.googleapis.com", pathname: "/**" },
     ],
   },
-  experimental: {
-    // deine Flags hier, falls du welche brauchst
-  },
+  // Security headers are applied via middleware (`src/middleware.ts`) to keep logic centralized.
 };
 
-export default nextConfig;
+module.exports = nextConfig;

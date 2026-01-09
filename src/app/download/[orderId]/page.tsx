@@ -1,157 +1,265 @@
-// src/app/download/[orderId]/page.tsx
+import React from "react";
 import Link from "next/link";
+import { getServerSession } from "next-auth";
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import styles from "./page.module.css";
 
 export const dynamic = "force-dynamic";
 
-type DownloadPageProps = {
-  // In Next.js 16 sind params/searchParams Promises
-  params: Promise<{
-    orderId: string;
-  }>;
-};
+type Params = { orderId: string };
 
-export default async function DownloadPage(props: DownloadPageProps) {
-  // ✅ params sauber „awaiten“, sonst meckert Next (Promise-API)
-  const { orderId } = await props.params;
+function Badge({
+  tone = "neutral",
+  children,
+}: {
+  tone?: "neutral" | "success" | "warning" | "danger";
+  children: React.ReactNode;
+}) {
+  const cls =
+    tone === "success"
+      ? "bg-emerald-200/70 text-emerald-900 dark:bg-emerald-900/35 dark:text-emerald-100"
+      : tone === "warning"
+      ? "bg-amber-200/70 text-amber-900 dark:bg-amber-900/35 dark:text-amber-100"
+      : tone === "danger"
+      ? "bg-rose-200/70 text-rose-900 dark:bg-rose-900/35 dark:text-rose-100"
+      : "bg-slate-200/70 text-slate-900 dark:bg-slate-900/35 dark:text-slate-100";
 
-  // --- 1. Param-Check ---
-  if (!orderId) {
+  return (
+    <span
+      className={[
+        "inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold",
+        "shadow-[inset_2px_2px_6px_rgba(0,0,0,.06),inset_-2px_-2px_6px_rgba(255,255,255,.8)]",
+        "dark:shadow-[inset_2px_2px_10px_rgba(0,0,0,.35),inset_-2px_-2px_10px_rgba(255,255,255,.06)]",
+        cls,
+      ].join(" ")}
+    >
+      {children}
+    </span>
+  );
+}
+
+function IconDownload() {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      className="h-5 w-5 opacity-80"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <path d="M7 10l5 5 5-5" />
+      <path d="M12 15V3" />
+    </svg>
+  );
+}
+
+export default async function DownloadPage(props: { params: Promise<Params> }) {
+  const session = await getServerSession(auth);
+
+  if (!session?.user) {
     return (
-      <div className={styles.page}>
-        <div className={styles.inner}>
-          <section className={`${styles.card} ${styles.cardWarning}`}>
-            <h1 className={styles.title}>Bestell-ID fehlt</h1>
-            <p className={styles.text}>
-              Wir konnten diese Download-Seite nicht laden, weil keine gültige
-              Bestell-ID übergeben wurde.
+      <main className={styles.root}>
+        <div className={styles.container}>
+          <div className="neumorph-card p-8 max-w-md w-full mx-auto text-center space-y-4">
+            <h1 className="text-xl font-bold">Bitte einloggen</h1>
+            <p className="text-sm text-[var(--text-muted)]">
+              Du musst eingeloggt sein, um Downloads zu sehen.
             </p>
-            <div className={styles.actions}>
-              <Link href="/marketplace" className="neobtn primary">
-                Zum Marketplace
-              </Link>
-            </div>
-          </section>
+            <Link href="/auth/login" className="neobtn">
+              Zum Login
+            </Link>
+          </div>
         </div>
-      </div>
+      </main>
     );
   }
 
-  // --- 2. Order aus der DB holen ---
+  const { orderId } = await props.params;
+
   const order = await prisma.order.findUnique({
     where: { id: orderId },
-    include: {
-      product: {
-        select: { title: true },
-      },
-      downloadLink: true,
-    },
+    include: { product: true, downloadLink: true },
   });
 
   if (!order) {
     return (
-      <div className={styles.page}>
-        <div className={styles.inner}>
-          <section className={`${styles.card} ${styles.cardWarning}`}>
-            <h1 className={styles.title}>Bestellung nicht gefunden</h1>
-            <p className={styles.text}>
-              Wir konnten zu dieser ID keine Bestellung finden. Prüfe bitte den
-              Link oder kontaktiere den Support, falls du den Kauf gerade
-              abgeschlossen hast.
+      <main className={styles.root}>
+        <div className={styles.container}>
+          <div className="neumorph-card p-8 max-w-md w-full mx-auto text-center space-y-4">
+            <h1 className="text-xl font-bold">Download nicht gefunden</h1>
+            <p className="text-sm text-[var(--text-muted)]">
+              Diese Bestellung existiert nicht (oder wurde gelöscht).
             </p>
-            <div className={styles.actions}>
-              <Link href="/marketplace" className="neobtn primary">
-                Zurück zum Marketplace
-              </Link>
-            </div>
-          </section>
+            <Link href="/account/downloads" className="neobtn-sm ghost">
+              Meine Downloads
+            </Link>
+          </div>
         </div>
-      </div>
+      </main>
     );
   }
 
-  const productTitle = order.product?.title ?? "Dein digitales Produkt";
-  const link = order.downloadLink;
-  const now = new Date();
-
-  const hasLink = !!link?.fileUrl;
-  const isExpired =
-    hasLink && link?.expiresAt && link.expiresAt.getTime() < now.getTime();
-
-  // --- 3. Download-Ansicht ---
-  return (
-    <div className={styles.page}>
-      <div className={styles.inner}>
-        <section className={styles.card}>
-          <header className={styles.header}>
-            <h1 className={styles.title}>Download für deine Bestellung</h1>
-            <p className={styles.subtitle}>
-              Produkt:&nbsp;
-              <span className={styles.productName}>{productTitle}</span>
+  const sessionUserId = (session.user as any).id as string | undefined;
+  if (!sessionUserId || order.buyerId !== sessionUserId) {
+    return (
+      <main className={styles.root}>
+        <div className={styles.container}>
+          <div className="neumorph-card p-8 max-w-md w-full mx-auto text-center space-y-4">
+            <h1 className="text-xl font-bold">Zugriff verweigert</h1>
+            <p className="text-sm text-[var(--text-muted)]">
+              Du hast keinen Zugriff auf diesen Download.
             </p>
+            <Link href="/account/downloads" className="neobtn-sm ghost">
+              Meine Downloads
+            </Link>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  const dl = order.downloadLink ?? null;
+  const expired = dl ? dl.expiresAt < new Date() : false;
+  const reachedLimit = dl ? dl.downloadCount >= dl.maxDownloads : false;
+
+  const title = order.product?.title ?? "Produkt";
+  const category = order.product?.category ?? null;
+
+  let state:
+    | { tone: "neutral" | "success" | "warning" | "danger"; text: string }
+    | null = null;
+
+  if (!dl) state = { tone: "neutral", text: "Download wird vorbereitet …" };
+  else if (!dl.isActive) state = { tone: "danger", text: "Download ist deaktiviert" };
+  else if (expired) state = { tone: "danger", text: "Download-Link ist abgelaufen" };
+  else if (reachedLimit)
+    state = {
+      tone: "warning",
+      text: `Download-Limit erreicht (${dl.downloadCount}/${dl.maxDownloads})`,
+    };
+  else state = { tone: "success", text: "Bereit zum Download" };
+
+  const showHelp = !!dl && (expired || reachedLimit || !dl.isActive);
+
+  return (
+    <main className={styles.root}>
+      <div className={styles.container}>
+        <div className={`neumorph-card ${styles.card}`}>
+          <div className={styles.glowA} />
+          <div className={styles.glowB} />
+
+          {/* HEADER */}
+          <header className={styles.header}>
+            <h1 className={styles.h1}>Download</h1>
+
+            <div className={styles.badges}>
+              <Badge tone={state?.tone ?? "neutral"}>{state?.text}</Badge>
+              {dl && (
+                <Badge tone="neutral">
+                  gültig bis {dl.expiresAt.toLocaleDateString("de-CH")}
+                </Badge>
+              )}
+            </div>
+
+            <div className={styles.productWrap}>
+              <div className={`neumorph-card ${styles.productCard}`}>
+                <div className={styles.productInfo}>
+                  <p className={styles.productLabel}>Produkt</p>
+                  <p className={styles.productTitle}>{title}</p>
+
+                  <div className={styles.metaChips}>
+                    {category && (
+                      <span className={styles.chip}>Kategorie: {category}</span>
+                    )}
+                    <span className={styles.chip}>Status: {order.status}</span>
+                  </div>
+                </div>
+
+                <div className={styles.iconCircle} aria-hidden="true" title="Download">
+                  <IconDownload />
+                </div>
+              </div>
+            </div>
           </header>
 
-          <div className={styles.downloadBox}>
-            {hasLink && !isExpired ? (
-              <>
-                <p className={styles.text}>
-                  Hier kannst du dein digitales Produkt herunterladen. Bewahre
-                  die Datei gut auf, der technische Zugang kann zeitlich
-                  begrenzt sein.
-                </p>
-                <div className={styles.actions}>
-                  {/* Direktlink zur Datei → neuer Tab */}
-                  <a
-                    href={link!.fileUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="neobtn primary"
-                  >
-                    Jetzt herunterladen
-                  </a>
-
-                  <Link href="/account/downloads" className="neobtn ghost">
-                    Zu meinen Downloads
-                  </Link>
-                </div>
-                <p className={styles.hint}>
-                  Hinweis: Das gekaufte Produkt gehört dauerhaft dir. Der
-                  Download-Link dient nur zur Bereitstellung der Datei.
-                </p>
-              </>
+          {/* ACTIONS */}
+          <section className={styles.actions}>
+            {!dl ? (
+              <div className="neumorph-card p-6 text-sm text-[var(--text-muted)] text-center">
+                Wir bereiten deinen Download vor. Bitte kurz warten und erneut versuchen.
+              </div>
+            ) : !dl.isActive ? (
+              <div className="neumorph-card p-6 text-sm text-rose-600 text-center">
+                Download ist deaktiviert. Bitte Support kontaktieren.
+              </div>
+            ) : expired ? (
+              <div className="neumorph-card p-6 text-sm text-rose-600 text-center">
+                Dein Download-Link ist abgelaufen.
+              </div>
+            ) : reachedLimit ? (
+              <div className="neumorph-card p-6 text-sm text-amber-700 dark:text-amber-200 text-center">
+                Download-Limit erreicht ({dl.downloadCount}/{dl.maxDownloads}).
+              </div>
             ) : (
-              <>
-                <p className={styles.text}>
-                  Für diese Bestellung ist aktuell kein aktiver Download-Link
-                  verfügbar.
-                </p>
-                {isExpired ? (
-                  <p className={styles.textMuted}>
-                    Der technische Zugang zu deinem Download ist abgelaufen. Wenn
-                    du trotzdem erneut Zugriff benötigst, wende dich bitte an
-                    den Support und gib deine Bestell-ID an.
-                  </p>
-                ) : (
-                  <p className={styles.textMuted}>
-                    Es scheint, als wäre noch kein Download-Link generiert
-                    worden. Warte einen Moment und lade die Seite neu oder
-                    kontaktiere den Support.
-                  </p>
-                )}
-                <div className={styles.actions}>
-                  <Link href="/account/downloads" className="neobtn primary">
-                    Zu meinen Downloads
-                  </Link>
-                  <Link href="/marketplace" className="neobtn ghost">
-                    Zum Marketplace
-                  </Link>
-                </div>
-              </>
+              <div className={styles.downloadRow}>
+                <a
+                  href={`/api/download/${order.id}`}
+                  className={`neobtn primary justify-center ${styles.downloadBtn}`}
+                >
+                  Jetzt herunterladen
+                </a>
+              </div>
             )}
-          </div>
-        </section>
+
+            {/* BIG whitespace so it doesn’t feel glued */}
+            <div className={styles.navSpacer} />
+
+            <div className={styles.navWrap}>
+              <div className={styles.navGrid}>
+                <Link href="/account/downloads" className={`neobtn-sm ghost ${styles.navBtn}`}>
+                  Meine Downloads
+                </Link>
+
+                {order.product?.id ? (
+                  <Link
+                    href={`/product/${order.product.id}`}
+                    className={`neobtn-sm ghost ${styles.navBtn}`}
+                  >
+                    Produktseite
+                  </Link>
+                ) : (
+                  <span />
+                )}
+
+                {showHelp ? (
+                  <Link
+                    href="/hilfe"
+                    className={`neobtn-sm ghost ${styles.navBtn} ${styles.helpFull}`}
+                  >
+                    Hilfe &amp; FAQ
+                  </Link>
+                ) : (
+                  <span className={styles.helpFull} />
+                )}
+              </div>
+            </div>
+
+            {dl && (
+              <div className={styles.footerMeta}>
+                <span className={styles.chip}>
+                  Downloads: {dl.downloadCount}/{dl.maxDownloads}
+                </span>
+                <span className={styles.chip}>Order: {order.id.slice(0, 8)}…</span>
+              </div>
+            )}
+          </section>
+        </div>
       </div>
-    </div>
+    </main>
   );
 }

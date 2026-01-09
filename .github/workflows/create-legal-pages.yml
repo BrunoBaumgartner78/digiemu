@@ -1,0 +1,146 @@
+name: Create legal & info pages (AGB/Impressum/Datenschutz/Contact/About)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate-pages:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create pages + shared neo styles (route group)
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          BASE="src/app/(legal)"
+          CSS_FILE="$BASE/legalPage.module.css"
+
+          mkdir -p "$BASE"
+
+          # ---- Shared CSS ----
+          cat > "$CSS_FILE" <<'CSS'
+          .wrap { padding: 28px 16px 64px; }
+          .container { max-width: 980px; margin: 0 auto; }
+          .card {
+            border-radius: 32px;
+            background: var(--neo-card-bg-soft);
+            border: 1px solid var(--neo-card-border);
+            box-shadow: var(--neo-card-shadow-soft);
+            padding: 24px;
+          }
+          .kicker { letter-spacing: .28em; font-size: 12px; color: var(--text-muted); }
+          .title { margin-top: 6px; font-size: 28px; font-weight: 800; color: var(--text-main); }
+          .subtitle { margin-top: 8px; color: var(--text-muted); font-size: 14px; line-height: 1.6; }
+          .hr { margin: 18px 0; border: none; border-top: 1px solid var(--neo-card-border); }
+          .section { margin-top: 18px; }
+          .h2 { font-size: 16px; font-weight: 800; color: var(--text-main); margin: 0 0 8px; }
+          .p { color: var(--text-main); font-size: 14px; line-height: 1.7; margin: 0 0 10px; }
+          .muted { color: var(--text-muted); font-size: 12px; line-height: 1.6; }
+          .list { margin: 10px 0 0; padding-left: 18px; color: var(--text-main); font-size: 14px; line-height: 1.7; }
+          .pillRow { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+          .pill {
+            display: inline-flex; align-items: center; justify-content: center;
+            padding: 10px 14px; border-radius: 999px;
+            background: var(--neo-card-bg-soft);
+            border: 1px solid var(--neo-card-border);
+            box-shadow: var(--neo-card-shadow-soft);
+            color: var(--text-main); text-decoration: none;
+            font-size: 13px; font-weight: 700;
+            transition: transform 140ms ease, opacity 140ms ease;
+          }
+          .pill:hover { transform: translateY(-1px); }
+          .pill:active { transform: translateY(0px); opacity: .92; }
+          CSS
+
+          mkpage () {
+            local slug="$1" title="$2" kicker="$3"
+            local dir="$BASE/$slug"
+            mkdir -p "$dir"
+            cat > "$dir/page.tsx" <<EOF
+          import Link from "next/link";
+          import styles from "../legalPage.module.css";
+
+          export const dynamic = "force-dynamic";
+
+          export default function Page() {
+            return (
+              <main className={styles.wrap}>
+                <div className={styles.container}>
+                  <section className={styles.card}>
+                    <div className={styles.kicker}>${kicker}</div>
+                    <h1 className={styles.title}>${title}</h1>
+                    <p className={styles.subtitle}>
+                      Stand: {new Date().toLocaleDateString("de-CH")} · Bitte passe diese Seite an deine Angaben an.
+                    </p>
+
+                    <div className={styles.pillRow}>
+                      <Link className={styles.pill} href="/marketplace">Marketplace</Link>
+                      <Link className={styles.pill} href="/preise">Preise</Link>
+                      <Link className={styles.pill} href="/help">Hilfe</Link>
+                    </div>
+
+                    <hr className={styles.hr} />
+          EOF
+          }
+
+          endpage () {
+            local dir="$1"
+            cat >> "$dir/page.tsx" <<'EOF'
+                  </section>
+                </div>
+              </main>
+            );
+          }
+          EOF
+          }
+
+          # AGB
+          mkpage "agb" "Allgemeine Geschäftsbedingungen (AGB)" "DIGIEMU · RECHTLICHES"
+          cat >> "$BASE/agb/page.tsx" <<'EOF'
+                    <div className={styles.section}>
+                      <h2 className={styles.h2}>1. Geltungsbereich</h2>
+                      <p className={styles.p}>
+                        Diese AGB regeln die Nutzung des Marktplatzes DigiEmu für Käufer:innen und Verkäufer:innen.
+                      </p>
+
+                      <h2 className={styles.h2}>2. Leistungen</h2>
+                      <p className={styles.p}>
+                        DigiEmu stellt eine Plattform bereit. Für Inhalte sind primär Verkäufer:innen verantwortlich.
+                      </p>
+
+                      <h2 className={styles.h2}>3. Downloads</h2>
+                      <p className={styles.p}>
+                        Nach erfolgreicher Zahlung wird ein Download-Link bereitgestellt (ggf. zeitlich/anzahlmäßig limitiert).
+                      </p>
+
+                      <p className={styles.muted}>
+                        Platzhaltertext – bitte juristisch prüfen lassen.
+                      </p>
+                    </div>
+          EOF
+          endpage "$BASE/agb"
+
+          # Impressum
+          mkpage "impressum" "Impressum" "DIGIEMU · RECHTLICHES"
+          cat >> "$BASE/impressum/page.tsx" <<'EOF'
+                    <div className={styles.section}>
+                      <h2 className={styles.h2}>Betreiber</h2>
+                      <p className={styles.p}>
+                        DigiEmu (Platzhalter)<br/>Straße & Hausnummer<br/>PLZ Ort, Schweiz
+                      </p>
+                      <h2 className={styles.h2}>Kontakt</h2>
+                      <p className={styles.p}>
+                        E-Mail: support@bellu.ch
+                      </p>
+                      <p className={styles.muted}>
+                        Platzhalter – ergänze UID/MWST/HR falls nötig.
+                      </p>
+                    </div>
+          EOF
+          endpage "$BASE/impressum"
+

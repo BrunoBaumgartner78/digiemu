@@ -24,13 +24,13 @@ export default function EarningsChart({ daily, topProducts }: EarningsChartProps
   return (
     <div className="space-y-10">
       {/* Umsatzverlauf */}
-      <div className="neumorph-card p-6">
+      <div className="neumorph-card p-6" style={{ overflow: "hidden" }}>
         <h2 className="text-xl font-semibold mb-4">Umsatzverlauf</h2>
 
         {daily.length === 0 ? (
           <p className="opacity-60">Noch keine Umsätze vorhanden.</p>
         ) : (
-          <div className="h-64">
+          <div className="chartWrap">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={daily}>
                 <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
@@ -50,13 +50,13 @@ export default function EarningsChart({ daily, topProducts }: EarningsChartProps
       </div>
 
       {/* Top-Produkte */}
-      <div className="neumorph-card p-6">
+      <div className="neumorph-card p-6" style={{ overflow: "hidden" }}>
         <h2 className="text-xl font-semibold mb-4">Top Produkte</h2>
 
         {topProducts.length === 0 ? (
           <p className="opacity-60">Noch keine Verkäufe.</p>
         ) : (
-          <div className="h-64">
+          <div className="chartWrap">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={topProducts}>
                 <CartesianGrid strokeDasharray="3 3" opacity={0.2} />

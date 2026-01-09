@@ -1,55 +1,61 @@
 // src/app/admin/vendors/[vendorId]/page.tsx
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/authOptions";
+import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { currentTenant } from "@/lib/tenant-context";
 import Link from "next/link";
+import { redirect } from "next/navigation";
+
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 type Params = { vendorId: string };
 
-export default async function AdminVendorDetailPage(props: {
-  params: Promise<Params>;
-}) {
-  const session = await getServerSession(authOptions);
+function chf(cents: number) {
+  return `CHF ${(cents / 100).toFixed(2)}`;
+}
 
-  if (!session || session.user.role !== "ADMIN") {
-    return (
-      <main className="min-h-[70vh] flex items-center justify-center px-4">
-        <div className="neumorph-card p-6 max-w-md text-center">
-          <h1 className="text-xl font-semibold mb-2">Zugriff verweigert</h1>
-          <p className="text-sm text-[var(--text-muted)] mb-4">
-            Nur Administratoren dürfen diese Seite sehen.
-          </p>
-          <Link href="/admin" className="neobtn">
-            Zurück zum Admin-Dashboard
-          </Link>
-        </div>
-      </main>
-    );
+function fmtDate(d: Date) {
+  try {
+    return new Intl.DateTimeFormat("de-CH", { dateStyle: "medium" }).format(d);
+  } catch {
+    return d.toISOString();
   }
+}
+
+export default async function AdminVendorDetailPage(props: { params: Promise<Params> }) {
+  const session = await getServerSession(authOptions);
+  if (!session) redirect("/login");
+  if ((session.user as any)?.role !== "ADMIN") redirect("/dashboard");
 
   const { vendorId } = await props.params;
 
+  const tenant = await currentTenant();
+  const tenantKey = (tenant?.key ?? "DEFAULT").toString().trim() || "DEFAULT";
+
   const vendor = await prisma.user.findUnique({
     where: { id: vendorId },
-    include: {
-      vendorProfile: true,
-      products: {
+          include: {
+            // ✅ User has vendorProfiles[] (plural) in schema
+            vendorProfiles: {
+              where: { tenantKey },
+              orderBy: { createdAt: "desc" },
+              take: 1,
+            },
+            products: {
+        orderBy: { createdAt: "desc" },
         include: {
-          orders: {
-            select: { vendorEarningsCents: true, createdAt: true },
-          },
+          orders: { select: { vendorEarningsCents: true, createdAt: true } },
         },
       },
-      payouts: {
-        orderBy: { createdAt: "desc" },
-      },
+      payouts: { orderBy: { createdAt: "desc" } },
     },
   });
 
   if (!vendor) {
     return (
       <main className="min-h-[70vh] flex items-center justify-center px-4">
-        <div className="neumorph-card p-6 max-w-md text-center">
+        <div className="rounded-3xl bg-[var(--neo-card-bg-soft)] border border-[var(--neo-card-border)] shadow-[var(--neo-card-shadow-soft)] p-6 max-w-md text-center">
           <h1 className="text-xl font-semibold mb-2">Vendor nicht gefunden</h1>
           <Link href="/admin/vendors" className="neobtn mt-3 inline-flex">
             Zurück zur Verkäuferliste
@@ -59,165 +65,229 @@ export default async function AdminVendorDetailPage(props: {
     );
   }
 
-  const allEarnings = vendor.products.flatMap((p) =>
-    p.orders.map((o) => o.vendorEarningsCents ?? 0)
-  );
-  const totalEarnings = allEarnings.reduce((a, b) => a + b, 0);
+  const totalEarningsCents = vendor.products.reduce((sumP, p: any) => {
+    const s = p.orders.reduce((sumO: number, o: any) => sumO + (o.vendorEarningsCents ?? 0), 0);
+    return sumP + s;
+  }, 0);
 
-  const alreadyPaid = vendor.payouts
-    .filter((p) => p.status === "PAID")
-    .reduce((sum, p) => sum + p.amountCents, 0);
+  const alreadyPaidCents = vendor.payouts
+    .filter((p: any) => p.status === "PAID")
+    .reduce((sum: number, p: any) => sum + (p.amountCents ?? 0), 0);
 
-  const pendingAmount = Math.max(totalEarnings - alreadyPaid, 0);
+  const pendingCents = Math.max(totalEarningsCents - alreadyPaidCents, 0);
+
+  const status = vendor.isBlocked ? "BLOCKED" : "ACTIVE";
+  const vp0 = vendor.vendorProfiles?.[0] ?? null;
+  const profileStatus = vp0 ? "PROFILE" : "NO_PROFILE";
+
+  const statusBadge =
+    status === "ACTIVE"
+      ? "bg-emerald-500/10 text-emerald-400"
+      : "bg-rose-500/10 text-rose-400";
+
+  const profileBadge =
+    profileStatus === "PROFILE"
+      ? "bg-sky-500/10 text-sky-300"
+      : "bg-slate-500/10 text-slate-300";
 
   return (
-    <main className="px-6 py-8 max-w-5xl mx-auto space-y-8">
-      <header className="section-header">
-        <h1 className="text-2xl font-bold">
-          Vendor-Details: {vendor.name || vendor.email}
-        </h1>
-        <p className="text-sm text-[var(--text-muted)]">
-          Überblick über Profil, Produkte, Umsätze und Auszahlungen.
-        </p>
-        <div className="flex gap-3 mt-3 flex-wrap">
-          <Link href="/admin/vendors" className="neobtn-sm ghost">
-            ← Zurück zur Verkäuferliste
-          </Link>
-          <Link
-            href={`/admin/payouts/vendor/${vendor.id}`}
-            className="neobtn-sm primary"
-          >
-            Payout-Übersicht öffnen
-          </Link>
-        </div>
-      </header>
+    <main className="page-shell-wide space-y-6">
+      {/* Header Card */}
+      <section className="rounded-3xl bg-[var(--neo-card-bg-soft)] border border-[var(--neo-card-border)] shadow-[var(--neo-card-shadow-soft)] px-4 py-4 md:px-6 md:py-5">
+        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+          <div className="min-w-0">
+            <div className="text-xs text-[var(--text-muted)]">Admin · Vendor</div>
 
-      {/* Summary Boxes */}
-      <section className="grid md:grid-cols-3 gap-4">
-        <div className="neumorph-card p-5">
-          <h3 className="text-xs opacity-70 mb-1">Gesamte Einnahmen</h3>
-          <p className="text-2xl font-bold">
-            CHF {(totalEarnings / 100).toFixed(2)}
-          </p>
-        </div>
-        <div className="neumorph-card p-5">
-          <h3 className="text-xs opacity-70 mb-1">Ausbezahlt</h3>
-          <p className="text-2xl font-bold">
-            CHF {(alreadyPaid / 100).toFixed(2)}
-          </p>
-        </div>
-        <div className="neumorph-card p-5">
-          <h3 className="text-xs opacity-70 mb-1">Ausstehend</h3>
-          <p className="text-2xl font-bold">
-            CHF {(pendingAmount / 100).toFixed(2)}
-          </p>
+            <div className="mt-1 flex flex-wrap items-center gap-2">
+              <h1 className="text-xl md:text-2xl font-bold text-[var(--text-main)] truncate">
+                {vendor.name || "—"} <span className="opacity-50">·</span>{" "}
+                <span className="font-mono text-sm md:text-base">{vendor.email}</span>
+              </h1>
+
+              <span className={`inline-flex rounded-full px-3 py-0.5 text-xs font-medium ${statusBadge}`}>
+                {status}
+              </span>
+
+              <span className={`inline-flex rounded-full px-3 py-0.5 text-xs font-medium ${profileBadge}`}>
+                {profileStatus}
+              </span>
+            </div>
+
+            <div className="mt-2 text-xs text-[var(--text-muted)]">
+              Vendor-ID: <span className="font-mono">{vendor.id}</span>
+            </div>
+          </div>
+
+          <div className="flex gap-2 flex-wrap md:justify-end">
+            <Link href="/admin/vendors" className="neobtn-sm ghost">
+              ← Zurück
+            </Link>
+            <Link href={`/admin/payouts/vendor/${vendor.id}`} className="neobtn-sm">
+              Payout-Übersicht
+            </Link>
+          </div>
         </div>
       </section>
 
-      {/* Basic Info */}
-      <section className="neumorph-card p-6 space-y-2">
-        <h2 className="text-lg font-semibold mb-2">Basisdaten</h2>
-        <p>
-          <span className="font-medium">E-Mail:</span> {vendor.email}
-        </p>
-        <p>
-          <span className="font-medium">Name:</span>{" "}
-          {vendor.name || "—"}
-        </p>
-        <p>
-          <span className="font-medium">Status:</span>{" "}
-          {vendor.vendorProfile ? "ACTIVE" : "NO_PROFILE"}
+      {/* KPI Cards */}
+      <section className="grid md:grid-cols-3 gap-4">
+        <div className="rounded-3xl bg-[var(--neo-card-bg-soft)] border border-[var(--neo-card-border)] shadow-[var(--neo-card-shadow-soft)] p-5">
+          <div className="text-xs text-[var(--text-muted)]">Gesamte Einnahmen</div>
+          <div className="mt-1 text-2xl font-bold text-[var(--text-main)]">{chf(totalEarningsCents)}</div>
+        </div>
 
-        </p>
-        {vendor.vendorProfile && (
-          <>
-            <p>
-              <span className="font-medium">Öffentlicher Name:</span>{" "}
-              {vendor.vendorProfile.displayName || "—"}
-            </p>
-            <p>
-              <span className="font-medium">Kurzbeschreibung:</span>{" "}
-              {vendor.vendorProfile.bio || "—"}
-            </p>
-          </>
-        )}
+        <div className="rounded-3xl bg-[var(--neo-card-bg-soft)] border border-[var(--neo-card-border)] shadow-[var(--neo-card-shadow-soft)] p-5">
+          <div className="text-xs text-[var(--text-muted)]">Ausbezahlt</div>
+          <div className="mt-1 text-2xl font-bold text-[var(--text-main)]">{chf(alreadyPaidCents)}</div>
+        </div>
+
+        <div className="rounded-3xl bg-[var(--neo-card-bg-soft)] border border-[var(--neo-card-border)] shadow-[var(--neo-card-shadow-soft)] p-5">
+          <div className="text-xs text-[var(--text-muted)]">Ausstehend</div>
+          <div className="mt-1 text-2xl font-bold text-[var(--text-main)]">{chf(pendingCents)}</div>
+        </div>
+      </section>
+
+      {/* Profile / Basic Info */}
+      <section className="rounded-3xl bg-[var(--neo-card-bg-soft)] border border-[var(--neo-card-border)] shadow-[var(--neo-card-shadow-soft)] p-5 md:p-6">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <h2 className="text-lg font-semibold text-[var(--text-main)]">Basisdaten</h2>
+          <div className="flex gap-2">
+            <span className={`inline-flex rounded-full px-3 py-0.5 text-xs font-medium ${statusBadge}`}>
+              {status}
+            </span>
+            <span className={`inline-flex rounded-full px-3 py-0.5 text-xs font-medium ${profileBadge}`}>
+              {profileStatus}
+            </span>
+          </div>
+        </div>
+
+        <div className="mt-4 grid md:grid-cols-2 gap-3 text-sm">
+          <div className="rounded-2xl border border-[var(--neo-card-border)] bg-[var(--bg-soft)] p-4">
+            <div className="text-xs text-[var(--text-muted)]">E-Mail</div>
+            <div className="mt-1 font-medium text-[var(--text-main)]">{vendor.email}</div>
+          </div>
+
+          <div className="rounded-2xl border border-[var(--neo-card-border)] bg-[var(--bg-soft)] p-4">
+            <div className="text-xs text-[var(--text-muted)]">Name</div>
+            <div className="mt-1 font-medium text-[var(--text-main)]">{vendor.name || "—"}</div>
+          </div>
+
+          <div className="rounded-2xl border border-[var(--neo-card-border)] bg-[var(--bg-soft)] p-4">
+            <div className="text-xs text-[var(--text-muted)]">Öffentlicher Name</div>
+              <div className="mt-1 font-medium text-[var(--text-main)]">
+              {(vendor.vendorProfiles?.[0] ?? null)?.displayName || "—"}
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-[var(--neo-card-border)] bg-[var(--bg-soft)] p-4">
+            <div className="text-xs text-[var(--text-muted)]">Kurzbeschreibung</div>
+            <div className="mt-1 font-medium text-[var(--text-main)]">
+              {(vendor.vendorProfiles?.[0] ?? null)?.bio || "—"}
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* Products */}
-      <section className="neumorph-card p-6">
-        <h2 className="text-lg font-semibold mb-3">Produkte</h2>
+      <section className="rounded-3xl bg-[var(--neo-card-bg-soft)] border border-[var(--neo-card-border)] shadow-[var(--neo-card-shadow-soft)] p-5 md:p-6">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <h2 className="text-lg font-semibold text-[var(--text-main)]">Produkte</h2>
+          <div className="text-xs text-[var(--text-muted)]">{vendor.products.length} Produkte</div>
+        </div>
+
         {vendor.products.length === 0 ? (
-          <p className="text-sm text-[var(--text-muted)]">
-            Dieser Vendor hat noch keine Produkte.
-          </p>
+          <div className="mt-3 text-sm text-[var(--text-muted)]">Dieser Vendor hat noch keine Produkte.</div>
         ) : (
-          <div className="space-y-3">
-            {vendor.products.map((p) => {
-              const productRevenue = p.orders.reduce(
-                (sum, o) => sum + (o.vendorEarningsCents ?? 0),
-                0
-              );
-              return (
-                <div
-                  key={p.id}
-                  className="flex justify-between items-center border-b border-slate-200/70 last:border-0 py-2"
-                >
-                  <div>
-                    <p className="font-medium">{p.title}</p>
-                    <p className="text-xs text-[var(--text-muted)]">
-                      {p.description?.slice(0, 80) || "Keine Beschreibung"}
-                    </p>
-                  </div>
-                  <div className="text-right text-sm">
-                    <p className="font-semibold">
-                      CHF {(productRevenue / 100).toFixed(2)}
-                    </p>
-                    <p className="text-xs text-[var(--text-muted)]">
-                      {p.orders.length} Bestellungen
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
+          <div className="mt-4 overflow-x-auto">
+            <table className="min-w-full text-sm admin-table">
+              <thead>
+                <tr>
+                  <th className="py-2 px-3 text-left">Produkt</th>
+                  <th className="py-2 px-3 text-left">Bestellungen</th>
+                  <th className="py-2 px-3 text-left">Umsatz (Vendor)</th>
+                  <th className="py-2 px-3 text-right">Aktion</th>
+                </tr>
+              </thead>
+              <tbody>
+                {vendor.products.map((p: any) => {
+                  const productRevenue = p.orders.reduce(
+                    (sum: number, o: any) => sum + (o.vendorEarningsCents ?? 0),
+                    0
+                  );
+
+                  return (
+                    <tr
+                      key={p.id}
+                      className="border-t border-[var(--neo-card-border)] hover:bg-[rgba(148,163,184,0.08)] transition-colors"
+                    >
+                      <td className="py-2 px-3">
+                        <div className="font-medium text-[var(--text-main)]">{p.title}</div>
+                        <div className="text-xs text-[var(--text-muted)] line-clamp-2">
+                          {p.description?.trim() ? p.description.slice(0, 110) : "Keine Beschreibung"}
+                        </div>
+                      </td>
+
+                      <td className="py-2 px-3 text-[var(--text-main)]">{p.orders.length}</td>
+
+                      <td className="py-2 px-3 text-[var(--text-main)]">{chf(productRevenue)}</td>
+
+                      <td className="py-2 px-3 text-right">
+                        <Link href={`/admin/products/edit/${p.id}`} className="neobtn-sm">
+                          Bearbeiten
+                        </Link>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         )}
       </section>
 
       {/* Payouts */}
-      <section className="neumorph-card p-6">
-        <h2 className="text-lg font-semibold mb-3">
-          Bisherige Auszahlungen
-        </h2>
+      <section className="rounded-3xl bg-[var(--neo-card-bg-soft)] border border-[var(--neo-card-border)] shadow-[var(--neo-card-shadow-soft)] p-5 md:p-6">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <h2 className="text-lg font-semibold text-[var(--text-main)]">Bisherige Auszahlungen</h2>
+          <div className="text-xs text-[var(--text-muted)]">{vendor.payouts.length} Einträge</div>
+        </div>
+
         {vendor.payouts.length === 0 ? (
-          <p className="text-sm text-[var(--text-muted)]">
-            Noch keine Auszahlungen erfasst.
-          </p>
+          <div className="mt-3 text-sm text-[var(--text-muted)]">Noch keine Auszahlungen erfasst.</div>
         ) : (
-          <div className="space-y-3">
-            {vendor.payouts.map((p) => (
-              <div
-                key={p.id}
-                className="flex justify-between items-center border-b border-slate-200/70 last:border-0 py-2"
-              >
-                <div>
-                  <p className="font-semibold">
-                    CHF {(p.amountCents / 100).toFixed(2)}
-                  </p>
-                  <p className="text-xs text-[var(--text-muted)]">
-                    {p.createdAt.toLocaleDateString("de-CH")}
-                  </p>
-                </div>
-                <span
-                  className={`px-3 py-1 text-xs rounded-full ${
+          <div className="mt-4 overflow-x-auto">
+            <table className="min-w-full text-sm admin-table">
+              <thead>
+                <tr>
+                  <th className="py-2 px-3 text-left">Datum</th>
+                  <th className="py-2 px-3 text-left">Betrag</th>
+                  <th className="py-2 px-3 text-left">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {vendor.payouts.map((p: any) => {
+                  const badge =
                     p.status === "PAID"
-                      ? "bg-green-200 text-green-700"
-                      : "bg-yellow-200 text-yellow-700"
-                  }`}
-                >
-                  {p.status}
-                </span>
-              </div>
-            ))}
+                      ? "bg-emerald-500/10 text-emerald-400"
+                      : "bg-amber-500/10 text-amber-300";
+
+                  return (
+                    <tr
+                      key={p.id}
+                      className="border-t border-[var(--neo-card-border)] hover:bg-[rgba(148,163,184,0.08)] transition-colors"
+                    >
+                      <td className="py-2 px-3 text-[var(--text-main)]">{fmtDate(p.createdAt)}</td>
+                      <td className="py-2 px-3 text-[var(--text-main)]">{chf(p.amountCents)}</td>
+                      <td className="py-2 px-3">
+                        <span className={`inline-flex rounded-full px-3 py-0.5 text-xs font-medium ${badge}`}>
+                          {p.status}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         )}
       </section>

@@ -1,0 +1,28 @@
+name: SEO Guards
+
+on:
+  push:
+    branches: [main, staging]
+  pull_request:
+    branches: [main, staging]
+  workflow_dispatch:
+
+jobs:
+  seo-guards:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Basic SEO file checks
+        shell: bash
+        run: |
+          echo "Checking for robots.txt / sitemap routes or files..."
+          # Falls du robots/sitemap via app routes machst, kannst du das hier später via curl in Preview prüfen.
+          # Für repo-check: prüfe ob irgendwo 'noindex' hardcoded ist (ausser admin/dashboard/download).
+          echo "Searching for accidental noindex in public pages..."
+          grep -R --line-number --ignore-case "noindex" src/app | head -n 200 || true
+
+          echo "Ensure sensitive routes are noindex (admin/dashboard/download) - manual verification recommended."

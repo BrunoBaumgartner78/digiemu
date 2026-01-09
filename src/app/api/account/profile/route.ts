@@ -1,99 +1,128 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { slugify } from "@/lib/slug";
+import { Prisma } from "@prisma/client";
+import { currentTenant } from "@/lib/tenant-context";
 
-export async function POST(req: Request) {
-  const session = await getServerSession();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+function sanitizeSlug(input: string) {
+  return (input || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9-]/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 60);
+}
+
+async function handleUpsert(req: Request) {
+  const session = await getServerSession(auth);
+  const userId = (session?.user as any)?.id as string | undefined;
+
+  if (!userId) {
+    return NextResponse.json(
+      { ok: false, message: "UNAUTHORIZED" },
+      { status: 401 }
+    );
   }
 
-  const body = await req.json();
+  // Resolve tenantKey server-side (do not trust client headers)
+  const tenant = await currentTenant();
+  const tenantKey = tenant.key;
 
-  const {
-    displayName,
-    bio,
-    websiteUrl,
-    instagramUrl,
-    twitterUrl,
-    tiktokUrl,
-    facebookUrl,
+  const body = (await req.json().catch(() => null)) as Record<string, any> | null;
+  if (!body) {
+    return NextResponse.json(
+      { ok: false, message: "INVALID_BODY" },
+      { status: 400 }
+    );
+  }
+
+  // Validate image URLs: prevent blob: URLs being saved
+  const avatarUrl = typeof body.avatarUrl === "string" ? body.avatarUrl : "";
+  const bannerUrl = typeof body.bannerUrl === "string" ? body.bannerUrl : "";
+  if (avatarUrl.startsWith("blob:") || bannerUrl.startsWith("blob:")) {
+    return NextResponse.json(
+      { ok: false, message: "INVALID_IMAGE_URL", detail: "Bitte Avatar/Banner zuerst hochladen (keine blob:-URL)." },
+      { status: 400 }
+    );
+  }
+
+  const slugClean = sanitizeSlug(body.slug ?? "");
+  let slugOrNull = slugClean.length > 0 ? slugClean : null;
+
+  // ✅ Whitelist only VendorProfile fields (removed youtubeUrl)
+  const data: any = {
+    displayName: typeof body.displayName === "string" ? body.displayName : "",
+    bio: typeof body.bio === "string" ? body.bio : "",
+    websiteUrl: typeof body.websiteUrl === "string" ? body.websiteUrl : "",
+    instagramUrl: typeof body.instagramUrl === "string" ? body.instagramUrl : "",
+    twitterUrl: typeof body.twitterUrl === "string" ? body.twitterUrl : "",
+    tiktokUrl: typeof body.tiktokUrl === "string" ? body.tiktokUrl : "",
+    facebookUrl: typeof body.facebookUrl === "string" ? body.facebookUrl : "",
     avatarUrl,
     bannerUrl,
-    slug,
-    isPublic = true,
-  } = body;
+    // slug will be finalized below (generated if missing and made unique)
+    slug: null,
+    isPublic: Boolean(body.isPublic),
+  };
 
-  // Slug vorbereiten
-  let finalSlug: string | null = null;
-  if (isPublic) {
-    const baseName =
-      slug?.trim() ||
-      displayName?.trim() ||
-      session.user.name?.trim() ||
-      session.user.email?.split("@")[0] ||
-      session.user.id;
-    let candidate = slugify(baseName);
-    if (!candidate) {
-      candidate = slugify(session.user.id);
+  try {
+    // If no slug provided, generate one from displayName
+    if (!slugOrNull) {
+      const base = sanitizeSlug(data.displayName || "");
+      slugOrNull = base || `user-${String(userId).slice(0, 8)}`;
     }
 
-    // unique machen
-    let suffix = 1;
-    let uniqueSlug = candidate;
-    // Alte Slug des Users holen, falls vorhanden
-    const existingProfile = await prisma.vendorProfile.findUnique({
-      where: { userId: session.user.id },
-      select: { slug: true },
+    // Ensure uniqueness: if slug exists for another user, append -2, -3, ...
+    let candidate = slugOrNull;
+    for (let i = 2; i < 200; i++) {
+      const exists = await prisma.vendorProfile.findFirst({
+        where: { slug: candidate, NOT: { userId } },
+        select: { id: true },
+      });
+      if (!exists) break;
+      candidate = `${slugOrNull}-${i}`;
+    }
+
+    data.slug = candidate;
+
+    const saved = await prisma.vendorProfile.upsert({
+      where: { tenantKey_userId: { tenantKey, userId } },
+      create: { tenantKey, userId, ...data },
+      update: { ...data },
     });
 
-    if (existingProfile?.slug && !slug) {
-      uniqueSlug = existingProfile.slug;
-    } else {
-      while (true) {
-        const conflict = await prisma.vendorProfile.findFirst({
-          where: { slug: uniqueSlug },
-          select: { userId: true },
-        });
-        if (!conflict || conflict.userId === session.user.id) break;
-        suffix += 1;
-        uniqueSlug = `${candidate}-${suffix}`;
+    return NextResponse.json({ ok: true, profile: { id: saved.id, slug: saved.slug, isPublic: saved.isPublic } });
+  } catch (err: any) {
+    // ✅ Unique constraint: slug already taken
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
+      const target = (err.meta as any)?.target;
+      if (Array.isArray(target) && target.includes("slug")) {
+        return NextResponse.json(
+          { ok: false, message: "SLUG_TAKEN" },
+          { status: 409 }
+        );
       }
+      return NextResponse.json(
+        { ok: false, message: "UNIQUE_CONSTRAINT" },
+        { status: 409 }
+      );
     }
-    finalSlug = uniqueSlug;
+
+    console.error("Profile upsert error:", err);
+    return NextResponse.json(
+      { ok: false, message: "SERVER_ERROR" },
+      { status: 500 }
+    );
   }
+}
 
-  const profile = await prisma.vendorProfile.upsert({
-    where: { userId: session.user.id },
-    create: {
-      userId: session.user.id,
-      displayName,
-      bio,
-      avatarUrl,
-      bannerUrl,
-      websiteUrl,
-      twitterUrl,
-      instagramUrl,
-      tiktokUrl,
-      facebookUrl,
-      slug: finalSlug,
-      isPublic,
-    },
-    update: {
-      displayName,
-      bio,
-      avatarUrl,
-      bannerUrl,
-      websiteUrl,
-      twitterUrl,
-      instagramUrl,
-      tiktokUrl,
-      facebookUrl,
-      slug: finalSlug,
-      isPublic,
-    },
-  });
+// ✅ akzeptiere PUT (Client) + POST (falls irgendwo noch alt verwendet)
+export async function PUT(req: Request) {
+  return handleUpsert(req);
+}
 
-  return NextResponse.json({ ok: true, profile });
+export async function POST(req: Request) {
+  return handleUpsert(req);
 }

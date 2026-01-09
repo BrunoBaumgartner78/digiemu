@@ -1,6 +1,6 @@
 // src/app/dashboard/products/page.tsx
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/authOptions";
+import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
@@ -18,7 +18,6 @@ type SearchParams = {
 };
 
 type PageProps = {
-  // Next 15/16: searchParams ist ein Promise
   searchParams?: Promise<SearchParams>;
 };
 
@@ -31,64 +30,52 @@ export default async function ProductsOverviewPage(props: PageProps) {
 
   const vendorId = user.id;
 
-  // 🔹 searchParams entpacken
-  const params: SearchParams = props.searchParams
-    ? await props.searchParams
-    : {};
+  const params: SearchParams = props.searchParams ? await props.searchParams : {};
 
   const rawStatus = params.status;
   const resolvedStatus =
-    typeof rawStatus === "string"
-      ? rawStatus
-      : Array.isArray(rawStatus)
-      ? rawStatus[0]
-      : undefined;
+    typeof rawStatus === "string" ? rawStatus : Array.isArray(rawStatus) ? rawStatus[0] : undefined;
 
   const statusFilter: "all" | "active" | "draft" | "blocked" =
     resolvedStatus && ["all", "active", "draft", "blocked"].includes(resolvedStatus)
       ? (resolvedStatus as any)
       : "all";
 
-  // 🔹 Alle Produkte des Vendors holen (für Filter + Counts)
   const allProducts = await prisma.product.findMany({
-    where: { vendorId },
+    where: { vendorId, status: { not: "ARCHIVED" } },
     orderBy: { updatedAt: "desc" },
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      priceCents: true,
+      thumbnail: true,
+      isActive: true,
+      status: true,
+      updatedAt: true,
+    },
   });
 
-  // 🔢 Counts pro Status (auf Basis aller Produkte)
   const statusCounts = {
     all: allProducts.length,
-    active: allProducts.filter(
-      (p: any) => p.isActive === true && p.status !== "BLOCKED"
-    ).length,
-    draft: allProducts.filter(
-      (p: any) => p.isActive === false || p.status === "DRAFT"
-    ).length,
-    blocked: allProducts.filter((p: any) => p.status === "BLOCKED").length,
+    active: allProducts.filter((p) => p.isActive === true && p.status !== "BLOCKED").length,
+    draft: allProducts.filter((p) => p.isActive === false || p.status === "DRAFT").length,
+    blocked: allProducts.filter((p) => p.status === "BLOCKED").length,
   };
 
-  // 🔹 Produkte entsprechend des Filters für die Liste auswählen
   let products = allProducts;
 
   if (statusFilter === "active") {
-    products = allProducts.filter(
-      (p: any) => p.isActive === true && p.status !== "BLOCKED"
-    );
+    products = allProducts.filter((p) => p.isActive === true && p.status !== "BLOCKED");
   } else if (statusFilter === "draft") {
-    products = allProducts.filter(
-      (p: any) => p.isActive === false || p.status === "DRAFT"
-    );
+    products = allProducts.filter((p) => p.isActive === false || p.status === "DRAFT");
   } else if (statusFilter === "blocked") {
-    products = allProducts.filter((p: any) => p.status === "BLOCKED");
+    products = allProducts.filter((p) => p.status === "BLOCKED");
   }
-  // "all" → keine zusätzliche Filterung
 
-  // Download-Counts pro Produkt
   const downloads = await prisma.downloadLink.findMany({
     where: { order: { product: { vendorId } } },
-    select: {
-      order: { select: { productId: true } },
-    },
+    select: { order: { select: { productId: true } } },
   });
 
   const downloadCounts: Record<string, number> = {};
@@ -101,50 +88,38 @@ export default async function ProductsOverviewPage(props: PageProps) {
   return (
     <main className="page-shell-wide">
       <section className="neo-surface p-6 md:p-8 space-y-8">
-        {/* Header */}
         <header className={styles.headerRow}>
           <div>
             <h1 className={styles.title}>Deine Produkte</h1>
             <p className={styles.subtitle}>
-              Verwalte hier alle deine digitalen Produkte – Vorschau, Preis,
-              Status und Downloads auf einen Blick.
+              Verwalte hier alle deine digitalen Produkte – Status, Preis und Downloads auf einen Blick.
             </p>
           </div>
 
           <div className={styles.headerActions}>
-            <Link href="/dashboard/products/top" className={styles.secondaryBtn}>
-              Beliebteste Produkte
-            </Link>
             <Link href="/dashboard/new" className={styles.primaryBtn}>
               Neues Produkt
             </Link>
           </div>
         </header>
 
-        {/* 🔹 Status-Filter-Zeile mit Badges */}
         <div className={styles.filterRow}>
           <span className={styles.filterLabel}>Status</span>
           <div className={styles.filterChips}>
             {STATUS_FILTERS.map((f) => {
               const isActiveFilter = statusFilter === f.key;
-              const count =
-                statusCounts[f.key as keyof typeof statusCounts] ?? 0;
+              const count = statusCounts[f.key as keyof typeof statusCounts] ?? 0;
 
               return (
                 <Link
                   key={f.key}
                   href={{
                     pathname: "/dashboard/products",
-                    query:
-                      f.key === "all"
-                        ? {} // "Alle" → Query ohne status
-                        : { status: f.key },
+                    query: f.key === "all" ? {} : { status: f.key },
                   }}
-                  className={`${styles.filterChip} ${
-                    isActiveFilter ? styles.filterChipActive : ""
-                  }`}
+                  className={`${styles.filterChip} ${isActiveFilter ? styles.filterChipActive : ""}`}
                 >
-                  <span className={styles.filterChipLabel}>{f.label}</span>
+                  <span>{f.label}</span>
                   <span className={styles.filterChipBadge}>{count}</span>
                 </Link>
               );
@@ -152,15 +127,11 @@ export default async function ProductsOverviewPage(props: PageProps) {
           </div>
         </div>
 
-        {/* Empty State */}
         {products.length === 0 && (
           <section className={styles.emptyWrapper}>
             <div className={styles.emptyCard}>
-              <h2 className={styles.emptyTitle}>Keine Produkte im Filter</h2>
-              <p className={styles.emptyText}>
-                Unter diesem Status gibt es aktuell keine Produkte. Ändere den
-                Filter oder lege ein neues Produkt an.
-              </p>
+              <h2 className={styles.emptyTitle}>Keine Produkte</h2>
+              <p className={styles.emptyText}>Lege dein erstes Produkt an und starte mit dem Verkauf.</p>
               <Link href="/dashboard/new" className={styles.emptyBtn}>
                 Neues Produkt anlegen
               </Link>
@@ -168,67 +139,27 @@ export default async function ProductsOverviewPage(props: PageProps) {
           </section>
         )}
 
-        {/* Grid mit Produkt-Karten */}
         {products.length > 0 && (
           <section className={styles.grid}>
             {products.map((product) => {
-              const anyProd = product as any;
-              const priceCents: number = anyProd.priceCents ?? 0;
-              const price = priceCents / 100;
-
-              const isBlocked = anyProd.status === "BLOCKED";
-              const isPublished: boolean =
-                anyProd.isActive === true && !isBlocked;
-
+              const price = product.priceCents / 100;
               const downloadsCount = downloadCounts[product.id] ?? 0;
+
+              const isBlocked = product.status === "BLOCKED";
+              const isPublished = product.isActive && !isBlocked;
+
+              const desc = (product.description ?? "").trim();
 
               return (
                 <article
                   key={product.id}
                   className={`${styles.card} dashboardProductCard`}
                 >
-                  {/* Thumbnail */}
                   <div className={styles.thumbWrapper}>
-                    {anyProd.thumbnail ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={anyProd.thumbnail}
-                        alt={product.title}
-                        className={styles.thumbImage}
-                      />
+                    {product.thumbnail ? (
+                      <img src={product.thumbnail} alt={product.title} className={styles.thumbImage} />
                     ) : (
-                      <div className={styles.thumbPlaceholder}>
-                        <svg
-                          width="80"
-                          height="60"
-                          className={styles.thumbIcon}
-                        >
-                          <rect
-                            x="4"
-                            y="4"
-                            width="72"
-                            height="52"
-                            rx="10"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                            fill="none"
-                          />
-                          <circle
-                            cx="56"
-                            cy="18"
-                            r="6"
-                            stroke="currentColor"
-                            strokeWidth="3"
-                            fill="none"
-                          />
-                          <path
-                            d="M18 48 L36 26 L58 48 Z"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                            fill="none"
-                          />
-                        </svg>
-                      </div>
+                      <div className={styles.thumbPlaceholder}>PDF</div>
                     )}
 
                     <div
@@ -240,50 +171,23 @@ export default async function ProductsOverviewPage(props: PageProps) {
                           : `${styles.statusPill} ${styles.statusDraft}`
                       }
                     >
-                      {isPublished
-                        ? "Aktiv"
-                        : isBlocked
-                        ? "Blockiert"
-                        : "Entwurf"}
+                      {isPublished ? "Aktiv" : isBlocked ? "Blockiert" : "Entwurf"}
                     </div>
                   </div>
 
-                  {/* Textblock */}
                   <div className={styles.cardBody}>
                     <h2 className={styles.cardTitle}>{product.title}</h2>
+
                     <p className={styles.cardDescription}>
-                      {product.description
-                        ? product.description.slice(0, 120) +
-                          (product.description.length > 120 ? " …" : "")
-                        : "Noch keine Beschreibung hinterlegt."}
+                      {desc.length ? desc.slice(0, 120) : "Keine Beschreibung vorhanden."}
                     </p>
 
                     <div className={styles.metaRow}>
-                      <div className={styles.metaItem}>
-                        <span className={styles.metaLabel}>Preis</span>
-                        <span className={styles.metaValue}>
-                          {price.toFixed(2)} CHF
-                        </span>
-                      </div>
-                      <div className={styles.metaItem}>
-                        <span className={styles.metaLabel}>Downloads</span>
-                        <span className={styles.metaValue}>
-                          {downloadsCount}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className={styles.metaFoot}>
-                      <span className={styles.metaDateLabel}>Aktualisiert</span>
-                      <span className={styles.metaDate}>
-                        {new Date(
-                          product.updatedAt
-                        ).toLocaleDateString("de-CH")}
-                      </span>
+                      <span className={styles.metaStrong}>{price.toFixed(2)} CHF</span>
+                      <span className={styles.metaMuted}>{downloadsCount} Downloads</span>
                     </div>
                   </div>
 
-                  {/* Aktionen */}
                   <div className={styles.actionsRow}>
                     <Link
                       href={`/dashboard/products/${product.id}/edit`}
@@ -292,10 +196,7 @@ export default async function ProductsOverviewPage(props: PageProps) {
                       Bearbeiten
                     </Link>
 
-                    <Link
-                      href={`/product/${product.id}`}
-                      className={styles.ghostBtn}
-                    >
+                    <Link href={`/product/${product.id}`} className={styles.ghostBtn}>
                       Produkt ansehen
                     </Link>
                   </div>

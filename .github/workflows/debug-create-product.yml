@@ -1,0 +1,100 @@
+name: digiemu-debug-create-product
+
+on:
+  workflow_dispatch:
+
+jobs:
+  debug-create-product:
+    runs-on: ubuntu-latest
+    env:
+      NODE_ENV: development
+
+      # DB (muss postgresql://...)
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DATABASE_URL_UNPOOLED: ${{ secrets.DATABASE_URL_UNPOOLED }}
+
+      # Localhost URLs
+      NEXTAUTH_URL: "http://bellu.ch"
+      NEXT_PUBLIC_APP_URL: "http://bellu.ch"
+      NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+
+      # Firebase (falls deine App sie beim Build/Runtime braucht)
+      NEXT_PUBLIC_FIREBASE_API_KEY: ${{ secrets.NEXT_PUBLIC_FIREBASE_API_KEY }}
+      NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ secrets.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN }}
+      NEXT_PUBLIC_FIREBASE_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_PROJECT_ID }}
+      NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID }}
+      NEXT_PUBLIC_FIREBASE_APP_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_APP_ID }}
+
+      # Stripe optional (nur falls required beim Build)
+      STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+      STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
+      NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Prisma validate
+        run: npx prisma validate
+
+      - name: Prisma generate
+        run: npx prisma generate
+
+      - name: Build
+        run: npm run build
+
+      - name: Start Next server (background)
+        run: |
+          nohup npm start -- -p 3000 > next.log 2>&1 &
+          echo $! > next.pid
+
+      - name: Wait for server
+        run: |
+          for i in {1..40}; do
+            if curl -sSf http://localhost:3000 >/dev/null; then
+              echo "Server is up"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Server did not start"
+          echo "==== next.log ===="
+          tail -n 200 next.log || true
+          exit 1
+
+      # ✅ Call API and print raw response (this mirrors your client-side res.text() debug)
+      - name: Call /api/products/create (expect 401/403 unless you add auth cookies)
+        run: |
+          set -e
+          echo "Calling create endpoint (unauthenticated)..."
+          curl -i -sS \
+            -X POST "http://localhost:3000/api/products/create" \
+            -H "Content-Type: application/json" \
+            --data '{"title":"Test","description":"Test","priceChf":9.9,"downloadUrl":"https://example.com/file.pdf","thumbnailUrl":"/fallback-thumbnail.svg","category":"ebook"}' \
+            | tee api_response.txt
+
+          echo ""
+          echo "---- Raw body ----"
+          tail -n +1 api_response.txt | sed -n '/^\r$/,$p' || true
+
+      - name: Print server logs
+        if: always()
+        run: |
+          echo "==== next.log (last 300 lines) ===="
+          tail -n 300 next.log || true
+
+      - name: Stop server
+        if: always()
+        run: |
+          if [ -f next.pid ]; then
+            kill $(cat next.pid) || true
+          fi

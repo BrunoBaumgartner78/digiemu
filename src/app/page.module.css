@@ -182,11 +182,17 @@
 }
 
 .cardValue {
-  font-size: 1.45rem;
   font-weight: 700;
   margin-bottom: 0.1rem;
   color: #f9fafb;
+
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(1.05rem, 2.1vw, 1.45rem);
+
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
+
 
 .cardHint {
   font-size: 0.8rem;
@@ -396,4 +402,12 @@
   .productCard {
     border-radius: 1.2rem;
   }
+}
+
+
+.cardRow {
+  /* ...dein bestehendes... */
+
+  min-width: 0;      /* ✅ KEY: erlaubt Shrink in Grid */
+  overflow: hidden;  /* ✅ Safety gegen Overflow */
 }

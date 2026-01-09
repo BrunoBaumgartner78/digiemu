@@ -1,68 +1,98 @@
+// src/app/api/admin/products/[id]/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/authOptions";
+import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-const ALLOWED_STATUSES = ["DRAFT", "ACTIVE", "BLOCKED"] as const;
-type AllowedStatus = (typeof ALLOWED_STATUSES)[number];
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+async function getTenantKeySafe(): Promise<string> {
+  try {
+    const mod = await import("@/lib/tenant-context");
+    const fn = (mod as any)?.currentTenant;
+    if (typeof fn === "function") {
+      const t = await fn();
+      const key = (t?.key || t?.tenantKey || "").toString().trim();
+      return key || "DEFAULT";
+    }
+  } catch {
+    // ignore
+  }
+  return "DEFAULT";
+}
 
 export async function PATCH(
   req: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
-  const params = await context.params;
   const session = await getServerSession(authOptions);
+  if (!session) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
-  if (!session || session.user.role !== "ADMIN") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  const user = session.user as any;
+  if (user.role !== "ADMIN") return NextResponse.json({ message: "Forbidden" }, { status: 403 });
+
+  const tenantKey = await getTenantKeySafe();
+
+  const { id } = await Promise.resolve(params);
+  const productId = String(id ?? "").trim();
+  if (!productId) return NextResponse.json({ message: "Missing product id" }, { status: 400 });
+
+  // ✅ Tenant-Guard: Produkt muss zum aktuellen Tenant gehören
+  const existing = await prisma.product.findUnique({
+    where: { id: productId, tenantKey },
+    select: { id: true, tenantKey: true },
+  });
+
+  if (!existing) {
+    // 404 to avoid leaking info
+    return NextResponse.json({ message: "Not found" }, { status: 404 });
   }
 
-  let body: { status?: string; moderationNote?: string | null };
+  const body = await req.json().catch(() => null);
+  if (!body) return NextResponse.json({ message: "Invalid JSON" }, { status: 400 });
 
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  const title = String(body.title ?? "").trim();
+  const description = String(body.description ?? "").trim();
+  const category = String(body.category ?? "other").trim() || "other";
+  const status = String(body.status ?? "").trim();
+  const thumbnail = body.thumbnail === null ? null : String(body.thumbnail ?? "").trim() || null;
+  const moderationNote =
+    body.moderationNote === null ? null : String(body.moderationNote ?? "").trim() || null;
+
+  const priceCents = Number(body.priceCents);
+
+  // ✅ Mindestpreis 1 CHF
+  if (!Number.isFinite(priceCents) || priceCents < 100) {
+    return NextResponse.json({ message: "Mindestpreis ist 1.00 CHF." }, { status: 400 });
   }
 
-  const updateData: Record<string, unknown> = {};
-
-  if (typeof body.status !== "undefined") {
-    if (!ALLOWED_STATUSES.includes(body.status as AllowedStatus)) {
-      return NextResponse.json({ error: "Invalid status" }, { status: 400 });
-    }
-    updateData.status = body.status;
+  if (!title || !description) {
+    return NextResponse.json({ message: "Titel und Beschreibung sind erforderlich." }, { status: 400 });
   }
 
-  if (typeof body.moderationNote !== "undefined") {
-    updateData.moderationNote =
-      body.moderationNote === "" ? null : body.moderationNote;
+  if (!["ACTIVE", "DRAFT", "BLOCKED"].includes(status)) {
+    return NextResponse.json({ message: "Ungültiger Status." }, { status: 400 });
   }
 
-  if (Object.keys(updateData).length === 0) {
-    return NextResponse.json({ error: "No valid fields to update" }, { status: 400 });
-  }
+  const isActive = Boolean(body.isActive);
+  const finalIsActive = status === "BLOCKED" ? false : isActive;
 
-  try {
-    const updated = await prisma.product.update({
-      where: { id: params.id },
-      data: updateData,
-      select: {
-        id: true,
-        title: true,
-        status: true,
-        moderationNote: true,
-        updatedAt: true,
-        vendorId: true
-      },
-    });
+  const updated = await prisma.product.update({
+    where: { id: productId, tenantKey },
+    data: {
+      tenantKey,
+      title,
+      description,
+      category,
+      priceCents: Math.round(priceCents),
+      thumbnail,
+      status,
+      isActive: finalIsActive,
+      moderationNote,
+    },
+    select: { id: true, status: true, isActive: true, tenantKey: true },
+  });
 
-    return NextResponse.json(updated);
-  } catch (error) {
-    console.error("Product moderation error", error);
-    return NextResponse.json(
-      { error: "Failed to update product" },
-      { status: 500 }
-    );
-  }
+  return NextResponse.json({ ok: true, product: updated });
 }

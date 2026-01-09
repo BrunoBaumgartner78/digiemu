@@ -1,11 +1,11 @@
 // src/app/admin/page.tsx
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth"; // Pfad so wie bei /admin/users
+import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 
 export default async function AdminHomePage() {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession(auth);
 
   if (!session || session.user.role !== "ADMIN") {
     redirect("/dashboard");

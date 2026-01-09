@@ -1,0 +1,66 @@
+name: digiemu-local-ci
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "dev-local", "debug-local" ]
+
+jobs:
+  build-localhost:
+    runs-on: ubuntu-latest
+    env:
+      # ✅ DB URL MUSS mit postgresql:// beginnen (aus GitHub Secrets)
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      # optional, falls du direct/unpooled brauchst
+      DATABASE_URL_UNPOOLED: ${{ secrets.DATABASE_URL_UNPOOLED }}
+
+      # ✅ Localhost URLs (keine bellu.ch)
+      NEXTAUTH_URL: "https://bellu.ch"
+      NEXT_PUBLIC_APP_URL: "https://bellu.ch"
+
+      # weitere Secrets (falls benötigt)
+      NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+      STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+      STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
+      NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
+
+      NEXT_PUBLIC_FIREBASE_API_KEY: ${{ secrets.NEXT_PUBLIC_FIREBASE_API_KEY }}
+      NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ secrets.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN }}
+      NEXT_PUBLIC_FIREBASE_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_PROJECT_ID }}
+      NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID }}
+      NEXT_PUBLIC_FIREBASE_APP_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_APP_ID }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # ✅ Optional: harte URLs im Repo temporär umstellen (nur im CI workspace)
+      - name: Replace bellu.ch -> https://bellu.ch
+        run: |
+          rg -n "https?://bellu\.ch" . || true
+          rg -l "https?://bellu\.ch" . \
+            | xargs -r sed -i 's#https\?://digiemu\.vercel\.app#http://localhost:3000#g'
+
+      - name: Prisma validate
+        run: npx prisma validate
+
+      - name: Prisma generate
+        run: npx prisma generate
+
+      # Wenn du Migrations im Job willst: nutze UNPOOLED (direct) für migrate
+      # - name: Prisma migrate deploy (direct/unpooled)
+      #   env:
+      #     DATABASE_URL: ${{ secrets.DATABASE_URL_UNPOOLED }}
+      #   run: npx prisma migrate deploy
+
+      - name: Next build
+        run: npm run build

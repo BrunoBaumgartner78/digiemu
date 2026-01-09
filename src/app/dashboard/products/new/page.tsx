@@ -82,6 +82,7 @@ export default function NewProductPage() {
   return (
     <div className="max-w-3xl mx-auto mt-10">
       <div className={styles.card}>
+        <h1 className={styles.title}>Neues Produkt erstellen</h1>
         <h2 className="text-2xl font-bold mb-4">Neues Produkt</h2>
 
         <input

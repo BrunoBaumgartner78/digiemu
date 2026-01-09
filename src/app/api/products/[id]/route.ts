@@ -1,141 +1,112 @@
 // src/app/api/products/[id]/route.ts
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-type RouteContext = {
-  params: Promise<{ id: string }>; // ✅ Next.js 16: params ist ein Promise
-};
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
-// 🔹 Produkt aktualisieren (Titel, Beschreibung, Preis, Kategorie, Thumbnail, isActive)
-export async function PUT(req: NextRequest, context: RouteContext) {
-  try {
-    const { id } = await context.params;
+type Ctx = { params: Promise<{ id: string }> };
 
-    if (!id) {
-      return NextResponse.json(
-        { ok: false, message: "Produkt-ID fehlt." },
-        { status: 400 }
-      );
-    }
+function json(message: string, status = 400) {
+  return NextResponse.json({ message }, { status });
+}
 
-    const session = await getServerSession(authOptions);
-    if (!session || !session.user || !session.user.id) {
-      return NextResponse.json(
-        { ok: false, message: "Nicht eingeloggt." },
-        { status: 401 }
-      );
-    }
+export async function PUT(req: Request, ctx: Ctx) {
+  const session = await getServerSession(authOptions);
+  const user = session?.user as any;
 
-    const userId = session.user.id as string;
-    const userRole = (session.user as any).role ?? "BUYER";
+  if (!user?.id) return json("Not authenticated", 401);
 
-    const body = await req.json().catch(() => null);
+  const { id } = await ctx.params;
 
-    if (!body) {
-      return NextResponse.json(
-        { ok: false, message: "Ungültiger Request-Body." },
-        { status: 400 }
-      );
-    }
+  const product = await prisma.product.findUnique({
+    where: { id },
+    select: { id: true, vendorId: true, status: true, vendor: { select: { isBlocked: true } } },
+  });
+  if (!product) return json("Not found", 404);
 
-    const {
+  // If the acting user is blocked, deny
+  const currentUser = await prisma.user.findUnique({ where: { id: user.id }, select: { isBlocked: true, role: true } });
+  if (!currentUser) return json("Not authenticated", 401);
+  if (currentUser.isBlocked) return json("Forbidden", 403);
+
+  if (user.role !== "ADMIN" && product.vendorId !== user.id) {
+    return json("Forbidden", 403);
+  }
+
+  // If the product itself is BLOCKED, non-admins may not modify or delete it
+  if (product.status === "BLOCKED" && user.role !== "ADMIN") {
+    return json("Product is blocked", 403);
+  }
+
+  const body = await req.json().catch(() => ({}));
+
+  const title = typeof body.title === "string" ? body.title.trim() : "";
+  const description =
+    typeof body.description === "string" ? body.description.trim() : "";
+  const category =
+    typeof body.category === "string" && body.category.trim()
+      ? body.category.trim()
+      : "other";
+  const thumbnail =
+    typeof body.thumbnailUrl === "string" && body.thumbnailUrl.trim()
+      ? body.thumbnailUrl.trim()
+      : null;
+
+  const priceChf = Number(body.priceChf);
+  if (!Number.isFinite(priceChf) || priceChf < 0) {
+    return json("Invalid priceChf", 400);
+  }
+  const priceCents = Math.round(priceChf * 100);
+
+  const isActive = !!body.isActive;
+
+  // Enforce: if product.status === 'BLOCKED', server forces isActive = false
+  const finalIsActive = product.status === "BLOCKED" ? false : isActive;
+
+  // Vendors must NOT be able to set status via this route. Status changes should go through admin routes.
+  const updated = await prisma.product.update({
+    where: { id },
+    data: {
       title,
       description,
-      priceChf,
       category,
-      thumbnailUrl,
-      isActive,
-    } = body as {
-      title?: string;
-      description?: string;
-      priceChf?: number;
-      category?: string;
-      thumbnailUrl?: string | null;
-      isActive?: boolean;
-    };
+      thumbnail,
+      priceCents,
+      isActive: finalIsActive,
+    },
+    select: { id: true },
+  });
 
-    // 🔍 Produkt holen, um Vendor zu prüfen
-    const existing = await prisma.product.findUnique({
-      where: { id },
-      select: { vendorId: true },
-    });
+  return NextResponse.json({ ok: true, product: updated });
+}
 
-    if (!existing) {
-      return NextResponse.json(
-        { ok: false, message: "Produkt nicht gefunden." },
-        { status: 404 }
-      );
-    }
+export async function DELETE(req: Request, ctx: Ctx) {
+  const session = await getServerSession(authOptions);
+  const user = session?.user as any;
 
-    // 🔐 Nur Vendor oder Admin darf das Produkt bearbeiten
-    if (existing.vendorId !== userId && userRole !== "ADMIN") {
-      return NextResponse.json(
-        { ok: false, message: "Keine Berechtigung für dieses Produkt." },
-        { status: 403 }
-      );
-    }
+  if (!user?.id) return json("Not authenticated", 401);
 
-    // 🔢 Preis prüfen
-    if (typeof priceChf !== "number" || !Number.isFinite(priceChf) || priceChf < 0) {
-      return NextResponse.json(
-        { ok: false, message: "Ungültiger Preis (CHF)." },
-        { status: 400 }
-      );
-    }
-    const priceCents = Math.round(priceChf * 100);
+  const { id } = await ctx.params;
 
-    const safeTitle = (title ?? "").trim();
-    const safeDescription = (description ?? "").trim();
-    const safeCategory = (category ?? "other").trim() || "other";
+  const product = await prisma.product.findUnique({
+    where: { id },
+    select: { id: true, vendorId: true },
+  });
+  if (!product) return json("Not found", 404);
 
-    if (!safeTitle) {
-      return NextResponse.json(
-        { ok: false, message: "Titel darf nicht leer sein." },
-        { status: 400 }
-      );
-    }
-
-    // 🔁 Status anhand von isActive setzen
-    const activeBool = Boolean(isActive);
-    const status = activeBool ? "ACTIVE" : "DRAFT";
-
-    const updated = await prisma.product.update({
-      where: { id },
-      data: {
-        title: safeTitle,
-        description: safeDescription,
-        priceCents,
-        category: safeCategory,
-        thumbnail: thumbnailUrl ?? null,
-        isActive: activeBool,
-        status,
-      },
-      select: {
-        id: true,
-        title: true,
-        priceCents: true,
-        category: true,
-        thumbnail: true,
-        isActive: true,
-        status: true,
-      },
-    });
-
-    return NextResponse.json(
-      {
-        ok: true,
-        message: "Produkt aktualisiert.",
-        product: updated,
-      },
-      { status: 200 }
-    );
-  } catch (err: any) {
-    console.error("[PUT /api/products/[id]] Error", err);
-    return NextResponse.json(
-      { ok: false, message: "Interner Serverfehler beim Aktualisieren." },
-      { status: 500 }
-    );
+  if (user.role !== "ADMIN" && product.vendorId !== user.id) {
+    return json("Forbidden", 403);
   }
+
+  // „Löschen“ = archivieren
+  await prisma.product.update({
+    where: { id },
+    data: { status: "ARCHIVED", isActive: false },
+    select: { id: true },
+  });
+
+  return NextResponse.json({ ok: true });
 }

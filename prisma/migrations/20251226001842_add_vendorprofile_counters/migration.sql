@@ -1,0 +1,8 @@
+-- AlterTable
+ALTER TABLE "VendorProfile" ADD COLUMN     "activeProductsCount" INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN     "lastSaleAt" TIMESTAMP(3),
+ADD COLUMN     "ratingAvg" DOUBLE PRECISION,
+ADD COLUMN     "ratingCount" INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN     "refundsCount" INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN     "totalRevenueCents" INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN     "totalSales" INTEGER NOT NULL DEFAULT 0;

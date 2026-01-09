@@ -50,11 +50,11 @@ export default function NewProductPage() {
     setThumbFile(e.target.files?.[0] || null);
   }
 
-  async function uploadToStorage(pathPrefix: string, file: File) {
-    const safeName = file.name.replace(/\s+/g, "-");
+  async function uploadToStorage(pathPrefix: string, f: File) {
+    const safeName = f.name.replace(/\s+/g, "-");
     const storageRef = ref(storage, `${pathPrefix}/${Date.now()}-${safeName}`);
 
-    const uploadTask = uploadBytesResumable(storageRef, file);
+    const uploadTask = uploadBytesResumable(storageRef, f);
 
     return await new Promise<string>((resolve, reject) => {
       uploadTask.on(
@@ -65,9 +65,7 @@ export default function NewProductPage() {
           );
           setUploadProgress(pct);
         },
-        (err) => {
-          reject(err);
-        },
+        (err) => reject(err),
         async () => {
           const url = await getDownloadURL(uploadTask.snapshot.ref);
           resolve(url);
@@ -90,12 +88,16 @@ export default function NewProductPage() {
       return;
     }
 
-    // ✅ robustere Preis-Validierung (Komma & Punkt)
+    // ✅ Preis-Validierung (Komma & Punkt) + Mindestpreis 1 CHF
     const normalizedPrice = priceChf.replace(",", ".").trim();
     const priceNumber = Number(normalizedPrice);
 
-    if (!Number.isFinite(priceNumber) || priceNumber <= 0) {
+    if (!Number.isFinite(priceNumber)) {
       setErrorMessage("Bitte gib einen gültigen Preis in CHF ein.");
+      return;
+    }
+    if (priceNumber < 1) {
+      setErrorMessage("Der Mindestpreis beträgt 1.00 CHF.");
       return;
     }
 
@@ -108,15 +110,15 @@ export default function NewProductPage() {
     setUploadProgress(null);
 
     try {
-      // 1) Optional: Thumbnail hochladen
-      //    Wenn der Input leer ist → Fallback verwenden
-      let finalThumbnailUrl =
-        thumbnailUrl.trim() || "/fallback-thumbnail.svg";
+      // 1) Optional: Thumbnail hochladen (wenn leer -> Fallback)
+      let finalThumbnailUrl = thumbnailUrl.trim() || "/fallback-thumbnail.svg";
 
       if (thumbFile) {
         setStatusMessage("Lade Thumbnail-Bild hoch …");
         const thumbUrl = await uploadToStorage("thumbnails", thumbFile);
         finalThumbnailUrl = thumbUrl;
+        // optional: UI sofort anpassen
+        setThumbnailUrl(thumbUrl);
       }
 
       // 2) Produktdatei hochladen
@@ -128,9 +130,7 @@ export default function NewProductPage() {
 
       const res = await fetch("/api/products/create", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title: title.trim(),
           description: description.trim(),
@@ -144,7 +144,8 @@ export default function NewProductPage() {
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         throw new Error(
-          data?.message || "Produkt konnte nicht angelegt werden."
+          data?.message ||
+            "Produkt konnte nicht angelegt werden. (Hinweis: VendorProfile muss existieren & für ACTIVE muss es APPROVED+public sein.)"
         );
       }
 
@@ -154,9 +155,7 @@ export default function NewProductPage() {
       }, 600);
     } catch (err: any) {
       console.error("Produkt anlegen fehlgeschlagen:", err);
-      setErrorMessage(
-        err?.message || "Upload oder Speichern ist fehlgeschlagen."
-      );
+      setErrorMessage(err?.message || "Upload oder Speichern ist fehlgeschlagen.");
     } finally {
       setIsSubmitting(false);
       setUploadProgress(null);
@@ -175,9 +174,9 @@ export default function NewProductPage() {
             Neues Produkt anlegen
           </h1>
           <p className="text-sm text-[var(--color-text-muted)] max-w-2xl mt-1.5">
-            Trage Titel, Beschreibung und Preis ein. Lade anschließend deine
-            Datei (z. B. PDF, ZIP oder Bild) hoch. Nach dem Speichern erscheint
-            dein Produkt im Marketplace.
+            Trage Titel, Beschreibung und Preis ein. Lade anschließend deine Datei
+            (z. B. PDF, ZIP oder Bild) hoch. Nach dem Speichern erscheint dein Produkt
+            im Marketplace.
           </p>
         </header>
 
@@ -220,8 +219,8 @@ export default function NewProductPage() {
                 ))}
               </select>
               <p className={styles.priceHint}>
-                Die Kategorie wird für Filter im Marketplace verwendet (z.B.
-                E-Books, Kurse, Audio, Templates …).
+                Die Kategorie wird für Filter im Marketplace verwendet (z.B. E-Books,
+                Kurse, Audio, Templates …).
               </p>
             </div>
 
@@ -233,13 +232,14 @@ export default function NewProductPage() {
                   className={styles.input}
                   type="number"
                   step="0.05"
-                  min="0"
+                  min="1"
                   placeholder="z.B. 9.90"
                   value={priceChf}
                   onChange={(e) => setPriceChf(e.target.value)}
                 />
                 <p className={styles.priceHint}>
-                  inkl. MwSt. / digitale Leistung (sofern zutreffend)
+                  Mindestpreis: <strong>1.00 CHF</strong> · inkl. MwSt. / digitale Leistung
+                  (sofern zutreffend)
                 </p>
               </div>
             </div>
@@ -249,7 +249,6 @@ export default function NewProductPage() {
               <label className={styles.label}>Thumbnail-URL (optional)</label>
               <input
                 className={styles.input}
-                // ✅ text statt url → erlaubt auch relative Pfade wie /fallback-thumbnail.svg
                 type="text"
                 placeholder="https://example.com/dein-bild.jpg oder /fallback-thumbnail.svg"
                 value={thumbnailUrl}
@@ -257,20 +256,11 @@ export default function NewProductPage() {
               />
               <p className={styles.priceHint}>
                 Lässt du dieses Feld leer, verwenden wir automatisch{" "}
-                <code>/fallback-thumbnail.svg</code> aus deinem{" "}
-                <code>public/</code>-Ordner. Später kannst du hier ein Bild aus
-                Firebase / Storage eintragen lassen oder eine eigene URL
-                verwenden.
+                <code>/fallback-thumbnail.svg</code> aus deinem <code>public/</code>-Ordner.
               </p>
 
               {/* Vorschau */}
-              <div
-                style={{
-                  marginTop: "0.75rem",
-                  display: "flex",
-                  gap: "1rem",
-                }}
-              >
+              <div style={{ marginTop: "0.75rem", display: "flex", gap: "1rem" }}>
                 <div
                   style={{
                     width: "160px",
@@ -283,6 +273,7 @@ export default function NewProductPage() {
                     background: "var(--bg-soft)",
                   }}
                 >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={thumbnailUrl || "/fallback-thumbnail.svg"}
                     alt="Thumbnail-Vorschau"
@@ -290,21 +281,18 @@ export default function NewProductPage() {
                     onError={(e) => {
                       const img = e.currentTarget;
                       const fallback = "/fallback-thumbnail.svg";
-                      if (!img.src.endsWith(fallback)) {
-                        img.src = fallback;
-                      }
+                      if (!img.src.endsWith(fallback)) img.src = fallback;
                     }}
                   />
                 </div>
+
                 <p className={styles.priceHint} style={{ maxWidth: "220px" }}>
-                  Die Vorschau aktualisiert sich automatisch, wenn du die URL
-                  änderst. So siehst du sofort, wie dein Produkt im Marketplace
-                  wirken wird.
+                  Die Vorschau aktualisiert sich automatisch, wenn du die URL änderst.
                 </p>
               </div>
             </div>
 
-            {/* Produktdatei-Upload Neo-Button */}
+            {/* Produktdatei-Upload */}
             <div className={styles.fieldGroup}>
               <label className={styles.label}>
                 DATEI / BILD HOCHLADEN (PRODUKTDATEI)
@@ -328,11 +316,9 @@ export default function NewProductPage() {
               </p>
             </div>
 
-            {/* Thumbnail-Upload Neo-Button */}
+            {/* Thumbnail-Upload */}
             <div className={styles.fieldGroup}>
-              <label className={styles.label}>
-                THUMBNAIL-BILD HOCHLADEN (OPTIONAL)
-              </label>
+              <label className={styles.label}>THUMBNAIL-BILD HOCHLADEN (OPTIONAL)</label>
               <div className={styles.fileRow}>
                 <label className={styles.fileButton}>
                   🖼 Bild auswählen
@@ -348,8 +334,8 @@ export default function NewProductPage() {
                 </span>
               </div>
               <p className={styles.priceHint}>
-                Optionales Vorschaubild für dein Produkt. Wenn du hier ein Bild
-                hochlädst, wird die Thumbnail-URL automatisch gesetzt.
+                Optionales Vorschaubild für dein Produkt. Wenn du hier ein Bild hochlädst,
+                wird die Thumbnail-URL automatisch gesetzt.
               </p>
             </div>
 
@@ -370,11 +356,8 @@ export default function NewProductPage() {
               >
                 Abbrechen
               </button>
-              <button
-                type="submit"
-                className={styles.primaryBtn}
-                disabled={isSubmitting}
-              >
+
+              <button type="submit" className={styles.primaryBtn} disabled={isSubmitting}>
                 {isSubmitting ? "Wird angelegt …" : "Produkt anlegen"}
               </button>
             </div>
@@ -385,15 +368,12 @@ export default function NewProductPage() {
             <div className={styles.infoBox}>
               <h2 className={styles.infoTitle}>Veröffentlichung</h2>
               <p className={styles.infoText}>
-                Neue Produkte starten standardmäßig als{" "}
-                <strong>aktiv</strong> (sichtbar im Marketplace), sobald Preis
-                und Download-Datei korrekt hinterlegt sind. Du kannst den
-                Status später jederzeit in der Produkt-Bearbeitung anpassen.
+                Neue Produkte starten standardmäßig als <strong>aktiv</strong> (sichtbar im
+                Marketplace), sobald Preis und Download-Datei korrekt hinterlegt sind.
               </p>
               <p className={styles.infoText} style={{ marginTop: "0.8rem" }}>
-                Für die ersten Tests genügt ein PDF oder ZIP. Später kannst du
-                professionelle Thumbnails hochladen, damit dein Produkt im
-                Marketplace wie ein fertiger Shop aussieht.
+                Für die ersten Tests genügt ein PDF oder ZIP. Später kannst du professionelle
+                Thumbnails hochladen.
               </p>
             </div>
           </aside>

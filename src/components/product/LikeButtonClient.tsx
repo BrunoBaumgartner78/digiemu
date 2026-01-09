@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import styles from "./LikeButtonClient.module.css";
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 
-type LikeButtonProps = {
+type Props = {
   productId: string;
   initialLikesCount: number;
   initialIsLiked: boolean;
@@ -13,50 +13,63 @@ export default function LikeButtonClient({
   productId,
   initialLikesCount,
   initialIsLiked,
-}: LikeButtonProps) {
-  const [likesCount, setLikesCount] = useState(initialLikesCount);
-  const [isLiked, setIsLiked] = useState(initialIsLiked);
-  const [isLoading, setIsLoading] = useState(false);
+}: Props) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
 
-  async function handleClick() {
-    if (!productId) return;
+  const [isLiked, setIsLiked] = useState<boolean>(initialIsLiked);
+  const [likesCount, setLikesCount] = useState<number>(initialLikesCount);
 
-    setIsLoading(true);
-    try {
-      const res = await fetch(`/api/product/${productId}/like`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productId }),
-      });
+  async function onToggle() {
+    // Optimistic UI
+    const nextLiked = !isLiked;
+    setIsLiked(nextLiked);
+    setLikesCount((c) => Math.max(0, c + (nextLiked ? 1 : -1)));
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || "Fehler");
+    const res = await fetch(`/api/product/${productId}/like`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    });
 
-      setIsLiked(data.isLiked);
-      setLikesCount(data.likesCount);
-    } finally {
-      setIsLoading(false);
+    if (res.status === 401) {
+      // zurückrollen
+      setIsLiked(isLiked);
+      setLikesCount(initialLikesCount);
+      router.push(`/login?callbackUrl=/product/${productId}`);
+      return;
     }
+
+    if (!res.ok) {
+      // zurückrollen bei Fehler
+      setIsLiked(isLiked);
+      setLikesCount(initialLikesCount);
+      return;
+    }
+
+    const data: { ok: true; liked: boolean; likesCount: number } = await res.json();
+
+    setIsLiked(data.liked);
+    setLikesCount(data.likesCount);
+
+    // Server-Komponenten aktualisieren (optional)
+    startTransition(() => router.refresh());
   }
 
   return (
-    <div className={styles.wrapper}>
-      <button
-        type="button"
-        className={`${styles.likeButton} ${
-          isLiked ? styles.isActive : ""
-        }`}
-        disabled={isLoading}
-        onClick={handleClick}
-      >
-        <span className={styles.icon} aria-hidden="true">
-          {isLiked ? "❤️" : "🤍"}
-        </span>
-        <span className={styles.label}>
-          {isLiked ? "Gemerkt" : "Merken"}
-        </span>
-        <span className={styles.count}>{likesCount}</span>
-      </button>
-    </div>
+    <button
+      type="button"
+      onClick={onToggle}
+      disabled={isPending}
+      className="neobtn ghost"
+      aria-pressed={isLiked}
+      aria-label={isLiked ? "Like entfernen" : "Gefällt mir"}
+      style={{ display: "inline-flex", gap: 10, alignItems: "center" }}
+    >
+      <span aria-hidden="true">{isLiked ? "❤️" : "🤍"}</span>
+      <span>{likesCount}</span>
+      <span style={{ opacity: 0.7, fontSize: 12 }}>
+        {isPending ? "…" : "Likes"}
+      </span>
+    </button>
   );
 }

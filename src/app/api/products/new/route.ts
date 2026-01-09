@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/authOptions";
+import { authOptions } from "@/lib/auth";
+import { currentTenant } from "@/lib/tenant-context";
 
 export const dynamic = "force-dynamic";
 
@@ -53,16 +54,26 @@ export async function POST(req: Request) {
   const status = data.status ?? "DRAFT";
 
   try {
+    const { tenantKey: rawTenantKey } = await currentTenant();
+    const tenantKey = rawTenantKey ?? "DEFAULT";
+
+    const vp = await prisma.vendorProfile.findFirst({
+      where: { userId: vendorId, tenantKey },
+      select: { id: true, status: true },
+    });
+
     const product = await prisma.product.create({
       data: {
+        tenantKey,
         title: data.title.trim(),
         description: data.description.trim(),
         category: data.category.trim(),
         priceCents: data.priceCents,
         fileUrl: data.fileUrl.trim(),
         thumbnail: data.thumbnail ?? null,
-        status,
-        vendorId, // kommt aus Session (wichtig!)
+        vendorId, // comes from session
+        vendorProfileId: vp?.id ?? "",
+        status: vp?.status === "APPROVED" ? "ACTIVE" : status,
         isActive: true,
       },
     });

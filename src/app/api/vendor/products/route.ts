@@ -44,15 +44,18 @@ function emptyStats(): StatsResponse {
   };
 }
 
+// Option B: Debug-Logger (nur wenn explizit via Env-Flag aktiviert)
+const isDebug = process.env.DEBUG_VENDOR_STATS === "1";
+const dbg = (...args: any[]) => {
+  if (isDebug) console.log(...args);
+};
+
 export async function GET(request: Request) {
-  console.log(
-    "[DEV] /api/vendor/products/stats HIT",
-    new Date().toISOString()
-  );
+  dbg("[DEV] /api/vendor/products/stats HIT", new Date().toISOString());
 
   const url = new URL(request.url);
   const rangeDays = url.searchParams.get("range_days") ?? "unknown";
-  console.log("[DEV] range_days =", rangeDays);
+  dbg("[DEV] range_days =", rangeDays);
 
   // DEV: immer leere Stats zurückgeben, aber **nie** 401
   const payload = emptyStats();

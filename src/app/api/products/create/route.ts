@@ -1,114 +1,74 @@
-// src/app/api/products/create/route.ts
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { currentTenant } from "@/lib/tenant-context";
 
-export async function POST(req: NextRequest) {
-  try {
-    // 1) Session prüfen
-    const session = await getServerSession(authOptions);
+export async function POST(req: Request) {
+  const session = await getServerSession(auth);
+  if (!session?.user?.id) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
 
-    if (!session || !session.user || !session.user.id) {
-      return NextResponse.json(
-        { ok: false, message: "Nicht eingeloggt oder keine gültige Session." },
-        { status: 401 }
-      );
-    }
+  const body = await req.json().catch(() => null);
+  const title = String(body?.title ?? "").trim();
+  const description = String(body?.description ?? "").trim();
+  const category = String(body?.category ?? "").trim() || "other";
 
-    // 2) Body auslesen
-    const body = await req.json().catch(() => null);
+  const priceChf = Number(body?.priceChf);
+  const downloadUrl = String(body?.downloadUrl ?? "").trim();
+  const thumbnailUrl = body?.thumbnailUrl ? String(body.thumbnailUrl).trim() : null;
 
-    if (!body) {
-      return NextResponse.json(
-        { ok: false, message: "Ungültiger Request-Body." },
-        { status: 400 }
-      );
-    }
+  if (!title) return NextResponse.json({ message: "title is required" }, { status: 400 });
+  if (!description) return NextResponse.json({ message: "description is required" }, { status: 400 });
+  if (!Number.isFinite(priceChf) || priceChf < 1) {
+    return NextResponse.json({ message: "priceChf must be a number >= 1" }, { status: 400 });
+  }
+  if (!downloadUrl) return NextResponse.json({ message: "downloadUrl is required" }, { status: 400 });
 
-    const {
-      title,
-      description,
-      priceChf,
-      downloadUrl,
-      thumbnailUrl,
-      category, // 🔹 kommt von der NewProductPage
-    } = body;
+  // ✅ tenant scoping
+  const { tenantKey } = await currentTenant();
+  const tk = (tenantKey || "DEFAULT").trim() || "DEFAULT";
 
-    // 3) Validierung
-    if (!title || typeof title !== "string" || !title.trim()) {
-      return NextResponse.json(
-        { ok: false, message: "Titel fehlt oder ist ungültig." },
-        { status: 400 }
-      );
-    }
+  // ✅ vendor must have a profile in this tenant (Option B enforced in marketplace query)
+  const vp = await prisma.vendorProfile.findFirst({
+    where: { userId: session.user.id, tenantKey: tk },
+    select: { id: true, status: true, isPublic: true, tenantKey: true },
+  });
 
-    if (!description || typeof description !== "string" || !description.trim()) {
-      return NextResponse.json(
-        { ok: false, message: "Beschreibung fehlt oder ist ungültig." },
-        { status: 400 }
-      );
-    }
-
-    const priceNumber = Number(priceChf);
-    if (!priceNumber || priceNumber <= 0) {
-      return NextResponse.json(
-        { ok: false, message: "Preis (CHF) fehlt oder ist ungültig." },
-        { status: 400 }
-      );
-    }
-
-    if (!downloadUrl || typeof downloadUrl !== "string") {
-      return NextResponse.json(
-        { ok: false, message: "Download-URL fehlt oder ist ungültig." },
-        { status: 400 }
-      );
-    }
-
-    // 🔹 Kategorie „säubern“
-    const finalCategory =
-      typeof category === "string" && category.trim().length > 0
-        ? category.trim()
-        : "other"; // Fallback-Kategorie
-
-    const priceCents = Math.round(priceNumber * 100);
-
-    // 4) Produkt anlegen – nur existierende Felder aus dem Prisma-Model
-    const product = await prisma.product.create({
-      data: {
-        title: title.trim(),
-        description: description.trim(),
-        priceCents,
-        fileUrl: downloadUrl,                // Firebase-Link für die Produktdatei
-        thumbnail: thumbnailUrl || null,
-        category: finalCategory,             // 🔹 HIER wird die Kategorie gesetzt
-        vendorId: session.user.id as string,
-        isActive: true,                      // neu angelegte Produkte sind aktiv
-        status: "ACTIVE",                    // und nicht als DRAFT/ BLOCKED markiert
-      },
-      select: {
-        id: true,
-        title: true,
-        category: true,
-      },
-    });
-
+  if (!vp?.id) {
     return NextResponse.json(
-      {
-        ok: true,
-        message: "Produkt erfolgreich angelegt.",
-        product,
-      },
-      { status: 201 }
-    );
-  } catch (err: any) {
-    console.error("[API /products/create] Fehler:", err);
-    return NextResponse.json(
-      {
-        ok: false,
-        message: "Interner Fehler beim Anlegen des Produkts.",
-      },
-      { status: 500 }
+      { message: "VendorProfile missing for this tenant. Create vendor profile first." },
+      { status: 400 }
     );
   }
+
+  // ✅ Only approved+public vendors can publish ACTIVE products under Option B
+  const canPublish = vp.status === "APPROVED" && vp.isPublic === true;
+
+  const priceCents = Math.round(priceChf * 100);
+
+  const created = await prisma.product.create({
+    data: {
+      tenantKey: vp.tenantKey ?? tk,
+      vendorId: session.user.id,
+
+      // ✅ always attach the vendor profile from (tenantKey,userId)
+      vendorProfileId: vp.id,
+
+      title: String(title ?? "").trim(),
+      description: String(description ?? "").trim(),
+      priceCents,
+      fileUrl: String(downloadUrl ?? "").trim(),
+      thumbnail: thumbnailUrl ?? null,
+      category: String(category ?? "other").trim(),
+
+      // ✅ default: always DRAFT — vendors must publish or admin approve
+      status: "DRAFT",
+      isActive: true,
+    },
+    select: { id: true, status: true, tenantKey: true, vendorProfileId: true },
+  });
+
+  return NextResponse.json({ ok: true, product: created });
 }

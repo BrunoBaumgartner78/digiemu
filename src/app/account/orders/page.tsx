@@ -1,10 +1,10 @@
 import { getServerSession } from "next-auth";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import { authOptions } from "../../api/auth/[...nextauth]/route";
+import { auth } from "@/lib/auth";
 
 export default async function AccountOrdersPage() {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession(auth);
   if (!session?.user?.id) {
     return (
       <div className="max-w-xl mx-auto py-12 px-4 text-center">

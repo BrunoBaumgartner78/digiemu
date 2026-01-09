@@ -54,7 +54,7 @@ export default function ProductDrilldownModal({ productId, onClose }: ProductDri
 
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="neumorph-card w-full max-w-3xl p-6 relative">
+      <div className="neumorph-card w-full max-w-3xl p-6 relative" style={{ overflow: "hidden" }}>
         {/* Close */}
         <button
           className="absolute top-3 right-3 px-3 py-1 rounded-lg opacity-60 hover:opacity-100"
@@ -130,8 +130,8 @@ export default function ProductDrilldownModal({ productId, onClose }: ProductDri
             </div>
 
             {/* Chart */}
-            <div className="w-full h-64 mb-6">
-              <ResponsiveContainer>
+            <div className="chartWrap mb-6">
+              <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
                   <XAxis dataKey="date" />

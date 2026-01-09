@@ -1,20 +1,56 @@
+/* Chart wrapper for mobile overlap fix */
+.chart-wrap {
+  width: 100%;
+  height: clamp(160px, 32vh, 260px);
+}
+
+/* Dashboard scroll container for bottom nav */
+.dashboard-scroll {
+  padding-bottom: calc(96px + env(safe-area-inset-bottom));
+}
+
+/* Viewport height fix for mobile browsers */
+.screen-dvh {
+  min-height: 100dvh;
+}
+/* Chart wrapper for fixed height, mobile safe */
+.chartWrap {
+  height: 260px;
+}
+
+@media (max-width: 640px) {
+  .grid {
+    grid-template-columns: 1fr !important;
+  }
+  .neo-card {
+    border-radius: var(--radius-xl);
+  }
+  .chartWrap {
+    height: 240px;
+  }
+  .chart-wrap {
+    height: clamp(140px, 28vh, 220px);
+  }
+}
 /* src/app/dashboard/DashboardHome.module.css */
 
-/* ===== Shell: großer, abgerundeter Dashboard-Container mit Flow-Glow ===== */
+/* =========================================================
+   Shell
+========================================================= */
 
 .dashboardShell {
   position: relative;
   overflow: hidden;
   border-radius: 2rem;
-  padding: 2rem 2rem 2.4rem 2rem;
+  padding: 2rem 2rem 2.4rem;
 
+  color: #f8fafc;
   background: radial-gradient(circle at 0% 0%, #0f172a, #020617);
   box-shadow:
     0 32px 90px rgba(0, 0, 0, 0.9),
     0 0 40px rgba(37, 99, 235, 0.35);
 }
 
-/* große, weiche Lichtwolken im Hintergrund */
 .dashboardShell::before {
   content: "";
   position: absolute;
@@ -23,7 +59,7 @@
     radial-gradient(circle at 0% 0%, rgba(59, 130, 246, 0.35), transparent 60%),
     radial-gradient(circle at 100% 0%, rgba(129, 140, 248, 0.32), transparent 55%),
     radial-gradient(circle at 20% 100%, rgba(56, 189, 248, 0.25), transparent 55%);
-  opacity: 0.9;
+  opacity: 0.75; /* weniger milchig */
   filter: blur(10px);
   animation: shellFlow 26s ease-in-out infinite alternate;
   pointer-events: none;
@@ -36,18 +72,14 @@
 }
 
 @keyframes shellFlow {
-  0% {
-    transform: translate3d(-4%, -2%, 0) scale(1.02);
-  }
-  50% {
-    transform: translate3d(3%, 4%, 0) scale(1.06);
-  }
-  100% {
-    transform: translate3d(-2%, 1%, 0) scale(1.03);
-  }
+  0%   { transform: translate3d(-4%, -2%, 0) scale(1.02); }
+  50%  { transform: translate3d(3%, 4%, 0) scale(1.06); }
+  100% { transform: translate3d(-2%, 1%, 0) scale(1.03); }
 }
 
-/* ---------------- Dashboard: Primary CTA Button ---------------- */
+/* =========================================================
+   Primary CTA Button
+========================================================= */
 
 .dashboardPrimaryLink {
   display: inline-flex;
@@ -69,14 +101,12 @@
   box-shadow: 0 18px 40px rgba(37, 99, 235, 0.55);
   border: 1px solid rgba(37, 99, 235, 0.9);
 
-  transition:
-    box-shadow 0.18s ease,
-    transform 0.14s ease,
-    filter 0.14s ease;
-
+  transition: box-shadow 0.18s ease, transform 0.14s ease, filter 0.14s ease;
+  
   margin-top: 1.25rem;
-  margin-bottom: 1.75rem;
+  margin-bottom: 2.25rem;
 }
+
 
 .dashboardPrimaryLink:hover {
   box-shadow: 0 22px 55px rgba(59, 130, 246, 0.8);
@@ -93,12 +123,9 @@
   color: #f9fafb !important;
 }
 
-/* ---------------- KPI: 2x2 Grid oben ---------------- */
-
-.kpiSection {
-  margin-top: 0.25rem;
-  margin-bottom: 0.75rem;
-}
+/* =========================================================
+   KPI Grid + Cards
+========================================================= */
 
 .kpiGrid {
   display: grid;
@@ -119,19 +146,13 @@
   }
 }
 
-/* ---------------- KPI-Cards – dark + Gradient-Glow ---------------- */
-
 .kpiCard {
   position: relative;
   overflow: hidden;
   border-radius: 1.5rem;
   padding: 1.4rem 1.6rem;
 
-  background: radial-gradient(
-    circle at 0% 0%,
-    rgba(37, 99, 235, 0.5),
-    #020617 65%
-  );
+  background: radial-gradient(circle at 0% 0%, rgba(37, 99, 235, 0.5), #020617 65%);
   box-shadow:
     0 26px 70px rgba(0, 0, 0, 0.95),
     inset 0 0 0 1px rgba(148, 163, 184, 0.45);
@@ -141,17 +162,17 @@
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
+  color: #f8fafc;
 }
 
-/* weiche Glow-Highlights innen */
 .kpiCard::before {
   content: "";
   position: absolute;
   inset: -40%;
   background:
-    radial-gradient(circle at 0% 0%, rgba(96, 165, 250, 0.65), transparent 60%),
-    radial-gradient(circle at 100% 100%, rgba(45, 212, 191, 0.4), transparent 55%);
-  opacity: 0.75;
+    radial-gradient(circle at 0% 0%, rgba(96, 165, 250, 0.55), transparent 60%),
+    radial-gradient(circle at 100% 100%, rgba(45, 212, 191, 0.28), transparent 55%);
+  opacity: 0.55;
   filter: blur(16px);
   animation: cardGlow 24s ease-in-out infinite alternate;
   pointer-events: none;
@@ -167,7 +188,8 @@
   font-size: 0.7rem;
   text-transform: uppercase;
   letter-spacing: 0.16em;
-  color: rgba(191, 219, 254, 0.9);
+  color: rgba(248, 250, 252, 0.92);
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.55);
 }
 
 .kpiValue {
@@ -175,32 +197,21 @@
   font-size: 1.9rem;
   line-height: 1.2;
   font-weight: 700;
-  color: #f9fafb;
-  text-shadow: 0 1px 3px rgba(15, 23, 42, 0.9);
+  color: #ffffff;
+  text-shadow:
+    0 2px 18px rgba(0, 0, 0, 0.75),
+    0 1px 2px rgba(0, 0, 0, 0.7);
 }
 
 .kpiSubLabel {
   font-size: 0.7rem;
-  color: rgba(148, 163, 184, 0.95);
+  color: rgba(248, 250, 252, 0.82);
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.45);
 }
 
-/* ---------------- Mini-Chart ---------------- */
-
-.chartBody {
-  margin-top: 0.6rem;
-  border-radius: 1.3rem;
-  padding: 0.9rem 0.75rem;
-  background: radial-gradient(circle at 0 100%, #0b1120, #020617);
-  box-shadow:
-    inset 0 0 0 1px rgba(30, 64, 175, 0.7),
-    inset 0 4px 12px rgba(15, 23, 42, 0.9);
-}
-
-.chartBar {
-  border-radius: 999px;
-}
-
-/* ---------------- Untere Statistik-Blöcke – dark + Glow ---------------- */
+/* =========================================================
+   Stat / Chart / Table Cards (one unified block)
+========================================================= */
 
 .statCard,
 .chartCard,
@@ -209,21 +220,17 @@
   overflow: hidden;
   border-radius: 1.7rem;
   padding: 1.8rem 1.9rem;
-  margin-top: 1.25rem;
 
-  background: radial-gradient(
-    circle at 0% 0%,
-    rgba(30, 64, 175, 0.6),
-    #020617 70%
-  );
+  background: radial-gradient(circle at 0% 0%, rgba(30, 64, 175, 0.6), #020617 70%);
   box-shadow:
     0 30px 85px rgba(0, 0, 0, 0.96),
     inset 0 0 0 1px rgba(30, 64, 175, 0.7);
   border: 1px solid rgba(129, 140, 248, 0.85);
   backdrop-filter: blur(22px);
+
+  color: #f8fafc;
 }
 
-/* zusätzlicher Glow-Layer */
 .statCard::before,
 .chartCard::before,
 .tableCard::before {
@@ -231,17 +238,16 @@
   position: absolute;
   inset: -45%;
   background:
-    radial-gradient(circle at 0% 0%, rgba(59, 130, 246, 0.55), transparent 60%),
-    radial-gradient(circle at 100% 0%, rgba(129, 140, 248, 0.5), transparent 55%),
-    radial-gradient(circle at 50% 100%, rgba(56, 189, 248, 0.4), transparent 55%);
-  opacity: 0.8;
+    radial-gradient(circle at 0% 0%, rgba(59, 130, 246, 0.5), transparent 60%),
+    radial-gradient(circle at 100% 0%, rgba(129, 140, 248, 0.42), transparent 55%),
+    radial-gradient(circle at 50% 100%, rgba(56, 189, 248, 0.32), transparent 55%);
+  opacity: 0.55;
   filter: blur(18px);
   animation: cardGlow 28s ease-in-out infinite alternate;
   pointer-events: none;
   z-index: 0;
 }
 
-/* Inhalt über dem Glow */
 .statCard > *,
 .chartCard > *,
 .tableCard > * {
@@ -249,45 +255,28 @@
   z-index: 1;
 }
 
-/* etwas mehr Luft zwischen den Blöcken */
-.statCard + .statCard,
-.statCard + .chartCard,
-.chartCard + .statCard,
-.statCard + .tableCard,
-.chartCard + .tableCard {
-  margin-top: 1.5rem;
+.statCard h2,
+.chartCard h2,
+.tableCard h2 {
+  color: #ffffff;
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.65);
 }
-
-/* Glow-Animation */
 
 @keyframes cardGlow {
-  0% {
-    transform: translate3d(-6%, 0, 0) scale(1.01);
-  }
-  50% {
-    transform: translate3d(6%, -4%, 0) scale(1.06);
-  }
-  100% {
-    transform: translate3d(-3%, 3%, 0) scale(1.03);
-  }
+  0%   { transform: translate3d(-6%, 0, 0) scale(1.01); }
+  50%  { transform: translate3d(6%, -4%, 0) scale(1.06); }
+  100% { transform: translate3d(-3%, 3%, 0) scale(1.03); }
 }
 
-/* ---------------- Tabelle in "Deine Produkte" ---------------- */
+/* =========================================================
+   Tables (optional)
+========================================================= */
 
-.downloadsTableWrapper {
-  margin-top: 1.3rem;
-  border-radius: 1.2rem;
-  padding: 0.75rem 0.75rem 1.25rem 0.75rem;
-
-  background: radial-gradient(
-    circle at 0% 0%,
-    rgba(15, 23, 42, 0.9),
-    rgba(15, 23, 42, 0.98)
-  );
-  box-shadow:
-    inset 0 0 0 1px rgba(30, 64, 175, 0.8),
-    0 10px 25px rgba(0, 0, 0, 0.8);
-  border: 1px solid rgba(148, 163, 184, 0.8);
+.tableScrollWrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 0.35rem;
 }
 
 .productsTable {
@@ -300,61 +289,274 @@
 .productsTable th,
 .productsTable td {
   padding: 0.7rem 1.1rem;
-  color: #e5e7eb;
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.55);
 }
 
 .productsTable th {
   font-size: 0.7rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: rgba(156, 163, 175, 0.95);
+  color: rgba(255, 255, 255, 0.92);
 }
 
-/* ===== NEU: Scroll-Wrapper für Tabellen auf Mobile ===== */
-
-.tableScroll {
-  width: 100%;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-.tableScrollWrapper {
-  width: 100%;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  padding-bottom: 0.25rem;
-  position: relative;
-  /* Optional: Fading mask for scroll hint */
-  mask-image: linear-gradient(to right, transparent 0%, #000 8%, #000 92%, transparent 100%);
-}
-
-
-/* ===== Scrollbarer Bereich für die Produkttabelle (Mobile) ===== */
-
-.tableScrollWrapper {
-  width: 100%;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  padding-bottom: 0.35rem;
-}
-
-/* Kleine optische Begrenzung / „Slot“ für die Tabelle */
-.tableScrollWrapper > * {
-  min-width: 100%;
-}
-
-/* Auf sehr kleinen Screens: Tabelle etwas breiter machen,
-   damit wirklich horizontal gescrollt wird */
 @media (max-width: 768px) {
   .productsTable {
     min-width: 640px;
   }
 }
 
-.tableScrollHint {
-  margin-top: 0.4rem;
-  font-size: 0.7rem;
-  text-align: right;
-  color: var(--color-text-muted);
-  opacity: 0.9;
+/* =========================================================
+   Lists (optional): recent downloads / products rows
+   -> This is where we can control pill spacing via CSS.
+========================================================= */
+
+.recentList,
+.productsList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+}
+
+/* Mehr Abstand zwischen Reihen (damit “Bearbeiten” nicht klebt) */
+.productsList {
+  gap: 18px; /* ✅ stärker */
+}
+
+.productRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 10px 0; /* ✅ mehr Luft pro Zeile */
+}
+
+.productTitle {
+  color: rgba(255, 255, 255, 0.95);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ✅ Button-Cluster: mehr Abstand */
+.productActions {
+  display: inline-flex;
+  gap: 14px; /* ✅ mehr horizontaler Abstand */
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 190px; /* verhindert “gequetscht” */
+}
+
+/* ✅ “Pill” Button größer + weniger eng */
+.productActionLink {
+  font-size: 13px;
+  font-weight: 700;
+  padding: 10px 16px;
+  border-radius: 999px;
+  text-decoration: none;
+
+  color: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(129, 140, 248, 0.55);
+  background: rgba(99, 102, 241, 0.12);
+
+  transition: filter 0.14s ease, transform 0.14s ease;
+}
+
+.productActionLink:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+/* =========================
+   FIX: Mehr Abstand "Deine Produkte"
+   (Drop-in Patch – ans ENDE der Datei)
+========================= */
+
+/* 1) Falls du bereits unsere Klassen nutzt */
+.productsList {
+  display: grid;
+  gap: 22px !important; /* Abstand zwischen Zeilen */
+}
+
+.productRow {
+  padding: 14px 0 !important; /* mehr Luft pro Zeile */
+}
+
+/* 2) FALLBACK (greift auch ohne Klassen):
+      In der "Deine Produkte" StatCard alle ULs/LI etwas luftiger machen,
+      aber nur dort, wo "Bearbeiten" vorkommt. */
+.statCard ul:has(a[href*="/dashboard/products/"][href$="/edit"]) {
+  display: grid !important;
+  gap: 22px !important;
+  margin-top: 10px;
+}
+
+.statCard ul:has(a[href*="/dashboard/products/"][href$="/edit"]) > li {
+  padding: 14px 0 !important;
+}
+
+/* 3) Buttons etwas "massiver" + mehr Abstand zur linken Spalte */
+.statCard a[href*="/dashboard/products/"][href$="/edit"] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 10px 18px !important;
+  border-radius: 999px !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+
+  margin-left: 18px !important; /* Abstand Titel -> Button */
+  min-width: 150px;
+  white-space: nowrap;
+}
+
+
+/* 1) Mehr Abstand zwischen allen großen Blöcken (Charts/Stat Cards) */
+.statCard,
+.chartCard,
+.tableCard {
+  margin-top: 1.75rem !important; /* war zu eng */
+}
+
+.statCard + .statCard,
+.statCard + .chartCard,
+.chartCard + .statCard,
+.statCard + .tableCard,
+.chartCard + .tableCard,
+.tableCard + .statCard {
+  margin-top: 2rem !important; /* Abstand zwischen den Blöcken */
+}
+
+/* 2) Mobile: Cards etwas kompakter aber mit klarer Luft */
+@media (max-width: 768px) {
+  .statCard,
+  .chartCard,
+  .tableCard {
+    padding: 1.25rem 1.25rem !important;
+    border-radius: 1.4rem !important;
+  }
+}
+
+/* 3) Chart-Header sauber responsiv:
+      Titel darf umbrechen, "Max" steht sauber rechts/unten */
+.cardHeaderRow {
+  display: flex;
+  align-items: flex-start !important;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap; /* wichtig */
+}
+
+.maxLabel {
+  position: static !important; /* auf Mobile nicht absolut */
+  margin-left: auto;
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(2, 6, 23, 0.25);
+  border: 1px solid rgba(129, 140, 248, 0.35);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06);
+}
+
+/* Wenn du maxLabel NICHT nutzt (weil du es als <div className="text-[11px] ..."> hast),
+   dann greift das nicht – ist ok. */
+
+/* 4) Chartfläche auf Mobile größer, damit es nicht "leer" wirkt */
+.chartWrap {
+  padding: 18px 16px 14px 16px;
+}
+
+@media (max-width: 768px) {
+  .barsRow {
+    height: 160px !important; /* statt zu niedrig */
+    gap: 5px !important;
+  }
+
+  .bar {
+    min-width: 4px !important;
+  }
+
+  /* Top-Produkte Chart / Ranking Bereich nicht gequetscht */
+  .topProductsRow {
+    height: auto !important;
+    gap: 14px !important;
+    overflow-x: auto !important;
+    padding-bottom: 6px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .topProductCol {
+    flex: 0 0 140px !important; /* horizontales Scrollen ist ok */
+  }
+
+  .topProductTitle {
+    font-size: 12px !important;
+  }
+
+  .topProductValue {
+    font-size: 11px !important;
+  }
+}
+
+/* 5) Wenn du "Top Produkte" als Ranking-Liste statt Balken zeigst:
+      Zeilenabstand im Ranking erhöhen */
+.statCard .rankingRow {
+  padding: 12px 0;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+
+.statCard .rankingRow:first-child {
+  border-top: 0;
+}
+
+/* =========================================
+   "Deine Produkte" – Mobile: Button unter Titel
+   (Drop-in ans ENDE)
+========================================= */
+
+@media (max-width: 768px) {
+  /* Zeile bricht um */
+  .productRow {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+  }
+
+  /* Titel nutzt volle Breite */
+  .productTitle {
+    width: 100% !important;
+  }
+
+  /* Actions unter dem Titel, links ausgerichtet */
+  .productActions {
+    width: 100% !important;
+    justify-content: flex-start !important;
+    gap: 10px !important;
+  }
+
+  /* Button größer + nicht gequetscht */
+  .productActionLink,
+  .productActionGhost {
+    padding: 10px 14px !important;
+    font-size: 13px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .productRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .productActions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .productActionLink {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
 }

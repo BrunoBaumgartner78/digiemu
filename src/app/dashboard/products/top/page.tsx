@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { authOptions } from "@/app/api/auth/[...nextauth]/authOptions";
+import { authOptions } from "@/lib/auth";
 import styles from "./TopLikedProducts.module.css";
 
 export const dynamic = "force-dynamic";
@@ -51,9 +51,14 @@ export default async function TopLikedProductsPage() {
           </div>
 
           <div className={styles.headerActions}>
-            <Link href="/dashboard/products" className={styles.ghostBtn}>
-              Zur Produktübersicht
-            </Link>
+           <Link
+  href="/dashboard/products"
+  className={`${styles.ghostBtn} ${styles.topBackBtn}`}
+>
+  Zur Produktübersicht
+</Link>
+
+
           </div>
         </header>
 

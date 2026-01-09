@@ -1,11 +1,12 @@
 // src/app/register-vendor/page.tsx
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
-import { authOptions } from "@/app/api/auth/[...nextauth]/authOptions";
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { currentTenant } from "@/lib/tenant-context";
 
 export default async function RegisterVendorPage() {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession(auth);
 
   // Nicht eingeloggt → Login
   if (!session) {
@@ -15,9 +16,10 @@ export default async function RegisterVendorPage() {
   const user = session.user as any;
   const userId = user.id;
 
-  // Prüfen, ob schon Vendor-Profil existiert
+  // Prüfen, ob schon Vendor-Profil existiert (tenant-scoped)
+  const { tenantKey } = await currentTenant();
   const existingVendor = await prisma.vendorProfile.findUnique({
-    where: { userId },
+    where: { tenantKey_userId: { tenantKey, userId } as any },
   });
 
   // ─────────────────────────────────────────────

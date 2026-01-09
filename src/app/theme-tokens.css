@@ -1,0 +1,65 @@
+/* src/app/theme-tokens.css */
+
+/* =========================
+   DigiEmu Tokens (data-theme)
+   ========================= */
+
+:root {
+  /* Typography */
+  --txt: #0b1220;
+  --txt-muted: rgba(11, 18, 32, 0.68);
+
+  /* Page */
+  --page-bg: #e8eff9;
+
+  /* Surfaces */
+  --card-bg: rgba(255, 255, 255, 0.86);
+  --card-border: rgba(15, 23, 42, 0.10);
+
+  /* Neumorph shadows (light) */
+  --nm-hi: rgba(255, 255, 255, 0.95);
+  --nm-lo: rgba(15, 23, 42, 0.14);
+
+  /* Accents */
+  --accent: #2563eb;
+  --accent-2: #4f46e5;
+
+  /* Radius */
+  --r-xl: 1.6rem;
+  --r-lg: 1.25rem;
+  --r-md: 0.95rem;
+
+  /* Focus */
+  --focus: 0 0 0 3px rgba(37, 99, 235, 0.25);
+}
+
+/* next-themes: <html data-theme="dark"> */
+html[data-theme="dark"] {
+  --txt: rgba(239, 246, 255, 0.92);
+  --txt-muted: rgba(148, 163, 184, 0.88);
+
+  --page-bg: #070b16;
+
+  --card-bg: rgba(12, 18, 38, 0.72);
+  --card-border: rgba(148, 163, 184, 0.16);
+
+  /* Neumorph shadows (dark) */
+  --nm-hi: rgba(120, 170, 255, 0.10);
+  --nm-lo: rgba(0, 0, 0, 0.62);
+
+  --accent: #60a5fa;
+  --accent-2: #818cf8;
+}
+
+/* Optional fallback falls du html.dark nutzt */
+html.dark {
+  --txt: rgba(239, 246, 255, 0.92);
+  --txt-muted: rgba(148, 163, 184, 0.88);
+  --page-bg: #070b16;
+  --card-bg: rgba(12, 18, 38, 0.72);
+  --card-border: rgba(148, 163, 184, 0.16);
+  --nm-hi: rgba(120, 170, 255, 0.10);
+  --nm-lo: rgba(0, 0, 0, 0.62);
+  --accent: #60a5fa;
+  --accent-2: #818cf8;
+}

@@ -1,79 +1,88 @@
 // src/app/api/vendor/earnings/chart/route.ts
-
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-// Aggregation helper
-function formatDate(d: Date) {
-  return d.toISOString().slice(0, 10);
-}
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
-export async function GET() {
-  const session = await getServerSession(authOptions);
+// ✅ Next 16 compatible signature
+export async function GET(_req: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
 
-  if (!session || session.user.role !== "VENDOR") {
+    if (!session?.user?.id || session.user.role !== "VENDOR") {
+      return NextResponse.json(
+        { error: "Unauthorized", daily: [], totalEarnings: 0 },
+        { status: 401 }
+      );
+    }
+
+    const vendorId = session.user.id;
+
+    // Compute last 30 days (including today) at UTC date boundaries
+    const DAYS = 30;
+    const now = new Date();
+    const end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 23, 59, 59));
+    const start = new Date(end);
+    start.setUTCDate(start.getUTCDate() - (DAYS - 1));
+
+    // Load orders in range for vendor
+    const orders = await prisma.order.findMany({
+      where: {
+        status: { in: ["PAID", "COMPLETED"] },
+        createdAt: { gte: start },
+        product: { vendorId },
+      },
+      select: {
+        createdAt: true,
+        vendorEarningsCents: true,
+        amountCents: true,
+      },
+    });
+
+    const totalEarningsCents = orders.reduce((sum, o) => {
+      const v = typeof o.vendorEarningsCents === "number" ? o.vendorEarningsCents : 0;
+      const fallback = typeof o.amountCents === "number" ? o.amountCents : 0;
+      return sum + (v > 0 ? v : fallback);
+    }, 0);
+
+    // Prepare map with all days initialized to 0
+    const map = new Map<string, number>();
+    for (let i = 0; i < DAYS; i++) {
+      const d = new Date(start);
+      d.setUTCDate(start.getUTCDate() + i);
+      const key = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(
+        d.getUTCDate()
+      ).padStart(2, "0")}`;
+      map.set(key, 0);
+    }
+
+    for (const o of orders) {
+      const d = new Date(o.createdAt);
+      const key = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(
+        d.getUTCDate()
+      ).padStart(2, "0")}`;
+
+      const v = typeof o.vendorEarningsCents === "number" ? o.vendorEarningsCents : 0;
+      const fallback = typeof o.amountCents === "number" ? o.amountCents : 0;
+      const cents = v > 0 ? v : fallback;
+
+      map.set(key, (map.get(key) ?? 0) + cents);
+    }
+
+    const daily = Array.from(map.entries()).map(([date, cents]) => ({
+      date,
+      earningsCents: cents,
+    }));
+
+    return NextResponse.json({ daily, totalEarningsCents });
+  } catch (err) {
+    console.error("vendor earnings chart error:", err);
     return NextResponse.json(
-      { error: "Unauthorized" },
-      { status: 403 }
+      { error: "Server error", daily: [], totalEarnings: 0 },
+      { status: 500 }
     );
   }
-
-  const vendorId = session.user.id;
-
-  // Vendor-Produkte mit Orders laden
-  const products = await prisma.product.findMany({
-    where: { vendorId },
-    include: {
-      orders: {
-        select: { vendorEarningsCents: true, createdAt: true },
-      },
-    },
-  });
-
-  // Umsatzverlauf pro Tag
-  const dailyMap: Record<string, number> = {};
-
-  // Top-Produkte map
-  const productMap: Record<string, number> = {};
-
-  let total = 0;
-
-  for (const p of products) {
-    let productTotal = 0;
-
-    for (const o of p.orders) {
-      const amount = o.vendorEarningsCents || 0;
-      total += amount;
-      productTotal += amount;
-
-      const day = formatDate(o.createdAt);
-      dailyMap[day] = (dailyMap[day] || 0) + amount;
-    }
-
-    if (productTotal > 0) {
-      productMap[p.title] = productTotal;
-    }
-  }
-
-  // Format für Charts
-  const daily = Object.entries(dailyMap).map(([day, value]) => ({
-    date: day,
-    earnings: value / 100,
-  }));
-
-  const topProducts = Object.entries(productMap)
-    .map(([title, value]) => ({
-      title,
-      earnings: value / 100,
-    }))
-    .sort((a, b) => b.earnings - a.earnings)
-    .slice(0, 10);
-
-  return NextResponse.json({
-    totalEarnings: total / 100,
-    daily,
-    topProducts,
-  });
 }

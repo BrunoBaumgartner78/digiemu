@@ -1,145 +1,375 @@
 // src/app/page.tsx
 import Link from "next/link";
-import styles from "./page.module.css";
-import {
-  getLandingStats,
-  getTopProducts,
-} from "@/lib/landingStats";
+import { redirect } from "next/navigation";
+import { currentTenant } from "@/lib/tenant-context";
+import { resolveTenantHomePath } from "@/lib/tenants/home";
+import { getServerSession } from "next-auth";
+import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import MainFooter from "@/components/layout/MainFooter";
 
 export const dynamic = "force-dynamic";
 
-const chfCompact = new Intl.NumberFormat("de-CH", {
-  style: "currency",
-  currency: "CHF",
-  maximumFractionDigits: 0,
-});
+type Metrics = {
+  users: number | null;
+  orders: number | null;
+  gmvCHF: number | null; // amountCents
+  platformCHF: number | null; // platformEarningsCents
+  vendorCHF: number | null; // vendorEarningsCents
+  activeProducts: number | null;
+};
 
-const chfNormal = new Intl.NumberFormat("de-CH", {
-  style: "currency",
-  currency: "CHF",
-  minimumFractionDigits: 0,
-  maximumFractionDigits: 0,
-});
+function formatNumber(n: number | null) {
+  if (n === null || Number.isNaN(n)) return "—";
+  return new Intl.NumberFormat("de-CH").format(n);
+}
+
+function formatCHF(n: number | null) {
+  if (n === null || Number.isNaN(n)) return "—";
+  return new Intl.NumberFormat("de-CH", {
+    style: "currency",
+    currency: "CHF",
+  }).format(n);
+}
+
+async function getPublicMetrics(): Promise<Metrics> {
+  try {
+    const usersPromise = prisma.user.count().catch(() => null);
+    const ordersPromise = prisma.order.count().catch(() => null);
+
+    const revenuePromise = (async () => {
+      try {
+        const agg = await prisma.order.aggregate({
+          _sum: {
+            amountCents: true,
+            platformEarningsCents: true,
+            vendorEarningsCents: true,
+          },
+        });
+
+        const amountCents = agg?._sum?.amountCents;
+        const platformCents = agg?._sum?.platformEarningsCents;
+        const vendorCents = agg?._sum?.vendorEarningsCents;
+
+        return {
+          gmvCHF: typeof amountCents === "number" ? amountCents / 100 : null,
+          platformCHF: typeof platformCents === "number" ? platformCents / 100 : null,
+          vendorCHF: typeof vendorCents === "number" ? vendorCents / 100 : null,
+        };
+      } catch (e) {
+        console.error("[home metrics] order.aggregate failed:", e);
+        return { gmvCHF: null, platformCHF: null, vendorCHF: null };
+      }
+    })();
+
+    const activeProductsPromise = (async () => {
+      try {
+        return await prisma.product.count({ where: { isActive: true, status: "ACTIVE" } });
+      } catch {
+        try {
+          return await prisma.product.count();
+        } catch {
+          return null;
+        }
+      }
+    })();
+
+    const [users, orders, revenue, activeProducts] = await Promise.all([
+      usersPromise,
+      ordersPromise,
+      revenuePromise,
+      activeProductsPromise,
+    ]);
+
+    return {
+      users,
+      orders,
+      gmvCHF: revenue.gmvCHF,
+      platformCHF: revenue.platformCHF,
+      vendorCHF: revenue.vendorCHF,
+      activeProducts,
+    };
+  } catch (e) {
+    console.error("[home metrics] failed:", e);
+    return {
+      users: null,
+      orders: null,
+      gmvCHF: null,
+      platformCHF: null,
+      vendorCHF: null,
+      activeProducts: null,
+    };
+  }
+}
+
+function SectionTitle({ kicker, title }: { kicker?: string; title: string }) {
+  return (
+    <div style={{ marginBottom: 12 }}>
+      {kicker ? (
+        <div style={{ fontSize: 12, opacity: 0.75, letterSpacing: 0.6, textTransform: "uppercase" }}>
+          {kicker}
+        </div>
+      ) : null}
+      <h2 style={{ marginTop: 6, marginBottom: 0, fontSize: 24, fontWeight: 900 }}>{title}</h2>
+    </div>
+  );
+}
 
 export default async function HomePage() {
-  const [stats, topProducts] = await Promise.all([
-    getLandingStats(),
-    getTopProducts(3),
-  ]);
+  // Tenant-aware home routing: allow white-label tenants to default to /shop
+  try {
+    const tenant = await currentTenant();
+    const { homePath } = await resolveTenantHomePath(tenant.key);
+    if (homePath && homePath !== "/") redirect(homePath);
+  } catch (e) {
+    // Non-fatal: if tenant resolution fails, fall back to rendering the home page
+    console.warn("tenant home routing failed:", e);
+  }
+
+  const session = await getServerSession(auth);
+  const isLoggedIn = !!(session?.user as any)?.id;
+  const role = ((session?.user as any)?.role as string | undefined) ?? undefined;
+
+  const metrics = await getPublicMetrics();
+
+  const primaryCTA = isLoggedIn ? "/marketplace" : "/register";
+  const secondaryCTA = isLoggedIn ? "/dashboard" : "/login";
+
+  const primaryLabel = isLoggedIn ? "Marketplace öffnen" : "Konto erstellen";
+  const secondaryLabel = isLoggedIn ? "Zum Dashboard" : "Login";
 
   return (
-    <main className={styles.page}>
+    <main className="page-shell" style={{ paddingTop: 10 }}>
       {/* HERO */}
-      <section className={styles.hero}>
-        <div className={styles.heroText}>
-          <p className={styles.eyebrow}>Digital Marketplace</p>
-          <h1 className={styles.title}>
-            We are a digital marketplace
-            <br />
-            for creators.
-          </h1>
-          <p className={styles.lead}>
-            Verkaufe E-Books, Templates, Presets, Kurse und mehr – ohne
-            technischen Stress. DigiEmu kümmert sich um Zahlung, Auslieferung
-            und Statistik, du konzentrierst dich auf deine Inhalte.
-          </p>
+      <section className="neo-card" style={{ padding: 26 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+          <span
+            style={{
+              padding: "6px 12px",
+              borderRadius: 999,
+              fontSize: 12,
+              opacity: 0.85,
+              border: "1px solid rgba(0,0,0,0.06)",
+            }}
+          >
+            DigiEmu · Marketplace + White-Label
+          </span>
 
-          <div className={styles.heroActions}>
-            <Link href="/become-seller" className="neobtn primary">
+          {isLoggedIn ? (
+            <span style={{ fontSize: 12, opacity: 0.7 }}>Eingeloggt{role ? ` · ${role}` : ""}</span>
+          ) : (
+            <span style={{ fontSize: 12, opacity: 0.7 }}>
+              Kaufen & verkaufen – oder deine eigene Plattform starten
+            </span>
+          )}
+        </div>
+
+        <h1 style={{ marginTop: 14, marginBottom: 10, fontSize: 40, fontWeight: 950, lineHeight: 1.05 }}>
+          Digitale Produkte verkaufen.
+          <br />
+          Oder deinen eigenen Shop betreiben.
+        </h1>
+
+        <p style={{ marginTop: 0, opacity: 0.82, fontSize: 16, lineHeight: 1.6, maxWidth: 920 }}>
+          DigiEmu hat zwei klare Modi:
+          <strong> Marketplace</strong> (80/20 – ohne Fixkosten) und{" "}
+          <strong>Tenants / White-Label</strong> (Miete – 0% Provision, 100% Einnahmen beim Kunden).
+          Wir halten das Modell bewusst einfach, damit es ruhig und stabil funktioniert.
+        </p>
+
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 16 }}>
+          <Link href={primaryCTA} className="neobtn">
+            {primaryLabel}
+          </Link>
+          <Link href={secondaryCTA} className="neobtn neobtn-ghost">
+            {secondaryLabel}
+          </Link>
+
+          <Link href="/pricing" className="neobtn neobtn-ghost">
+            So funktioniert’s & Preise
+          </Link>
+          <Link href="/help" className="neobtn neobtn-ghost">
+            Hilfe
+          </Link>
+        </div>
+      </section>
+
+      {/* METRICS */}
+      <section
+        style={{
+          marginTop: 16,
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+          gap: 14,
+        }}
+      >
+        <div className="neo-card" style={{ padding: 18 }}>
+          <div style={{ fontSize: 12, opacity: 0.7 }}>GMV (Umsatz gesamt)</div>
+          <div style={{ marginTop: 6, fontSize: 22, fontWeight: 950 }}>{formatCHF(metrics.gmvCHF)}</div>
+        </div>
+
+        <div className="neo-card" style={{ padding: 18 }}>
+          <div style={{ fontSize: 12, opacity: 0.7 }}>Plattform Einnahmen</div>
+          <div style={{ marginTop: 6, fontSize: 22, fontWeight: 950 }}>{formatCHF(metrics.platformCHF)}</div>
+        </div>
+
+        <div className="neo-card" style={{ padding: 18 }}>
+          <div style={{ fontSize: 12, opacity: 0.7 }}>Vendor Einnahmen</div>
+          <div style={{ marginTop: 6, fontSize: 22, fontWeight: 950 }}>{formatCHF(metrics.vendorCHF)}</div>
+        </div>
+
+        <div className="neo-card" style={{ padding: 18 }}>
+          <div style={{ fontSize: 12, opacity: 0.7 }}>Aktivität</div>
+          <div style={{ marginTop: 6, fontSize: 14, lineHeight: 1.7 }}>
+            <div>
+              <strong>{formatNumber(metrics.users)}</strong> User
+            </div>
+            <div>
+              <strong>{formatNumber(metrics.orders)}</strong> Bestellungen
+            </div>
+            <div>
+              <strong>{formatNumber(metrics.activeProducts)}</strong> aktive Produkte
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* TWO MODES */}
+      <section
+        style={{
+          marginTop: 16,
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+          gap: 14,
+        }}
+      >
+        <div className="neo-card" style={{ padding: 22 }}>
+          <SectionTitle kicker="Modus 1" title="Marketplace (80/20 – keine Fixkosten)" />
+          <p style={{ opacity: 0.85, lineHeight: 1.75, marginTop: 0 }}>
+            Verkäufer zahlen <strong>0 CHF/Monat</strong>. Pro Verkauf gehen <strong>80%</strong> an den Vendor,
+            <strong> 20%</strong> finanzieren Betrieb, Zahlungsabwicklung, Infrastruktur und Weiterentwicklung.
+          </p>
+          <ul style={{ margin: 0, paddingLeft: 18, opacity: 0.88, lineHeight: 1.85 }}>
+            <li>Produkt hochladen, Preis setzen, live schalten</li>
+            <li>Checkout & Download-Flow inklusive</li>
+            <li>Transparente Auswertungen im Dashboard</li>
+          </ul>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 14 }}>
+            <Link href="/marketplace" className="neobtn">
+              Marketplace ansehen
+            </Link>
+            <Link href="/become-seller" className="neobtn neobtn-ghost">
               Verkäufer werden
             </Link>
-            <Link href="/marketplace" className="neobtn">
-              Produkte entdecken
+          </div>
+        </div>
+
+        <div className="neo-card" style={{ padding: 22 }}>
+          <SectionTitle kicker="Modus 2" title="Tenants / White-Label (Miete – 0% Provision)" />
+          <p style={{ opacity: 0.85, lineHeight: 1.75, marginTop: 0 }}>
+            Für Communities, Organisationen und Publisher: eigener Shop / eigene Plattform mit Branding.
+            Du zahlst eine <strong>fixe Monatsmiete</strong> – und behältst <strong>100%</strong> der Einnahmen.
+          </p>
+          <ul style={{ margin: 0, paddingLeft: 18, opacity: 0.88, lineHeight: 1.85 }}>
+            <li>Eigene Domain oder Subdomain</li>
+            <li>Eigene Admin-Rolle, eigene Verkäufer</li>
+            <li>Rechnung per E-Mail (10 Tage), Zahlung aufs Postkonto</li>
+          </ul>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 14 }}>
+            <Link href="/pricing#tenants" className="neobtn">
+              Tenant-Preise ansehen
+            </Link>
+            <Link href="/help" className="neobtn neobtn-ghost">
+              Fragen klären
             </Link>
           </div>
         </div>
-
-        {/* Live Dashboard – dynamisch */}
-        <aside className={styles.heroCard} aria-label="Live Dashboard">
-          <p className={styles.cardLabel}>Live Dashboard</p>
-          <div className={styles.kpiGrid}>
-            <div className={styles.cardRow}>
-              <p className={styles.cardCaption}>Heute</p>
-              <p className={styles.cardValue}>
-                {chfCompact.format(stats.todayTotal)}
-              </p>
-              <p className={styles.cardHint}>Direkte Verkäufe</p>
-            </div>
-            <div className={styles.cardRow}>
-              <p className={styles.cardCaption}>Monat</p>
-              <p className={styles.cardValue}>
-                {chfCompact.format(stats.monthTotal)}
-              </p>
-              <p className={styles.cardHint}>Umsatz im aktuellen Monat</p>
-            </div>
-            <div className={styles.cardRow}>
-              <p className={styles.cardCaption}>Creator</p>
-              <p className={styles.cardValue}>{stats.activeCreators}</p>
-              <p className={styles.cardHint}>Aktive Verkäufer:innen</p>
-            </div>
-          </div>
-        </aside>
       </section>
 
-      {/* BELIEBTE PRODUKTE – dynamisch */}
-      <section className={styles.popularSection}>
-        <header className={styles.popularHeader}>
-          <p className={styles.eyebrow}>Beliebte Produkte</p>
-          <h2 className={styles.sectionTitle}>
-            Die meistverkauften digitalen Produkte der letzten 30 Tage.
-          </h2>
-        </header>
-
-        {topProducts.length === 0 ? (
-          <p className={styles.bodyText}>
-            Noch keine Verkäufe – deine Produkte könnten hier stehen.
-          </p>
-        ) : (
-          <div className={styles.productGrid}>
-            {topProducts.map((p) => (
-              <Link
-                key={p.id}
-                href={`/product/${p.id}`}
-                className={styles.productCard}
-              >
-                <span className={styles.productType}>{p.type}</span>
-                <h3 className={styles.productTitle}>{p.title}</h3>
-                <p className={styles.productMeta}>
-                  {chfNormal.format(p.monthlyRevenue)} Umsatz in 30 Tagen
-                </p>
-              </Link>
-            ))}
-          </div>
-        )}
+      {/* ABOUT */}
+      <section className="neo-card" style={{ padding: 22, marginTop: 16 }}>
+        <SectionTitle kicker="Über DigiEmu" title="Ein System, das bewusst ruhig bleibt" />
+        <p style={{ opacity: 0.85, lineHeight: 1.75, marginTop: 0, maxWidth: 980 }}>
+          Viele verkaufen digitale Produkte über zusammengesetzte Tools: Payment hier, Datei dort, Support dazwischen.
+          DigiEmu bündelt die wichtigsten Bausteine in einem klaren Setup – damit Käufer weniger Reibung haben und
+          Verkäufer schnell starten können.
+        </p>
+        <p style={{ opacity: 0.85, lineHeight: 1.75, marginTop: 10, maxWidth: 980 }}>
+          Unser Fokus ist Klarheit in der Abrechnung: Marketplace mit 80/20 – und White-Label/Tenants mit Miete (0%
+          Provision). Keine versteckten Stufen, keine unnötigen Billing-Komplexitäten.
+        </p>
       </section>
 
-      {/* ABOUT / CLAIM */}
-      <section className={styles.aboutSection}>
-        <div className={styles.aboutInner}>
-          <h2 className={styles.sectionTitle}>
-            DigiEmu – dein Marktplatz für digitale Produkte
-          </h2>
-          <p className={styles.bodyText}>
-            DigiEmu ist ein kuratierter Multivendor-Marktplatz für digitale
-            Produkte wie E-Books, Online-Kurse, Templates, Presets, Musik und
-            mehr. Creator:innen verkaufen ihre Dateien direkt an Kund:innen,
-            während DigiEmu sich um sichere Zahlungen, automatische Auslieferung
-            und Reporting kümmert.
+      {/* HOW IT WORKS */}
+      <section
+        style={{
+          marginTop: 16,
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+          gap: 14,
+        }}
+      >
+        <div className="neo-card" style={{ padding: 20 }}>
+          <SectionTitle kicker="1" title="Entdecken & auswählen" />
+          <p style={{ opacity: 0.85, lineHeight: 1.7, marginTop: 0 }}>
+            Im Marketplace findest du digitale Produkte mit klarer Preisangabe und sauberer Produktseite.
           </p>
-          <p className={styles.bodyText}>
-            Durch eine faire 80/20-Aufteilung, klare Bedingungen und
-            transparente Statistiken behalten Creator:innen jederzeit den
-            Überblick. DigiEmu reduziert technischen Stress und macht es
-            einfach, digitale Produkte professionell zu vertreiben – vom ersten
-            Upload bis zur Auszahlung.
+        </div>
+
+        <div className="neo-card" style={{ padding: 20 }}>
+          <SectionTitle kicker="2" title="Sicher bezahlen" />
+          <p style={{ opacity: 0.85, lineHeight: 1.7, marginTop: 0 }}>
+            Der Checkout ist stabil und nachvollziehbar. Bestellungen werden sauber erfasst.
+          </p>
+        </div>
+
+        <div className="neo-card" style={{ padding: 20 }}>
+          <SectionTitle kicker="3" title="Sofort downloaden" />
+          <p style={{ opacity: 0.85, lineHeight: 1.7, marginTop: 0 }}>
+            Direkt nach dem Kauf sind Downloads verfügbar – ohne E-Mail-Chaos.
           </p>
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer className={styles.footer}>
-        © {new Date().getFullYear()} DigiEmu – Digital Marketplace for Creators
-      </footer>
+      {/* FAQ */}
+      <section className="neo-card" style={{ padding: 22, marginTop: 16, marginBottom: 18 }}>
+        <SectionTitle kicker="FAQ" title="Häufige Fragen" />
+
+        <div style={{ display: "grid", gap: 12, marginTop: 10 }}>
+          <div>
+            <div style={{ fontWeight: 900 }}>Gibt es Vendor-Abos?</div>
+            <div style={{ opacity: 0.85, lineHeight: 1.7, marginTop: 4 }}>
+              Nein. Im Marketplace gibt es keine Fixkosten. Die Abrechnung erfolgt über die 80/20-Aufteilung pro Verkauf.
+            </div>
+          </div>
+
+          <div>
+            <div style={{ fontWeight: 900 }}>Was ist der Unterschied zwischen Marketplace und Tenant?</div>
+            <div style={{ opacity: 0.85, lineHeight: 1.7, marginTop: 4 }}>
+              Marketplace: 80/20 pro Verkauf. Tenant/White-Label: fixe Monatsmiete, 0% Provision – der Kunde behält 100%.
+            </div>
+          </div>
+
+          <div>
+            <div style={{ fontWeight: 900 }}>Wie bezahlen Tenants?</div>
+            <div style={{ opacity: 0.85, lineHeight: 1.7, marginTop: 4 }}>
+              Per Rechnung (PDF per E-Mail), zahlbar innert 10 Tagen, Zahlung auf PostFinance-IBAN. Optional später per
+              Stripe-Zahlungslink.
+            </div>
+          </div>
+        </div>
+
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 14 }}>
+          <Link href="/pricing" className="neobtn neobtn-ghost">
+            So funktioniert’s & Preise
+          </Link>
+          <Link href="/marketplace" className="neobtn">
+            Jetzt starten
+          </Link>
+        </div>
+      </section>
+
+      <MainFooter />
     </main>
   );
 }

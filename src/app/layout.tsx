@@ -1,29 +1,30 @@
-// src/app/layout.tsx
 import "./globals.css";
-import type { Metadata } from "next";
+import { currentTenant } from "@/lib/tenant-context";
 import { Providers } from "./providers";
 import { MainHeader } from "@/components/layout/MainHeader";
+import CookieConsentBanner from "@/components/cookies/CookieConsentBanner";
+import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
+import ToasterMount from "@/components/ToasterMount";
 
-export const metadata: Metadata = {
-  title: "DigiEmu – Digitaler Marktplatz",
-  description: "Digitale Produkte kaufen & verkaufen.",
-};
+const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const tenant = await currentTenant();
+  const tenantKey = (tenant?.key ?? "DEFAULT").toLowerCase();
+
   return (
-    <html lang="de" suppressHydrationWarning>
-      {/* Wichtig: richtiges Token verwenden */}
-      <body className="bg-[var(--page-bg)] text-[var(--text-main)]">
+    <html lang="de" suppressHydrationWarning data-tenant={tenantKey}>
+      <body>
         <Providers>
           <MainHeader />
-          {/* Konsistenter Shell-Wrapper */}
           <div className="page-shell">
             <main className="page-main">{children}</main>
           </div>
+
+          {/* Banner kann innerhalb der Providers bleiben */}
+          <CookieConsentBanner />
+          <ToasterMount />
+          {GA_ID ? <GoogleAnalytics gaId={GA_ID} /> : null}
         </Providers>
       </body>
     </html>

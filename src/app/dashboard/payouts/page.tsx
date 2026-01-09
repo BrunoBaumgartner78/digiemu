@@ -1,153 +1,229 @@
 // src/app/dashboard/payouts/page.tsx
-
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import Link from "next/link";
+import { auth } from "@/lib/auth";
+import RequestPayoutButton from "./RequestPayoutButton";
 
 export const metadata = {
   title: "Auszahlungen – Vendor Dashboard",
 };
 
-export default async function VendorPayoutsPage() {
-  const session = await getServerSession(authOptions);
+export const dynamic = "force-dynamic";
 
-  // 🔐 Zugriff nur für Vendoren
-  if (!session || session.user.role !== "VENDOR") {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-6">
-        <div className="neumorph-card p-8 max-w-md w-full text-center">
-          <h1 className="text-xl font-bold mb-2">Zugriff verweigert</h1>
-          <p className="text-sm opacity-75">
-            Diese Seite ist nur für Verkäufer verfügbar.
-          </p>
-        </div>
-      </div>
-    );
-  }
+function chf(cents: number) {
+  return `CHF ${(cents / 100).toFixed(2)}`;
+}
+
+export default async function VendorPayoutsPage() {
+  const session = await getServerSession(auth);
+
+  if (!session?.user) redirect("/login");
+  if (session.user.role !== "VENDOR") redirect("/login");
 
   const vendorId = session.user.id;
 
-  // Vendor + Produkteinnahmen + Auszahlungen laden
-  const vendor = await prisma.user.findUnique({
-    where: { id: vendorId },
-    include: {
-      products: {
-        include: {
-          orders: {
-            select: { vendorEarningsCents: true },
-          },
-        },
-      },
-      payouts: {
-        orderBy: { createdAt: "desc" },
-      },
-    },
-  });
+  // ✅ Robust: ältere/abweichende Status-Werte berücksichtigen
+  const paidLikeStatuses = [
+    "PAID",
+    "paid",
+    "COMPLETED",
+    "completed",
+    "SUCCESS",
+    "success",
+  ];
 
-  if (!vendor) {
-    return (
-      <div className="p-8">
-        <div className="neumorph-card p-6">
-          <h1 className="text-xl font-bold">Fehler</h1>
-          <p>Vendor nicht gefunden.</p>
-        </div>
-      </div>
-    );
+  /**
+   * ✅ Earnings Quelle:
+   * - Prefer: OrderItem.vendorEarningsCents (Vendor = 80%)
+   * - Fallback: Order.vendorEarningsCents
+   *
+   * => Matcht sauber mit Payout-Requests (z.B. 191.84 = 80% von 239.80).
+   */
+  let totalEarnings = 0;
+
+  // Prisma Client hat evtl. (noch) kein orderItem im Typing: daher "as any" safe-check.
+  const hasOrderItemAggregate =
+    typeof (prisma as any).orderItem?.aggregate === "function";
+
+  if (hasOrderItemAggregate) {
+    const agg = await (prisma as any).orderItem.aggregate({
+      _sum: { vendorEarningsCents: true },
+      where: {
+        vendorId,
+        order: { status: { in: paidLikeStatuses } },
+      },
+    });
+    totalEarnings = agg?._sum?.vendorEarningsCents ?? 0;
+  } else {
+    const agg = await prisma.order.aggregate({
+      _sum: { vendorEarningsCents: true },
+      where: {
+        product: { vendorId },
+        status: { in: paidLikeStatuses as any },
+      },
+    });
+    totalEarnings = agg._sum.vendorEarningsCents ?? 0;
   }
 
-  // Einnahmen berechnen
-  const totalEarnings = vendor.products
-    .flatMap((p) => p.orders)
-    .reduce((sum, o) => sum + (o.vendorEarningsCents || 0), 0);
+  // ✅ Bereits ausbezahlt (PAID payouts)
+  const paidAgg = await prisma.payout.aggregate({
+    _sum: { amountCents: true },
+    where: { vendorId, status: "PAID" },
+  });
+  const alreadyPaid = paidAgg._sum.amountCents ?? 0;
 
-  const alreadyPaid = vendor.payouts
-    .filter((p) => p.status === "PAID")
-    .reduce((sum, p) => sum + p.amountCents, 0);
+  // ✅ Offene Requests (PENDING payouts)
+  const pendingAgg = await prisma.payout.aggregate({
+    _sum: { amountCents: true },
+    where: { vendorId, status: "PENDING" },
+  });
+  const pendingRequested = pendingAgg._sum.amountCents ?? 0;
 
-  const pending = Math.max(totalEarnings - alreadyPaid, 0);
+  // ✅ Verfügbar = Earnings - Paid - PendingRequests
+  const available = Math.max(totalEarnings - alreadyPaid - pendingRequested, 0);
+
+  // ✅ Historie
+  const payouts = await prisma.payout.findMany({
+    where: { vendorId },
+    orderBy: { createdAt: "desc" },
+  });
 
   return (
-    <div className="px-6 py-8 max-w-4xl mx-auto space-y-8">
-      {/* HEADER */}
-      <header>
-        <h1 className="text-3xl font-bold mb-2">Auszahlungen</h1>
-        <p className="text-sm text-muted">
-          Übersicht deiner Einnahmen und bisherigen Auszahlungen.
-        </p>
-      </header>
-
-      {/* SUMMARY BOXES */}
-      <div className="grid md:grid-cols-3 gap-4">
-        <div className="neumorph-card p-5">
-          <h3 className="text-sm opacity-70">Gesamte Einnahmen</h3>
-          <p className="text-2xl font-bold">
-            CHF {(totalEarnings / 100).toFixed(2)}
+    <main className="page-shell-wide">
+      <section className="neo-surface p-6 md:p-8 space-y-8">
+        {/* Header */}
+        <header className="space-y-2">
+          <h1 className="text-2xl md:text-3xl font-extrabold text-white">
+            Auszahlungen
+          </h1>
+          <p className="text-sm text-white/75 max-w-2xl">
+            Hier siehst du deine Vendor-Earnings (80%), bereits bezahlte
+            Auszahlungen und offene Payout-Requests.
           </p>
-        </div>
+        </header>
 
-        <div className="neumorph-card p-5">
-          <h3 className="text-sm opacity-70">Bereits ausbezahlt</h3>
-          <p className="text-2xl font-bold">
-            CHF {(alreadyPaid / 100).toFixed(2)}
-          </p>
-        </div>
-
-        <div className="neumorph-card p-5">
-          <h3 className="text-sm opacity-70">Ausstehend</h3>
-          <p className="text-2xl font-bold">
-            CHF {(pending / 100).toFixed(2)}
-          </p>
-          {pending > 0 && (
-            <p className="text-xs opacity-60 mt-1">
-              Auszahlung wird vom Admin freigegeben.
-            </p>
-          )}
-        </div>
-      </div>
-
-      {/* PAYOUT LIST */}
-      <div className="neumorph-card p-6">
-        <h2 className="text-xl font-semibold mb-4">Auszahlungshistorie</h2>
-
-        {vendor.payouts.length === 0 ? (
-          <p className="opacity-70">Bisher wurden keine Auszahlungen vorgenommen.</p>
-        ) : (
-          <div className="space-y-3">
-            {vendor.payouts.map((payout) => (
-              <div
-                key={payout.id}
-                className="flex justify-between items-center p-3 rounded-lg bg-white/30"
-              >
-                <div>
-                  <p className="font-semibold">
-                    CHF {(payout.amountCents / 100).toFixed(2)}
-                  </p>
-                  <p className="text-xs text-muted">
-                    Erstellt am{" "}
-                    {payout.createdAt.toLocaleDateString("de-CH")}
-                  </p>
-                  {payout.status === "PAID" && payout.paidAt && (
-                    <p className="text-xs text-green-600">
-                      Ausbezahlt am {payout.paidAt.toLocaleDateString("de-CH")}
-                    </p>
-                  )}
-                </div>
-
-                <span
-                  className={`px-3 py-1 text-xs rounded-full ${
-                    payout.status === "PAID"
-                      ? "bg-green-200 text-green-700"
-                      : "bg-yellow-200 text-yellow-700"
-                  }`}
-                >
-                  {payout.status}
-                </span>
-              </div>
-            ))}
+        {/* Summary Cards */}
+        <section className="grid gap-6 md:grid-cols-3">
+          <div className="neo-card p-6 md:p-7">
+            <div className="text-xs uppercase tracking-[0.18em] text-white/70">
+              Vendor-Earnings (80%)
+            </div>
+            <div className="mt-3 text-2xl font-extrabold text-white">
+              {chf(totalEarnings)}
+            </div>
+            <div className="mt-2 text-xs text-white/60">
+              Summe deiner Einnahmen aus bezahlten Bestellungen (nach Split).
+            </div>
           </div>
-        )}
-      </div>
-    </div>
+
+          <div className="neo-card p-6 md:p-7">
+            <div className="text-xs uppercase tracking-[0.18em] text-white/70">
+              Bereits ausbezahlt
+            </div>
+            <div className="mt-3 text-2xl font-extrabold text-white">
+              {chf(alreadyPaid)}
+            </div>
+            <div className="mt-2 text-xs text-white/60">
+              Alle Payouts mit Status PAID.
+            </div>
+          </div>
+
+          <div className="neo-card p-6 md:p-7">
+            <div className="text-xs uppercase tracking-[0.18em] text-white/70">
+              Verfügbar
+            </div>
+
+            <div className="mt-3 text-2xl font-extrabold text-white">
+              {chf(available)}
+            </div>
+
+            <div className="mt-2 text-xs text-white/60">
+              Verfügbar = Earnings − Paid − Pending Requests
+            </div>
+
+            {/* ✅ CTA Block: mehr Luft + Button bekommt pending */}
+            <div className="mt-6">
+             <RequestPayoutButton
+  availableCents={available}
+  pendingRequestedCents={pendingRequested}
+/>
+
+            </div>
+
+            {/* ✅ Kein doppelter “Offener Request”-Text mehr hier.
+                Das soll der Button sauber anzeigen (Request läuft / Offener Request / etc.). */}
+          </div>
+        </section>
+
+        {/* History */}
+        <section className="neo-card p-6 md:p-7">
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <h2 className="text-lg md:text-xl font-semibold text-white">
+              Auszahlungshistorie
+            </h2>
+            <div className="text-xs text-white/60">{payouts.length} Einträge</div>
+          </div>
+
+          <div className="mt-6 space-y-4">
+            {payouts.length === 0 ? (
+              <p className="text-sm text-white/70">
+                Noch keine Auszahlungen vorhanden.
+              </p>
+            ) : (
+              payouts.map((p) => {
+                const isPaid = p.status === "PAID";
+                const isPending = p.status === "PENDING";
+
+                return (
+                  <div
+                    key={p.id}
+                    className="neo-card-soft px-5 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5"
+                  >
+                    <div className="space-y-1.5">
+                      <div className="text-sm font-semibold text-white">
+                        {chf(p.amountCents)}
+                      </div>
+
+                      <div className="text-xs text-white/65">
+                        Erstellt: {p.createdAt.toLocaleDateString("de-CH")}
+                        {p.paidAt
+                          ? ` · Bezahlt: ${p.paidAt.toLocaleDateString("de-CH")}`
+                          : ""}
+                      </div>
+
+                      {isPending ? (
+                        <div className="text-xs text-white/55">
+                          Wartet auf Freigabe durch Admin.
+                        </div>
+                      ) : null}
+                    </div>
+
+                    {/* ✅ Status Pill: groß, neumorph, klar lesbar */}
+                    <span
+                      className={[
+                        "inline-flex items-center justify-center",
+                        "rounded-full",
+                        "px-6 py-3",
+                        "min-w-[170px] sm:min-w-[190px]",
+                        "text-[11px] md:text-xs font-extrabold tracking-[0.16em] uppercase",
+                        "border border-white/20",
+                        "text-white/90",
+                        "shadow-[inset_-7px_-7px_14px_rgba(0,0,0,0.26),inset_7px_7px_14px_rgba(255,255,255,0.10)]",
+                        isPaid
+                          ? "bg-[linear-gradient(180deg,rgba(90,220,180,0.20),rgba(20,120,90,0.08))]"
+                          : "bg-[linear-gradient(180deg,rgba(255,210,110,0.22),rgba(170,120,30,0.10))]",
+                      ].join(" ")}
+                    >
+                      {p.status}
+                    </span>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </section>
+      </section>
+    </main>
   );
 }

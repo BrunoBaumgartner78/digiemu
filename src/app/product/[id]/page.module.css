@@ -1,3 +1,18 @@
+/* Buy card readability and contrast improvements */
+.buyCard {
+  backdrop-filter: blur(10px);
+  background: rgba(255,255,255,0.78);
+  border: 1px solid rgba(0,0,0,0.06);
+}
+
+.textSafe {
+  color: rgba(0,0,0,0.92);
+  text-shadow: none;
+}
+
+.text-muted {
+  color: rgba(0,0,0,0.62);
+}
 /* UX-Polish für Produktdetailseite – DigiEmu Neomorph Style */
 
 .page {
@@ -72,6 +87,10 @@
 }
 
 .mediaImage {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
 }
 

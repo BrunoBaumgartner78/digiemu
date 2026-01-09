@@ -4,8 +4,14 @@ import "./MainHeader.css";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, useEffect } from "react";
+import * as React from "react";
+import { useEffect, useState } from "react";
 import { signOut, useSession } from "next-auth/react";
+
+// OPTIONAL: nur importieren wenn du es wirklich nutzt
+import FeatureGate from "@/components/FeatureGate";
+
+type Role = "ADMIN" | "VENDOR" | "BUYER" | undefined;
 
 const mainLinks = [
   { href: "/", label: "Home" },
@@ -14,67 +20,158 @@ const mainLinks = [
   { href: "/help", label: "Hilfe" },
 ];
 
-export function MainHeader() {
+// Option B: Debug-Logger (Client) – nur wenn explizit via NEXT_PUBLIC Flag aktiviert
+const isDebug = process.env.NEXT_PUBLIC_DEBUG_MAINHEADER === "1";
+const dbg = (...args: any[]) => {
+  if (isDebug) console.log(...args);
+};
+
+type Props = {
+  variant?: "DEFAULT" | "MINIMAL";
+  tenantBrand?: { name?: string; logoUrl?: string | null } | null;
+  showAuthLinks?: boolean;
+  showNavLinks?: boolean;
+  headerVariantName?: string | undefined;
+};
+
+export function MainHeader(props: Props) {
+  const {
+    variant = "DEFAULT",
+    tenantBrand = null,
+    showAuthLinks = true,
+    showNavLinks = true,
+  } = props;
+
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
 
-  const isLoggedIn = !!session;
-  const userRole = session?.user?.role;
-  const isAdmin = userRole === "ADMIN";
+  const isAuthLoading = status === "loading";
+  const isLoggedIn = status === "authenticated";
+
+  const role: Role = (session?.user as any)?.role;
+  const isAdmin = role === "ADMIN";
+  const isVendor = role === "VENDOR" || role === "ADMIN";
+  const isBuyer = role === "BUYER";
 
   useEffect(() => {
-    document.body.style.overflow = mobileOpen ? "hidden" : "";
+    // bewusst ohne session.user, damit keine sensiblen Daten im Browser-Log landen
+    dbg("[MainHeader] role check", { status, role, isAdmin, isVendor, isBuyer });
+  }, [status, role, isAdmin, isVendor, isBuyer]);
+
+  useEffect(() => {
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = mobileOpen ? "hidden" : prevOverflow || "";
+    return () => {
+      document.body.style.overflow = prevOverflow || "";
+    };
   }, [mobileOpen]);
+
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
 
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href) && href !== "/";
 
-  return (
-    <header
-      className="main-header"
-      data-mobile-open={mobileOpen ? "true" : "false"}
+  const AdminLink = (
+    <Link
+      href="/admin"
+      className={"nav-pill nav-pill-ghost" + (isActive("/admin") ? " nav-pill-active" : "")}
     >
+      Admin
+    </Link>
+  );
+
+  // ✅ Tenants link (admin-only)
+  const TenantsLink = (
+    <Link
+      href="/admin/tenants"
+      className={"nav-pill nav-pill-ghost" + (isActive("/admin/tenants") ? " nav-pill-active" : "")}
+    >
+      Tenants
+    </Link>
+  );
+
+  const isMinimal = variant === "MINIMAL";
+
+  return (
+    <header className="main-header" data-mobile-open={mobileOpen ? "true" : "false"}>
       <div className="header-inner">
-        {/* BRAND */}
-        <Link href="/" className="logo-lockup">
-          <span className="logo-main">DigiEmu</span>
-          <span className="logo-sub">Digital Marketplace</span>
+        <Link href="/" className="logo-lockup" onClick={() => setMobileOpen(false)}>
+          {tenantBrand?.logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={tenantBrand.logoUrl} alt={tenantBrand?.name || ""} className="logo-main" />
+          ) : (
+            <>
+              <span className="logo-main">{tenantBrand?.name || "DigiEmu"}</span>
+              {!isMinimal && <span className="logo-sub">Digital Marketplace</span>}
+            </>
+          )}
         </Link>
 
-        {/* DESKTOP NAVIGATION */}
-        <nav className="primary-nav" aria-label="Navigation">
-          {mainLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={
-                "nav-pill nav-pill-small" +
-                (isActive(link.href) ? " nav-pill-active" : "")
-              }
-            >
-              {link.label}
-            </Link>
-          ))}
-        </nav>
+        {/* NAV LINKS */}
+        {showNavLinks ? (
+          <nav className="primary-nav" aria-label="Navigation">
+            {isMinimal ? (
+              <ul className="flex items-center gap-4 text-sm">
+                <li>
+                  <Link href="/shop">Shop</Link>
+                </li>
+              </ul>
+            ) : (
+              mainLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={"nav-pill nav-pill-small" + (isActive(link.href) ? " nav-pill-active" : "")}
+                >
+                  {link.label}
+                </Link>
+              ))
+            )}
+          </nav>
+        ) : (
+          <div />
+        )}
 
-        {/* USER ACTIONS */}
+        {/* AUTH LINKS / ACCOUNT LINKS */}
         <div className="header-actions">
-          {isLoggedIn ? (
+          {!showAuthLinks ? null : isAuthLoading ? (
+            <span className="nav-pill nav-pill-ghost" aria-label="Lade Session…">
+              …
+            </span>
+          ) : isLoggedIn ? (
             <>
-              {/* Dashboard always for logged-in users */}
               <Link
-                href="/dashboard"
+                href="/account/downloads"
                 className={
                   "nav-pill nav-pill-ghost" +
-                  (isActive("/dashboard") ? " nav-pill-active" : "")
+                  (isActive("/account/downloads") ? " nav-pill-active" : "")
                 }
               >
-                Dashboard
+                Downloads
               </Link>
 
-              {/* Top-Produkte only for VENDOR or ADMIN */}
-              {userRole && (userRole === "VENDOR" || userRole === "ADMIN") && (
+              {isBuyer && (
+                <Link
+                  href="/account/orders"
+                  className={"nav-pill nav-pill-ghost" + (isActive("/account/orders") ? " nav-pill-active" : "")}
+                >
+                  Bestellungen
+                </Link>
+              )}
+
+              {isVendor && (
+                <Link
+                  href="/dashboard"
+                  className={"nav-pill nav-pill-ghost" + (isActive("/dashboard") ? " nav-pill-active" : "")}
+                >
+                  Dashboard
+                </Link>
+              )}
+
+              {isVendor && (
                 <Link
                   href="/dashboard/products/top"
                   className={
@@ -87,40 +184,28 @@ export function MainHeader() {
               )}
 
               {/* Vendor-only Analytics */}
-              {userRole === "VENDOR" && (
+              {role === "VENDOR" && (
                 <Link
                   href="/dashboard/vendor"
-                  className={
-                    "nav-pill nav-pill-ghost" +
-                    (isActive("/dashboard/vendor")
-                      ? " nav-pill-active"
-                      : "")
-                  }
+                  className={"nav-pill nav-pill-ghost" + (isActive("/dashboard/vendor") ? " nav-pill-active" : "")}
                 >
                   Analytics
                 </Link>
               )}
 
-              {/* Admin-only */}
-              {isAdmin && (
-                <Link
-                  href="/admin"
-                  className={
-                    "nav-pill nav-pill-ghost" +
-                    (isActive("/admin") ? " nav-pill-active" : "")
-                  }
-                >
-                  Admin
-                </Link>
-              )}
+              {/* ✅ Admin-only: Admin + Tenants */}
+              {isAdmin ? (
+                <FeatureGate feature="admin" fallback={<>{AdminLink}{TenantsLink}</>}>
+                  <>
+                    {AdminLink}
+                    {TenantsLink}
+                  </>
+                </FeatureGate>
+              ) : null}
 
-              {/* Profile always for logged-in users */}
               <Link
                 href="/profile"
-                className={
-                  "nav-pill nav-pill-ghost" +
-                  (isActive("/profile") ? " nav-pill-active" : "")
-                }
+                className={"nav-pill nav-pill-ghost" + (isActive("/profile") ? " nav-pill-active" : "")}
               >
                 Profil
               </Link>
@@ -136,19 +221,13 @@ export function MainHeader() {
             <>
               <Link
                 href="/login"
-                className={
-                  "nav-pill nav-pill-ghost" +
-                  (isActive("/login") ? " nav-pill-active" : "")
-                }
+                className={"nav-pill nav-pill-ghost" + (isActive("/login") ? " nav-pill-active" : "")}
               >
                 Login
               </Link>
               <Link
                 href="/register"
-                className={
-                  "nav-pill nav-pill-ghost" +
-                  (isActive("/register") ? " nav-pill-active" : "")
-                }
+                className={"nav-pill nav-pill-ghost" + (isActive("/register") ? " nav-pill-active" : "")}
               >
                 Konto erstellen
               </Link>
@@ -156,7 +235,6 @@ export function MainHeader() {
           )}
         </div>
 
-        {/* MOBILE HAMBURGER */}
         <button
           type="button"
           className={"hamburger-btn" + (mobileOpen ? " is-open" : "")}
@@ -172,12 +250,12 @@ export function MainHeader() {
         </button>
       </div>
 
-      {/* MOBILE MENU OVERLAY */}
       {mobileOpen && (
         <div className="mobile-nav-wrapper" role="dialog" aria-modal="true">
           <button
             className="mobile-nav-backdrop"
             onClick={() => setMobileOpen(false)}
+            aria-label="Menü schließen"
           />
 
           <div className="mobile-nav-card">
@@ -186,79 +264,99 @@ export function MainHeader() {
                 <span className="mobile-nav-kicker">Navigation</span>
                 <span className="mobile-nav-brand">Digital Marketplace</span>
               </div>
-              <button
-                className="mobile-nav-close"
-                onClick={() => setMobileOpen(false)}
-              >
+              <button className="mobile-nav-close" onClick={() => setMobileOpen(false)}>
                 Schließen
               </button>
             </div>
 
             <nav className="mobile-nav-list">
-              {mainLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={
-                    "mobile-nav-pill" +
-                    (isActive(link.href) ? " mobile-nav-pill-active" : "")
-                  }
-                  onClick={() => setMobileOpen(false)}
-                >
-                  {link.label}
-                </Link>
-              ))}
-
-              <div className="mobile-nav-divider" />
-
-              {isLoggedIn ? (
+              {showNavLinks ? (
                 <>
+                  {mainLinks.map((link) => (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className={"mobile-nav-pill" + (isActive(link.href) ? " mobile-nav-pill-active" : "")}
+                      onClick={() => setMobileOpen(false)}
+                    >
+                      {link.label}
+                    </Link>
+                  ))}
+                  <div className="mobile-nav-divider" />
+                </>
+              ) : null}
+
+              {!showAuthLinks ? null : isAuthLoading ? (
+                <span className="mobile-nav-pill" aria-label="Lade Session…">
+                  …
+                </span>
+              ) : isLoggedIn ? (
+                <>
+                  {isVendor && (
+                    <Link
+                      href="/dashboard"
+                      onClick={() => setMobileOpen(false)}
+                      className={"mobile-nav-pill" + (isActive("/dashboard") ? " mobile-nav-pill-active" : "")}
+                    >
+                      Dashboard
+                    </Link>
+                  )}
+
                   <Link
-                    href="/dashboard"
+                    href="/account/downloads"
                     onClick={() => setMobileOpen(false)}
-                    className={
-                      "mobile-nav-pill" +
-                      (isActive("/dashboard") ? " mobile-nav-pill-active" : "")
-                    }
+                    className={"mobile-nav-pill" + (isActive("/account/downloads") ? " mobile-nav-pill-active" : "")}
                   >
-                    Dashboard
+                    Downloads
                   </Link>
 
-                  {userRole === "VENDOR" && (
+                  {isBuyer && (
+                    <Link
+                      href="/account/orders"
+                      onClick={() => setMobileOpen(false)}
+                      className={"mobile-nav-pill" + (isActive("/account/orders") ? " mobile-nav-pill-active" : "")}
+                    >
+                      Bestellungen
+                    </Link>
+                  )}
+
+                  {role === "VENDOR" && (
                     <Link
                       href="/dashboard/vendor"
                       onClick={() => setMobileOpen(false)}
-                      className={
-                        "mobile-nav-pill" +
-                        (isActive("/dashboard/vendor")
-                          ? " mobile-nav-pill-active"
-                          : "")
-                      }
+                      className={"mobile-nav-pill" + (isActive("/dashboard/vendor") ? " mobile-nav-pill-active" : "")}
                     >
                       Analytics
                     </Link>
                   )}
 
-                  {isAdmin && (
-                    <Link
-                      href="/admin"
-                      onClick={() => setMobileOpen(false)}
-                      className={
-                        "mobile-nav-pill" +
-                        (isActive("/admin") ? " mobile-nav-pill-active" : "")
-                      }
-                    >
-                      Admin
-                    </Link>
-                  )}
+                  {/* ✅ Admin-only: Admin + Tenants */}
+                  {isAdmin ? (
+                    <FeatureGate feature="admin" fallback={null}>
+                      <>
+                        <Link
+                          href="/admin"
+                          onClick={() => setMobileOpen(false)}
+                          className={"mobile-nav-pill" + (isActive("/admin") ? " mobile-nav-pill-active" : "")}
+                        >
+                          Admin
+                        </Link>
+
+                        <Link
+                          href="/admin/tenants"
+                          onClick={() => setMobileOpen(false)}
+                          className={"mobile-nav-pill" + (isActive("/admin/tenants") ? " mobile-nav-pill-active" : "")}
+                        >
+                          Tenants
+                        </Link>
+                      </>
+                    </FeatureGate>
+                  ) : null}
 
                   <Link
                     href="/profile"
                     onClick={() => setMobileOpen(false)}
-                    className={
-                      "mobile-nav-pill" +
-                      (isActive("/profile") ? " mobile-nav-pill-active" : "")
-                    }
+                    className={"mobile-nav-pill" + (isActive("/profile") ? " mobile-nav-pill-active" : "")}
                   >
                     Profil
                   </Link>
@@ -279,22 +377,14 @@ export function MainHeader() {
                   <Link
                     href="/login"
                     onClick={() => setMobileOpen(false)}
-                    className={
-                      "mobile-nav-pill" +
-                      (isActive("/login") ? " mobile-nav-pill-active" : "")
-                    }
+                    className={"mobile-nav-pill" + (isActive("/login") ? " mobile-nav-pill-active" : "")}
                   >
                     Login
                   </Link>
                   <Link
                     href="/register"
                     onClick={() => setMobileOpen(false)}
-                    className={
-                      "mobile-nav-pill" +
-                      (isActive("/register")
-                        ? " mobile-nav-pill-active"
-                        : "")
-                    }
+                    className={"mobile-nav-pill" + (isActive("/register") ? " mobile-nav-pill-active" : "")}
                   >
                     Konto erstellen
                   </Link>

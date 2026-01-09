@@ -1,5 +1,7 @@
-// src/app/account/profile/ProfileForm.tsx
 "use client";
+
+import React from "react";
+import styles from "./profile.module.css";
 
 type InitialData = {
   displayName: string;
@@ -26,6 +28,8 @@ type ProfileFormProps = {
   stats: Stats;
   onChange: (field: keyof InitialData, value: string | boolean) => void;
   onSubmit: (e: React.FormEvent) => Promise<void> | void;
+  saving?: boolean;
+  onPreview?: () => void;
 };
 
 export default function ProfileForm({
@@ -33,54 +37,82 @@ export default function ProfileForm({
   stats,
   onChange,
   onSubmit,
+  saving = false,
+  onPreview,
 }: ProfileFormProps) {
-  const handleSubmit = async (e: React.FormEvent) => {
-    await onSubmit(e);
+  const handlePreviewClick = () => {
+    if (!saving) onPreview?.();
   };
 
   return (
-    <form className="profile-form" onSubmit={handleSubmit}>
-      {/* Beispiel-Felder – hier deine bestehenden Inputs einbauen */}
-      <div className="form-row">
-        <label htmlFor="displayName">Anzeigename</label>
+    <form className={styles.profileForm} onSubmit={onSubmit}>
+      <div className={styles.formGrid}>
+        <label className={styles.label} htmlFor="displayName">
+          Anzeigename
+        </label>
         <input
+          className={styles.input}
           id="displayName"
           value={form.displayName}
           onChange={(e) => onChange("displayName", e.target.value)}
+          placeholder="z.B. Bruno Baumgartner"
         />
       </div>
 
-      <div className="form-row">
-        <label htmlFor="bio">Bio</label>
+      <div className={styles.formRow}>
+        <label className={styles.label} htmlFor="bio">
+          Bio
+        </label>
         <textarea
+          className={styles.textarea}
           id="bio"
           value={form.bio}
           onChange={(e) => onChange("bio", e.target.value)}
+          placeholder="Kurzbeschreibung…"
+          rows={4}
         />
       </div>
 
-      {/* Beispiel: Public-Checkbox */}
-      <div className="form-row">
-        <label>
-          <input
-            type="checkbox"
-            checked={form.isPublic}
-            onChange={(e) => onChange("isPublic", e.target.checked)}
-          />
+      <div className={`${styles.formRow} ${styles.checkRow}`}>
+        <input
+          className={styles.checkbox}
+          id="isPublic"
+          type="checkbox"
+          checked={form.isPublic}
+          onChange={(e) => onChange("isPublic", e.target.checked)}
+        />
+        <label className={styles.checkLabel} htmlFor="isPublic">
           Profil öffentlich anzeigen
         </label>
       </div>
 
-      {/* Du kannst hier bei Bedarf auch Stats lesen, wenn nötig */}
-      {/* z.B. read-only Anzeige: */}
-      <div className="form-row readonly">
-        <span>Level: {stats.level}</span>
-        <span>Produkte: {stats.productCount}</span>
+      <div className={`${styles.formRow} ${styles.readonly}`}>
+        <span>
+          Level: <b>{stats.level}</b>
+        </span>
+        <span>
+          Produkte: <b>{stats.productCount}</b>
+        </span>
       </div>
 
-      <button type="submit" className="primary-button">
-        Profil speichern
-      </button>
+      <div className={styles.actions}>
+        <button
+          type="submit"
+          className={`${styles.neoBtn} ${styles.neoBtnPrimary}`}
+          disabled={saving}
+        >
+          {saving ? "Speichere…" : "Änderungen speichern"}
+        </button>
+
+        <button
+          type="button"
+          className={styles.neoBtn}
+          onClick={handlePreviewClick}
+          disabled={saving}
+        >
+          Vorschau
+        </button>
+      </div>
     </form>
   );
 }

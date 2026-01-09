@@ -1,76 +1,96 @@
 // src/app/account/profile/page.tsx
-import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/authOptions";
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getProfileBadges } from "@/lib/profileBadges";
-import ProfilePageClient from "../profile/ProfilePageClient";
+import ProfilePageClient from "./ProfilePageClient";
+import type { InitialProfile } from "./ProfilePageClient";
+import styles from "./profile.module.css";
+import { computeSellerTrustFromDb } from "@/lib/sellerTrust";
 
-export default async function ProfilePage() {
-  const session = await getServerSession(authOptions);
+export const dynamic = "force-dynamic";
 
-  if (!session?.user?.id) {
-    redirect("/login");
+async function getTenantKeySafe(): Promise<string> {
+  try {
+    const mod = await import("@/lib/tenant-context");
+    const fn = (mod as any)?.currentTenant;
+    if (typeof fn === "function") {
+      const t = await fn();
+      const key = (t?.key || t?.tenantKey || "").toString().trim();
+      return key || "DEFAULT";
+    }
+  } catch {
+    // ignore
+  }
+  return "DEFAULT";
+}
+
+export default async function Page() {
+  const session = await getServerSession(auth);
+  const userId = (session?.user as any)?.id as string | undefined;
+
+  if (!userId) {
+    return (
+      <div className={styles.pageWrap}>
+        <div className={styles.container}>
+          <div className={styles.card}>
+            <h1 className={styles.h1}>Dein Verkäufer-Profil</h1>
+            <p className={styles.p}>Bitte einloggen, um dein Profil zu bearbeiten.</p>
+          </div>
+        </div>
+      </div>
+    );
   }
 
-  const userId = session.user.id;
+  const tenantKey = await getTenantKeySafe();
 
   const vendorProfile = await prisma.vendorProfile.findUnique({
-    where: { userId },
+    where: {
+      tenantKey_userId: {
+        tenantKey,
+        userId,
+      },
+    },
   });
 
-  // Fallback, falls noch kein Profil existiert
-  const safeProfile = vendorProfile ?? {
-    displayName: "",
-    bio: "",
-    websiteUrl: "",
-    instagramUrl: "",
-    twitterUrl: "",
-    tiktokUrl: "",
-    facebookUrl: "",
-    avatarUrl: "",
-    bannerUrl: "",
-    slug: "",
-    isPublic: true,
-    id: null as string | null,
-  };
+  // Produktanzahl tenant-safe
+  const productCount = await prisma.product.count({
+    where: {
+      tenantKey,
+      vendorId: userId,
+    },
+  });
 
-  const initialData = {
-    displayName: safeProfile.displayName ?? "",
-    bio: safeProfile.bio ?? "",
-    websiteUrl: safeProfile.websiteUrl ?? "",
-    instagramUrl: safeProfile.instagramUrl ?? "",
-    twitterUrl: safeProfile.twitterUrl ?? "",
-    youtubeUrl: typeof (safeProfile as any).youtubeUrl === "string" ? (safeProfile as any).youtubeUrl ?? "" : "",
-    tiktokUrl: safeProfile.tiktokUrl ?? "",
-    facebookUrl: safeProfile.facebookUrl ?? "",
-    avatarUrl: safeProfile.avatarUrl ?? "",
-    bannerUrl: safeProfile.bannerUrl ?? "",
-    slug: safeProfile.slug ?? "",
-    isPublic: safeProfile.isPublic ?? true,
-  };
+  // Trust/Level (ist in sellerTrust.ts bereits tenant-safe)
+  const sellerTrust = await computeSellerTrustFromDb(userId);
 
-  // Stats: aktuell nur Anzahl Produkte
-  let productCount = 0;
-  if (safeProfile.id) {
-    productCount = await prisma.product.count({
-      where: { vendorId: safeProfile.id },
-    });
-  }
-
-  const badgeInfo = getProfileBadges({ productCount });
-
-  const initialStats = {
+  const initialProfile = {
+    displayName: vendorProfile?.displayName ?? (session?.user as any)?.name ?? "",
+    bio: vendorProfile?.bio ?? "",
+    isPublic: vendorProfile?.isPublic ?? true,
+    avatarUrl: vendorProfile?.avatarUrl ?? "",
+    bannerUrl: vendorProfile?.bannerUrl ?? "",
+    levelName: sellerTrust.level,
     productCount,
-    level: badgeInfo.level,
-    badges: badgeInfo.badges,
+    nextGoal: sellerTrust.nextLevelTarget,
+    nextGoalUnit: sellerTrust.nextLevelUnit,
   };
 
   return (
-    <ProfilePageClient
-      userId={userId}
-      initialData={initialData}
-      initialStats={initialStats}
-    />
+    <div className={styles.pageWrap}>
+      <div className={styles.container}>
+        {/* Prisma/Type safety: InitialProfile.nextGoalUnit only supports "products" | "chf" | undefined */}
+        {(() => {
+          const unitRaw = (initialProfile as any)?.nextGoalUnit;
+
+          const normalized: InitialProfile = {
+            ...(initialProfile as any),
+            nextGoalUnit:
+              unitRaw === "products" ? "products" : unitRaw ? "chf" : undefined,
+          };
+
+          return <ProfilePageClient initialProfile={normalized} />;
+        })()}
+      </div>
+    </div>
   );
 }

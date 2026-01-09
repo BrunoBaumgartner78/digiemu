@@ -1,0 +1,76 @@
+name: Fix Next16 searchParams Promise (admin/users)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Patch src/app/admin/users/page.tsx
+        shell: bash
+        run: |
+          set -euo pipefail
+          FILE="src/app/admin/users/page.tsx"
+
+          if [ ! -f "$FILE" ]; then
+            echo "❌ Not found: $FILE"
+            exit 1
+          fi
+
+          cp "$FILE" "$FILE.bak"
+
+          python - <<'PY'
+import pathlib, re
+p = pathlib.Path("src/app/admin/users/page.tsx")
+s = p.read_text(encoding="utf-8")
+
+# 1) Most common pattern: const resolved = searchParams ?? {};
+pat = r'const\s+resolved\s*=\s*searchParams\s*\?\?\s*\{\s*\}\s*;'
+rep = 'const resolved = await Promise.resolve(searchParams ?? {});'
+
+s2, n = re.subn(pat, rep, s, count=1)
+if n == 0:
+    # 2) fallback: any direct access like searchParams.q / searchParams.role etc
+    # Insert a resolved await line near top of the function and replace references
+    fn = re.search(r'export default async function\s+\w+\s*\(\s*\{[^}]*searchParams[^}]*\}\s*:[^{]*\)\s*\{', s)
+    if not fn:
+        raise SystemExit("Could not find the page function signature to patch.")
+
+    insert_at = fn.end()
+    if "await Promise.resolve(searchParams" not in s:
+        s = s[:insert_at] + "\n  const resolved = await Promise.resolve(searchParams ?? {});\n" + s[insert_at:]
+
+    # Replace `searchParams.` usages with `resolved.`
+    s = re.sub(r'\bsearchParams\.', 'resolved.', s)
+
+else:
+    s = s2
+
+p.write_text(s, encoding="utf-8")
+print("✅ Patched admin/users: searchParams is now awaited (Promise.resolve)")
+PY
+
+      - name: Show diff
+        shell: bash
+        run: |
+          git status --porcelain
+          git --no-pager diff
+
+      - name: Commit & push
+        shell: bash
+        run: |
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "No changes."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "fix(admin): await searchParams in Next.js 16 (users)"
+          git push

@@ -1,0 +1,92 @@
+# Zentraler SEO/OG/Favicon-Config-Block
+site:
+  name: "DigiEmu"
+  baseUrl: "https://bellu.ch"
+  locale: "de_CH"
+  language: "de"
+  themeColor: "#e5ecf5"
+seo:
+  title:
+    default: "DigiEmu – Digitaler Marktplatz"
+    template: "%s | DigiEmu"
+    maxLength: 60
+  description:
+    default: "Multi-Vendor Plattform für digitale Produkte. Verkaufen, bezahlen, downloaden – einfach & sicher."
+    baseUrl: "https://bellu.ch"     # ✅ FIX: richtige Domain
+  keywords:
+    - "digitale produkte"
+    - "marktplatz"
+    - "creator"
+    - "downloads"
+    - "stripe"
+    - "switzerland"
+  alternates:
+    canonical: "https://bellu.ch"
+  robots:
+    index: true
+    follow: true
+    googleBot:
+      index: true
+      follow: true
+      maxImagePreview: large
+      maxSnippet: -1
+      maxVideoPreview: -1
+openGraph:
+  type: "website"
+  
+  siteName: "DigiEmu"
+  title: "DigiEmu – Digitaler Marktplatz"
+  description: "Verkaufe digitale Produkte auf DigiEmu. Multi-Vendor Plattform mit Stripe & sicheren Downloads."
+  locale: "de_CH"
+  images:
+    - url: "/og-image.png"
+      width: 1200
+      height: 630
+      alt: "DigiEmu – Digitaler Marktplatz"
+twitter:
+  card: "summary_large_image"
+  title: "DigiEmu – Digitaler Marktplatz"
+  description: "Multi-Vendor Plattform für digitale Produkte."
+  images:
+    - "/og-image.png"
+icons:
+  icon:
+    - rel: "icon"
+      url: "/favicon.ico"
+      sizes: "any"
+      type: "image/x-icon"
+    - rel: "icon"
+      url: "/icon.png"
+      sizes: "512x512"
+      type: "image/png"
+  apple:
+    - rel: "apple-touch-icon"
+      url: "/apple-icon.png"
+      sizes: "180x180"
+  other:
+    - rel: "manifest"
+      url: "/site.webmanifest"
+assets:
+  requiredPublicFiles:
+    - "/favicon.ico"
+    - "/icon.png"
+    - "/apple-icon.png"
+    - "/og-image.png"
+    - "/site.webmanifest"
+routes:
+  "/":
+    title: "DigiEmu – Digitaler Marktplatz"
+    description: "Multi-Vendor Plattform für digitale Produkte. Verkaufen, bezahlen, downloaden – einfach & sicher."
+    robots:
+      index: true
+      follow: true
+  "/dashboard":
+    title: "Dashboard"
+    robots:
+      index: false
+      follow: false
+  "/admin":
+    title: "Admin"
+    robots:
+      index: false
+      follow: false
