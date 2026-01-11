@@ -38,9 +38,8 @@
     "test:e2e:prod:win": "npm run build:prod:win && cross-env PW_BASE_URL=http://127.0.0.1:3000 playwright test",
     "smoke:prod": "node scripts/smoke-prod.mjs",
     "gen:branding": "tsx scripts/generate-branding.ts",
-     "prebuild": "npm run gen:branding",
-     "apply:ui-replace": "tsx scripts/apply-ui-replace.ts"
-     
+    "prebuild": "npm run gen:branding",
+    "apply:ui-replace": "tsx scripts/apply-ui-replace.ts"
   },
   "dependencies": {
     "@auth/core": "^0.34.3",

@@ -1,18 +1,32 @@
--- 1) Rewrite any legacy values (defensive)
--- Use text comparison to avoid casting the literal to enum (shadow-db safe)
--- Map any non-final values to WHITE_LABEL (covers SINGLE_VENDOR, MULTI_VENDOR, etc.)
-UPDATE "Tenant"
-SET "mode" = 'WHITE_LABEL'
-WHERE "mode"::text NOT IN ('WHITE_LABEL', 'MARKETPLACE');
+-- tenantmode_cleanup: rebuild enum safely (no ADD VALUE)
 
--- 2) Recreate enum with final values (Postgres)
---    (Drop/recreate pattern because removing enum values isn't supported directly)
+-- 0) drop default first (avoids "default cannot be cast automatically")
+ALTER TABLE "Tenant" ALTER COLUMN "mode" DROP DEFAULT;
+
+-- 1) rebuild enum
 ALTER TYPE "TenantMode" RENAME TO "TenantMode_old";
-
 CREATE TYPE "TenantMode" AS ENUM ('WHITE_LABEL', 'MARKETPLACE');
 
+-- 2) change column type with mapping in one step
 ALTER TABLE "Tenant"
 ALTER COLUMN "mode" TYPE "TenantMode"
-USING "mode"::text::"TenantMode";
+USING (
+  CASE "mode"::text
+    -- old values you might have had in different branches:
+    WHEN 'MARKETPLACE' THEN 'MARKETPLACE'
+    WHEN 'MULTI_VENDOR' THEN 'MARKETPLACE'
+    WHEN 'MULTIVENDOR' THEN 'MARKETPLACE'
+    WHEN 'SINGLE_VENDOR' THEN 'WHITE_LABEL'
+    WHEN 'FREE_SHOP' THEN 'WHITE_LABEL'
+    WHEN 'MIXED' THEN 'WHITE_LABEL'
+    WHEN 'PAID_VENDOR' THEN 'WHITE_LABEL'
+    -- fallback
+    ELSE 'WHITE_LABEL'
+  END
+)::"TenantMode";
 
+-- 3) drop old enum
 DROP TYPE "TenantMode_old";
+
+-- 4) re-add default
+ALTER TABLE "Tenant" ALTER COLUMN "mode" SET DEFAULT 'MARKETPLACE';
