@@ -8,6 +8,7 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+
 model AuditLog {
   id         String   @id @default(cuid())
   actorId    String
