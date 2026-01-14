@@ -2658,3 +2658,120 @@ body[data-theme="dark"]
   --neon-glow-2: rgba(120,88,255,0.08);
   --neon-glow-hover: 0.35;
 }
+
+/* Footer safety: avoid accidental table/line look from globals */
+footer table, footer tr, footer td, footer th {
+  border: 0 !important;
+}
+footer hr {
+  display: none !important;
+}
+footer a {
+  text-decoration-thickness: from-font;
+}
+
+:root{
+  /* Neon Accent */
+  --neo-accent: 82 140 255;         /* RGB ohne Kommas */
+  --neo-accent-2: 110 231 183;      /* mint glow optional */
+  --neo-glow: rgba(82,140,255,.35);
+  --neo-glow-strong: rgba(82,140,255,.55);
+
+  /* Soft glass */
+  --neo-glass: rgba(255,255,255,.42);
+  --neo-glass-2: rgba(255,255,255,.24);
+  --neo-stroke: rgba(120,140,180,.28);
+
+  /* Shadows */
+  --neo-shadow-1: 0 14px 40px rgba(15, 23, 42, .10);
+  --neo-shadow-2: 0 2px 0 rgba(255,255,255,.65) inset;
+  --neo-shadow-soft: 0 18px 55px rgba(15, 23, 42, .12);
+}
+/* ============ NEON NEU ============ */
+
+.neonCard{
+  background: linear-gradient(180deg, var(--neo-glass), var(--neo-glass-2));
+  border: 1px solid var(--neo-stroke);
+  border-radius: 28px;
+  box-shadow: var(--neo-shadow-1), var(--neo-shadow-2);
+  backdrop-filter: blur(14px);
+}
+
+.neonBorder{
+  position: relative;
+  isolation: isolate;
+}
+
+.neonBorder::before{
+  content:"";
+  position:absolute;
+  inset:-1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    135deg,
+    rgba(var(--neo-accent), .55),
+    rgba(255,255,255,.10),
+    rgba(var(--neo-accent-2), .28)
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  pointer-events:none;
+  opacity:.55;
+  z-index:-1;
+}
+
+.glowSoft{
+  box-shadow:
+    var(--neo-shadow-soft),
+    0 0 0 1px rgba(var(--neo-accent), .08),
+    0 0 40px var(--neo-glow);
+}
+
+.glowStrong{
+  box-shadow:
+    var(--neo-shadow-soft),
+    0 0 0 1px rgba(var(--neo-accent), .14),
+    0 0 65px var(--neo-glow-strong);
+}
+
+/* optional: Hover */
+.glowHover:hover{
+  transform: translateY(-1px);
+  box-shadow:
+    var(--neo-shadow-soft),
+    0 0 0 1px rgba(var(--neo-accent), .18),
+    0 0 70px var(--neo-glow-strong);
+  transition: box-shadow .2s ease, transform .2s ease;
+}
+.neonBtn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:.45rem;
+  padding:.55rem 1rem;
+  border-radius:999px;
+  border:1px solid rgba(var(--neo-accent), .25);
+  background: linear-gradient(180deg, rgba(255,255,255,.58), rgba(255,255,255,.22));
+  box-shadow:
+    0 10px 25px rgba(15, 23, 42, .12),
+    0 0 35px rgba(var(--neo-accent), .22);
+  backdrop-filter: blur(14px);
+}
+
+.neonBtnActive{
+  border-color: rgba(var(--neo-accent), .55);
+  box-shadow:
+    0 14px 35px rgba(15, 23, 42, .14),
+    0 0 55px rgba(var(--neo-accent), .35);
+}
+
+.neonBtn:hover{
+  box-shadow:
+    0 14px 35px rgba(15, 23, 42, .14),
+    0 0 60px rgba(var(--neo-accent), .42);
+  transition: box-shadow .2s ease;
+}

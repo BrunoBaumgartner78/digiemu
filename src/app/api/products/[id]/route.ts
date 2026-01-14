@@ -101,10 +101,10 @@ export async function DELETE(req: Request, ctx: Ctx) {
     return json("Forbidden", 403);
   }
 
-  // „Löschen“ = archivieren
+  // "Löschen" = set to draft + hide
   await prisma.product.update({
     where: { id },
-    data: { status: "ARCHIVED", isActive: false },
+    data: { status: "DRAFT", isActive: false },
     select: { id: true },
   });
 

@@ -1,0 +1,42 @@
+/* src/components/ui/NeoCard.module.css */
+
+/* falls du schon .card hast: nur die neuen Zeilen ergänzen */
+.card {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Neon-Akzent oben */
+.card::before {
+  content: "";
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  top: 10px;
+  height: 3px;
+  border-radius: 999px;
+
+  /* Kernlinie */
+  background: linear-gradient(
+    90deg,
+    rgba(80, 170, 255, 0),
+    rgba(80, 170, 255, 0.95),
+    rgba(80, 170, 255, 0)
+  );
+
+  /* Glow */
+  box-shadow:
+    0 0 10px rgba(80, 170, 255, 0.65),
+    0 0 26px rgba(80, 170, 255, 0.35);
+
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+/* Optional: etwas stärker beim Hover */
+.card:hover::before {
+  opacity: 1;
+  box-shadow:
+    0 0 12px rgba(80, 170, 255, 0.8),
+    0 0 32px rgba(80, 170, 255, 0.45);
+}

@@ -22,6 +22,17 @@ export async function POST(req: Request) {
     return NextResponse.json({ message: "vendorId fehlt" }, { status: 400 });
   }
 
+  // ✅ Guard: Gibt es schon einen Pending-Payout? Dann wiederverwenden.
+  const existingPending = await prisma.payout.findFirst({
+    where: { vendorId, status: "PENDING" as any },
+    orderBy: { createdAt: "desc" },
+  });
+
+  if (existingPending) {
+    const redirectUrl = returnTo || `/admin/payouts/vendor/${vendorId}`;
+    return NextResponse.redirect(new URL(redirectUrl, req.url));
+  }
+
   // Pending berechnen (wie in deiner Page)
   const vendor = await prisma.user.findUnique({
     where: { id: vendorId },
@@ -39,6 +50,7 @@ export async function POST(req: Request) {
     .flatMap((p) => p.orders.map((o) => o.vendorEarningsCents ?? 0))
     .reduce((a, b) => a + b, 0);
 
+  // Wichtig: alreadyPaid = PAID + optional PENDING? -> NEIN, nur PAID
   const alreadyPaid = vendor.payouts
     .filter((p) => p.status === "PAID")
     .reduce((sum, p) => sum + p.amountCents, 0);
@@ -49,14 +61,20 @@ export async function POST(req: Request) {
     return NextResponse.json({ message: "Kein ausstehender Betrag" }, { status: 400 });
   }
 
-  // ⚠️ Annahme: payout hat vendorId + amountCents + status
-  await prisma.payout.create({
-    data: {
-      vendorId,
-      amountCents: pendingAmount,
-      status: "PENDING",
-    } as any,
-  });
+  try {
+    await prisma.payout.create({
+      data: {
+        vendorId,
+        amountCents: pendingAmount,
+        status: "PENDING",
+      } as any,
+    });
+  } catch (e: any) {
+    // If the partial unique index triggers under concurrency,
+    // just redirect back (another request created the pending payout).
+    const redirectUrl = returnTo || `/admin/payouts/vendor/${vendorId}`;
+    return NextResponse.redirect(new URL(redirectUrl, req.url));
+  }
 
   const redirectUrl = returnTo || `/admin/payouts/vendor/${vendorId}`;
   return NextResponse.redirect(new URL(redirectUrl, req.url));

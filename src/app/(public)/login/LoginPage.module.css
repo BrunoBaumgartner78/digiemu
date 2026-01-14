@@ -1,0 +1,14 @@
+.page { display:flex; align-items:center; justify-content:center; padding:32px 0 }
+.card { width:100%; max-width:540px; background:var(--neo-card-bg-soft); border:1px solid var(--neo-card-border); border-radius:12px; padding:24px }
+.brand { font-size:12px; color:var(--text-muted); letter-spacing:0.12em }
+.title { margin-top:8px; font-size:20px; font-weight:700 }
+.subtitle { margin-top:8px; color:var(--text-muted) }
+.form { margin-top:12px; display:flex; flex-direction:column; gap:10px }
+.field { display:flex; flex-direction:column }
+.label { font-size:13px; margin-bottom:6px }
+.input { padding:8px 10px; border-radius:8px; border:1px solid var(--neo-card-border); background:var(--neo-card-bg-soft) }
+.button { margin-top:8px; padding:10px 12px; border-radius:8px; background:var(--accent); color:white; font-weight:700 }
+.meta { margin-top:12px; color:var(--text-muted) }
+.link { color:var(--accent); font-weight:600 }
+.error { color:#b00020; background:rgba(176,0,32,0.06); padding:8px; border-radius:6px }
+.helper { margin-top:8px; font-size:12px; color:var(--text-muted) }

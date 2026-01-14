@@ -12,8 +12,7 @@
     "start": "next start",
     "lint": "next lint",
     "postinstall": "prisma generate",
-   "build": "prisma generate && next build",
-
+    "build": "prisma generate && next build",
     "build:local": "prisma generate && next build"
   },
   "dependencies": {
@@ -49,6 +48,7 @@
     "knip": "^5.76.2",
     "markdown-link-check": "^3.14.2",
     "prisma": "^6.19.1",
+    "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   },
   "overrides": {

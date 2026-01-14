@@ -1,5 +1,6 @@
 // src/lib/products.ts
 import { prisma } from "@/lib/prisma";
+import { marketplaceWhereClause } from "@/lib/marketplace-visibility";
 
 // Wie viele Produkte pro Seite im Marketplace
 export const PAGE_SIZE = 9;
@@ -10,16 +11,18 @@ export type MarketplaceProduct = {
   description: string | null;
   category: string | null;
   priceCents: number | null;
+  status?: string | null;
+  isActive?: boolean | null;
   thumbnail: string | null;
   vendorId: string;
   vendorProfileId?: string | null;
 
-  // ✅ IMMER befüllt, egal ob Product.vendorProfileId gesetzt ist oder nicht
   vendorProfile?: {
     id: string;
     isPublic: boolean;
     displayName: string | null;
     avatarUrl: string | null;
+    status?: string | null; // ✅ keep status available for marketplace visibility
     user?: { name: string | null } | null;
   } | null;
 };
@@ -53,112 +56,109 @@ export async function getMarketplaceProducts(
     sort = "newest",
     minPriceCents,
     maxPriceCents,
-  } = params;
+  } = (params ?? {}) as any;
 
   const safePage = Number.isFinite(page) && page > 0 ? page : 1;
   const safePageSize =
     Number.isFinite(pageSize) && pageSize > 0 && pageSize <= 48 ? pageSize : PAGE_SIZE;
 
-  const where: any = {
-    isActive: true,
-    status: "ACTIVE",
-    // Exclude products whose vendor was blocked by admin
-    vendor: { isBlocked: false },
-  };
+  const trimmedSearch = (search ?? "").toString().trim();
+  const hasSearch = trimmedSearch.length > 0;
 
-  if (category && category !== "all") where.category = category;
+  // base visibility clause from centralized helper
+  const where: any = { AND: [marketplaceWhereClause()] };
 
-  const trimmedSearch = search.trim();
-  if (trimmedSearch.length > 0) {
-    where.OR = [
-      { title: { contains: trimmedSearch, mode: "insensitive" } },
-      { description: { contains: trimmedSearch, mode: "insensitive" } },
-    ];
+  // Optional: Kategorie
+  if (category && category !== "all") {
+    where.AND.push({ category });
   }
 
+  // Optional: Preisrange
   if (typeof minPriceCents === "number" || typeof maxPriceCents === "number") {
-    where.priceCents = {} as any;
-    if (typeof minPriceCents === "number") where.priceCents.gte = Math.round(minPriceCents);
-    if (typeof maxPriceCents === "number") where.priceCents.lte = Math.round(maxPriceCents);
+    const price: any = {};
+    if (typeof minPriceCents === "number") price.gte = Math.round(minPriceCents);
+    if (typeof maxPriceCents === "number") price.lte = Math.round(maxPriceCents);
+    where.AND.push({ priceCents: price });
+  }
+
+  // Optional: Suche
+  if (hasSearch) {
+    where.AND.push({
+      OR: [
+        { title: { contains: trimmedSearch, mode: "insensitive" } },
+        { description: { contains: trimmedSearch, mode: "insensitive" } },
+      ],
+    });
   }
 
   let orderBy: any = { createdAt: "desc" };
   if (sort === "price_asc") orderBy = { priceCents: "asc" };
   else if (sort === "price_desc") orderBy = { priceCents: "desc" };
 
-  const [total, rows] = await Promise.all([
+  // removed dev-only where-clause logging
+
+  const [total, items] = await Promise.all([
     prisma.product.count({ where }),
     prisma.product.findMany({
       where,
       orderBy,
       skip: (safePage - 1) * safePageSize,
       take: safePageSize,
-      select: {
-        id: true,
-        title: true,
-        description: true,
-        category: true,
-        priceCents: true,
-        thumbnail: true,
-        vendorId: true,
-        vendorProfileId: true,
-
-        // 1) falls Product.vendorProfileId vorhanden ist
+      include: {
         vendorProfile: {
           select: {
             id: true,
-            isPublic: true,
             displayName: true,
+            status: true,
+            isPublic: true,
             avatarUrl: true,
             user: { select: { name: true } },
           },
         },
-
-        // 2) ✅ fallback: immer über vendorId -> User -> vendorProfile holen
-        vendor: {
-          select: {
-            name: true,
-            vendorProfile: {
-              select: {
-                id: true,
-                isPublic: true,
-                displayName: true,
-                avatarUrl: true,
-                user: { select: { name: true } },
-              },
-            },
-          },
-        },
+        vendor: { select: { id: true, isBlocked: true, name: true } },
       },
     }),
   ]);
 
-  // ✅ normalize: vendorProfile ist immer aus einer der beiden Quellen
-  const items: MarketplaceProduct[] = rows.map((p: any) => {
-    const vp =
-      p.vendorProfile ??
-      p.vendor?.vendorProfile ??
-      null;
-
+  const normalized: MarketplaceProduct[] = items.map((p: any) => {
+    const vp = p.vendorProfile ?? null;
     return {
       id: p.id,
+      status: p.status ?? null,
+      isActive: typeof p.isActive === "boolean" ? p.isActive : null,
       title: p.title,
       description: p.description ?? null,
       category: p.category ?? null,
       priceCents: typeof p.priceCents === "number" ? p.priceCents : null,
       thumbnail: p.thumbnail ?? null,
       vendorId: p.vendorId,
-      vendorProfileId: p.vendorProfileId ?? vp?.id ?? null,
-      vendorProfile: vp,
+      vendorProfileId: vp?.id ?? null,
+      vendorProfile: vp
+        ? {
+            id: vp.id,
+            isPublic: !!vp.isPublic,
+            displayName: vp.displayName ?? null,
+            avatarUrl: vp.avatarUrl ?? null,
+            status: vp.status ?? null, // ✅ FIX: preserve status for visibility checks/debug
+            user: vp.user ?? null,
+          }
+        : null,
     };
   });
 
   const pageCount = total === 0 ? 1 : Math.ceil(total / safePageSize);
 
   return {
-    items,
+    items: normalized,
     total,
     page: safePage,
     pageCount,
   };
 }
+
+// Re-export centralized marketplace visibility helpers
+export type { VisibilityDebug } from "@/lib/marketplace-visibility";
+export {
+  getMarketplaceVisibilityDebug,
+  marketplaceWhereClause,
+} from "@/lib/marketplace-visibility";
