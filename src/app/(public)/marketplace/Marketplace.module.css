@@ -1,10 +1,20 @@
 .page {
   padding: 2rem 0 4rem 0;
 }
+/* Prevent horizontal overflow on mobile */
+.page {
+  overflow-x: hidden;
+  max-width: 100%;
+}
 
 .inner {
   width: min(1180px, calc(100% - 2rem));
   margin: 0 auto;
+}
+/* additional safety */
+.inner {
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 .header {
@@ -42,6 +52,11 @@
   gap: 0.6rem;
   width: min(560px, 100%);
 }
+/* allow wrapping on small screens */
+.searchBar {
+  max-width: 100%;
+  flex-wrap: wrap;
+}
 
 .searchInput {
   flex: 1;
@@ -50,6 +65,10 @@
   border: 1px solid var(--neo-card-border);
   background: rgba(255, 255, 255, 0.35);
   outline: none;
+}
+/* critical: allow input to shrink inside flex */
+.searchInput {
+  min-width: 0;
 }
 
 .searchInput:focus {
@@ -63,6 +82,10 @@
   background: rgba(255, 255, 255, 0.55);
   cursor: pointer;
   font-weight: 700;
+}
+/* keep button from being squeezed out on small screens */
+.searchButton {
+  flex-shrink: 0;
 }
 
 .searchButton:hover {
@@ -423,6 +446,22 @@
 
   .filterGrid {
     grid-template-columns: 1fr;
+  }
+
+  /* --- Search button: prevent clipped text on small screens --- */
+  .searchBar {
+    gap: 0.5rem;
+  }
+
+  .searchInput {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .searchButton {
+    font-size: 0.95rem;      /* slightly smaller text */
+    padding: 0.75rem 0.95rem; /* slightly smaller padding */
+    line-height: 1;           /* avoids vertical clipping */
   }
 }
 
