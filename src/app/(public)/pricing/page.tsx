@@ -1,6 +1,7 @@
 // src/app/(public)/pricing/page.tsx
 import type { Metadata } from "next";
-import styles from "../../pricing/page.module.css";
+import Link from "next/link";
+import styles from "./page.module.css";
 
 export const metadata: Metadata = {
   title: "Preise & Gebühren – DigiEmu",
@@ -40,6 +41,17 @@ export default function PricingPage() {
                 Die restlichen 20% nutzen wir für Zahlungsabwicklung,
                 Download-Infrastruktur, Weiterentwicklung und Support.
               </p>
+              <div className={styles.ctaRow}>
+                <Link href="/register" className={styles.btn}>
+                  Jetzt registrieren
+                </Link>
+                <Link href="/register-vendor" className={styles.btn}>
+                  Verkäufer werden
+                </Link>
+                <Link href="/contact" className={styles.btn}>
+                  Kontakt
+                </Link>
+              </div>
             </div>
 
             <div className={styles.planGrid}>

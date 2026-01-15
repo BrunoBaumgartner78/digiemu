@@ -17,6 +17,15 @@ export default function HelpPage() {
             Upload und Auszahlungen – ruhig, transparent und auf den Punkt.
           </p>
 
+          <div className="mt-4 text-sm text-[var(--text-muted)]">
+            <h3 className="font-semibold">Support & Kontakt</h3>
+            <p>
+              Bei Problemen mit Checkout oder Downloads sende bitte eine E-Mail an <strong>support@bellu.ch</strong> und
+              gib folgende Informationen an: Bestellnummer (OrderId), E-Mail-Adresse, kurze Fehlerbeschreibung und optional
+              ein Screenshot. Antwortzeit: in der Regel innerhalb von 48 Stunden während der Beta-Phase.
+            </p>
+          </div>
+
           {/* Schnellnavigation */}
           <nav
             className={styles.quickNav}

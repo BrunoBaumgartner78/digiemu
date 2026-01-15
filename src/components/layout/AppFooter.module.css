@@ -42,6 +42,11 @@
   z-index: 1;
 }
 
+/* prevent flex/grid children from forcing overflow */
+.grid > * {
+  min-width: 0;
+}
+
 .brandRow {
   display: flex;
   align-items: center;

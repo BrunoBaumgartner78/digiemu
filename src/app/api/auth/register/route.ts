@@ -1,6 +1,7 @@
 // src/app/api/auth/register/route.ts
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { rateLimitCheck, keyFromReq } from "@/lib/rateLimit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -14,6 +15,20 @@ type RegisterBody = {
 
 export async function POST(req: Request) {
   try {
+    // Rate limit: registration attempts per IP (~10 per 60s)
+    try {
+      const key = keyFromReq(req, "auth_register");
+      const rl = rateLimitCheck(key, 10, 60_000);
+      if (!rl.allowed) {
+        return NextResponse.json(
+          { error: "TOO_MANY_REQUESTS", message: "Zu viele Anfragen. Bitte später erneut versuchen." },
+          { status: 429, headers: { "Retry-After": String(rl.retryAfter ?? 60) } }
+        );
+      }
+    } catch (e) {
+      // don't block on rateLimit errors
+      console.warn("rateLimit check failed", e);
+    }
     const body: RegisterBody | null = await req.json().catch(() => null);
 
     if (!body) {

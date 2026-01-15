@@ -1,0 +1,101 @@
+.page {
+  padding: 2.4rem 1rem;
+  display: flex;
+  justify-content: center;
+}
+
+.inner {
+  width: min(1100px, 100%);
+  padding: 2rem;
+  box-sizing: border-box;
+  border-radius: 20px;
+}
+
+.header {
+  text-align: left;
+  margin-bottom: 1.2rem;
+}
+
+.eyebrow {
+  font-weight: 800;
+  color: #6b7280;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 0.45rem;
+}
+
+.title {
+  font-size: 1.6rem;
+  font-weight: 900;
+  margin: 0 0 0.6rem 0;
+}
+
+.lead {
+  color: rgba(0,0,0,0.7);
+  max-width: 68ch;
+}
+
+.cardSection {
+  margin-top: 1.25rem;
+}
+
+.planCard {
+  padding: 1.25rem;
+  border-radius: 16px;
+}
+
+.planHeader {
+  margin-bottom: 1rem;
+}
+
+.planBadge {
+  display: inline-block;
+  background: rgba(72,118,255,0.12);
+  border: 1px solid rgba(72,118,255,0.18);
+  padding: 0.45rem 0.65rem;
+  border-radius: 999px;
+  font-weight: 800;
+}
+
+.planGrid {
+  margin-top: 0.8rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.9rem;
+}
+
+.planBlock {
+  background: rgba(255,255,255,0.06);
+  padding: 0.85rem;
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,0.06);
+}
+
+.blockTitle {
+  margin: 0 0 0.35rem 0;
+  font-weight: 800;
+}
+
+.blockText { margin: 0; color: rgba(0,0,0,0.7); }
+
+.noteSection { margin-top: 1.25rem; }
+
+.noteText { color: rgba(0,0,0,0.65); }
+
+.footer { margin-top: 1.2rem; opacity: 0.8; }
+
+/* Buttons (reuse small neomorphic style) */
+.ctaRow { display:flex; gap:0.6rem; margin-top:1rem; }
+.btn {
+  padding: 0.7rem 1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,0.06);
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.02));
+  font-weight:800;
+  cursor:pointer;
+}
+
+@media (max-width: 640px) {
+  .title { font-size: 1.35rem; }
+  .page { padding: 1.2rem 0.6rem; }
+}

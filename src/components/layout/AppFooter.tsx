@@ -78,6 +78,9 @@ export default function AppFooter() {
               <Link className={styles.link} href="/help">
                 Hilfe
               </Link>
+              <Link className={styles.link} href="/pricing">
+                Preise
+              </Link>
               <a className={styles.link} href="mailto:support@bellu.ch">
                 support@bellu.ch
               </a>

@@ -335,6 +335,11 @@ body {
   padding: 0;
 }
 
+/* Ensure app background variables are enforced to avoid white strip on fullscreen 404 */
+html, body {
+  background: var(--app-bg, var(--page-bg, var(--bg, #eef2f8)));
+}
+
 body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, Inter,
     "SF Pro Text", "Segoe UI", sans-serif;

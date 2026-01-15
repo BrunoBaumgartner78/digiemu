@@ -14,6 +14,40 @@ const nextConfig = {
       },
     ],
   },
+  async redirects() {
+    return [
+      {
+        source: "/preise",
+        destination: "/pricing",
+        permanent: true,
+      },
+      {
+        source: "/preise/",
+        destination: "/pricing",
+        permanent: true,
+      },
+      {
+        source: "/terms",
+        destination: "/agb",
+        permanent: true,
+      },
+      {
+        source: "/privacy",
+        destination: "/datenschutz",
+        permanent: true,
+      },
+      {
+        source: "/legal",
+        destination: "/agb",
+        permanent: false,
+      },
+      {
+        source: "/agb-old",
+        destination: "/agb",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 module.exports = nextConfig;

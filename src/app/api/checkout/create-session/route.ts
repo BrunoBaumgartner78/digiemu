@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import Stripe from "stripe";
+import { rateLimitCheck, keyFromReq } from "@/lib/rateLimit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -17,6 +18,16 @@ export function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  // Rate limit: checkout creation per IP
+  try {
+    const key = keyFromReq(req, "checkout_create");
+    const rl = rateLimitCheck(key, 20, 60_000);
+    if (!rl.allowed) {
+      return NextResponse.json({ error: "TOO_MANY_REQUESTS" }, { status: 429, headers: { "Retry-After": String(rl.retryAfter ?? 60) } });
+    }
+  } catch (e) {
+    console.warn("rateLimit check failed for checkout_create", e);
+  }
   const session = await getServerSession(authOptions);
   const userId = (session?.user as any)?.id as string | undefined;
 
