@@ -334,6 +334,11 @@ body {
   margin: 0;
   padding: 0;
 }
+/* Global safety: prevent any accidental horizontal overflow */
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
 
 /* Ensure app background variables are enforced to avoid white strip on fullscreen 404 */
 html, body {
