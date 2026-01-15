@@ -1,8 +1,15 @@
 export const dynamic = "force-static";
 
+import LegalShell from "@/components/legal/LegalShell";
+
 export default function ImpressumPage() {
   return (
-    <main className="page-shell">
+    <LegalShell
+      eyebrow="RECHTLICHES"
+      title="Impressum"
+      lead="Angaben gemäss gesetzlichen Vorgaben. (MVP-Entwurf – bitte vor Launch prüfen und finalisieren.)"
+    >
+      <main className="page-shell">
       <section className="neo-surface neonCard neonBorder glowSoft p-6 md:p-8 space-y-6">
         <h1 className="text-2xl font-semibold">Impressum</h1>
 
@@ -26,5 +33,6 @@ export default function ImpressumPage() {
         </div>
       </section>
     </main>
+    </LegalShell>
   );
 }

@@ -1,8 +1,15 @@
 export const dynamic = "force-static";
 
+import LegalShell from "@/components/legal/LegalShell";
+
 export default function DatenschutzPage() {
   return (
-    <main className="page-shell">
+    <LegalShell
+      eyebrow="RECHTLICHES"
+      title="Datenschutz"
+      lead="Diese Datenschutzerklärung ist ein MVP-Entwurf. Für verbindliche Formulierungen empfehlen wir die Prüfung durch eine Fachperson."
+    >
+      <main className="page-shell">
       <section className="neo-surface neonCard neonBorder glowSoft p-6 md:p-8 space-y-6">
         <h1 className="text-2xl font-semibold">Datenschutz</h1>
 
@@ -57,5 +64,6 @@ export default function DatenschutzPage() {
         </div>
       </section>
     </main>
+    </LegalShell>
   );
 }
