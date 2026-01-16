@@ -9,14 +9,12 @@ function run(cmd, args) {
   const res = spawnSync(cmd, args, {
     cwd: root,
     stdio: "inherit",
-    shell: true, // wichtig für Windows
+    shell: true,
     env: process.env,
   });
   return res.status ?? 1;
 }
 
-// 1) Next lint (ohne "." Argument!)
-// Wenn du "." oder "lint" als Arg übergibst, kann Next das als project-dir interpretieren.
-let code = run("npx", ["next", "lint"]);
-
+// Stable on Windows: run ESLint directly (next lint CLI parsing is unreliable here)
+const code = run("npx", ["eslint", ".", "--ext", ".js,.jsx,.ts,.tsx"]);
 process.exit(code);
