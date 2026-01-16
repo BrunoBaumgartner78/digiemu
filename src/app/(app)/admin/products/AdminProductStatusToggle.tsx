@@ -3,10 +3,12 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/use-toast";
+import { isErrorResponse } from "@/lib/guards";
+import type { ProductStatus } from "@prisma/client";
 
 type Props = {
   productId: string;
-  initialStatus: "ACTIVE" | "DRAFT" | "BLOCKED" | string;
+  initialStatus: ProductStatus | string;
   initialIsActive: boolean;
 };
 
@@ -32,8 +34,9 @@ export default function AdminProductStatusToggle({
       });
 
       if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        toast({ title: "Speichern fehlgeschlagen", description: err?.message ?? "Unbekannter Fehler", variant: "destructive" });
+        const payload: unknown = await res.json().catch(() => ({}));
+        const msg = isErrorResponse(payload) ? payload.message : "Unbekannter Fehler";
+        toast({ title: "Speichern fehlgeschlagen", description: msg, variant: "destructive" });
         return;
       }
 
@@ -42,8 +45,9 @@ export default function AdminProductStatusToggle({
       if (typeof next.isActive === "boolean") setIsActive(next.isActive);
       toast({ title: "Produkt aktualisiert", description: `Status aktualisiert`, variant: "success" });
       router.refresh();
-    } catch (e: any) {
-      toast({ title: "Netzwerkfehler", description: e?.message ?? "Bitte erneut versuchen", variant: "destructive" });
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : String(error ?? "");
+      toast({ title: "Netzwerkfehler", description: msg || "Bitte erneut versuchen", variant: "destructive" });
     } finally {
       setBusy(false);
     }

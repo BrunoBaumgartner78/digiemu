@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { isErrorResponse } from "@/lib/guards";
 
 export default function MarkPaidButton(props: { payoutId: string }) {
   const router = useRouter();
@@ -18,12 +19,16 @@ export default function MarkPaidButton(props: { payoutId: string }) {
         body: JSON.stringify({ payoutId: props.payoutId }),
       });
 
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data?.message || "Update fehlgeschlagen.");
+      const data: unknown = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        const msg = isErrorResponse(data) ? data.message : "Update fehlgeschlagen.";
+        throw new Error(msg);
+      }
 
       router.refresh();
-    } catch (e: any) {
-      setErr(e?.message || "Fehler");
+    } catch (error: unknown) {
+      if (error instanceof Error) setErr(error.message);
+      else setErr(String(error) || "Fehler");
     } finally {
       setLoading(false);
     }

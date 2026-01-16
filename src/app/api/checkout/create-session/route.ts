@@ -10,9 +10,7 @@ import { rateLimitCheck, keyFromReq } from "@/lib/rateLimit";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
-  apiVersion: "2024-06-20" as any,
-});
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
 
 export function GET() {
   return new NextResponse("Method Not Allowed", { status: 405 });

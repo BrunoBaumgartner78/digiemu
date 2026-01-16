@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import Link from "next/link";
+import type { Prisma } from "@prisma/client";
+import { AdminOrderRow } from "@/lib/admin-types";
 
 export const dynamic = "force-dynamic";
 
@@ -60,7 +62,7 @@ function paginationWindow(current: number, total: number) {
 
 export default async function AdminOrdersPage({ searchParams }: Props) {
   const session = await getServerSession(auth);
-  if (!session || (session.user as any)?.role !== "ADMIN") {
+  if (!session || session.user?.role !== "ADMIN") {
     redirect("/login");
   }
 
@@ -74,10 +76,10 @@ export default async function AdminOrdersPage({ searchParams }: Props) {
   const page = clampInt(pickFirst(sp.page), 1, 1, 10_000);
   const pageSize = clampInt(pickFirst(sp.pageSize), 20, 5, 100);
 
-  const where: any = {};
+  const where: Prisma.OrderWhereInput = {};
   if (status !== "ALL") where.status = status;
   // ✅ Product.vendorId ist bei dir User-ID des Vendors
-  if (vendor !== "ALL") where.product = { vendorId: vendor };
+  if (vendor !== "ALL") where.product = { vendorId: vendor } as any;
 
   const [total, orders, vendors] = await Promise.all([
     prisma.order.count({ where }),

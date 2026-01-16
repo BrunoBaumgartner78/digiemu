@@ -2,6 +2,8 @@ import { getServerSession } from "next-auth";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { StatusBadge } from "@/components/admin/StatusBadge";
+import type { Prisma } from "@prisma/client";
+import { AdminAuditLogRow } from "@/lib/admin-types";
 
 export const metadata = {
   title: "Admin Audit Log – DigiEmu",
@@ -23,16 +25,16 @@ export default async function AdminAuditLogPage({ searchParams }: { searchParams
 
   const action = searchParams?.action ?? "ALL";
   const targetType = searchParams?.targetType ?? "ALL";
-  const where: any = {};
+  const where: Prisma.AuditLogWhereInput = {};
   if (action !== "ALL") where.action = action;
   if (targetType !== "ALL") where.targetType = targetType;
 
-  const logs = await prisma.auditLog.findMany({
+  const logs = (await prisma.auditLog.findMany({
     where,
     include: { actor: { select: { email: true, name: true } } },
     orderBy: { createdAt: "desc" },
     take: 100,
-  }) as any[];
+  })) as AdminAuditLogRow[];
 
   // Für Filteroptionen alle Actions/TargetTypes holen
   const allActions = await prisma.auditLog.findMany({ select: { action: true }, distinct: ["action"] });
@@ -95,7 +97,9 @@ export default async function AdminAuditLogPage({ searchParams }: { searchParams
                       {log.targetId ? `${log.targetId.slice(0, 8)}…` : "—"}
                     </span>
                   </td>
-                  <td style={{ maxWidth: 220, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{log.meta ? JSON.stringify(log.meta) : "-"}</td>
+                      <td style={{ maxWidth: 220, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                        {log.meta ? (typeof log.meta === "string" ? log.meta : JSON.stringify(log.meta)) : "-"}
+                      </td>
                   <td>{log.ipAddress || "-"}</td>
                   <td style={{ maxWidth: 120, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{log.userAgent || "-"}</td>
                 </tr>

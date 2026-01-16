@@ -58,8 +58,8 @@ export async function POST(_req: NextRequest) {
     }
 
     return NextResponse.json({ message: "Forbidden" }, { status: 403 });
-  } catch (err: any) {
-    console.error("[API /products/update-status]", err);
+  } catch (error: unknown) {
+    console.error("[API /products/update-status]", error);
     return NextResponse.json({ message: "Internal error" }, { status: 500 });
   }
 }

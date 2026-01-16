@@ -73,7 +73,7 @@ export async function POST(_req: NextRequest) {
       canPublish = status === "APPROVED";
 
       // If client attempts to create as ACTIVE / isActive=true while not allowed => forbid
-      if (!canPublish && (body.status === "ACTIVE" || body.isActive === true)) {
+      if (!canPublish && ((isRecord(body) && body.status === "ACTIVE") || (isRecord(body) && body.isActive === true))) {
         return NextResponse.json(
           { message: "Vendor profile not approved", status: vp?.status ?? "PENDING" },
           { status: 403 }
@@ -101,8 +101,8 @@ export async function POST(_req: NextRequest) {
     });
 
     return NextResponse.json({ ok: true, id: created.id }, { status: 201 });
-  } catch (err: any) {
-    console.error("[API /products/create] Fehler:", err);
+  } catch (error: unknown) {
+    console.error("[API /products/create] Fehler:", error);
     return NextResponse.json(
       { message: "Interner Fehler beim Anlegen des Produkts." },
       { status: 500 }

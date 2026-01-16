@@ -11,9 +11,8 @@ type Params = { vendorId: string };
 
 export default async function VendorPayoutPage(props: { params: Promise<Params> }) {
   const session = await getServerSession(authOptions);
-  const user = session?.user as any;
 
-  if (!user?.id || user.role !== "ADMIN") {
+  if (!session || session.user?.role !== "ADMIN") {
     return (
       <main className="p-8">
         <div className="neumorph-card p-6 max-w-md text-center">

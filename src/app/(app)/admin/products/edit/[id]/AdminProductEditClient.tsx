@@ -47,9 +47,7 @@ export default function AdminProductEditClient({
   const [priceChf, setPriceChf] = useState<string>(initialPriceCHF);
   const [thumbnail, setThumbnail] = useState<string>(initialProduct.thumbnail ?? "");
   const [category, setCategory] = useState<string>(initialProduct.category ?? "other");
-  const [status, setStatus] = useState<InitialProduct["status"]>(
-    (initialProduct.status as any) ?? "DRAFT"
-  );
+  const [status, setStatus] = useState<InitialProduct["status"]>(initialProduct.status ?? "DRAFT");
   const [isActive, setIsActive] = useState<boolean>(!!initialProduct.isActive);
   const [moderationNote, setModerationNote] = useState<string>(
     initialProduct.moderationNote ?? ""
@@ -102,13 +100,17 @@ export default function AdminProductEditClient({
         }),
       });
 
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data?.message || "Speichern fehlgeschlagen.");
+      const data: unknown = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        const msg = typeof data === "object" && data !== null && "message" in data ? (data as any).message : "Speichern fehlgeschlagen.";
+        throw new Error(msg);
+      }
 
       setOk("Gespeichert.");
       router.refresh();
-    } catch (e: any) {
-      setError(e?.message || "Speichern fehlgeschlagen.");
+    } catch (error: unknown) {
+      if (error instanceof Error) setError(error.message);
+      else setError(String(error) || "Speichern fehlgeschlagen.");
     } finally {
       setSaving(false);
     }
