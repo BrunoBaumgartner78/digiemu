@@ -37,8 +37,29 @@ export async function POST(req: NextRequest) {
   // ✅ Log damit du sicher siehst, ob Webhook ankommt
   console.log("✅ Webhook received:", event.type);
 
+  // ✅ Idempotency guard: Stripe kann das gleiche Event mehrfach senden.
+  // Wir "claimen" event.id in der DB. Wenn bereits vorhanden, ist das Event dupliziert.
+  try {
+    await prisma.stripeWebhookEvent.create({
+      data: {
+        eventId: event.id,
+        type: event.type,
+      },
+    });
+  } catch (e: any) {
+    // Prisma unique violation => already processed
+    // P2002 = Unique constraint failed
+    if (e?.code === "P2002") {
+      console.log("↩️ Duplicate webhook event ignored:", event.id, event.type);
+      return NextResponse.json({ received: true, duplicate: true }, { status: 200 });
+    }
+    console.error("❌ stripeWebhookEvent.create failed:", e);
+    return NextResponse.json({ received: true }, { status: 200 });
+  }
+
   try {
     if (event.type !== "checkout.session.completed") {
+      // already guarded; acknowledge
       return NextResponse.json({ received: true }, { status: 200 });
     }
 
