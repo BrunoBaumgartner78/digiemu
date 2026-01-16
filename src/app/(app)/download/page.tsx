@@ -1,3 +1,5 @@
+import { rateLimitCheck } from "@/lib/rateLimit";
+import { headers } from "next/headers";
 import { getServerSession } from "next-auth";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -9,6 +11,24 @@ export const metadata = {
 };
 
 export default async function DownloadsPage() {
+  // v1.0.1: soft rate limit for download page requests (MVP-safe)
+  // limit: 20 / minute per ip+ua
+  const h = await headers();
+  const ip = (h.get("x-forwarded-for") || h.get("x-real-ip") || "unknown").split(",")[0].trim();
+  const ua = h.get("user-agent") || "ua";
+  const rl = rateLimitCheck(`dlpage:${ip}:${ua}`, 20, 60_000);
+
+  if (!rl.allowed) {
+    return (
+      <div style={{ padding: "2rem", maxWidth: 860, margin: "0 auto" }}>
+        <h1 style={{ margin: 0 }}>Zu viele Anfragen</h1>
+        <p style={{ opacity: 0.8, lineHeight: 1.6 }}>
+          Bitte warte kurz und versuche es erneut. (Retry in ca. {rl.retryAfter}s)
+        </p>
+      </div>
+    );
+  }
+
   const session = await getServerSession(auth);
   const userId = (session?.user as any)?.id as string | undefined;
 

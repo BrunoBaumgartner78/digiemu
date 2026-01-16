@@ -84,11 +84,16 @@ export default async function DownloadPage(props: { params: Promise<Params> }) {
     );
   }
 
-  const h = headers();
-  const ip = (h.get("x-forwarded-for") || h.get("x-real-ip") || "unknown").split(",")[0].trim();
-  const ua = h.get("user-agent") || "ua";
-
   const { orderId } = await props.params;
+
+  // Next.js 16: headers() can be async
+  const h = await headers();
+
+  const ip = (h.get("x-forwarded-for") || h.get("x-real-ip") || "unknown")
+    .split(",")[0]
+    .trim();
+
+  const ua = h.get("user-agent") || "ua";
 
   const rl = rateLimitCheck(`dl:${ip}:${ua}:${orderId}`, 20, 60_000);
   if (!rl.allowed) {
