@@ -112,6 +112,25 @@ export function getOptionalNumber(value: unknown): number | null {
   return parseParamToNumber(value);
 }
 
+// Property extraction helpers
+export function getStringProp(obj: unknown, key: string): string | null {
+  if (!isRecord(obj)) return null;
+  const v = (obj as Record<string, unknown>)[key];
+  return isString(v) ? v : null;
+}
+
+export function getBooleanProp(obj: unknown, key: string): boolean | null {
+  if (!isRecord(obj)) return null;
+  const v = (obj as Record<string, unknown>)[key];
+  return getBoolean(v);
+}
+
+export function getNumberProp(obj: unknown, key: string): number | null {
+  if (!isRecord(obj)) return null;
+  const v = (obj as Record<string, unknown>)[key];
+  return getNumber(v);
+}
+
 // Response guards for fetch results
 export function isOkResponse(obj: unknown): obj is { ok: true } {
   return isRecord(obj) && obj.ok === true;

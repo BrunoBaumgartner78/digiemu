@@ -16,8 +16,9 @@ export default async function DashboardEditLegacyPage({ params }: PageProps) {
   const session = await getServerSession(auth);
   const maybeUser = session?.user as unknown;
   let userId: string | undefined;
-  if (isRecord(maybeUser) && isString((maybeUser as Record<string, unknown>).id)) {
-    userId = (maybeUser as Record<string, unknown>).id;
+  if (isRecord(maybeUser)) {
+    const idVal = (maybeUser as Record<string, unknown>).id;
+    if (isString(idVal)) userId = idVal;
   }
   if (!userId) redirect("/login");
 

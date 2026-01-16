@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { isRecord, getStringProp, getErrorMessage } from "@/lib/guards";
+import { Prisma } from "@prisma/client";
+import type { VendorStatus } from "@prisma/client";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -10,7 +13,8 @@ export async function POST(_req: NextRequest, context: { params: Promise<{ id: s
   const params = await context.params;
   const session = await getServerSession(authOptions);
 
-  if (!session?.user || (session.user as any).role !== "ADMIN") {
+  const maybeUser = session?.user;
+  if (!isRecord(maybeUser) || getStringProp(maybeUser, "role") !== "ADMIN") {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401, headers: { "Cache-Control": "no-store" } });
   }
 
@@ -29,8 +33,8 @@ export async function POST(_req: NextRequest, context: { params: Promise<{ id: s
           displayName: null,
           slug: `vendor-${userId.slice(0, 8)}`,
           isPublic: true,
-          status: "PENDING",
-        } as any,
+          status: "PENDING" as VendorStatus,
+        },
         select: { userId: true, isPublic: true, status: true },
       });
       return created;
@@ -38,8 +42,8 @@ export async function POST(_req: NextRequest, context: { params: Promise<{ id: s
 
     await prisma.vendorProfile.update({ where: { userId }, data: { isPublic: !updated.isPublic } });
     return NextResponse.json({ ok: true }, { status: 200, headers: { "Cache-Control": "no-store" } });
-  } catch (e: any) {
+  } catch (e: unknown) {
     console.error("[admin-vendorprofile-toggle-public]", e);
-    return NextResponse.json({ message: e?.message ?? "Server error" }, { status: 500, headers: { "Cache-Control": "no-store" } });
+    return NextResponse.json({ message: getErrorMessage(e) }, { status: 500, headers: { "Cache-Control": "no-store" } });
   }
 }

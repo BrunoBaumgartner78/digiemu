@@ -2,18 +2,23 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { isRecord, getStringProp, getErrorMessage } from "@/lib/guards";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function POST(_req: NextRequest) {
   const session = await getServerSession(auth);
-  if (!session || (session.user as any)?.role !== "ADMIN") {
+  const maybeUser = session?.user;
+  if (!isRecord(maybeUser) || getStringProp(maybeUser, "role") !== "ADMIN") {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
-  const body = await _req.json().catch(() => null);
-  const userId = String(body?.userId ?? "").trim();
+  const bodyUnknown = await _req.json().catch(() => null);
+  const userId = getStringProp(bodyUnknown, "userId") ?? "";
+  if (!userId.trim()) {
+    return NextResponse.json({ message: "Missing userId" }, { status: 400 });
+  }
   if (!userId) {
     return NextResponse.json({ message: "Missing userId" }, { status: 400 });
   }
@@ -59,11 +64,8 @@ export async function POST(_req: NextRequest) {
     });
 
     return NextResponse.json({ ok: true, user: updated });
-  } catch (e: any) {
+  } catch (e: unknown) {
     console.error("[toggle-block]", e);
-    return NextResponse.json(
-      { message: e?.message || "Server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ message: getErrorMessage(e) || "Server error" }, { status: 500 });
   }
 }

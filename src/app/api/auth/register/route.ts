@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { rateLimitCheck, keyFromReq } from "@/lib/rateLimit";
+import { isRecord, getStringProp, getErrorMessage } from "@/lib/guards";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -29,16 +30,19 @@ export async function POST(_req: Request) {
       // don't block on rateLimit errors
       console.warn("rateLimit check failed", _e);
     }
-    const body: RegisterBody | null = await _req.json().catch(() => null);
+    const bodyUnknown: unknown = await _req.json().catch(() => null);
 
-    if (!body) {
+    if (!isRecord(bodyUnknown)) {
       return NextResponse.json(
         { error: "INVALID_BODY", message: "Ungültiger Request." },
         { status: 400 }
       );
     }
 
-    const { email, password, name, role } = body;
+    const email = getStringProp(bodyUnknown, "email");
+    const password = getStringProp(bodyUnknown, "password");
+    const name = getStringProp(bodyUnknown, "name");
+    const role = getStringProp(bodyUnknown, "role") as RegisterBody["role"] | null;
 
     if (!email || !password) {
       return NextResponse.json(
@@ -90,14 +94,10 @@ export async function POST(_req: Request) {
       },
       { status: 201 }
     );
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("[AUTH_REGISTER_ERROR]", err);
-
     return NextResponse.json(
-      {
-        error: "SERVER_ERROR",
-        message: "Serverfehler bei der Registrierung.",
-      },
+      { error: "SERVER_ERROR", message: getErrorMessage(err) },
       { status: 500 }
     );
   }

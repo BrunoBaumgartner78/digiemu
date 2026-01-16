@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { isRecord, getBooleanProp, getStringProp } from "@/lib/guards";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -11,14 +12,16 @@ export async function POST(
   context: { params: Promise<{ id: string }> }
 ) {
   const session = await getServerSession(authOptions);
-  if (!session?.user || (session.user as any).role !== "ADMIN") {
+  const maybeUser = session?.user;
+  if (!isRecord(maybeUser) || getStringProp(maybeUser, "role") !== "ADMIN") {
     return NextResponse.json({ ok: false, message: "Unauthorized" }, { status: 401 });
   }
 
   const { id: userId } = await context.params;
 
-  const body = await _req.json().catch(() => ({}));
-  const shouldBlock = typeof body?.block === "boolean" ? body.block : true; // default: block
+  const bodyUnknown = await _req.json().catch(() => ({}));
+  const shouldBlockValue = isRecord(bodyUnknown) ? getBooleanProp(bodyUnknown, "block") : null;
+  const shouldBlock = typeof shouldBlockValue === "boolean" ? shouldBlockValue : true;
   const nextVendorStatus = shouldBlock ? "BLOCKED" : "PENDING";
 
   const result = await prisma.$transaction(async (tx) => {

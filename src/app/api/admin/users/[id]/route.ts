@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { isRecord, getStringProp, getBooleanProp } from "@/lib/guards";
+import { Prisma } from "@prisma/client";
 
 const ALLOWED_ROLES = ["BUYER", "VENDOR", "ADMIN"] as const;
 type AllowedRole = (typeof ALLOWED_ROLES)[number];
@@ -14,38 +16,40 @@ export async function PATCH(
   const params = await context.params;
   const session = await getServerSession(authOptions);
 
-  if (!session || session.user.role !== "ADMIN") {
+  const maybeUser = session?.user;
+  if (!isRecord(maybeUser) || getStringProp(maybeUser, "role") !== "ADMIN") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const userId = params.id;
-  let body: { role?: string; isBlocked?: boolean };
-
+  let bodyUnknown: unknown;
   try {
-    body = await _req.json();
+    bodyUnknown = await _req.json();
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const updateData: any = {};
+  const updateData: { role?: AllowedRole; isBlocked?: boolean } = {};
 
-  if (typeof body.role !== "undefined") {
-    if (!ALLOWED_ROLES.includes(body.role as AllowedRole)) {
-      return NextResponse.json({ error: "Invalid role" }, { status: 400 });
-    }
-    updateData.role = body.role;
-  }
+  if (isRecord(bodyUnknown)) {
+    const role = getStringProp(bodyUnknown, "role");
+    const isBlocked = getBooleanProp(bodyUnknown, "isBlocked");
 
-  if (typeof body.isBlocked !== "undefined") {
-    if (typeof body.isBlocked !== "boolean") {
-      return NextResponse.json({ error: "isBlocked must be boolean" }, { status: 400 });
+    if (role !== null) {
+      if (!ALLOWED_ROLES.includes(role as AllowedRole)) {
+        return NextResponse.json({ error: "Invalid role" }, { status: 400 });
+      }
+      updateData.role = role as AllowedRole;
     }
-    updateData.isBlocked = body.isBlocked;
+
+    if (isBlocked !== null) {
+      updateData.isBlocked = isBlocked;
+    }
   }
 
   // Optional: Admin-Selbstschutz
   if (
-    session.user.id === userId &&
+    getStringProp(maybeUser, "id") === userId &&
     (typeof updateData.isBlocked !== "undefined" || updateData.role === "BUYER" || updateData.role === "VENDOR")
   ) {
     return NextResponse.json(
@@ -61,7 +65,7 @@ export async function PATCH(
   try {
     const updated = await prisma.user.update({
       where: { id: userId },
-      data: updateData,
+      data: updateData as Prisma.UserUpdateInput,
       select: {
         id: true,
         email: true,
@@ -75,9 +79,6 @@ export async function PATCH(
     return NextResponse.json(updated);
   } catch (error) {
     console.error("Admin user update error", error);
-    return NextResponse.json(
-      { error: "Failed to update user" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to update user" }, { status: 500 });
   }
 }

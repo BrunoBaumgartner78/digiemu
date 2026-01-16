@@ -2,6 +2,7 @@
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "@/lib/prisma";
+import { isRecord, getStringProp } from "@/lib/guards";
 
 export const authOptions: NextAuthOptions = {
   session: { strategy: "jwt" },
@@ -45,7 +46,7 @@ export const authOptions: NextAuthOptions = {
             email: user.email,
             name: user.name ?? undefined,
             role: user.role,
-          } as any;
+          };
         } catch (_e) {
           console.error("[NEXTAUTH_AUTHORIZE_ERROR]", _e);
           return null;
@@ -56,11 +57,16 @@ export const authOptions: NextAuthOptions = {
 
   callbacks: {
     async jwt({ token, user }) {
+      const invalidate = () => ({}) as typeof token;
+
       // ✅ 1) Beim Login übernehmen
-      if (user) {
-        token.uid = (user as any).id;
-        token.role = (user as any).role;
-        token.email = (user as any).email ?? token.email;
+      if (user && isRecord(user)) {
+        const uid = getStringProp(user, "id");
+        const role = getStringProp(user, "role");
+        const email = getStringProp(user, "email");
+        if (uid) token.uid = uid;
+        if (role) token.role = role;
+        if (email) token.email = email;
       }
 
       // ✅ 2) uid/role nachziehen wenn nötig
@@ -70,31 +76,24 @@ export const authOptions: NextAuthOptions = {
           select: { id: true, role: true, isBlocked: true },
         });
 
-        if (!dbUser) {
-          // user deleted -> invalidate
-          return {} as any;
-        }
-        if (dbUser.isBlocked) {
-          // ✅ invalidate token if blocked later
-          return {} as any;
-        }
+        if (!dbUser) return invalidate();
+        if (dbUser.isBlocked) return invalidate();
 
         token.uid = dbUser.id;
         token.role = dbUser.role;
         return token;
       }
 
-      // ✅ 3) WICHTIG: wenn uid vorhanden → block-status prüfen
+      // ✅ 3) wenn uid vorhanden → block-status prüfen
       if (token.uid) {
         const dbUser = await prisma.user.findUnique({
           where: { id: String(token.uid) },
           select: { isBlocked: true, role: true },
         });
 
-        if (!dbUser) return {} as any;
-        if (dbUser.isBlocked) return {} as any;
+        if (!dbUser) return invalidate();
+        if (dbUser.isBlocked) return invalidate();
 
-        // keep role fresh
         token.role = dbUser.role;
       }
 
@@ -103,14 +102,11 @@ export const authOptions: NextAuthOptions = {
 
     async session({ session, token }) {
       // ✅ Wenn Token invalidiert wurde -> keine Session
-      if (!(token as any)?.uid) {
-        return null as any;
-      }
+      if (!token?.uid) return null;
 
-      if (session.user) {
-        (session.user as any).id = (token as any).uid || "";
-        (session.user as any).role = (token as any).role;
-      }
+      session.user.id = token.uid;
+      session.user.role = token.role ?? session.user.role;
+
       return session;
     },
   },

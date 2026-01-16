@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { isRecord, getStringProp, getErrorMessage } from "@/lib/guards";
+import { Prisma } from "@prisma/client";
+import type { VendorStatus } from "@prisma/client";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -13,16 +16,14 @@ export async function POST(
   context: { params: Promise<{ id: string }> }
 ) {
   const session = await getServerSession(authOptions);
-  if (!session || (session.user as { role?: string })?.role !== "ADMIN") {
+  const maybeUser = session?.user;
+  if (!isRecord(maybeUser) || getStringProp(maybeUser, "role") !== "ADMIN") {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
   const { id } = await context.params; // userId
   const raw = await _req.json().catch(() => ({} as unknown));
-  const nextStatus =
-    typeof raw === "object" && raw && "status" in raw
-      ? String((raw as Record<string, unknown>).status ?? "").toUpperCase().trim()
-      : "";
+  const nextStatus = (isRecord(raw) ? (getStringProp(raw, "status") ?? "") : "").toUpperCase().trim();
 
   if (!id) return NextResponse.json({ message: "Missing id" }, { status: 400 });
   if (!ALLOWED.has(nextStatus)) {
@@ -40,7 +41,7 @@ export async function POST(
 
       const updatedVP = await tx.vendorProfile.update({
         where: { id: vp.id },
-        data: { status: nextStatus as any },
+        data: { status: nextStatus as VendorStatus },
         select: { id: true, status: true, isPublic: true },
       });
 
@@ -63,14 +64,6 @@ export async function POST(
     return NextResponse.json({ ok: true });
   } catch (e: unknown) {
     console.error("[admin/vendors/set-vendor-status]", e);
-    const getMessage = (err: unknown) => {
-      if (typeof err === "string") return err;
-      if (err && typeof err === "object" && "message" in err) {
-        const m = (err as Record<string, unknown>).message;
-        return typeof m === "string" ? m : JSON.stringify(m);
-      }
-      return "Server error";
-    };
-    return NextResponse.json({ message: getMessage(e) }, { status: 500 });
+    return NextResponse.json({ message: getErrorMessage(e) }, { status: 500 });
   }
 }
