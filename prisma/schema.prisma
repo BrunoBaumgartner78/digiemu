@@ -71,6 +71,13 @@ model VendorProfile {
   facebookUrl  String?   @db.VarChar(500)
   slug         String?   @unique
   isPublic     Boolean   @default(true)
+  /// Vendor moderation status:
+  /// - PENDING: wartet auf Admin-Freigabe (darf keine Produkte erstellen)
+  /// - APPROVED: darf Produkte erstellen
+  /// - BLOCKED: gesperrt
+  status       VendorStatus @default(PENDING)
+  /// optionaler Admin-Hinweis (z.B. Ablehnungsgrund)
+  moderationNote String?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
   products     Product[] @relation("VendorProfileProducts")
@@ -120,7 +127,7 @@ model Product {
   /// - "DRAFT"   : nur Vendor + Admin sehen das Produkt
   /// - "ACTIVE"  : Produkt ist im Marketplace sichtbar
   /// - "BLOCKED" : durch Admin gesperrt, nicht sichtbar für Käufer
-  status          String         @default("DRAFT")
+  status          ProductStatus  @default(DRAFT)
   /// Interne Moderations-Notiz für Admins (z.B. Sperr-Grund).
   moderationNote  String?
 
@@ -133,19 +140,32 @@ model Product {
   reviews         Review[]
 }
 
-model ProductView {
-  id        String   @id @default(cuid())
-  productId String
-  viewerId  String?
-  createdAt DateTime @default(now())
+enum VendorStatus {
+  PENDING
+  APPROVED
+  BLOCKED
+}
 
-  product   Product  @relation(fields: [productId], references: [id])
-  // ✅ FIX: viewerId is now a real relation
-  viewer    User?    @relation(fields: [viewerId], references: [id], onDelete: SetNull)
+enum ProductStatus {
+  DRAFT
+  ACTIVE
+  BLOCKED
+}
+
+model ProductView {
+  id          String   @id @default(cuid())
+  productId   String
+  userId      String?
+  fingerprint String?
+  day         String
+  createdAt   DateTime @default(now())
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user    User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([productId])
-  @@index([viewerId])
-  @@index([createdAt])
+  @@unique([productId, userId, day], name: "productId_userId_day")
+  @@unique([productId, fingerprint, day], name: "productId_fingerprint_day")
 }
 
 model Like {
@@ -220,7 +240,7 @@ model Payout {
   id          String    @id @default(cuid())
   vendorId    String
   amountCents Int
-  status      String    @default("PENDING")
+  status      PayoutStatus    @default(PENDING)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   paidAt      DateTime?
@@ -231,6 +251,12 @@ enum Role {
   BUYER
   VENDOR
   ADMIN
+}
+
+enum PayoutStatus {
+  PENDING
+  PAID
+  CANCELLED
 }
 
 model PasswordReset {

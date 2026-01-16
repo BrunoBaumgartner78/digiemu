@@ -27,8 +27,9 @@ export async function POST(req: Request) {
     data: { status: "PAID" } as any,
   });
 
-  const redirectUrl =
-    returnTo || (payout as any)?.vendorId ? `/admin/payouts/vendor/${(payout as any).vendorId}` : "/admin/payouts";
+  // Fix: ensure correct precedence when computing redirect URL
+  const vendorId = (payout as any)?.vendorId as string | undefined;
+  const redirectUrl = returnTo || (vendorId ? `/admin/payouts/vendor/${vendorId}` : "/admin/payouts");
 
   return NextResponse.redirect(new URL(redirectUrl, req.url));
 }

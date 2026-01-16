@@ -77,7 +77,7 @@ export async function PATCH(
       category,
       priceCents: Math.round(priceCents),
       thumbnail,
-      status,
+      status: status as any,
       isActive: finalIsActive,
       moderationNote,
     },

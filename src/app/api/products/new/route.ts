@@ -50,7 +50,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "fileUrl fehlt." }, { status: 400 });
   }
 
-  const status = data.status ?? "DRAFT";
+  // Force new products from vendors to start as DRAFT and not active.
+  const status = "DRAFT";
 
   try {
     const product = await prisma.product.create({
@@ -63,7 +64,7 @@ export async function POST(req: Request) {
         thumbnail: data.thumbnail ?? null,
         status,
         vendorId, // kommt aus Session (wichtig!)
-        isActive: true,
+        isActive: false,
       },
     });
 

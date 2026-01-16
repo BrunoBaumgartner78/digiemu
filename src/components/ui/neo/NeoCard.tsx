@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import './styles/NeoCard.module.css';
 
 type NeoCardProps = React.PropsWithChildren<React.HTMLAttributes<HTMLDivElement>> & {
   className?: string;

@@ -18,25 +18,29 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    // ✅ DB-User über Email holen → garantiert FK korrekt
+    // DB-User via Email (FK safe)
     const dbUser = await prisma.user.findUnique({
       where: { email: session.user.email },
-      select: { id: true, role: true },
+      select: { id: true, role: true, isBlocked: true },
     });
 
     if (!dbUser) {
       return NextResponse.json(
-        { message: "User nicht in DB gefunden (FK Problem). Bitte neu einloggen oder seed prüfen." },
+        { message: "User nicht in DB gefunden. Bitte neu einloggen." },
         { status: 400 }
       );
+    }
+
+    if (dbUser.isBlocked) {
+      return NextResponse.json({ message: "Account gesperrt." }, { status: 403 });
     }
 
     if (dbUser.role !== "VENDOR" && dbUser.role !== "ADMIN") {
       return NextResponse.json({ message: "Forbidden" }, { status: 403 });
     }
 
+    // Body
     const body = await req.json().catch(() => ({}));
-
     const title = typeof body.title === "string" ? body.title.trim() : "";
     const description = typeof body.description === "string" ? body.description.trim() : "";
     const category =
@@ -54,6 +58,30 @@ export async function POST(req: NextRequest) {
     if (!fileUrl) return NextResponse.json({ message: "Download-URL fehlt." }, { status: 400 });
     if (priceCents === null) return NextResponse.json({ message: "Ungültiger Preis." }, { status: 400 });
 
+    // VendorProfile rules:
+    // - ADMIN: may always create (vendorProfileId optional)
+    // - VENDOR: must have VendorProfile with status === APPROVED
+    let vendorProfileId: string | null = null;
+
+    let canPublish = false;
+    if (dbUser.role === "VENDOR") {
+      const vp = await prisma.vendorProfile.findFirst({ where: { userId: dbUser.id }, select: { id: true, status: true } });
+      const status = (vp?.status ?? "PENDING").toString().toUpperCase();
+      // Allow creating products for VENDORs even when PENDING, but only as DRAFT
+      vendorProfileId = vp?.id ?? null;
+      canPublish = status === "APPROVED";
+
+      // If client attempts to create as ACTIVE / isActive=true while not allowed => forbid
+      if (!canPublish && (body.status === "ACTIVE" || body.isActive === true)) {
+        return NextResponse.json(
+          { message: "Vendor profile not approved", status: vp?.status ?? "PENDING" },
+          { status: 403 }
+        );
+      }
+    }
+
+    // ✅ Neu: Produkte starten als DRAFT und isActive=false.
+    // Admin aktiviert später via Toggle (status ACTIVE + isActive=true).
     const created = await prisma.product.create({
       data: {
         title,
@@ -62,9 +90,11 @@ export async function POST(req: NextRequest) {
         fileUrl,
         priceCents,
         thumbnail,
-        vendorId: dbUser.id,     // ✅ FIX: echte DB-User-ID
-        isActive: true,
-        status: "ACTIVE",
+        vendorId: dbUser.id,
+        vendorProfileId, // null für ADMIN, gesetzt für approved Vendor
+        // Force draft & inactive on create - publish must be done via explicit status update API
+        isActive: false,
+        status: "DRAFT",
       },
       select: { id: true },
     });

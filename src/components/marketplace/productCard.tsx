@@ -1,47 +1,44 @@
-"use client";
-
-import Image from "next/image";
 import Link from "next/link";
+import styles from "./ProductCard.module.css";
 
-type ProductCardProps = {
-  id: string;
-  title: string;
-  price: number;
-  imageUrl: string;
-};
+export default function ProductCard({ product }: { product: any }) {
+  const title = product.title ?? "Untitled";
+  const description = product.description ?? null;
+  const thumb = product.thumbnail ?? null;
+  const vendorName =
+    product.vendorProfile?.displayName ||
+    product.vendorProfile?.user?.name ||
+    product.vendor?.name ||
+    null;
 
-export function ProductCard({
-  id,
-  title,
-  price,
-  imageUrl,
-}: ProductCardProps) {
   return (
-    <div className="neocard group">
-      <div className="relative aspect-square overflow-hidden rounded-2xl">
-        <Image
-          src={imageUrl}
-          alt={title}
-          fill
-          className="object-cover transition-transform duration-300 group-hover:scale-105"
-        />
-      </div>
+    <article className={styles.card}>
+      <div className={styles.inner}>
+        <div className={styles.thumbWrap}>
+          {thumb ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img className={styles.thumb} src={thumb} alt={title} />
+          ) : (
+            <div className={styles.thumb} aria-hidden="true" />
+          )}
+        </div>
 
-      <div className="mt-3 px-1 space-y-1">
-        <h3 className="text-sm font-medium text-[var(--text)] line-clamp-2">
-          {title}
-        </h3>
+        <h3 className={styles.title}>{title}</h3>
+        {vendorName ? <div className={styles.vendor}>{vendorName}</div> : null}
 
-        <p className="text-sm font-semibold text-[var(--text-soft)]">
-          CHF {price.toFixed(2)}
-        </p>
-      </div>
+        {description ? <p className={styles.desc}>{description}</p> : null}
 
-      <div className="mt-3">
-        <Link href={`/product/${id}`} className="neobutton w-full text-center">
-          Details
-        </Link>
+        <div className={styles.bottomRow}>
+          <Link className={styles.cta} href={`/product/${product.id}`}>
+            Details
+          </Link>
+          <div className={styles.price}>
+            {typeof product.priceCents === "number"
+              ? `${(product.priceCents / 100).toFixed(2)} CHF`
+              : "Preis auf Anfrage"}
+          </div>
+        </div>
       </div>
-    </div>
+    </article>
   );
 }

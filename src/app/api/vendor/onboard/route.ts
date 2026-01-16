@@ -47,6 +47,7 @@ export async function POST() {
       data: {
         userId,
         displayName: dbUser.name ?? dbUser.email ?? "Vendor",
+                status: "PENDING",
       },
     });
   }

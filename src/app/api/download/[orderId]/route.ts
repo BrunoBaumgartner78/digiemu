@@ -2,11 +2,22 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { rateLimitCheck, keyFromReq } from "@/lib/rateLimit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest, ctx: { params: Promise<{ orderId: string }> }) {
+  // Rate limit: download API per IP (protect hotlinking/abuse)
+  try {
+    const key = keyFromReq(req, "download_api");
+    const rl = rateLimitCheck(key, 30, 60_000);
+    if (!rl.allowed) {
+      return NextResponse.json({ error: "TOO_MANY_REQUESTS" }, { status: 429, headers: { "Retry-After": String(rl.retryAfter ?? 60) } });
+    }
+  } catch (e) {
+    console.warn("rateLimit check failed for download_api", e);
+  }
   const session = await getServerSession(auth);
   const userId = (session?.user as any)?.id as string | undefined;
 

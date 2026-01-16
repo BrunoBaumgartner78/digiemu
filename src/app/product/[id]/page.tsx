@@ -5,8 +5,10 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { auth } from "@/lib/auth";
+import { getProductThumbUrl } from "@/lib/productThumb";
 import LikeButtonClient from "@/components/product/LikeButtonClient";
 import BuyButtonClient from "@/components/checkout/BuyButtonClient";
+import ViewPing from "./ViewPing";
 import styles from "./page.module.css";
 
 export const dynamic = "force-dynamic";
@@ -22,6 +24,8 @@ const SAFE_IMAGE_HOSTS = [
 
 function canUseNextImage(url: string | null | undefined): boolean {
   if (!url) return false;
+  // allow local relative paths
+  if (url.startsWith("/")) return true;
   try {
     const u = new URL(url);
     return SAFE_IMAGE_HOSTS.includes(u.hostname);
@@ -112,8 +116,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
   });
 
   const price = (p.priceCents ?? 0) / 100;
-  const hasThumb = typeof p.thumbnail === "string" && p.thumbnail.trim().length > 0;
-  const showNextImage = canUseNextImage(p.thumbnail) && hasThumb;
+  const productThumb = getProductThumbUrl({ thumbnailUrl: p.thumbnail });
+  const hasThumb = typeof productThumb === "string" && productThumb.trim().length > 0;
+  const showNextImage = hasThumb && canUseNextImage(productThumb);
 
   const likesCount = p._count?.likes ?? 0;
   const initialIsLiked = !!userId && (p.likes?.length ?? 0) > 0;
@@ -134,18 +139,28 @@ export default async function ProductPage({ params }: ProductPageProps) {
     <div className={styles.page}>
       <div className={styles.inner}>
         <main className={styles.layout}>
+          {/* counts a view once on mount */}
+          <ViewPing productId={p.id} />
           {/* Bild */}
           <section className={styles.mediaCard}>
             {showNextImage ? (
               <Image
-                src={p.thumbnail as string}
+                src={productThumb}
                 alt={p.title}
                 fill
                 priority
                 className={styles.mediaImage}
               />
+            ) : hasThumb ? (
+              // fallback to a regular img when Next/Image cannot be used for this host
+              // keep visual sizing consistent via CSS
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={productThumb} alt={p.title} className={styles.mediaImage} />
             ) : (
-              <div className={styles.mediaPlaceholder}>💾</div>
+              <div className={styles.mediaPlaceholder}>
+                <div className={styles.mediaIcon}>💾</div>
+                <div className={styles.mediaPlaceholderText}>Kein Vorschaubild</div>
+              </div>
             )}
           </section>
 

@@ -16,7 +16,7 @@ export function BuyButton({ productId }: BuyButtonProps) {
       setLoading(true);
       setError(null);
 
-      const res = await fetch("/api/checkout/session", {
+      const res = await fetch("/api/checkout/create-session", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

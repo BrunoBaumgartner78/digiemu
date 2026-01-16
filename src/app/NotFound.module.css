@@ -1,0 +1,176 @@
+/* Uses your app theme via CSS variables if present.
+   Falls deine Vars anders heißen, sag kurz welche — dann passe ich es an. */
+
+.neo404{
+  min-height: 100vh;
+  width: 100%;
+  display:grid;
+  place-items:center;
+  padding: 44px 16px;
+  overflow:hidden;
+
+  /* Background picks up theme */
+  background: var(--app-bg, var(--bg, #eef2f8));
+  color: var(--app-text, var(--text, #0b1220));
+}
+
+.neo404::before{
+  content:"";
+  position:absolute;
+  inset:-30%;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(120,160,255,.16), transparent 42%),
+    radial-gradient(circle at 80% 30%, rgba(0,0,0,.06), transparent 48%),
+    radial-gradient(circle at 45% 80%, rgba(120,160,255,.10), transparent 55%);
+  filter: blur(26px);
+  pointer-events:none;
+  opacity: 1;
+}
+
+.neoCard{
+  position:relative;
+  width:min(860px, 100%);
+  border-radius: 26px;
+  padding: 26px 22px;
+
+  background: var(--neo-surface, rgba(255,255,255,.55));
+  border: 1px solid var(--neo-stroke, rgba(0,0,0,.08));
+
+  box-shadow:
+    var(--neo-shadow1, 18px 18px 40px rgba(0,0,0,.10)),
+    var(--neo-shadow2, -18px -18px 40px rgba(255,255,255,.55));
+
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.neoTop{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 12px;
+  flex-wrap:wrap;
+  margin-bottom: 10px;
+}
+
+.neoBadge{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding: 7px 12px;
+  border-radius: 999px;
+  font-weight: 700;
+  letter-spacing: .8px;
+  font-size: 12px;
+
+  background: var(--neo-badge-bg, rgba(120,160,255,.18));
+  border: 1px solid var(--neo-stroke, rgba(0,0,0,.08));
+}
+
+.neoStatus{
+  font-size: 12px;
+  opacity: .75;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: var(--neo-chip-bg, rgba(0,0,0,.04));
+  border: 1px solid var(--neo-stroke, rgba(0,0,0,.08));
+}
+
+.neoTitle{
+  margin: 6px 0 10px;
+  font-size: clamp(30px, 4vw, 44px);
+  line-height: 1.08;
+  letter-spacing: -0.6px;
+}
+
+.neoAccent{
+  color: var(--neo-accent, #3b82f6);
+}
+
+.neoText{
+  margin: 0;
+  max-width: 62ch;
+  font-size: 15px;
+  line-height: 1.7;
+  opacity: .82;
+}
+
+.neoActions{
+  display:flex;
+  flex-wrap:wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.neoBtn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding: 10px 14px;
+  border-radius: 14px;
+  text-decoration:none;
+  font-weight: 650;
+  font-size: 14px;
+  color: inherit;
+
+  background: var(--neo-btn-bg, rgba(255,255,255,.45));
+  border: 1px solid var(--neo-stroke, rgba(0,0,0,.08));
+  box-shadow:
+    var(--neo-btn-shadow1, 10px 10px 22px rgba(0,0,0,.10)),
+    var(--neo-btn-shadow2, -10px -10px 22px rgba(255,255,255,.55));
+}
+
+.neoBtn:hover{
+  transform: translateY(-1px);
+}
+
+.neoPrimary{
+  color: var(--neo-primary-text, #0b1220);
+  background: var(--neo-primary-bg, rgba(120,160,255,.35));
+  border-color: var(--neo-primary-border, rgba(120,160,255,.35));
+}
+
+.neoGhost{
+  background: transparent;
+  border-style: dashed;
+  opacity: .9;
+}
+
+.neoHint{
+  margin-top: 16px;
+  font-size: 13px;
+  opacity: .72;
+}
+
+.neoHint code{
+  padding: 2px 6px;
+  border-radius: 10px;
+  background: var(--neo-chip-bg, rgba(0,0,0,.04));
+  border: 1px solid var(--neo-stroke, rgba(0,0,0,.08));
+}
+
+/* Dark mode (fallback) */
+@media (prefers-color-scheme: dark){
+  .neo404{
+    background: var(--app-bg, var(--bg, #0b1220));
+    color: var(--app-text, var(--text, #e9eef8));
+  }
+  .neoCard{
+    background: var(--neo-surface, rgba(20, 28, 44, .55));
+    border-color: var(--neo-stroke, rgba(255,255,255,.10));
+    box-shadow:
+      var(--neo-shadow1, 18px 18px 44px rgba(0,0,0,.45)),
+      var(--neo-shadow2, -18px -18px 44px rgba(255,255,255,.05));
+  }
+  .neoBtn{
+    background: var(--neo-btn-bg, rgba(20, 28, 44, .40));
+    border-color: var(--neo-stroke, rgba(255,255,255,.10));
+    box-shadow:
+      var(--neo-btn-shadow1, 10px 10px 26px rgba(0,0,0,.45)),
+      var(--neo-btn-shadow2, -10px -10px 26px rgba(255,255,255,.05));
+  }
+  .neoStatus, .neoHint code{
+    background: var(--neo-chip-bg, rgba(255,255,255,.06));
+    border-color: var(--neo-stroke, rgba(255,255,255,.10));
+  }
+}

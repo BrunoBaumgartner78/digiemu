@@ -41,14 +41,11 @@ export async function POST(
     return NextResponse.json({ error: "FORBIDDEN" }, { status: 403 });
   }
 
-  const data =
-    action === "publish"
-      ? { status: "ACTIVE", isActive: true }
-      : { status: "DRAFT", isActive: false };
-
   const updated = await prisma.product.update({
     where: { id },
-    data,
+    data: action === "publish"
+      ? { status: "ACTIVE" as any, isActive: true }
+      : { status: "DRAFT" as any, isActive: false },
     select: {
       id: true,
       status: true,

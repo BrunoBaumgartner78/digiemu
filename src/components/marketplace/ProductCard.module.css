@@ -1,0 +1,165 @@
+/* ProductCard.module.css
+   Ziel: Neumorph + subtiler Neon-Accent beim Hover/Fokus
+*/
+
+.card {
+  position: relative;
+  border-radius: 22px;
+  background: rgba(255,255,255,0.55);
+  box-shadow:
+    0 18px 40px rgba(19, 77, 178, 0.12),
+    inset 0 1px 0 rgba(255,255,255,0.8);
+  border: 1px solid rgba(120, 155, 220, 0.18);
+  overflow: hidden;
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+/* farbiger “Glow/Accent” über der Karte */
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 180ms ease;
+  background:
+    radial-gradient(900px 260px at 18% 0%, rgba(80, 150, 255, 0.22), transparent 55%),
+    radial-gradient(900px 260px at 82% 0%, rgba(110, 255, 220, 0.16), transparent 55%),
+    linear-gradient(to bottom, rgba(110, 170, 255, 0.10), transparent 30%);
+}
+
+.card:hover,
+.card:focus-within {
+  /* No movement; subtle shadow and brightness only */
+  filter: brightness(1.02);
+  border-color: rgba(120, 155, 220, 0.28);
+  box-shadow: 0 22px 55px rgba(19, 77, 178, 0.12), inset 0 1px 0 rgba(255,255,255,0.85);
+}
+
+.card:hover::before,
+.card:focus-within::before {
+  opacity: 1;
+}
+
+.inner {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+}
+
+.thumbWrap {
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(120, 155, 220, 0.16);
+  background: rgba(255,255,255,0.35);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);
+}
+
+.thumb {
+  width: 100%;
+  height: 170px;
+  object-fit: cover;
+  display: block;
+  filter: saturate(1.02);
+}
+
+.metaRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.title {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin: 0;
+  color: rgba(0,0,0,0.86);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 2.6em;
+}
+
+.vendor {
+  font-size: 12px;
+  color: rgba(0,0,0,0.55);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 62%;
+}
+
+.desc {
+  font-size: 13px;
+  color: rgba(0,0,0,0.62);
+  line-height: 1.35;
+  margin: 0;
+
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.bottomRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-top: 6px;
+  margin-top: auto;
+}
+
+.price {
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: rgba(0,0,0,0.82);
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 9px 12px;
+  font-weight: 800;
+  font-size: 13px;
+  border: 1px solid rgba(120, 155, 220, 0.22);
+  background: rgba(255,255,255,0.62);
+  box-shadow: 0 10px 25px rgba(19, 77, 178, 0.10);
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+  text-decoration: none;
+  color: rgba(0,0,0,0.82);
+  white-space: nowrap;
+}
+
+.cta:hover {
+  transform: translateY(-1px);
+  border-color: rgba(120, 155, 220, 0.32);
+  box-shadow: 0 14px 30px rgba(19, 77, 178, 0.14);
+}
+
+.cta:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 4px rgba(120, 155, 220, 0.22),
+    0 14px 30px rgba(19, 77, 178, 0.14);
+}
+
+/* Skeleton styles */
+.skeletonCard { background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.04)); }
+.skelImage { width: 100%; height: 100%; background: linear-gradient(90deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02)); }
+.skelTitle { height: 18px; width: 70%; margin: 8px 0; background: rgba(255,255,255,0.06); border-radius: 6px; }
+.skelDesc { height: 12px; width: 90%; margin: 8px 0; background: rgba(255,255,255,0.04); border-radius: 6px; }
+.skelButton { width: 96px; height: 36px; border-radius: 999px; background: rgba(255,255,255,0.04); }
+.skelPrice { width: 72px; height: 18px; background: rgba(255,255,255,0.04); border-radius: 6px; }
+
+@keyframes pulse-skel { 0% { opacity: 0.6 } 50% { opacity: 1 } 100% { opacity: 0.6 } }
+.skeletonCard > * { animation: pulse-skel 1.2s ease-in-out infinite; }

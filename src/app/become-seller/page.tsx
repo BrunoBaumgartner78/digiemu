@@ -26,6 +26,7 @@ export default async function BecomeSellerPage() {
         userId,
         displayName: session.user.name ?? "Neuer Verkäufer",
         bio: "",
+        status: "PENDING",
       },
     });
 
@@ -37,5 +38,8 @@ export default async function BecomeSellerPage() {
   }
 
   // Direkt ins Vendor-Dashboard
+  if (vendorProfile.status !== "APPROVED") {
+    redirect("/dashboard/vendor?status=pending");
+  }
   redirect("/dashboard/vendor");
 }
