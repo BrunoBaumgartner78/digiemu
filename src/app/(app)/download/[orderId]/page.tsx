@@ -1,5 +1,5 @@
 // src/app/download/[orderId]/page.tsx
-import { rateLimitCheck } from "@/lib/rateLimit";
+import { rateLimitCheck, keyFromReq } from "@/lib/rateLimit";
 import { headers } from "next/headers";
 import React from "react";
 import { getServerSession } from "next-auth";
@@ -89,13 +89,9 @@ export default async function DownloadPage(props: { params: Promise<Params> }) {
   // Next.js 16: headers() can be async
   const h = await headers();
 
-  const ip = (h.get("x-forwarded-for") || h.get("x-real-ip") || "unknown")
-    .split(",")[0]
-    .trim();
-
-  const ua = h.get("user-agent") || "ua";
-
-  const rl = rateLimitCheck(`dl:${ip}:${ua}:${orderId}`, 20, 60_000);
+  const includeUa = process.env.RATE_LIMIT_INCLUDE_UA === "1";
+  const key = keyFromReq(h, `dl:${orderId}`, includeUa);
+  const rl = rateLimitCheck(key, 20, 60_000);
   if (!rl.allowed) {
     // For a page, we render a friendly message instead of 429
     return (

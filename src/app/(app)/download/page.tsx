@@ -1,4 +1,4 @@
-import { rateLimitCheck } from "@/lib/rateLimit";
+import { rateLimitCheck, keyFromReq } from "@/lib/rateLimit";
 import { headers } from "next/headers";
 import { getServerSession } from "next-auth";
 import { auth } from "@/lib/auth";
@@ -14,9 +14,9 @@ export default async function DownloadsPage() {
   // v1.0.1: soft rate limit for download page requests (MVP-safe)
   // limit: 20 / minute per ip+ua
   const h = await headers();
-  const ip = (h.get("x-forwarded-for") || h.get("x-real-ip") || "unknown").split(",")[0].trim();
-  const ua = h.get("user-agent") || "ua";
-  const rl = rateLimitCheck(`dlpage:${ip}:${ua}`, 20, 60_000);
+  const includeUa = process.env.RATE_LIMIT_INCLUDE_UA === "1";
+  const key = keyFromReq(h, "dlpage", includeUa);
+  const rl = rateLimitCheck(key, 20, 60_000);
 
   if (!rl.allowed) {
     return (

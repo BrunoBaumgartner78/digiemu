@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   const res = NextResponse.next();
 
   // --- Basic hardening headers (safe for MVP) ---
@@ -16,7 +16,5 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    "/((?!_next/static|_next/image|favicon.ico).*)",
-  ],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };
