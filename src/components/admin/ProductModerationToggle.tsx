@@ -49,7 +49,7 @@ export default function ProductModerationToggle({
       }
 
       if (onUpdated) onUpdated();
-    } catch (err) {
+    } catch (_err) {
       setError("Netzwerkfehler");
     } finally {
       setLoading(false);
@@ -91,7 +91,7 @@ export default function ProductModerationToggle({
         className="input-neu w-full"
         rows={3}
         value={note}
-        onChange={(e) => setNote(e.target.value)}
+        onChange={(_e) => setNote(e.target.value)}
         placeholder="Grund für Blockierung…"
       />
 

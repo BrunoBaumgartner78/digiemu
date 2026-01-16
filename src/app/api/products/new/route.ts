@@ -16,7 +16,7 @@ type Body = {
   // vendorId NICHT aus dem Client akzeptieren (Security)
 };
 
-export async function POST(req: Request) {
+export async function POST(_req: Request) {
   const session = await getServerSession(authOptions);
 
   // Nur Vendor darf Produkte erstellen

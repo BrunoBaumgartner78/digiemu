@@ -22,7 +22,7 @@ export function ProductUploadClient({ userId, onUpload }: { userId: string; onUp
     try {
       const url = await uploadProductFile(file, userId);
       onUpload(url);
-    } catch (err) {
+    } catch (_err) {
       setError("Upload fehlgeschlagen. Bitte versuche es erneut.");
     } finally {
       setIsUploading(false);

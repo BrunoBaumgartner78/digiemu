@@ -42,7 +42,7 @@ export default function Reviews({ productId }: any) {
 
       <select
         value={rating}
-        onChange={(e) => setRating(Number(e.target.value))}
+        onChange={(_e) => setRating(Number(e.target.value))}
         className="border p-2 rounded mb-2"
       >
         {[1,2,3,4,5].map(n => <option key={n} value={n}>{n} Sterne</option>)}
@@ -50,7 +50,7 @@ export default function Reviews({ productId }: any) {
 
       <textarea
         value={content}
-        onChange={(e) => setContent(e.target.value)}
+        onChange={(_e) => setContent(e.target.value)}
         className="p-2 border rounded w-full mb-2"
         placeholder="Bewertung schreiben…"
       />

@@ -15,7 +15,7 @@ export function useTrackProductView(productId?: string) {
 
     fetch(`/api/product/${productId}/view`, {
       method: "POST",
-    }).catch((err) => {
+    }).catch((_err) => {
       if (process.env.NODE_ENV !== "production") {
         console.error("Failed to track product view", err);
       }

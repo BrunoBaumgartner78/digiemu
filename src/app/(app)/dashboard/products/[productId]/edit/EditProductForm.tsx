@@ -63,7 +63,7 @@ export default function EditProductForm(props: Props) {
         }
         const j = await res.json();
         if (mounted) setCanPublish((j.status ?? "PENDING").toString().toUpperCase() === "APPROVED");
-      } catch (err) {
+      } catch (_err) {
         if (mounted) setCanPublish(false);
       }
     })();
@@ -101,7 +101,7 @@ export default function EditProductForm(props: Props) {
           );
           setThumbProgress(pct);
         },
-        (err) => reject(err),
+        (_err) => reject(err),
         async () => {
           const url = await getDownloadURL(uploadTask.snapshot.ref);
           resolve(url);
@@ -123,7 +123,7 @@ export default function EditProductForm(props: Props) {
       setThumbnailUrl(url);
       setThumbFile(null);
       setSuccessMsg("Thumbnail wurde hochgeladen.");
-    } catch (err) {
+    } catch (_err) {
       console.error(err);
       setErrorMsg("Thumbnail-Upload fehlgeschlagen.");
     } finally {
@@ -224,7 +224,7 @@ export default function EditProductForm(props: Props) {
           <input
             className={styles.input}
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            onChange={(_e) => setTitle(e.target.value)}
             disabled={isBlocked}
           />
 
@@ -232,7 +232,7 @@ export default function EditProductForm(props: Props) {
           <textarea
             className={styles.textarea}
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            onChange={(_e) => setDescription(e.target.value)}
             disabled={isBlocked}
           />
 
@@ -240,7 +240,7 @@ export default function EditProductForm(props: Props) {
           <select
             className={styles.input}
             value={category}
-            onChange={(e) => setCategory(e.target.value)}
+            onChange={(_e) => setCategory(e.target.value)}
             disabled={isBlocked}
           >
             {CATEGORY_OPTIONS.map((c) => (
@@ -259,7 +259,7 @@ export default function EditProductForm(props: Props) {
           <input
             className={styles.input}
             value={priceChf}
-            onChange={(e) => setPriceChf(e.target.value)}
+            onChange={(_e) => setPriceChf(e.target.value)}
             placeholder="z.B. 19.90"
             disabled={isBlocked}
           />
@@ -297,7 +297,7 @@ export default function EditProductForm(props: Props) {
           <input
             className={styles.input}
             value={thumbnailUrl}
-            onChange={(e) => setThumbnailUrl(e.target.value)}
+            onChange={(_e) => setThumbnailUrl(e.target.value)}
             placeholder="/fallback-thumbnail.svg"
             disabled={isBlocked}
           />
@@ -337,7 +337,7 @@ export default function EditProductForm(props: Props) {
             <img
               src={thumbnailUrl || "/fallback-thumbnail.svg"}
               alt="Thumbnail"
-              onError={(e) => {
+              onError={(_e) => {
                 (e.currentTarget as HTMLImageElement).src =
                   "/fallback-thumbnail.svg";
               }}

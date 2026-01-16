@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 
-export async function POST(req: Request) {
+export async function POST(_req: Request) {
   try {
     const body = await req.json().catch(() => ({}));
     const productId = String(body?.productId ?? "").trim();

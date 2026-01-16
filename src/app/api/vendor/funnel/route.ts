@@ -60,7 +60,7 @@ export async function GET(req: NextRequest) {
         fullFunnelRate,
       },
     });
-  } catch (err) {
+  } catch (_err) {
     console.error("Vendor funnel error:", err);
     return NextResponse.json(
       { error: "Internal server error" },

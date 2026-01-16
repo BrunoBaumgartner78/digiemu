@@ -175,7 +175,7 @@ export default function AdminProductEditClient({
           <div className="space-y-4">
             <div>
               <label className="block text-xs text-[var(--text-muted)] mb-1">Titel</label>
-              <input className="input-neu w-full" value={title} onChange={(e) => setTitle(e.target.value)} />
+              <input className="input-neu w-full" value={title} onChange={(_e) => setTitle(e.target.value)} />
             </div>
 
             <div>
@@ -184,14 +184,14 @@ export default function AdminProductEditClient({
                 className="input-neu w-full"
                 style={{ minHeight: 160, resize: "vertical" }}
                 value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                onChange={(_e) => setDescription(e.target.value)}
               />
             </div>
 
             <div className="grid sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs text-[var(--text-muted)] mb-1">Kategorie</label>
-                <input className="input-neu w-full" value={category} onChange={(e) => setCategory(e.target.value)} />
+                <input className="input-neu w-full" value={category} onChange={(_e) => setCategory(e.target.value)} />
               </div>
 
               <div>
@@ -204,7 +204,7 @@ export default function AdminProductEditClient({
                   step="0.05"
                   min="1"
                   value={priceChf}
-                  onChange={(e) => setPriceChf(e.target.value)}
+                  onChange={(_e) => setPriceChf(e.target.value)}
                 />
               </div>
             </div>
@@ -215,7 +215,7 @@ export default function AdminProductEditClient({
                 className="input-neu w-full"
                 style={{ minHeight: 100, resize: "vertical" }}
                 value={moderationNote}
-                onChange={(e) => setModerationNote(e.target.value)}
+                onChange={(_e) => setModerationNote(e.target.value)}
               />
             </div>
           </div>
@@ -228,7 +228,7 @@ export default function AdminProductEditClient({
               <select
                 className="input-neu w-full"
                 value={status}
-                onChange={(e) => {
+                onChange={(_e) => {
                   const v = e.target.value as InitialProduct["status"];
                   setStatus(v);
 
@@ -248,7 +248,7 @@ export default function AdminProductEditClient({
                   type="checkbox"
                   checked={isActive}
                   disabled={status === "BLOCKED"}
-                  onChange={(e) => setIsActive(e.target.checked)}
+                  onChange={(_e) => setIsActive(e.target.checked)}
                 />
                 <label htmlFor="isActive" className="text-xs text-[var(--text-muted)]">
                   isActive (Marketplace-Sichtbarkeit)
@@ -260,7 +260,7 @@ export default function AdminProductEditClient({
               <div className="text-xs text-[var(--text-muted)] mb-2">Thumbnail</div>
 
               <label className="block text-xs text-[var(--text-muted)] mb-1">Thumbnail URL (optional)</label>
-              <input className="input-neu w-full" value={thumbnail} onChange={(e) => setThumbnail(e.target.value)} />
+              <input className="input-neu w-full" value={thumbnail} onChange={(_e) => setThumbnail(e.target.value)} />
 
               <div className="mt-3 rounded-2xl overflow-hidden border border-[var(--neo-card-border)] bg-[var(--bg-soft)]">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -270,7 +270,7 @@ export default function AdminProductEditClient({
                   style={{ width: "100%", height: 180, objectFit: "cover", display: "block" }}
                   loading="lazy"
                   decoding="async"
-                  onError={(e) => {
+                  onError={(_e) => {
                     e.currentTarget.src = "/fallback-thumbnail.svg";
                   }}
                 />

@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-export async function PUT(req: Request) {
+export async function PUT(_req: Request) {
   const session = await getServerSession(auth);
   const user = session?.user as any;
   const userId = user?.id as string | undefined;

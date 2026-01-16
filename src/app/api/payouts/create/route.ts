@@ -6,7 +6,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 // POST /api/admin/payouts/create
-export async function POST(req: Request) {
+export async function POST(_req: Request) {
   const session = await getServerSession(authOptions);
 
   // 1. Nur Admins dürfen Payouts erstellen

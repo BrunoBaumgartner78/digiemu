@@ -25,7 +25,7 @@ export function DownloadButton({ orderId }: { orderId: string }) {
       }
       // Redirect to file (API returns redirect)
       window.location.href = `/api/download/${orderId}`;
-    } catch (e) {
+    } catch (_e) {
       setError("NETWORK_ERROR");
       setLoading(false);
     }

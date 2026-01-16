@@ -14,7 +14,7 @@ function sanitizeSlug(input: string) {
     .slice(0, 60);
 }
 
-async function handleUpsert(req: Request) {
+async function handleUpsert(_req: Request) {
   const session = await getServerSession(auth);
   const userId = (session?.user as any)?.id as string | undefined;
 
@@ -114,10 +114,10 @@ async function handleUpsert(req: Request) {
 }
 
 // ✅ akzeptiere PUT (Client) + POST (falls irgendwo noch alt verwendet)
-export async function PUT(req: Request) {
+export async function PUT(_req: Request) {
   return handleUpsert(req);
 }
 
-export async function POST(req: Request) {
+export async function POST(_req: Request) {
   return handleUpsert(req);
 }

@@ -20,7 +20,7 @@ async function safeFindProductById(id: string) {
       where: { id },
     });
     return product;
-  } catch (err) {
+  } catch (_err) {
     console.error("[safeFindProductById] Prisma-Fehler:", err);
     return null;
   }

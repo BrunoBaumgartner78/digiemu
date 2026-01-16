@@ -38,7 +38,7 @@ export default function Comments({ productId }: any) {
 
       <textarea
         value={content}
-        onChange={(e) => setContent(e.target.value)}
+        onChange={(_e) => setContent(e.target.value)}
         className="p-2 border rounded w-full mb-2"
         placeholder="Kommentar schreiben…"
       />

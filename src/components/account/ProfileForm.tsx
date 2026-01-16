@@ -52,7 +52,7 @@ export default function ProfileForm({ initialProfile, initialStats }: Props) {
         const msg = await res.text().catch(() => "");
         throw new Error(msg || "Profil konnte nicht gespeichert werden.");
       }
-    } catch (err) {
+    } catch (_err) {
       console.error(err);
       alert("Speichern fehlgeschlagen. Bitte erneut versuchen.");
     } finally {

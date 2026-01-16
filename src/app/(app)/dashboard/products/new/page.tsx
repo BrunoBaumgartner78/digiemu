@@ -89,14 +89,14 @@ export default function NewProductPage() {
           type="text"
           placeholder="Titel"
           className={styles.input}
-          onChange={(e) => setData({ ...data, title: e.target.value })}
+          onChange={(_e) => setData({ ...data, title: e.target.value })}
         />
 
         <textarea
           placeholder="Beschreibung"
           className={styles.input}
           rows={4}
-          onChange={(e) =>
+          onChange={(_e) =>
             setData({ ...data, description: e.target.value })
           }
         />
@@ -105,7 +105,7 @@ export default function NewProductPage() {
           type="text"
           placeholder="Kategorie"
           className={styles.input}
-          onChange={(e) =>
+          onChange={(_e) =>
             setData({ ...data, category: e.target.value })
           }
         />
@@ -114,7 +114,7 @@ export default function NewProductPage() {
           type="number"
           placeholder="Preis in CHF"
           className={styles.input}
-          onChange={(e) =>
+          onChange={(_e) =>
             setData({
               ...data,
               priceCents: String(Number(e.target.value) * 100),

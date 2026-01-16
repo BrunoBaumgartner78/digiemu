@@ -68,7 +68,7 @@ export default function AdminVendorApprovalToggle({ userId, initialStatus }: Pro
       <select
         className="input-neu text-xs h-9"
         value={s}
-        onChange={(e) => update(e.target.value as any)}
+        onChange={(_e) => update(e.target.value as any)}
         disabled={loading}
         title="Vendor Freischaltung"
       >

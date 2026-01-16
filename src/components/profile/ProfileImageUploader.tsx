@@ -47,7 +47,7 @@ export function ProfileImageUploader({
         title: "Avatar aktualisiert",
         description: "Dein Profilbild wurde erfolgreich gespeichert.",
       });
-    } catch (err) {
+    } catch (_err) {
       console.error(err);
       toast({
         variant: "destructive",
@@ -76,7 +76,7 @@ export function ProfileImageUploader({
         title: "Banner aktualisiert",
         description: "Dein Profilbanner wurde erfolgreich gespeichert.",
       });
-    } catch (err) {
+    } catch (_err) {
       console.error(err);
       toast({
         variant: "destructive",

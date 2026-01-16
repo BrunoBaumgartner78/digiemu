@@ -1,0 +1,105 @@
+﻿
+reports\v2.6-lint-after-errors.txt:7:  1:1  warning  Assign object to a 
+variable before exporting as module default  
+import/no-anonymous-default-export
+reports\v2.6-lint-after-errors.txt:10:  2:1  warning  Assign object to a 
+variable before exporting as module default  
+import/no-anonymous-default-export
+reports\v2.6-lint-after-errors.txt:13:  12:37  warning  Unexpected any. 
+Specify a different type  @typescript-eslint/no-explicit-any
+reports\v2.6-lint-after-errors.txt:14:  15:29  warning  Unexpected any. 
+Specify a different type  @typescript-eslint/no-explicit-any
+reports\v2.6-lint-after-errors.txt:17:  10:34  warning  Unexpected any. 
+Specify a different type  @typescript-eslint/no-explicit-any
+reports\v2.6-lint-after-errors.txt:20:  5:30  warning  Unexpected any. 
+Specify a different type  @typescript-eslint/no-explicit-any
+reports\v2.6-lint-after-errors.txt:21:  6:34  warning  Unexpected any. 
+Specify a different type  @typescript-eslint/no-explicit-any
+reports\v2.6-lint-after-errors.txt:24:  88:9  warning  'lines' is 
+assigned a value but never used  @typescript-eslint/no-unused-vars
+reports\v2.6-lint-after-errors.txt:27:  12:323  warning  'e' is defined 
+but never used  @typescript-eslint/no-unused-vars
+reports\v2.6-lint-after-errors.txt:30:  26:16  warning  Unexpected any. 
+Specify a different type  @typescript-eslint/no-explicit-any
+reports\v2.6-lint-after-errors.txt:31:  35:9   warning  Unexpected any. 
+Specify a different type  @typescript-eslint/no-explicit-any
+reports\v2.6-lint-after-errors.txt:34:  63:36  warning  Unexpected any. 
+Specify a different type  @typescript-eslint/no-explicit-any
+reports\v2.6-lint-after-errors.txt:35:  77:16  warning  Unexpected any. 
+Specify a different type  @typescript-eslint/no-explicit-any
+reports\v2.6-lint-after-errors.txt:38:  25:17  warning  Unexpected any. 
+Specify a different type  @typescript-eslint/no-explicit-any
+reports\v2.6-lint-after-errors.txt:41:  14:33  warning  Unexpected any. 
+Specify a different type  @typescript-eslint/no-explicit-any
+reports\v2.6-lint-after-errors.txt:44:  45:17  warning  Unexpected any. 
+Specify a different type  @typescript-eslint/no-explicit-any
+reports\v2.6-lint-after-errors.txt:47:   51:31  warning  Unexpected any. 
+Specify a different type  @typescript-eslint/no-explicit-any
+reports\v2.6-lint-after-errors.txt:48:  110:17  warning  Unexpected any. 
+Specify a different type  @typescript-eslint/no-explicit-any
+reports\v2.6-lint-after-errors.txt:51:  20:33  warning  Unexpected any. 
+Specify a different type  @typescript-eslint/no-explicit-any
+reports\v2.6-lint-after-errors.txt:52:  57:32  warning  Unexpected any. 
+Specify a different type  @typescript-eslint/no-explicit-any
+reports\v2.6-lint-after-errors.txt:55:   63:32  warning  Unexpected any. 
+Specify a different type  @typescript-eslint/no-explicit-any
+reports\v2.6-lint-after-errors.txt:56:   76:16  warning  Unexpected any. 
+Specify a different type  @typescript-eslint/no-explicit-any
+reports\v2.6-lint-after-errors.txt:57:  196:34  warning  Unexpected any. 
+Specify a different type  @typescript-eslint/no-explicit-any
+reports\v2.6-lint-after-errors.txt:60:  37:17  warning  Unexpected any. 
+Specify a different type  @typescript-eslint/no-explicit-any
+reports\v2.6-lint-after-errors.txt:63:  61:36  warning  Unexpected any. 
+Specify a different type  @typescript-eslint/no-explicit-any
+reports\v2.6-lint-after-errors.txt:64:  74:16  warning  Unexpected any. 
+Specify a different type  @typescript-eslint/no-explicit-any
+reports\v2.6-lint-after-errors.txt:67:  48:17  warning  Unexpected any. 
+Specify a different type  @typescript-eslint/no-explicit-any
+reports\v2.6-lint-after-errors.txt:68:  71:51  warning  Unexpected any. 
+Specify a different type  @typescript-eslint/no-explicit-any
+reports\v2.6-lint-after-errors.txt:71:  38:17  warning  Unexpected any. 
+Specify a different type  @typescript-eslint/no-explicit-any
+reports\v2.6-lint-after-errors.txt:72:  59:17  warning  Unexpected any. 
+Specify a different type  @typescript-eslint/no-explicit-any
+reports\v2.6-lint-after-errors.txt:75:  30:17  warning  Unexpected any. 
+Specify a different type  @typescript-eslint/no-explicit-any
+reports\v2.6-lint-after-errors.txt:78:  11:42  warning  Unexpected any. 
+Specify a different type  @typescript-eslint/no-explicit-any
+reports\v2.6-lint-after-errors.txt:79:  43:17  warning  Unexpected any. 
+Specify a different type  @typescript-eslint/no-explicit-any
+reports\v2.6-lint-after-errors.txt:80:  63:17  warning  Unexpected any. 
+Specify a different type  @typescript-eslint/no-explicit-any
+reports\v2.6-lint-after-errors.txt:83:  36:17  warning  Unexpected any. 
+Specify a different type  @typescript-eslint/no-explicit-any
+reports\v2.6-lint-after-errors.txt:86:   28:24  warning  Unexpected any. 
+Specify a different type  @typescript-eslint/no-explicit-any
+reports\v2.6-lint-after-errors.txt:87:   59:63  warning  Unexpected any. 
+Specify a different type  @typescript-eslint/no-explicit-any
+reports\v2.6-lint-after-errors.txt:88:   60:49  warning  Unexpected any. 
+Specify a different type  @typescript-eslint/no-explicit-any
+reports\v2.6-lint-after-errors.txt:89:   65:17  warning  Unexpected any. 
+Specify a different type  @typescript-eslint/no-explicit-any
+reports\v2.6-lint-after-errors.txt:90:   66:30  warning  Unexpected any. 
+Specify a different type  @typescript-eslint/no-explicit-any
+reports\v2.6-lint-after-errors.txt:91:  202:42  warning  Unexpected any. 
+Specify a different type  @typescript-eslint/no-explicit-any
+reports\v2.6-lint-after-errors.txt:92:  204:38  warning  Unexpected any. 
+Specify a different type  @typescript-eslint/no-explicit-any
+reports\v2.6-lint-after-errors.txt:93:  258:41  warning  Unexpected any. 
+Specify a different type  @typescript-eslint/no-explicit-any
+reports\v2.6-lint-after-errors.txt:96:   54:36  warning  Unexpected any. 
+Specify a different type  @typescript-eslint/no-explicit-any
+reports\v2.6-lint-after-errors.txt:97:   79:16  warning  Unexpected any. 
+Specify a different type  @typescript-eslint/no-explicit-any
+reports\v2.6-lint-after-errors.txt:98:  197:31  warning  Unexpected any. 
+Specify a different type  @typescript-eslint/no-explicit-any
+reports\v2.6-lint-after-errors.txt:99:  198:74  warning  Unexpected any. 
+Specify a different type  @typescript-eslint/no-explicit-any
+reports\v2.6-lint-after-errors.txt:100:  200:39  warning  Unexpected 
+any. Specify a different type  @typescript-eslint/no-explicit-any
+reports\v2.6-lint-after-errors.txt:103:   54:41  warning  Unexpected 
+any. Specify a different type  @typescript-eslint/no-explicit-any
+reports\v2.6-lint-after-errors.txt:104:   70:25  warning  Unexpected 
+any. Specify a different type  @typescript-eslint/no-explicit-any
+
+

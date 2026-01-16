@@ -33,7 +33,7 @@ export default function BuyButton({ productId }: { productId: string }) {
       } else {
         setError("Es ist ein Fehler aufgetreten. Bitte versuche es erneut.");
       }
-    } catch (e) {
+    } catch (_e) {
       setError("Netzwerkfehler. Bitte versuche es erneut.");
     } finally {
       setLoading(false);

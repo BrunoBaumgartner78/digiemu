@@ -68,7 +68,7 @@ export default function RegisterPage() {
       }
 
       router.push("/dashboard");
-    } catch (err) {
+    } catch (_err) {
       console.error("REGISTER FETCH ERROR:", err);
       setError("Netzwerkfehler. Bitte versuche es erneut.");
     } finally {

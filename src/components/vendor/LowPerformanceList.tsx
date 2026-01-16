@@ -42,7 +42,7 @@ export default function LowPerformanceList() {
         let json: any;
         try {
           json = JSON.parse(text);
-        } catch (e) {
+        } catch (_e) {
           console.error("LowPerformanceList: JSON parse error", e, text);
           if (!cancelled) {
             setItems([]);

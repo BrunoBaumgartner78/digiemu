@@ -5,7 +5,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-export async function GET(req: Request) {
+export async function GET(_req: Request) {
   try {
     const session = await getServerSession(authOptions);
 
@@ -104,7 +104,7 @@ export async function GET(req: Request) {
         revenueCents, // <-- wichtig für stats.totals.revenueCents
       },
     });
-  } catch (err) {
+  } catch (_err) {
     console.error("/api/vendor/products/stats error", err);
     return NextResponse.json(
       { error: "Internal server error" },

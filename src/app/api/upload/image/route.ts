@@ -14,7 +14,7 @@ function jsonError(message: string, status = 400) {
   return NextResponse.json({ ok: false, message }, { status });
 }
 
-export async function POST(req: Request) {
+export async function POST(_req: Request) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) return jsonError("Unauthorized", 401);

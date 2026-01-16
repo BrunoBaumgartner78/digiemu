@@ -30,7 +30,7 @@ export default function LikeButtonClient({ productId }: LikeButtonProps) {
         setCount(
           typeof data.likesCount === "number" ? data.likesCount : 0
         );
-      } catch (err) {
+      } catch (_err) {
         console.error("Fehler beim Laden der Likes:", err);
       }
     }
@@ -66,7 +66,7 @@ export default function LikeButtonClient({ productId }: LikeButtonProps) {
       setCount(
         typeof data.likesCount === "number" ? data.likesCount : 0
       );
-    } catch (err) {
+    } catch (_err) {
       console.error("Fehler beim Toggle-Like:", err);
     } finally {
       setLoading(false);

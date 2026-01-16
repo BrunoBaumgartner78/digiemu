@@ -13,7 +13,7 @@ type RegisterBody = {
   role?: "BUYER" | "VENDOR" | "ADMIN";
 };
 
-export async function POST(req: Request) {
+export async function POST(_req: Request) {
   try {
     // Rate limit: registration attempts per IP (~10 per 60s)
     try {
@@ -25,7 +25,7 @@ export async function POST(req: Request) {
           { status: 429, headers: { "Retry-After": String(rl.retryAfter ?? 60) } }
         );
       }
-    } catch (e) {
+    } catch (_e) {
       // don't block on rateLimit errors
       console.warn("rateLimit check failed", e);
     }

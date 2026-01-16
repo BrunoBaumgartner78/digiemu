@@ -46,7 +46,7 @@ export const authOptions: NextAuthOptions = {
             name: user.name ?? undefined,
             role: user.role,
           } as any;
-        } catch (e) {
+        } catch (_e) {
           console.error("[NEXTAUTH_AUTHORIZE_ERROR]", e);
           return null;
         }

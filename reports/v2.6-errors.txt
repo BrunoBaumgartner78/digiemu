@@ -1,0 +1,19 @@
+﻿
+> reports\v2.6-lint-full.txt:27:  2:1   error  A `require()` style 
+import is forbidden  @typescript-eslint/no-require-imports
+> reports\v2.6-lint-full.txt:28:  4:26  error  A `require()` style 
+import is forbidden  @typescript-eslint/no-require-imports
+  reports\v2.6-lint-full.txt:29:
+  reports\v2.6-lint-full.txt:30:C:\Users\oondr\Documents\digiemu\scripts\
+scan-window-location-v2.4.mjs
+  reports\v2.6-lint-full.txt:31:  12:323  warning  'e' is defined but 
+never used  @typescript-eslint/no-unused-vars
+> reports\v2.6-lint-full.txt:211:  345:61  error    `"` can be escaped 
+with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  reports\v2.6-lint-full.txt:212:
+  reports\v2.6-lint-full.txt:213:C:\Users\oondr\Documents\digiemu\src\app
+\account\admin-profile\AdminProfileClient.tsx
+  reports\v2.6-lint-full.txt:214:  19:46  warning  'userId' is defined 
+but never used        @typescript-eslint/no-unused-vars
+
+

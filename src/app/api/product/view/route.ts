@@ -11,7 +11,7 @@ function dayKey(d = new Date()) {
   return `${yyyy}-${mm}-${dd}`;
 }
 
-export async function POST(req: Request) {
+export async function POST(_req: Request) {
   try {
     const session = await getServerSession(authOptions);
     const body = await req.json().catch(() => null);
@@ -39,7 +39,7 @@ export async function POST(req: Request) {
         create: userId ? { productId, userId, day: today } : { productId, fingerprint, day: today },
         update: {},
       });
-    } catch (e) {
+    } catch (_e) {
       try {
         await prisma.productView.create({
           data: userId ? { productId, userId, day: today } : { productId, fingerprint, day: today },
@@ -50,7 +50,7 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ ok: true });
-  } catch (err) {
+  } catch (_err) {
     console.error("Product view log error", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }

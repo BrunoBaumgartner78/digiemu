@@ -67,7 +67,7 @@ export async function GET(_req: NextRequest) {
       daily,
       totalEarnings: Number((totalEarningsCents / 100).toFixed(2)),
     });
-  } catch (err) {
+  } catch (_err) {
     console.error("vendor earnings chart error:", err);
     return NextResponse.json(
       { error: "Server error", daily: [], totalEarnings: 0 },

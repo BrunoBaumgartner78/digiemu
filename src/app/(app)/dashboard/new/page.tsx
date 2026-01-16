@@ -109,7 +109,7 @@ export default function NewProductPage() {
           );
           setUploadProgress(pct);
         },
-        (err) => reject(err),
+        (_err) => reject(err),
         async () => {
           const url = await getDownloadURL(uploadTask.snapshot.ref);
           resolve(url);
@@ -271,7 +271,7 @@ export default function NewProductPage() {
                 type="text"
                 placeholder="z.B. Workbook, Leitfaden, Kursunterlagen …"
                 value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                onChange={(_e) => setTitle(e.target.value)}
               />
             </div>
 
@@ -281,7 +281,7 @@ export default function NewProductPage() {
                 className={styles.textarea}
                 placeholder="Beschreibe kurz, was Käufer nach dem Download erhalten."
                 value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                onChange={(_e) => setDescription(e.target.value)}
               />
             </div>
 
@@ -291,7 +291,7 @@ export default function NewProductPage() {
               <select
                 className={`${styles.input} ${styles.select}`}
                 value={category}
-                onChange={(e) => setCategory(e.target.value)}
+                onChange={(_e) => setCategory(e.target.value)}
               >
                 {CATEGORY_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
@@ -316,7 +316,7 @@ export default function NewProductPage() {
                   min="1"
                   placeholder="z.B. 9.90"
                   value={priceChf}
-                  onChange={(e) => setPriceChf(e.target.value)}
+                  onChange={(_e) => setPriceChf(e.target.value)}
                 />
                 <p className={styles.priceHint}>
                   Mindestpreis: <strong>1.00 CHF</strong> · inkl. MwSt. / digitale Leistung
@@ -333,7 +333,7 @@ export default function NewProductPage() {
                 type="text"
                 placeholder="https://example.com/dein-bild.jpg oder /fallback-thumbnail.svg"
                 value={thumbnailUrl}
-                onChange={(e) => setThumbnailUrl(e.target.value)}
+                onChange={(_e) => setThumbnailUrl(e.target.value)}
               />
               <p className={styles.priceHint}>
                 Lässt du dieses Feld leer, verwenden wir automatisch{" "}
@@ -359,7 +359,7 @@ export default function NewProductPage() {
                     src={thumbnailUrl || "/fallback-thumbnail.svg"}
                     alt="Thumbnail-Vorschau"
                     style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                    onError={(e) => {
+                    onError={(_e) => {
                       const img = e.currentTarget;
                       const fallback = "/fallback-thumbnail.svg";
                       if (!img.src.endsWith(fallback)) img.src = fallback;

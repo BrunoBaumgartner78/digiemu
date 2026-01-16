@@ -87,7 +87,7 @@ export async function GET(req: NextRequest) {
       downloadsTotal,
       downloadsInRange,
     });
-  } catch (err) {
+  } catch (_err) {
     console.error("/api/vendor/products/stats error", err);
     return NextResponse.json(
       { error: "Internal Server Error" },

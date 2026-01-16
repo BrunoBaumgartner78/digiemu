@@ -1,0 +1,11 @@
+﻿
+> reports\v2.6-lint-after-errors.txt:207:  345:61  error    `"` can be 
+escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  
+react/no-unescaped-entities
+  reports\v2.6-lint-after-errors.txt:208:
+  reports\v2.6-lint-after-errors.txt:209:C:\Users\oondr\Documents\digiemu
+\src\app\account\admin-profile\AdminProfileClient.tsx
+  reports\v2.6-lint-after-errors.txt:210:  19:46  warning  'userId' is 
+defined but never used        @typescript-eslint/no-unused-vars
+
+

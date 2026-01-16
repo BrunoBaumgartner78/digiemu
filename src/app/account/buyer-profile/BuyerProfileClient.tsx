@@ -69,16 +69,16 @@ export default function BuyerProfileClient({ userId, initialData }: Props) {
 
         <label className="block">
           <div className="text-sm mb-1">Anzeigename</div>
-          <input value={form.displayName} onChange={(e) => handleChange("displayName", e.target.value)} className="input" />
+          <input value={form.displayName} onChange={(_e) => handleChange("displayName", e.target.value)} className="input" />
         </label>
 
         <label className="block">
           <div className="text-sm mb-1">Bio</div>
-          <textarea value={form.bio} onChange={(e) => handleChange("bio", e.target.value)} className="input" />
+          <textarea value={form.bio} onChange={(_e) => handleChange("bio", e.target.value)} className="input" />
         </label>
 
         <label className="flex items-center gap-2">
-          <input type="checkbox" checked={form.isPublic} onChange={(e) => handleChange("isPublic", e.target.checked)} />
+          <input type="checkbox" checked={form.isPublic} onChange={(_e) => handleChange("isPublic", e.target.checked)} />
           <span className="text-sm">Profil öffentlich</span>
         </label>
 

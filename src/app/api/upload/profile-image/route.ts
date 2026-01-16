@@ -6,7 +6,7 @@ import { adminBucket } from "@/lib/firebaseAdmin";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function POST(req: Request) {
+export async function POST(_req: Request) {
   const session = await getServerSession(auth);
   const userId = (session?.user as any)?.id as string | undefined;
 

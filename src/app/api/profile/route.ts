@@ -17,7 +17,7 @@ export async function GET() {
   return NextResponse.json(profile ?? {});
 }
 
-export async function PUT(req: Request) {
+export async function PUT(_req: Request) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     return new NextResponse("Unauthorized", { status: 401 });

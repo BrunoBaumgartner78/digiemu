@@ -16,7 +16,7 @@ export async function GET() {
   return NextResponse.json({ vendorProfile });
 }
 
-export async function PUT(req: Request) {
+export async function PUT(_req: Request) {
   const session = await getServerSession(auth);
   const userId = (session?.user as any)?.id as string | undefined;
   if (!userId) return NextResponse.json({ error: "unauthorized" }, { status: 401 });

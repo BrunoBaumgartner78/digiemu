@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function POST(req: Request) {
+export async function POST(_req: Request) {
   try {
     const body = await req.json().catch(() => null) as
       | { vendorProfileId?: string; productId?: string; source?: string }
@@ -31,7 +31,7 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json({ ok: true });
-  } catch (e) {
+  } catch (_e) {
     return NextResponse.json({ error: "SERVER_ERROR" }, { status: 500 });
   }
 }

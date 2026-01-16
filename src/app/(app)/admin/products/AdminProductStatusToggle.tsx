@@ -57,7 +57,7 @@ export default function AdminProductStatusToggle({
         className="input-neu w-32"
         value={status}
         disabled={busy}
-        onChange={(e) => {
+        onChange={(_e) => {
           const nextStatus = e.target.value;
           const nextIsActive = nextStatus === "BLOCKED" ? false : isActive;
           update({ status: nextStatus, isActive: nextIsActive });

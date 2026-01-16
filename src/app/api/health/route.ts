@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function GET(req: Request) {
+export async function GET(_req: Request) {
   const startedAt = Date.now();
 
   const token = process.env.HEALTHCHECK_TOKEN?.trim();
@@ -35,7 +35,7 @@ export async function GET(req: Request) {
       latencyMs: Date.now() - startedAt,
       ts: new Date().toISOString(),
     });
-  } catch (e) {
+  } catch (_e) {
     console.error("healthcheck failed", e);
     return NextResponse.json(
       { ok: false, status: "unhealthy", env, latencyMs: Date.now() - startedAt, ts: new Date().toISOString() },

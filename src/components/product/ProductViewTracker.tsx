@@ -11,7 +11,7 @@ export default function ProductViewTracker({ productId }: { productId: string })
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ productId }),
-    }).catch((err) => {
+    }).catch((_err) => {
       console.error("Failed to log product view", err);
     });
   }, [productId]);

@@ -17,7 +17,7 @@ function parseRangeDays(url: string): number {
   return n;
 }
 
-export async function GET(req: Request) {
+export async function GET(_req: Request) {
   const session = await getServerSession(authOptions);
 
   // Nur Vendors dürfen diese Route nutzen
@@ -102,7 +102,7 @@ export async function GET(req: Request) {
         fullFunnelRate,
       },
     });
-  } catch (err) {
+  } catch (_err) {
     console.error("Error in /api/vendor/funnel", err);
     return NextResponse.json(
       { error: "Internal server error" },

@@ -28,7 +28,7 @@ export async function getTopSellingProductsLast30Days(limit = 3) {
       },
       take: limit,
     });
-  } catch (e) {
+  } catch (_e) {
     // never hard-crash the whole app because analytics fails
     return [];
   }

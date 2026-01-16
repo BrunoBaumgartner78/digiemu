@@ -1,0 +1,1120 @@
+﻿
+reports\v2.8-lint-before.txt:7: 
+ 1:1  warning  Assign object to 
+a variable before exporting as 
+module default  import/no-anonym
+ous-default-export
+reports\v2.8-lint-before.txt:10:
+  2:1  warning  Assign object 
+to a variable before exporting 
+as module default  import/no-ano
+nymous-default-export
+reports\v2.8-lint-before.txt:13:
+  12:37  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:14:
+  15:29  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:17:
+  10:34  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:20:
+  5:30  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:21:
+  6:34  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:24:
+  88:9  warning  'lines' is 
+assigned a value but never used 
+ @typescript-eslint/no-unused-va
+rs
+reports\v2.8-lint-before.txt:27:
+  47:14  warning  'err' is 
+defined but never used  @typescr
+ipt-eslint/no-unused-vars
+reports\v2.8-lint-before.txt:30:
+  47:14  warning  'err' is 
+defined but never used  @typescr
+ipt-eslint/no-unused-vars
+reports\v2.8-lint-before.txt:33:
+  43:14  warning  'err' is 
+defined but never used  @typescr
+ipt-eslint/no-unused-vars
+reports\v2.8-lint-before.txt:36:
+  12:323  warning  'e' is 
+defined but never used  @typescr
+ipt-eslint/no-unused-vars
+reports\v2.8-lint-before.txt:39:
+  26:16  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:40:
+  35:9   warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:43:
+  63:36  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:44:
+  77:16  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:47:
+  25:17  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:50:
+  14:33  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:53:
+  45:17  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:56:
+   51:31  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:57:
+  110:17  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:60:
+  20:33  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:61:
+  57:32  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:64:
+   63:32  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:65:
+   76:16  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:66:
+  196:34  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:69:
+  37:17  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:72:
+  61:36  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:73:
+  74:16  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:76:
+  48:17  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:77:
+  71:51  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:80:
+  38:17  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:81:
+  59:17  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:84:
+  30:17  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:87:
+  11:42  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:88:
+  43:17  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:89:
+  63:17  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:92:
+  36:17  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:95:
+   28:24  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:96:
+   59:63  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:97:
+   60:49  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:98:
+   65:17  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:99:
+   66:30  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:100
+:  202:42  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:101
+:  204:38  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:102
+:  258:41  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:105
+:   54:36  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:106
+:   79:16  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:107
+:  197:31  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:108
+:  198:74  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:109
+:  200:39  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:112
+:   54:41  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:113
+:   70:25  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:114
+:   73:42  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:115
+:   95:45  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:116
+:  113:41  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:117
+:  130:41  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:120
+:   2:8   warning  'Link' is 
+defined but never used          
+@typescript-eslint/no-unused-var
+s
+reports\v2.8-lint-before.txt:121
+:  17:36  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:124
+:  68:19  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:127
+:   57:11  warning  
+'vendorStatus' is assigned a 
+value but never used  @typescrip
+t-eslint/no-unused-vars
+reports\v2.8-lint-before.txt:128
+:  222:19  warning  Unexpected 
+any. Specify a different type   
+        @typescript-eslint/no-ex
+plicit-any
+reports\v2.8-lint-before.txt:131
+:   21:32  warning  Unexpected 
+any. Specify a different type   
+            @typescript-eslint/n
+o-explicit-any
+reports\v2.8-lint-before.txt:132
+:   29:11  warning  Unexpected 
+any. Specify a different type   
+            @typescript-eslint/n
+o-explicit-any
+reports\v2.8-lint-before.txt:133
+:   77:43  warning  Unexpected 
+any. Specify a different type   
+            @typescript-eslint/n
+o-explicit-any
+reports\v2.8-lint-before.txt:134
+:   85:43  warning  Unexpected 
+any. Specify a different type   
+            @typescript-eslint/n
+o-explicit-any
+reports\v2.8-lint-before.txt:135
+:  104:45  warning  Unexpected 
+any. Specify a different type   
+            @typescript-eslint/n
+o-explicit-any
+reports\v2.8-lint-before.txt:136
+:  114:45  warning  Unexpected 
+any. Specify a different type   
+            @typescript-eslint/n
+o-explicit-any
+reports\v2.8-lint-before.txt:137
+:  123:45  warning  Unexpected 
+any. Specify a different type   
+            @typescript-eslint/n
+o-explicit-any
+reports\v2.8-lint-before.txt:138
+:  136:57  warning  Unexpected 
+any. Specify a different type   
+            @typescript-eslint/n
+o-explicit-any
+reports\v2.8-lint-before.txt:139
+:  137:61  warning  Unexpected 
+any. Specify a different type   
+            @typescript-eslint/n
+o-explicit-any
+reports\v2.8-lint-before.txt:140
+:  140:56  warning  Unexpected 
+any. Specify a different type   
+            @typescript-eslint/n
+o-explicit-any
+reports\v2.8-lint-before.txt:141
+:  147:28  warning  
+'vendorRangeCents' is assigned 
+a value but never used  @typescr
+ipt-eslint/no-unused-vars
+reports\v2.8-lint-before.txt:142
+:  187:32  warning  Unexpected 
+any. Specify a different type   
+            @typescript-eslint/n
+o-explicit-any
+reports\v2.8-lint-before.txt:143
+:  355:40  warning  Unexpected 
+any. Specify a different type   
+            @typescript-eslint/n
+o-explicit-any
+reports\v2.8-lint-before.txt:144
+:  377:33  warning  Unexpected 
+any. Specify a different type   
+            @typescript-eslint/n
+o-explicit-any
+reports\v2.8-lint-before.txt:147
+:  39:65  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:150
+:  47:23  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:151
+:  50:34  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:152
+:  63:43  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:155
+:   2:8  warning  'Link' is 
+defined but never used          
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+               @typescript-eslin
+t/no-unused-vars
+reports\v2.8-lint-before.txt:156
+:  18:3  warning  'id' is 
+defined but never used          
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                 @typescript-esl
+int/no-unused-vars
+reports\v2.8-lint-before.txt:157
+:  35:9  warning  Using `<img>` 
+could result in slower LCP and 
+higher bandwidth. Consider 
+using `<Image />` from 
+`next/image` or a custom image 
+loader to automatically 
+optimize images. This may incur 
+additional usage or cost from 
+your provider. See: https://next
+js.org/docs/messages/no-img-elem
+ent  @next/next/no-img-element
+reports\v2.8-lint-before.txt:160
+:  33:13  warning  Using 
+`<img>` could result in slower 
+LCP and higher bandwidth. 
+Consider using `<Image />` from 
+`next/image` or a custom image 
+loader to automatically 
+optimize images. This may incur 
+additional usage or cost from 
+your provider. See: https://next
+js.org/docs/messages/no-img-elem
+ent  @next/next/no-img-element
+reports\v2.8-lint-before.txt:163
+:  36:14  warning  'e' is 
+defined but never used  @typescr
+ipt-eslint/no-unused-vars
+reports\v2.8-lint-before.txt:166
+:   66:16  warning  'err' is 
+defined but never used          
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                @typescript-esli
+nt/no-unused-vars
+reports\v2.8-lint-before.txt:167
+:  337:13  warning  Using 
+`<img>` could result in slower 
+LCP and higher bandwidth. 
+Consider using `<Image />` from 
+`next/image` or a custom image 
+loader to automatically 
+optimize images. This may incur 
+additional usage or cost from 
+your provider. See: https://next
+js.org/docs/messages/no-img-elem
+ent  @next/next/no-img-element
+reports\v2.8-lint-before.txt:170
+:  17:55  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:171
+:  18:24  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:172
+:  21:41  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:173
+:  25:33  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:176
+:  75:14  warning  '_err' is 
+defined but never used  @typescr
+ipt-eslint/no-unused-vars
+reports\v2.8-lint-before.txt:179
+:  28:32  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:180
+:  50:28  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:183
+:  14:32  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:186
+:  10:32  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:189
+:  20:39  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:192
+:  26:14  warning  'e' is 
+defined but never used  @typescr
+ipt-eslint/no-unused-vars
+reports\v2.8-lint-before.txt:195
+:  28:14  warning  'e' is 
+defined but never used  @typescr
+ipt-eslint/no-unused-vars
+reports\v2.8-lint-before.txt:198
+:  130:42  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:201
+:  33:36  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:204
+:  14:36  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:207
+:  35:17  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:210
+:   99:19  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:211
+:  262:30  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:214
+:  116:42  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:215
+:  117:35  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:218
+:  19:46  warning  'userId' is 
+defined but never used        @t
+ypescript-eslint/no-unused-vars
+reports\v2.8-lint-before.txt:219
+:  33:58  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:220
+:  50:19  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:223
+:  8:33  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:226
+:  57:19  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:229
+:  8:36  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:232
+:  32:36  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:235
+:   17:3   warning  'userId' is 
+defined but never used          
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+             @typescript-eslint/
+no-unused-vars
+reports\v2.8-lint-before.txt:236
+:   38:15  warning  Unexpected 
+any. Specify a different type   
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+              @typescript-eslint
+/no-explicit-any
+reports\v2.8-lint-before.txt:237
+:   70:19  warning  Unexpected 
+any. Specify a different type   
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+              @typescript-eslint
+/no-explicit-any
+reports\v2.8-lint-before.txt:238
+:   97:19  warning  Unexpected 
+any. Specify a different type   
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+              @typescript-eslint
+/no-explicit-any
+reports\v2.8-lint-before.txt:239
+:  143:15  warning  Using 
+`<img>` could result in slower 
+LCP and higher bandwidth. 
+Consider using `<Image />` from 
+`next/image` or a custom image 
+loader to automatically 
+optimize images. This may incur 
+additional usage or cost from 
+your provider. See: https://next
+js.org/docs/messages/no-img-elem
+ent  @next/next/no-img-element
+reports\v2.8-lint-before.txt:240
+:  181:15  warning  Using 
+`<img>` could result in slower 
+LCP and higher bandwidth. 
+Consider using `<Image />` from 
+`next/image` or a custom image 
+loader to automatically 
+optimize images. This may incur 
+additional usage or cost from 
+your provider. See: https://next
+js.org/docs/messages/no-img-elem
+ent  @next/next/no-img-element
+reports\v2.8-lint-before.txt:243
+:   99:17  warning  Unexpected 
+any. Specify a different type   
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+              @typescript-eslint
+/no-explicit-any
+reports\v2.8-lint-before.txt:244
+:  115:17  warning  Unexpected 
+any. Specify a different type   
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+              @typescript-eslint
+/no-explicit-any
+reports\v2.8-lint-before.txt:245
+:  155:17  warning  Unexpected 
+any. Specify a different type   
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+              @typescript-eslint
+/no-explicit-any
+reports\v2.8-lint-before.txt:246
+:  358:18  warning  Unused 
+eslint-disable directive (no 
+problems were reported from 
+'@next/next/no-img-element')
+reports\v2.8-lint-before.txt:247
+:  360:19  warning  Using 
+`<img>` could result in slower 
+LCP and higher bandwidth. 
+Consider using `<Image />` from 
+`next/image` or a custom image 
+loader to automatically 
+optimize images. This may incur 
+additional usage or cost from 
+your provider. See: https://next
+js.org/docs/messages/no-img-elem
+ent  @next/next/no-img-element
+reports\v2.8-lint-before.txt:250
+:  31:11  warning  Using 
+`<img>` could result in slower 
+LCP and higher bandwidth. 
+Consider using `<Image />` from 
+`next/image` or a custom image 
+loader to automatically 
+optimize images. This may incur 
+additional usage or cost from 
+your provider. See: https://next
+js.org/docs/messages/no-img-elem
+ent  @next/next/no-img-element
+reports\v2.8-lint-before.txt:251
+:  41:15  warning  Using 
+`<img>` could result in slower 
+LCP and higher bandwidth. 
+Consider using `<Image />` from 
+`next/image` or a custom image 
+loader to automatically 
+optimize images. This may incur 
+additional usage or cost from 
+your provider. See: https://next
+js.org/docs/messages/no-img-elem
+ent  @next/next/no-img-element
+reports\v2.8-lint-before.txt:254
+:  12:36  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:255
+:  36:27  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:256
+:  37:10  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:257
+:  41:66  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:260
+:   8:33  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:261
+:  12:56  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:264
+:   8:36  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:265
+:  11:56  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:268
+:  19:36  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:269
+:  28:71  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:270
+:  50:15  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:271
+:  92:17  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:272
+:  95:35  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:275
+:   9:28  warning  'req' is 
+defined but never used          
+ @typescript-eslint/no-unused-va
+rs
+reports\v2.8-lint-before.txt:276
+:  11:42  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:277
+:  18:32  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:278
+:  23:15  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:281
+:  11:33  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:282
+:  27:38  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:283
+:  30:31  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:286
+:  11:33  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:287
+:  27:45  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:288
+:  70:12  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:289
+:  72:12  warning  'e' is 
+defined but never used          
+   @typescript-eslint/no-unused-
+vars
+reports\v2.8-lint-before.txt:290
+:  72:15  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:293
+:  11:33  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:294
+:  27:33  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:295
+:  31:31  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:298
+:  11:42  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:301
+:  11:42  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:304
+:  18:32  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:305
+:  80:25  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:308
+:  16:42  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:311
+:  16:32  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:312
+:  34:31  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:315
+:  14:32  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:318
+:  12:42  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:319
+:  16:35  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:320
+:  28:22  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:321
+:  41:37  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:324
+:  30:21  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:327
+:  11:36  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:328
+:  62:15  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:331
+:  14:42  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:334
+:  14:42  warning  Unexpected 
+any. Specify a different type   
+  @typescript-eslint/no-explicit
+-any
+reports\v2.8-lint-before.txt:335
+:  24:9   warning  'result' is 
+assigned a value but never used 
+ @typescript-eslint/no-unused-va
+rs
+reports\v2.8-lint-before.txt:338
+:  15:42  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:341
+:  16:42  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:344
+:  16:36  warning  Unexpected 
+any. Specify a different type   
+  @typescript-eslint/no-explicit
+-any
+reports\v2.8-lint-before.txt:345
+:  30:11  warning  'result' is 
+assigned a value but never used 
+ @typescript-eslint/no-unused-va
+rs
+reports\v2.8-lint-before.txt:346
+:  40:39  warning  Unexpected 
+any. Specify a different type   
+  @typescript-eslint/no-explicit
+-any
+reports\v2.8-lint-before.txt:347
+:  61:15  warning  Unexpected 
+any. Specify a different type   
+  @typescript-eslint/no-explicit
+-any
+reports\v2.8-lint-before.txt:350
+:  14:36  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:351
+:  41:15  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:354
+:  16:42  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:355
+:  46:19  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:356
+:  60:15  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:359
+:  13:42  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:360
+:  29:39  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:361
+:  35:31  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:362
+:  36:12  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:363
+:  40:15  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:366
+:  13:42  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:367
+:  33:14  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:368
+:  41:15  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:371
+:  4:41  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:374
+:  93:17  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:377
+:  10:31  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:380
+:  13:31  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:381
+:  32:36  warning  Unexpected 
+any. Specify a different type  @
+typescript-eslint/no-explicit-an
+y
+reports\v2.8-lint-before.txt:384
+:   2:10  warning  
+'getServerSession' is defined 
+but never used  @typescript-esli
+nt/no-unused-vars
+reports\v2.8-lint-before.txt:385
+:   3:10  warning  
+'authOptions' is defined but 
+never used       @typescript-esl
+int/no-unused-vars
+reports\v2.8-lint-before.txt:386
+:   5:10  warning  'prisma' is 
+defined but never used          
+  @typescript-eslint/no-unused-v
+ars
+
+

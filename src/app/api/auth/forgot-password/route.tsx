@@ -6,7 +6,7 @@ import { NextResponse } from "next/server";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function POST(req: Request) {
+export async function POST(_req: Request) {
   const form = await req.formData();
   const rawEmail = form.get("email");
 

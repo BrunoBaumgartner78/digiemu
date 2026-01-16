@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function POST(req: Request) {
+export async function POST(_req: Request) {
   const session = await getServerSession(authOptions);
   const user = session?.user as any;
 

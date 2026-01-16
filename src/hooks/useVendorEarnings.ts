@@ -23,7 +23,7 @@ export function useVendorEarnings() {
         vendorEarningsCents: json.vendorEarningsCents,
         orderCount: json.ordersCount,
       });
-    } catch (e) {
+    } catch (_e) {
       setError("Fehler beim Laden der Umsätze.");
     } finally {
       setLoading(false);

@@ -1,0 +1,3420 @@
+﻿
+> reports\v2.6-lint-after-errors
+.txt:7:  1:1  warning  Assign 
+object to a variable before 
+exporting as module default  imp
+ort/no-anonymous-default-export
+  reports\v2.6-lint-after-errors
+.txt:8:
+  reports\v2.6-lint-after-errors
+.txt:9:C:\Users\oondr\Documents\
+digiemu\knip.config.ts
+> reports\v2.6-lint-after-errors
+.txt:10:  2:1  warning  Assign 
+object to a variable before 
+exporting as module default  imp
+ort/no-anonymous-default-export
+  reports\v2.6-lint-after-errors
+.txt:11:
+  reports\v2.6-lint-after-errors
+.txt:12:C:\Users\oondr\Documents
+\digiemu\scripts\approve-admin-v
+endorprofile.ts
+> reports\v2.6-lint-after-errors
+.txt:13:  12:37  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:14:  15:29  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:15:
+  reports\v2.6-lint-after-errors
+.txt:16:C:\Users\oondr\Documents
+\digiemu\scripts\backfill-vendor
+porfile-status.js
+> reports\v2.6-lint-after-errors
+.txt:17:  10:34  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:18:
+  reports\v2.6-lint-after-errors
+.txt:19:C:\Users\oondr\Documents
+\digiemu\scripts\backfill-vendor
+profile-status.ts
+> reports\v2.6-lint-after-errors
+.txt:20:  5:30  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:21:  6:34  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:22:
+  reports\v2.6-lint-after-errors
+.txt:23:C:\Users\oondr\Documents
+\digiemu\scripts\codemod-interna
+l-links.mjs
+> reports\v2.6-lint-after-errors
+.txt:24:  88:9  warning  
+'lines' is assigned a value but 
+never used  @typescript-eslint/n
+o-unused-vars
+  reports\v2.6-lint-after-errors
+.txt:25:
+  reports\v2.6-lint-after-errors
+.txt:26:C:\Users\oondr\Documents
+\digiemu\scripts\scan-window-loc
+ation-v2.4.mjs
+> reports\v2.6-lint-after-errors
+.txt:27:  12:323  warning  'e' 
+is defined but never used  @type
+script-eslint/no-unused-vars
+  reports\v2.6-lint-after-errors
+.txt:28:
+  reports\v2.6-lint-after-errors
+.txt:29:C:\Users\oondr\Documents
+\digiemu\src\app\(app)\admin\aud
+it-log\page.tsx
+> reports\v2.6-lint-after-errors
+.txt:30:  26:16  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:31:  35:9   warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:32:
+  reports\v2.6-lint-after-errors
+.txt:33:C:\Users\oondr\Documents
+\digiemu\src\app\(app)\admin\ord
+ers\page.tsx
+> reports\v2.6-lint-after-errors
+.txt:34:  63:36  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:35:  77:16  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:36:
+  reports\v2.6-lint-after-errors
+.txt:37:C:\Users\oondr\Documents
+\digiemu\src\app\(app)\admin\pay
+outs\vendor\[vendorId]\CreatePay
+outButton.tsx
+> reports\v2.6-lint-after-errors
+.txt:38:  25:17  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:39:
+  reports\v2.6-lint-after-errors
+.txt:40:C:\Users\oondr\Documents
+\digiemu\src\app\(app)\admin\pay
+outs\vendor\[vendorId]\page.tsx
+> reports\v2.6-lint-after-errors
+.txt:41:  14:33  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:42:
+  reports\v2.6-lint-after-errors
+.txt:43:C:\Users\oondr\Documents
+\digiemu\src\app\(app)\admin\pro
+ducts\AdminProductStatusToggle.t
+sx
+> reports\v2.6-lint-after-errors
+.txt:44:  45:17  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:45:
+  reports\v2.6-lint-after-errors
+.txt:46:C:\Users\oondr\Documents
+\digiemu\src\app\(app)\admin\pro
+ducts\edit\[id]\AdminProductEdit
+Client.tsx
+> reports\v2.6-lint-after-errors
+.txt:47:   51:31  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:48:  110:17  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:49:
+  reports\v2.6-lint-after-errors
+.txt:50:C:\Users\oondr\Documents
+\digiemu\src\app\(app)\admin\pro
+ducts\edit\[id]\page.tsx
+> reports\v2.6-lint-after-errors
+.txt:51:  20:33  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:52:  57:32  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:53:
+  reports\v2.6-lint-after-errors
+.txt:54:C:\Users\oondr\Documents
+\digiemu\src\app\(app)\admin\pro
+ducts\page.tsx
+> reports\v2.6-lint-after-errors
+.txt:55:   63:32  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:56:   76:16  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:57:  196:34  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:58:
+  reports\v2.6-lint-after-errors
+.txt:59:C:\Users\oondr\Documents
+\digiemu\src\app\(app)\admin\use
+rs\AdminUserStatusToggle.tsx
+> reports\v2.6-lint-after-errors
+.txt:60:  37:17  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:61:
+  reports\v2.6-lint-after-errors
+.txt:62:C:\Users\oondr\Documents
+\digiemu\src\app\(app)\admin\use
+rs\page.tsx
+> reports\v2.6-lint-after-errors
+.txt:63:  61:36  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:64:  74:16  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:65:
+  reports\v2.6-lint-after-errors
+.txt:66:C:\Users\oondr\Documents
+\digiemu\src\app\(app)\admin\ven
+dors\AdminVendorApprovalToggle.t
+sx
+> reports\v2.6-lint-after-errors
+.txt:67:  48:17  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:68:  71:51  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:69:
+  reports\v2.6-lint-after-errors
+.txt:70:C:\Users\oondr\Documents
+\digiemu\src\app\(app)\admin\ven
+dors\AdminVendorProfileToggles.t
+sx
+> reports\v2.6-lint-after-errors
+.txt:71:  38:17  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:72:  59:17  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:73:
+  reports\v2.6-lint-after-errors
+.txt:74:C:\Users\oondr\Documents
+\digiemu\src\app\(app)\admin\ven
+dors\AdminVendorPublicToggle.tsx
+> reports\v2.6-lint-after-errors
+.txt:75:  30:17  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:76:
+  reports\v2.6-lint-after-errors
+.txt:77:C:\Users\oondr\Documents
+\digiemu\src\app\(app)\admin\ven
+dors\AdminVendorStatusControls.t
+sx
+> reports\v2.6-lint-after-errors
+.txt:78:  11:42  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:79:  43:17  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:80:  63:17  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:81:
+  reports\v2.6-lint-after-errors
+.txt:82:C:\Users\oondr\Documents
+\digiemu\src\app\(app)\admin\ven
+dors\AdminVendorStatusToggle.tsx
+> reports\v2.6-lint-after-errors
+.txt:83:  36:17  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:84:
+  reports\v2.6-lint-after-errors
+.txt:85:C:\Users\oondr\Documents
+\digiemu\src\app\(app)\admin\ven
+dors\[vendorId]\page.tsx
+> reports\v2.6-lint-after-errors
+.txt:86:   28:24  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:87:   59:63  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:88:   60:49  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:89:   65:17  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:90:   66:30  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:91:  202:42  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:92:  204:38  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:93:  258:41  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:94:
+  reports\v2.6-lint-after-errors
+.txt:95:C:\Users\oondr\Documents
+\digiemu\src\app\(app)\admin\ven
+dors\page.tsx
+> reports\v2.6-lint-after-errors
+.txt:96:   54:36  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:97:   79:16  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:98:  197:31  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:99:  198:74  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:100:  200:39  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:101:
+  reports\v2.6-lint-after-errors
+.txt:102:C:\Users\oondr\Document
+s\digiemu\src\app\(app)\dashboar
+d\earnings\page.tsx
+> reports\v2.6-lint-after-errors
+.txt:103:   54:41  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:104:   70:25  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:105:   73:42  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:106:   95:45  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:107:  113:41  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:108:  130:41  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:109:
+  reports\v2.6-lint-after-errors
+.txt:110:C:\Users\oondr\Document
+s\digiemu\src\app\(app)\dashboar
+d\edit\[id]\page.tsx
+> reports\v2.6-lint-after-errors
+.txt:111:   2:8   warning  
+'Link' is defined but never 
+used          @typescript-eslint
+/no-unused-vars
+> reports\v2.6-lint-after-errors
+.txt:112:  17:36  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:113:
+  reports\v2.6-lint-after-errors
+.txt:114:C:\Users\oondr\Document
+s\digiemu\src\app\(app)\dashboar
+d\new\NewProductForm.tsx
+> reports\v2.6-lint-after-errors
+.txt:115:  68:19  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:116:
+  reports\v2.6-lint-after-errors
+.txt:117:C:\Users\oondr\Document
+s\digiemu\src\app\(app)\dashboar
+d\new\page.tsx
+> reports\v2.6-lint-after-errors
+.txt:118:   57:11  warning  
+'vendorStatus' is assigned a 
+value but never used  @typescrip
+t-eslint/no-unused-vars
+> reports\v2.6-lint-after-errors
+.txt:119:  222:19  warning  
+Unexpected any. Specify a 
+different type           @typesc
+ript-eslint/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:120:
+  reports\v2.6-lint-after-errors
+.txt:121:C:\Users\oondr\Document
+s\digiemu\src\app\(app)\dashboar
+d\page.tsx
+> reports\v2.6-lint-after-errors
+.txt:122:   21:32  warning  
+Unexpected any. Specify a 
+different type               @ty
+pescript-eslint/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:123:   29:11  warning  
+Unexpected any. Specify a 
+different type               @ty
+pescript-eslint/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:124:   77:43  warning  
+Unexpected any. Specify a 
+different type               @ty
+pescript-eslint/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:125:   85:43  warning  
+Unexpected any. Specify a 
+different type               @ty
+pescript-eslint/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:126:  104:45  warning  
+Unexpected any. Specify a 
+different type               @ty
+pescript-eslint/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:127:  114:45  warning  
+Unexpected any. Specify a 
+different type               @ty
+pescript-eslint/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:128:  123:45  warning  
+Unexpected any. Specify a 
+different type               @ty
+pescript-eslint/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:129:  136:57  warning  
+Unexpected any. Specify a 
+different type               @ty
+pescript-eslint/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:130:  137:61  warning  
+Unexpected any. Specify a 
+different type               @ty
+pescript-eslint/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:131:  140:56  warning  
+Unexpected any. Specify a 
+different type               @ty
+pescript-eslint/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:132:  147:28  warning  
+'vendorRangeCents' is assigned 
+a value but never used  @typescr
+ipt-eslint/no-unused-vars
+> reports\v2.6-lint-after-errors
+.txt:133:  187:32  warning  
+Unexpected any. Specify a 
+different type               @ty
+pescript-eslint/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:134:  355:40  warning  
+Unexpected any. Specify a 
+different type               @ty
+pescript-eslint/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:135:  377:33  warning  
+Unexpected any. Specify a 
+different type               @ty
+pescript-eslint/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:136:
+  reports\v2.6-lint-after-errors
+.txt:137:C:\Users\oondr\Document
+s\digiemu\src\app\(app)\dashboar
+d\payouts\AdminPayoutList.tsx
+> reports\v2.6-lint-after-errors
+.txt:138:  39:65  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:139:
+  reports\v2.6-lint-after-errors
+.txt:140:C:\Users\oondr\Document
+s\digiemu\src\app\(app)\dashboar
+d\payouts\page.tsx
+> reports\v2.6-lint-after-errors
+.txt:141:  47:23  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:142:  50:34  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:143:  63:43  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:144:
+  reports\v2.6-lint-after-errors
+.txt:145:C:\Users\oondr\Document
+s\digiemu\src\app\(app)\dashboar
+d\products\ProductCard.tsx
+> reports\v2.6-lint-after-errors
+.txt:146:   2:8  warning  
+'Link' is defined but never 
+used                            
+                                
+                                
+                                
+                                
+                                
+                                
+                             @ty
+pescript-eslint/no-unused-vars
+> reports\v2.6-lint-after-errors
+.txt:147:  18:3  warning  'id' 
+is defined but never used       
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                    @typescript-
+eslint/no-unused-vars
+> reports\v2.6-lint-after-errors
+.txt:148:  35:9  warning  Using 
+`<img>` could result in slower 
+LCP and higher bandwidth. 
+Consider using `<Image />` from 
+`next/image` or a custom image 
+loader to automatically 
+optimize images. This may incur 
+additional usage or cost from 
+your provider. See: https://next
+js.org/docs/messages/no-img-elem
+ent  @next/next/no-img-element
+  reports\v2.6-lint-after-errors
+.txt:149:
+  reports\v2.6-lint-after-errors
+.txt:150:C:\Users\oondr\Document
+s\digiemu\src\app\(app)\dashboar
+d\products\ProductListUI.tsx
+> reports\v2.6-lint-after-errors
+.txt:151:  33:13  warning  
+Using `<img>` could result in 
+slower LCP and higher 
+bandwidth. Consider using 
+`<Image />` from `next/image` 
+or a custom image loader to 
+automatically optimize images. 
+This may incur additional usage 
+or cost from your provider. 
+See: https://nextjs.org/docs/mes
+sages/no-img-element  
+@next/next/no-img-element
+  reports\v2.6-lint-after-errors
+.txt:152:
+  reports\v2.6-lint-after-errors
+.txt:153:C:\Users\oondr\Document
+s\digiemu\src\app\(app)\dashboar
+d\products\[productId]\buy-butto
+n.tsx
+> reports\v2.6-lint-after-errors
+.txt:154:  36:14  warning  'e' 
+is defined but never used  @type
+script-eslint/no-unused-vars
+  reports\v2.6-lint-after-errors
+.txt:155:
+  reports\v2.6-lint-after-errors
+.txt:156:C:\Users\oondr\Document
+s\digiemu\src\app\(app)\dashboar
+d\products\[productId]\edit\Edit
+ProductForm.tsx
+> reports\v2.6-lint-after-errors
+.txt:157:   66:16  warning  
+'err' is defined but never used 
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                         @typesc
+ript-eslint/no-unused-vars
+> reports\v2.6-lint-after-errors
+.txt:158:  337:13  warning  
+Using `<img>` could result in 
+slower LCP and higher 
+bandwidth. Consider using 
+`<Image />` from `next/image` 
+or a custom image loader to 
+automatically optimize images. 
+This may incur additional usage 
+or cost from your provider. 
+See: https://nextjs.org/docs/mes
+sages/no-img-element  
+@next/next/no-img-element
+  reports\v2.6-lint-after-errors
+.txt:159:
+  reports\v2.6-lint-after-errors
+.txt:160:C:\Users\oondr\Document
+s\digiemu\src\app\(app)\dashboar
+d\products\[productId]\edit\page
+.tsx
+> reports\v2.6-lint-after-errors
+.txt:161:  17:55  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:162:  18:24  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:163:  21:41  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:164:  25:33  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:165:
+  reports\v2.6-lint-after-errors
+.txt:166:C:\Users\oondr\Document
+s\digiemu\src\app\(app)\dashboar
+d\products\new\page.tsx
+> reports\v2.6-lint-after-errors
+.txt:167:  75:14  warning  
+'_err' is defined but never 
+used  @typescript-eslint/no-unus
+ed-vars
+  reports\v2.6-lint-after-errors
+.txt:168:
+  reports\v2.6-lint-after-errors
+.txt:169:C:\Users\oondr\Document
+s\digiemu\src\app\(app)\dashboar
+d\products\page.tsx
+> reports\v2.6-lint-after-errors
+.txt:170:  28:32  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:171:  50:28  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:172:
+  reports\v2.6-lint-after-errors
+.txt:173:C:\Users\oondr\Document
+s\digiemu\src\app\(app)\dashboar
+d\products\top\page.tsx
+> reports\v2.6-lint-after-errors
+.txt:174:  14:32  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:175:
+  reports\v2.6-lint-after-errors
+.txt:176:C:\Users\oondr\Document
+s\digiemu\src\app\(app)\dashboar
+d\profile\page.tsx
+> reports\v2.6-lint-after-errors
+.txt:177:  10:32  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:178:
+  reports\v2.6-lint-after-errors
+.txt:179:C:\Users\oondr\Document
+s\digiemu\src\app\(app)\dashboar
+d\vendor\page.tsx
+> reports\v2.6-lint-after-errors
+.txt:180:  20:39  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:181:
+  reports\v2.6-lint-after-errors
+.txt:182:C:\Users\oondr\Document
+s\digiemu\src\app\(app)\dashboar
+d\vendor\useVendorEarnings.ts
+> reports\v2.6-lint-after-errors
+.txt:183:  26:14  warning  'e' 
+is defined but never used  @type
+script-eslint/no-unused-vars
+  reports\v2.6-lint-after-errors
+.txt:184:
+  reports\v2.6-lint-after-errors
+.txt:185:C:\Users\oondr\Document
+s\digiemu\src\app\(app)\download
+\[orderId]\DownloadButton.tsx
+> reports\v2.6-lint-after-errors
+.txt:186:  28:14  warning  'e' 
+is defined but never used  @type
+script-eslint/no-unused-vars
+  reports\v2.6-lint-after-errors
+.txt:187:
+  reports\v2.6-lint-after-errors
+.txt:188:C:\Users\oondr\Document
+s\digiemu\src\app\(app)\download
+\[orderId]\page.tsx
+> reports\v2.6-lint-after-errors
+.txt:189:  130:42  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:190:
+  reports\v2.6-lint-after-errors
+.txt:191:C:\Users\oondr\Document
+s\digiemu\src\app\(app)\download
+\page.tsx
+> reports\v2.6-lint-after-errors
+.txt:192:  33:36  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:193:
+  reports\v2.6-lint-after-errors
+.txt:194:C:\Users\oondr\Document
+s\digiemu\src\app\(app)\download
+\success\page.tsx
+> reports\v2.6-lint-after-errors
+.txt:195:  14:36  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:196:
+  reports\v2.6-lint-after-errors
+.txt:197:C:\Users\oondr\Document
+s\digiemu\src\app\(auth)\reset-p
+assword\[token]\ResetPasswordFor
+m.tsx
+> reports\v2.6-lint-after-errors
+.txt:198:  35:17  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:199:
+  reports\v2.6-lint-after-errors
+.txt:200:C:\Users\oondr\Document
+s\digiemu\src\app\(public)\marke
+tplace\page.tsx
+> reports\v2.6-lint-after-errors
+.txt:201:   99:19  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:202:  262:30  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:203:
+  reports\v2.6-lint-after-errors
+.txt:204:C:\Users\oondr\Document
+s\digiemu\src\app\(public)\page.
+tsx
+> reports\v2.6-lint-after-errors
+.txt:205:  116:42  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:206:  117:35  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:207:
+  reports\v2.6-lint-after-errors
+.txt:208:C:\Users\oondr\Document
+s\digiemu\src\app\account\admin-
+profile\AdminProfileClient.tsx
+> reports\v2.6-lint-after-errors
+.txt:209:  19:46  warning  
+'userId' is defined but never 
+used        @typescript-eslint/n
+o-unused-vars
+> reports\v2.6-lint-after-errors
+.txt:210:  33:58  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:211:  50:19  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:212:
+  reports\v2.6-lint-after-errors
+.txt:213:C:\Users\oondr\Document
+s\digiemu\src\app\account\admin-
+profile\page.tsx
+> reports\v2.6-lint-after-errors
+.txt:214:  8:33  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:215:
+  reports\v2.6-lint-after-errors
+.txt:216:C:\Users\oondr\Document
+s\digiemu\src\app\account\buyer-
+profile\BuyerProfileClient.tsx
+> reports\v2.6-lint-after-errors
+.txt:217:  57:19  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:218:
+  reports\v2.6-lint-after-errors
+.txt:219:C:\Users\oondr\Document
+s\digiemu\src\app\account\buyer-
+profile\page.tsx
+> reports\v2.6-lint-after-errors
+.txt:220:  8:36  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:221:
+  reports\v2.6-lint-after-errors
+.txt:222:C:\Users\oondr\Document
+s\digiemu\src\app\account\downlo
+ads\page.tsx
+> reports\v2.6-lint-after-errors
+.txt:223:  32:36  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:224:
+  reports\v2.6-lint-after-errors
+.txt:225:C:\Users\oondr\Document
+s\digiemu\src\app\account\profil
+e\ProfileImageUploader.tsx
+> reports\v2.6-lint-after-errors
+.txt:226:   17:3   warning  
+'userId' is defined but never 
+used                            
+                                
+                                
+                                
+                                
+                                
+                                
+                           @type
+script-eslint/no-unused-vars
+> reports\v2.6-lint-after-errors
+.txt:227:   38:15  warning  
+Unexpected any. Specify a 
+different type                  
+                                
+                                
+                                
+                                
+                                
+                                
+                               @
+typescript-eslint/no-explicit-an
+y
+> reports\v2.6-lint-after-errors
+.txt:228:   70:19  warning  
+Unexpected any. Specify a 
+different type                  
+                                
+                                
+                                
+                                
+                                
+                                
+                               @
+typescript-eslint/no-explicit-an
+y
+> reports\v2.6-lint-after-errors
+.txt:229:   97:19  warning  
+Unexpected any. Specify a 
+different type                  
+                                
+                                
+                                
+                                
+                                
+                                
+                               @
+typescript-eslint/no-explicit-an
+y
+> reports\v2.6-lint-after-errors
+.txt:230:  143:15  warning  
+Using `<img>` could result in 
+slower LCP and higher 
+bandwidth. Consider using 
+`<Image />` from `next/image` 
+or a custom image loader to 
+automatically optimize images. 
+This may incur additional usage 
+or cost from your provider. 
+See: https://nextjs.org/docs/mes
+sages/no-img-element  
+@next/next/no-img-element
+> reports\v2.6-lint-after-errors
+.txt:231:  181:15  warning  
+Using `<img>` could result in 
+slower LCP and higher 
+bandwidth. Consider using 
+`<Image />` from `next/image` 
+or a custom image loader to 
+automatically optimize images. 
+This may incur additional usage 
+or cost from your provider. 
+See: https://nextjs.org/docs/mes
+sages/no-img-element  
+@next/next/no-img-element
+  reports\v2.6-lint-after-errors
+.txt:232:
+  reports\v2.6-lint-after-errors
+.txt:233:C:\Users\oondr\Document
+s\digiemu\src\app\account\profil
+e\ProfilePageClient.tsx
+> reports\v2.6-lint-after-errors
+.txt:234:   99:17  warning  
+Unexpected any. Specify a 
+different type                  
+                                
+                                
+                                
+                                
+                                
+                                
+                               @
+typescript-eslint/no-explicit-an
+y
+> reports\v2.6-lint-after-errors
+.txt:235:  115:17  warning  
+Unexpected any. Specify a 
+different type                  
+                                
+                                
+                                
+                                
+                                
+                                
+                               @
+typescript-eslint/no-explicit-an
+y
+> reports\v2.6-lint-after-errors
+.txt:236:  155:17  warning  
+Unexpected any. Specify a 
+different type                  
+                                
+                                
+                                
+                                
+                                
+                                
+                               @
+typescript-eslint/no-explicit-an
+y
+> reports\v2.6-lint-after-errors
+.txt:237:  358:18  warning  
+Unused eslint-disable directive 
+(no problems were reported from 
+'@next/next/no-img-element')
+> reports\v2.6-lint-after-errors
+.txt:238:  360:19  warning  
+Using `<img>` could result in 
+slower LCP and higher 
+bandwidth. Consider using 
+`<Image />` from `next/image` 
+or a custom image loader to 
+automatically optimize images. 
+This may incur additional usage 
+or cost from your provider. 
+See: https://nextjs.org/docs/mes
+sages/no-img-element  
+@next/next/no-img-element
+  reports\v2.6-lint-after-errors
+.txt:239:
+  reports\v2.6-lint-after-errors
+.txt:240:C:\Users\oondr\Document
+s\digiemu\src\app\account\profil
+e\ProfilePreviewCard.tsx
+> reports\v2.6-lint-after-errors
+.txt:241:  31:11  warning  
+Using `<img>` could result in 
+slower LCP and higher 
+bandwidth. Consider using 
+`<Image />` from `next/image` 
+or a custom image loader to 
+automatically optimize images. 
+This may incur additional usage 
+or cost from your provider. 
+See: https://nextjs.org/docs/mes
+sages/no-img-element  
+@next/next/no-img-element
+> reports\v2.6-lint-after-errors
+.txt:242:  41:15  warning  
+Using `<img>` could result in 
+slower LCP and higher 
+bandwidth. Consider using 
+`<Image />` from `next/image` 
+or a custom image loader to 
+automatically optimize images. 
+This may incur additional usage 
+or cost from your provider. 
+See: https://nextjs.org/docs/mes
+sages/no-img-element  
+@next/next/no-img-element
+  reports\v2.6-lint-after-errors
+.txt:243:
+  reports\v2.6-lint-after-errors
+.txt:244:C:\Users\oondr\Document
+s\digiemu\src\app\account\profil
+e\page.tsx
+> reports\v2.6-lint-after-errors
+.txt:245:  12:36  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:246:  36:27  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:247:  37:10  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:248:  41:66  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:249:
+  reports\v2.6-lint-after-errors
+.txt:250:C:\Users\oondr\Document
+s\digiemu\src\app\api\account\ad
+min-profile\route.ts
+> reports\v2.6-lint-after-errors
+.txt:251:   8:33  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:252:  12:56  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:253:
+  reports\v2.6-lint-after-errors
+.txt:254:C:\Users\oondr\Document
+s\digiemu\src\app\api\account\bu
+yer-profile\route.ts
+> reports\v2.6-lint-after-errors
+.txt:255:   8:36  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:256:  11:56  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:257:
+  reports\v2.6-lint-after-errors
+.txt:258:C:\Users\oondr\Document
+s\digiemu\src\app\api\account\pr
+ofile\route.ts
+> reports\v2.6-lint-after-errors
+.txt:259:  19:36  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:260:  28:71  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:261:  50:15  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:262:  92:17  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:263:  95:35  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:264:
+  reports\v2.6-lint-after-errors
+.txt:265:C:\Users\oondr\Document
+s\digiemu\src\app\api\admin\main
+tenance\backfill-vendorprofile-s
+tatus\route.ts
+> reports\v2.6-lint-after-errors
+.txt:266:   9:28  warning  
+'req' is defined but never used 
+          @typescript-eslint/no-
+unused-vars
+> reports\v2.6-lint-after-errors
+.txt:267:  11:42  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:268:  18:32  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:269:  23:15  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:270:
+  reports\v2.6-lint-after-errors
+.txt:271:C:\Users\oondr\Document
+s\digiemu\src\app\api\admin\payo
+uts\cancel\route.ts
+> reports\v2.6-lint-after-errors
+.txt:272:  11:33  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:273:  27:38  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:274:  30:31  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:275:
+  reports\v2.6-lint-after-errors
+.txt:276:C:\Users\oondr\Document
+s\digiemu\src\app\api\admin\payo
+uts\create\route.ts
+> reports\v2.6-lint-after-errors
+.txt:277:  11:33  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:278:  27:45  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:279:  70:12  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:280:  72:12  warning  'e' 
+is defined but never used       
+      @typescript-eslint/no-unus
+ed-vars
+> reports\v2.6-lint-after-errors
+.txt:281:  72:15  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:282:
+  reports\v2.6-lint-after-errors
+.txt:283:C:\Users\oondr\Document
+s\digiemu\src\app\api\admin\payo
+uts\mark-paid\route.ts
+> reports\v2.6-lint-after-errors
+.txt:284:  11:33  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:285:  27:33  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:286:  31:31  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:287:
+  reports\v2.6-lint-after-errors
+.txt:288:C:\Users\oondr\Document
+s\digiemu\src\app\api\admin\prod
+ucts\[id]\approve\route.ts
+> reports\v2.6-lint-after-errors
+.txt:289:  11:42  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:290:
+  reports\v2.6-lint-after-errors
+.txt:291:C:\Users\oondr\Document
+s\digiemu\src\app\api\admin\prod
+ucts\[id]\block\route.ts
+> reports\v2.6-lint-after-errors
+.txt:292:  11:42  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:293:
+  reports\v2.6-lint-after-errors
+.txt:294:C:\Users\oondr\Document
+s\digiemu\src\app\api\admin\prod
+ucts\[id]\route.ts
+> reports\v2.6-lint-after-errors
+.txt:295:  18:32  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:296:  80:25  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:297:
+  reports\v2.6-lint-after-errors
+.txt:298:C:\Users\oondr\Document
+s\digiemu\src\app\api\admin\prod
+ucts\[id]\set-status\route.ts
+> reports\v2.6-lint-after-errors
+.txt:299:  16:42  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:300:
+  reports\v2.6-lint-after-errors
+.txt:301:C:\Users\oondr\Document
+s\digiemu\src\app\api\admin\prod
+ucts\[id]\status\route.ts
+> reports\v2.6-lint-after-errors
+.txt:302:  16:32  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:303:  34:31  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:304:
+  reports\v2.6-lint-after-errors
+.txt:305:C:\Users\oondr\Document
+s\digiemu\src\app\api\admin\prod
+ucts\[id]\visibility\route.ts
+> reports\v2.6-lint-after-errors
+.txt:306:  14:32  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:307:
+  reports\v2.6-lint-after-errors
+.txt:308:C:\Users\oondr\Document
+s\digiemu\src\app\api\admin\self
+\become-vendor\route.ts
+> reports\v2.6-lint-after-errors
+.txt:309:  12:42  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:310:  16:35  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:311:  28:22  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:312:  41:37  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:313:
+  reports\v2.6-lint-after-errors
+.txt:314:C:\Users\oondr\Document
+s\digiemu\src\app\api\admin\user
+s\[id]\route.ts
+> reports\v2.6-lint-after-errors
+.txt:315:  30:21  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:316:
+  reports\v2.6-lint-after-errors
+.txt:317:C:\Users\oondr\Document
+s\digiemu\src\app\api\admin\user
+s\toggle-block\route.ts
+> reports\v2.6-lint-after-errors
+.txt:318:  11:36  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:319:  62:15  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:320:
+  reports\v2.6-lint-after-errors
+.txt:321:C:\Users\oondr\Document
+s\digiemu\src\app\api\admin\vend
+ors\[id]\approve\route.ts
+> reports\v2.6-lint-after-errors
+.txt:322:  14:42  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:323:
+  reports\v2.6-lint-after-errors
+.txt:324:C:\Users\oondr\Document
+s\digiemu\src\app\api\admin\vend
+ors\[id]\block\route.ts
+> reports\v2.6-lint-after-errors
+.txt:325:  14:42  warning  
+Unexpected any. Specify a 
+different type     @typescript-e
+slint/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:326:  24:9   warning  
+'result' is assigned a value 
+but never used  @typescript-esli
+nt/no-unused-vars
+  reports\v2.6-lint-after-errors
+.txt:327:
+  reports\v2.6-lint-after-errors
+.txt:328:C:\Users\oondr\Document
+s\digiemu\src\app\api\admin\vend
+ors\[id]\set-public\route.ts
+> reports\v2.6-lint-after-errors
+.txt:329:  15:42  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:330:
+  reports\v2.6-lint-after-errors
+.txt:331:C:\Users\oondr\Document
+s\digiemu\src\app\api\admin\vend
+ors\[id]\set-status\route.ts
+> reports\v2.6-lint-after-errors
+.txt:332:  16:42  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:333:
+  reports\v2.6-lint-after-errors
+.txt:334:C:\Users\oondr\Document
+s\digiemu\src\app\api\admin\vend
+ors\[id]\set-vendor-status\route
+.ts
+> reports\v2.6-lint-after-errors
+.txt:335:  16:36  warning  
+Unexpected any. Specify a 
+different type     @typescript-e
+slint/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:336:  30:11  warning  
+'result' is assigned a value 
+but never used  @typescript-esli
+nt/no-unused-vars
+> reports\v2.6-lint-after-errors
+.txt:337:  40:39  warning  
+Unexpected any. Specify a 
+different type     @typescript-e
+slint/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:338:  61:15  warning  
+Unexpected any. Specify a 
+different type     @typescript-e
+slint/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:339:
+  reports\v2.6-lint-after-errors
+.txt:340:C:\Users\oondr\Document
+s\digiemu\src\app\api\admin\vend
+ors\[id]\toggle-public\route.ts
+> reports\v2.6-lint-after-errors
+.txt:341:  14:36  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:342:  41:15  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:343:
+  reports\v2.6-lint-after-errors
+.txt:344:C:\Users\oondr\Document
+s\digiemu\src\app\api\admin\vend
+ors\[id]\vendorprofile\route.ts
+> reports\v2.6-lint-after-errors
+.txt:345:  16:42  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:346:  46:19  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:347:  60:15  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:348:
+  reports\v2.6-lint-after-errors
+.txt:349:C:\Users\oondr\Document
+s\digiemu\src\app\api\admin\vend
+ors\[id]\vendorprofile\set-statu
+s\route.ts
+> reports\v2.6-lint-after-errors
+.txt:350:  13:42  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:351:  29:39  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:352:  35:31  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:353:  36:12  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:354:  40:15  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:355:
+  reports\v2.6-lint-after-errors
+.txt:356:C:\Users\oondr\Document
+s\digiemu\src\app\api\admin\vend
+ors\[id]\vendorprofile\toggle-pu
+blic\route.ts
+> reports\v2.6-lint-after-errors
+.txt:357:  13:42  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:358:  33:14  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:359:  41:15  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:360:
+  reports\v2.6-lint-after-errors
+.txt:361:C:\Users\oondr\Document
+s\digiemu\src\app\api\auth\[...n
+extauth]\route.ts
+> reports\v2.6-lint-after-errors
+.txt:362:  4:41  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:363:
+  reports\v2.6-lint-after-errors
+.txt:364:C:\Users\oondr\Document
+s\digiemu\src\app\api\auth\regis
+ter\route.ts
+> reports\v2.6-lint-after-errors
+.txt:365:  93:17  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:366:
+  reports\v2.6-lint-after-errors
+.txt:367:C:\Users\oondr\Document
+s\digiemu\src\app\api\checkout\c
+onfirm\route.ts
+> reports\v2.6-lint-after-errors
+.txt:368:  10:31  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:369:
+  reports\v2.6-lint-after-errors
+.txt:370:C:\Users\oondr\Document
+s\digiemu\src\app\api\checkout\c
+reate-session\route.ts
+> reports\v2.6-lint-after-errors
+.txt:371:  13:31  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:372:  32:36  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:373:
+  reports\v2.6-lint-after-errors
+.txt:374:C:\Users\oondr\Document
+s\digiemu\src\app\api\checkout\s
+ession\route.ts
+> reports\v2.6-lint-after-errors
+.txt:375:   2:10  warning  
+'getServerSession' is defined 
+but never used  @typescript-esli
+nt/no-unused-vars
+> reports\v2.6-lint-after-errors
+.txt:376:   3:10  warning  
+'authOptions' is defined but 
+never used       @typescript-esl
+int/no-unused-vars
+> reports\v2.6-lint-after-errors
+.txt:377:   5:10  warning  
+'prisma' is defined but never 
+used            @typescript-esli
+nt/no-unused-vars
+> reports\v2.6-lint-after-errors
+.txt:378:  10:7   warning  
+'stripe' is assigned a value 
+but never used   @typescript-esl
+int/no-unused-vars
+> reports\v2.6-lint-after-errors
+.txt:379:  11:31  warning  
+Unexpected any. Specify a 
+different type      @typescript-
+eslint/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:380:  18:28  warning  
+'req' is defined but never used 
+              @typescript-eslint
+/no-unused-vars
+  reports\v2.6-lint-after-errors
+.txt:381:
+  reports\v2.6-lint-after-errors
+.txt:382:C:\Users\oondr\Document
+s\digiemu\src\app\api\debug\prod
+ucts\route.ts
+> reports\v2.6-lint-after-errors
+.txt:383:  13:17  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:384:
+  reports\v2.6-lint-after-errors
+.txt:385:C:\Users\oondr\Document
+s\digiemu\src\app\api\download\[
+orderId]\route.ts
+> reports\v2.6-lint-after-errors
+.txt:386:  22:36  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:387:
+  reports\v2.6-lint-after-errors
+.txt:388:C:\Users\oondr\Document
+s\digiemu\src\app\api\order\by-s
+ession\route.ts
+> reports\v2.6-lint-after-errors
+.txt:389:  11:36  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:390:
+  reports\v2.6-lint-after-errors
+.txt:391:C:\Users\oondr\Document
+s\digiemu\src\app\api\product\[i
+d]\like\route.ts
+> reports\v2.6-lint-after-errors
+.txt:392:  16:36  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:393:
+  reports\v2.6-lint-after-errors
+.txt:394:C:\Users\oondr\Document
+s\digiemu\src\app\api\product\[i
+d]\view\route.ts
+> reports\v2.6-lint-after-errors
+.txt:395:  29:36  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:396:
+  reports\v2.6-lint-after-errors
+.txt:397:C:\Users\oondr\Document
+s\digiemu\src\app\api\product\vi
+ew\route.ts
+> reports\v2.6-lint-after-errors
+.txt:398:  25:38  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:399:  42:14  warning  'e' 
+is defined but never used       
+      @typescript-eslint/no-unus
+ed-vars
+  reports\v2.6-lint-after-errors
+.txt:400:
+  reports\v2.6-lint-after-errors
+.txt:401:C:\Users\oondr\Document
+s\digiemu\src\app\api\products\[
+id]\like\route.ts
+> reports\v2.6-lint-after-errors
+.txt:402:  16:38  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:403:  49:35  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:404:
+  reports\v2.6-lint-after-errors
+.txt:405:C:\Users\oondr\Document
+s\digiemu\src\app\api\products\[
+id]\route.ts
+> reports\v2.6-lint-after-errors
+.txt:406:  18:33  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:407:  88:33  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:408:
+  reports\v2.6-lint-after-errors
+.txt:409:C:\Users\oondr\Document
+s\digiemu\src\app\api\products\c
+reate\route.ts
+> reports\v2.6-lint-after-errors
+.txt:410:  103:17  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:411:
+  reports\v2.6-lint-after-errors
+.txt:412:C:\Users\oondr\Document
+s\digiemu\src\app\api\products\l
+ist\route.ts
+> reports\v2.6-lint-after-errors
+.txt:413:  6:18  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:414:
+  reports\v2.6-lint-after-errors
+.txt:415:C:\Users\oondr\Document
+s\digiemu\src\app\api\products\n
+ew\route.ts
+> reports\v2.6-lint-after-errors
+.txt:416:  23:36  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:417:  27:37  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:418:  72:17  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:419:
+  reports\v2.6-lint-after-errors
+.txt:420:C:\Users\oondr\Document
+s\digiemu\src\app\api\products\u
+pdate-status\route.ts
+> reports\v2.6-lint-after-errors
+.txt:421:  26:22  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:422:  48:22  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:423:  60:17  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:424:
+  reports\v2.6-lint-after-errors
+.txt:425:C:\Users\oondr\Document
+s\digiemu\src\app\api\products\u
+pdate\route.ts
+> reports\v2.6-lint-after-errors
+.txt:426:   8:36  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:427:   9:34  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:428:  52:21  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:429:
+  reports\v2.6-lint-after-errors
+.txt:430:C:\Users\oondr\Document
+s\digiemu\src\app\api\products\u
+pload\route.ts
+> reports\v2.6-lint-after-errors
+.txt:431:  35:13  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:432:
+  reports\v2.6-lint-after-errors
+.txt:433:C:\Users\oondr\Document
+s\digiemu\src\app\api\track-view
+\route.ts
+> reports\v2.6-lint-after-errors
+.txt:434:   4:10  warning  
+'prisma' is defined but never 
+used        @typescript-eslint/n
+o-unused-vars
+> reports\v2.6-lint-after-errors
+.txt:435:  39:15  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:436:
+  reports\v2.6-lint-after-errors
+.txt:437:C:\Users\oondr\Document
+s\digiemu\src\app\api\track\sell
+er-click\route.ts
+> reports\v2.6-lint-after-errors
+.txt:438:  34:12  warning  'e' 
+is defined but never used  @type
+script-eslint/no-unused-vars
+  reports\v2.6-lint-after-errors
+.txt:439:
+  reports\v2.6-lint-after-errors
+.txt:440:C:\Users\oondr\Document
+s\digiemu\src\app\api\upload\ima
+ge\route.ts
+> reports\v2.6-lint-after-errors
+.txt:441:  75:17  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:442:
+  reports\v2.6-lint-after-errors
+.txt:443:C:\Users\oondr\Document
+s\digiemu\src\app\api\upload\pro
+file-image\route.ts
+> reports\v2.6-lint-after-errors
+.txt:444:  11:36  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:445:
+  reports\v2.6-lint-after-errors
+.txt:446:C:\Users\oondr\Document
+s\digiemu\src\app\api\vendor\ear
+nings\chart\route.ts
+> reports\v2.6-lint-after-errors
+.txt:447:  11:27  warning  
+'_req' is defined but never 
+used  @typescript-eslint/no-unus
+ed-vars
+  reports\v2.6-lint-after-errors
+.txt:448:
+  reports\v2.6-lint-after-errors
+.txt:449:C:\Users\oondr\Document
+s\digiemu\src\app\api\vendor\pro
+duct\[id]\funnel\route.ts
+> reports\v2.6-lint-after-errors
+.txt:450:  58:33  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:451:
+  reports\v2.6-lint-after-errors
+.txt:452:C:\Users\oondr\Document
+s\digiemu\src\app\api\vendor\pro
+ducts\[id]\publish\route.ts
+> reports\v2.6-lint-after-errors
+.txt:453:  14:33  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:454:  47:31  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:455:  48:30  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:456:
+  reports\v2.6-lint-after-errors
+.txt:457:C:\Users\oondr\Document
+s\digiemu\src\app\api\vendor\pro
+ducts\[id]\route.ts
+> reports\v2.6-lint-after-errors
+.txt:458:  19:36  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:459:  20:34  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:460:
+  reports\v2.6-lint-after-errors
+.txt:461:C:\Users\oondr\Document
+s\digiemu\src\app\api\vendor\pro
+ducts\stats\route.ts
+> reports\v2.6-lint-after-errors
+.txt:462:  16:34  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:463:
+  reports\v2.6-lint-after-errors
+.txt:464:C:\Users\oondr\Document
+s\digiemu\src\app\api\vendor\pro
+file-status\route.ts
+> reports\v2.6-lint-after-errors
+.txt:465:  15:32  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:466:
+  reports\v2.6-lint-after-errors
+.txt:467:C:\Users\oondr\Document
+s\digiemu\src\app\api\vendor\pro
+file\route.ts
+> reports\v2.6-lint-after-errors
+.txt:468:  12:36  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:469:  21:36  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:470:
+  reports\v2.6-lint-after-errors
+.txt:471:C:\Users\oondr\Document
+s\digiemu\src\app\api\vendor\rep
+ort\route.ts
+> reports\v2.6-lint-after-errors
+.txt:472:  13:28  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:473:
+  reports\v2.6-lint-after-errors
+.txt:474:C:\Users\oondr\Document
+s\digiemu\src\app\api\vendor\sta
+ts\route.ts
+> reports\v2.6-lint-after-errors
+.txt:475:  14:39  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:476:
+  reports\v2.6-lint-after-errors
+.txt:477:C:\Users\oondr\Document
+s\digiemu\src\app\api\webhook\ro
+ute.ts
+> reports\v2.6-lint-after-errors
+.txt:478:   10:31  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:479:   29:17  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:480:   49:15  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:481:  154:17  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:482:
+  reports\v2.6-lint-after-errors
+.txt:483:C:\Users\oondr\Document
+s\digiemu\src\app\product\[id]\B
+uyButton.tsx
+> reports\v2.6-lint-after-errors
+.txt:484:  11:9   warning  
+'router' is assigned a value 
+but never used  @typescript-esli
+nt/no-unused-vars
+> reports\v2.6-lint-after-errors
+.txt:485:  32:19  warning  
+Unexpected any. Specify a 
+different type     @typescript-e
+slint/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:486:
+  reports\v2.6-lint-after-errors
+.txt:487:C:\Users\oondr\Document
+s\digiemu\src\app\product\[id]\p
+age.tsx
+> reports\v2.6-lint-after-errors
+.txt:488:  44:37  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:489:
+  reports\v2.6-lint-after-errors
+.txt:490:C:\Users\oondr\Document
+s\digiemu\src\app\register-vendo
+r\page.tsx
+> reports\v2.6-lint-after-errors
+.txt:491:  16:32  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:492:
+  reports\v2.6-lint-after-errors
+.txt:493:C:\Users\oondr\Document
+s\digiemu\src\app\seller\[vendor
+Id]\page.tsx
+> reports\v2.6-lint-after-errors
+.txt:494:   99:13  warning  
+Using `<img>` could result in 
+slower LCP and higher 
+bandwidth. Consider using 
+`<Image />` from `next/image` 
+or a custom image loader to 
+automatically optimize images. 
+This may incur additional usage 
+or cost from your provider. 
+See: https://nextjs.org/docs/mes
+sages/no-img-element  
+@next/next/no-img-element
+> reports\v2.6-lint-after-errors
+.txt:495:  124:15  warning  
+Using `<img>` could result in 
+slower LCP and higher 
+bandwidth. Consider using 
+`<Image />` from `next/image` 
+or a custom image loader to 
+automatically optimize images. 
+This may incur additional usage 
+or cost from your provider. 
+See: https://nextjs.org/docs/mes
+sages/no-img-element  
+@next/next/no-img-element
+> reports\v2.6-lint-after-errors
+.txt:496:  180:25  warning  
+Using `<img>` could result in 
+slower LCP and higher 
+bandwidth. Consider using 
+`<Image />` from `next/image` 
+or a custom image loader to 
+automatically optimize images. 
+This may incur additional usage 
+or cost from your provider. 
+See: https://nextjs.org/docs/mes
+sages/no-img-element  
+@next/next/no-img-element
+  reports\v2.6-lint-after-errors
+.txt:497:
+  reports\v2.6-lint-after-errors
+.txt:498:C:\Users\oondr\Document
+s\digiemu\src\components\Feature
+Gate.tsx
+> reports\v2.6-lint-after-errors
+.txt:499:   5:10  warning  
+'features' is defined but never 
+used      @typescript-eslint/no-
+unused-vars
+> reports\v2.6-lint-after-errors
+.txt:500:  17:34  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:501:  30:27  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:502:  31:24  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:503:
+  reports\v2.6-lint-after-errors
+.txt:504:C:\Users\oondr\Document
+s\digiemu\src\components\ThemeTo
+ggle.tsx
+> reports\v2.6-lint-after-errors
+.txt:505:  10:19  warning  
+Error: Calling setState 
+synchronously within an effect 
+can trigger cascading renders
+  reports\v2.6-lint-after-errors
+.txt:506:
+  reports\v2.6-lint-after-errors
+.txt:507:Effects are intended 
+to synchronize state between 
+React and external systems such 
+as manually updating the DOM, 
+state management libraries, or 
+other platform APIs. In 
+general, the body of an effect 
+should do one or both of the 
+following:
+  reports\v2.6-lint-after-errors
+.txt:508:* Update external 
+systems with the latest state 
+from React.
+  reports\v2.6-lint-after-errors
+.txt:509:* Subscribe for 
+updates from some external 
+system, calling setState in a 
+callback function when external 
+state changes.
+  reports\v2.6-lint-after-errors
+.txt:510:
+  reports\v2.6-lint-after-errors
+.txt:511:Calling setState 
+synchronously within an effect 
+body causes cascading renders 
+that can hurt performance, and 
+is not recommended. (https://rea
+ct.dev/learn/you-might-not-need-
+an-effect).
+> reports\v2.6-lint-after-errors
+.txt:523:  12:9  warning  Using 
+`<img>` could result in slower 
+LCP and higher bandwidth. 
+Consider using `<Image />` from 
+`next/image` or a custom image 
+loader to automatically 
+optimize images. This may incur 
+additional usage or cost from 
+your provider. See: https://next
+js.org/docs/messages/no-img-elem
+ent  @next/next/no-img-element
+  reports\v2.6-lint-after-errors
+.txt:524:
+  reports\v2.6-lint-after-errors
+.txt:525:C:\Users\oondr\Document
+s\digiemu\src\components\account
+\ProfileMediaUpload.tsx
+> reports\v2.6-lint-after-errors
+.txt:526:  34:13  warning  
+Using `<img>` could result in 
+slower LCP and higher 
+bandwidth. Consider using 
+`<Image />` from `next/image` 
+or a custom image loader to 
+automatically optimize images. 
+This may incur additional usage 
+or cost from your provider. 
+See: https://nextjs.org/docs/mes
+sages/no-img-element  
+@next/next/no-img-element
+  reports\v2.6-lint-after-errors
+.txt:527:
+  reports\v2.6-lint-after-errors
+.txt:528:C:\Users\oondr\Document
+s\digiemu\src\components\admin\P
+roductModerationToggle.tsx
+> reports\v2.6-lint-after-errors
+.txt:529:  52:14  warning  
+'err' is defined but never used 
+ @typescript-eslint/no-unused-va
+rs
+  reports\v2.6-lint-after-errors
+.txt:530:
+  reports\v2.6-lint-after-errors
+.txt:531:C:\Users\oondr\Document
+s\digiemu\src\components\admin\a
+nalytics\RevenueOverTimeChart.ts
+x
+> reports\v2.6-lint-after-errors
+.txt:532:  44:30  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:533:
+  reports\v2.6-lint-after-errors
+.txt:534:C:\Users\oondr\Document
+s\digiemu\src\components\admin\a
+nalytics\TopProductsBarChart.tsx
+> reports\v2.6-lint-after-errors
+.txt:535:  43:30  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:536:
+  reports\v2.6-lint-after-errors
+.txt:537:C:\Users\oondr\Document
+s\digiemu\src\components\checkou
+t\BuyButton.tsx
+> reports\v2.6-lint-after-errors
+.txt:538:  44:19  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:539:
+  reports\v2.6-lint-after-errors
+.txt:540:C:\Users\oondr\Document
+s\digiemu\src\components\checkou
+t\BuyButtonClient.tsx
+> reports\v2.6-lint-after-errors
+.txt:541:  106:56  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:542:  117:17  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:543:
+  reports\v2.6-lint-after-errors
+.txt:544:C:\Users\oondr\Document
+s\digiemu\src\components\communi
+ty\Comments.tsx
+> reports\v2.6-lint-after-errors
+.txt:545:   4:49  warning  
+Unexpected any. Specify a 
+different type                  
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                  @typescript-es
+lint/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:546:   5:44  warning  
+Unexpected any. Specify a 
+different type                  
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                  @typescript-es
+lint/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:547:  15:11  warning  
+'res' is assigned a value but 
+never used                      
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+              @typescript-eslint
+/no-unused-vars
+> reports\v2.6-lint-after-errors
+.txt:548:  24:21  warning  
+Error: Calling setState 
+synchronously within an effect 
+can trigger cascading renders
+  reports\v2.6-lint-after-errors
+.txt:549:
+  reports\v2.6-lint-after-errors
+.txt:550:Effects are intended 
+to synchronize state between 
+React and external systems such 
+as manually updating the DOM, 
+state management libraries, or 
+other platform APIs. In 
+general, the body of an effect 
+should do one or both of the 
+following:
+  reports\v2.6-lint-after-errors
+.txt:551:* Update external 
+systems with the latest state 
+from React.
+  reports\v2.6-lint-after-errors
+.txt:552:* Subscribe for 
+updates from some external 
+system, calling setState in a 
+callback function when external 
+state changes.
+  reports\v2.6-lint-after-errors
+.txt:553:
+  reports\v2.6-lint-after-errors
+.txt:554:Calling setState 
+synchronously within an effect 
+body causes cascading renders 
+that can hurt performance, and 
+is not recommended. (https://rea
+ct.dev/learn/you-might-not-need-
+an-effect).
+> reports\v2.6-lint-after-errors
+.txt:564:  24:32  warning  
+React Hook useEffect has a 
+missing dependency: 'load'. 
+Either include it or remove the 
+dependency array                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                     
+react-hooks/exhaustive-deps
+  reports\v2.6-lint-after-errors
+.txt:565:
+  reports\v2.6-lint-after-errors
+.txt:566:C:\Users\oondr\Document
+s\digiemu\src\components\communi
+ty\LikeButton.tsx
+> reports\v2.6-lint-after-errors
+.txt:567:  4:65  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:568:
+  reports\v2.6-lint-after-errors
+.txt:569:C:\Users\oondr\Document
+s\digiemu\src\components\communi
+ty\Reviews.tsx
+> reports\v2.6-lint-after-errors
+.txt:570:   4:48  warning  
+Unexpected any. Specify a 
+different type                  
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                 @typescript-esl
+int/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:571:   5:42  warning  
+Unexpected any. Specify a 
+different type                  
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                 @typescript-esl
+int/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:572:  15:11  warning  
+'res' is assigned a value but 
+never used                      
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+             @typescript-eslint/
+no-unused-vars
+> reports\v2.6-lint-after-errors
+.txt:573:  24:21  warning  
+Error: Calling setState 
+synchronously within an effect 
+can trigger cascading renders
+  reports\v2.6-lint-after-errors
+.txt:574:
+  reports\v2.6-lint-after-errors
+.txt:575:Effects are intended 
+to synchronize state between 
+React and external systems such 
+as manually updating the DOM, 
+state management libraries, or 
+other platform APIs. In 
+general, the body of an effect 
+should do one or both of the 
+following:
+  reports\v2.6-lint-after-errors
+.txt:576:* Update external 
+systems with the latest state 
+from React.
+  reports\v2.6-lint-after-errors
+.txt:577:* Subscribe for 
+updates from some external 
+system, calling setState in a 
+callback function when external 
+state changes.
+  reports\v2.6-lint-after-errors
+.txt:578:
+  reports\v2.6-lint-after-errors
+.txt:579:Calling setState 
+synchronously within an effect 
+body causes cascading renders 
+that can hurt performance, and 
+is not recommended. (https://rea
+ct.dev/learn/you-might-not-need-
+an-effect).
+> reports\v2.6-lint-after-errors
+.txt:589:  24:32  warning  
+React Hook useEffect has a 
+missing dependency: 'load'. 
+Either include it or remove the 
+dependency array                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                    
+react-hooks/exhaustive-deps
+  reports\v2.6-lint-after-errors
+.txt:590:
+  reports\v2.6-lint-after-errors
+.txt:591:C:\Users\oondr\Document
+s\digiemu\src\components\dashboa
+rd\UploadCard.tsx
+> reports\v2.6-lint-after-errors
+.txt:592:  28:9  warning  Using 
+`<img>` could result in slower 
+LCP and higher bandwidth. 
+Consider using `<Image />` from 
+`next/image` or a custom image 
+loader to automatically 
+optimize images. This may incur 
+additional usage or cost from 
+your provider. See: https://next
+js.org/docs/messages/no-img-elem
+ent  @next/next/no-img-element
+> reports\v2.6-lint-after-errors
+.txt:593:  28:9  warning  img 
+elements must have an alt prop, 
+either with meaningful text, or 
+an empty string for decorative 
+images                          
+                                
+                                
+                                
+                                
+                      
+jsx-a11y/alt-text
+  reports\v2.6-lint-after-errors
+.txt:594:
+  reports\v2.6-lint-after-errors
+.txt:595:C:\Users\oondr\Document
+s\digiemu\src\components\forms\P
+roductForm.tsx
+> reports\v2.6-lint-after-errors
+.txt:596:  67:19  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:597:
+  reports\v2.6-lint-after-errors
+.txt:598:C:\Users\oondr\Document
+s\digiemu\src\components\layout\
+Header.tsx
+> reports\v2.6-lint-after-errors
+.txt:599:  13:5   warning  
+Error: Calling setState 
+synchronously within an effect 
+can trigger cascading renders
+  reports\v2.6-lint-after-errors
+.txt:600:
+  reports\v2.6-lint-after-errors
+.txt:601:Effects are intended 
+to synchronize state between 
+React and external systems such 
+as manually updating the DOM, 
+state management libraries, or 
+other platform APIs. In 
+general, the body of an effect 
+should do one or both of the 
+following:
+  reports\v2.6-lint-after-errors
+.txt:602:* Update external 
+systems with the latest state 
+from React.
+  reports\v2.6-lint-after-errors
+.txt:603:* Subscribe for 
+updates from some external 
+system, calling setState in a 
+callback function when external 
+state changes.
+  reports\v2.6-lint-after-errors
+.txt:604:
+  reports\v2.6-lint-after-errors
+.txt:605:Calling setState 
+synchronously within an effect 
+body causes cascading renders 
+that can hurt performance, and 
+is not recommended. (https://rea
+ct.dev/learn/you-might-not-need-
+an-effect).
+> reports\v2.6-lint-after-errors
+.txt:615:  17:34  warning  
+Unexpected any. Specify a 
+different type                  
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+        @typescript-eslint/no-ex
+plicit-any
+  reports\v2.6-lint-after-errors
+.txt:616:
+  reports\v2.6-lint-after-errors
+.txt:617:C:\Users\oondr\Document
+s\digiemu\src\components\layout\
+MainHeader.tsx
+> reports\v2.6-lint-after-errors
+.txt:618:  31:40  warning  
+Unexpected any. Specify a 
+different type                  
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+@typescript-eslint/no-explicit-a
+ny
+> reports\v2.6-lint-after-errors
+.txt:619:  56:5   warning  
+Error: Calling setState 
+synchronously within an effect 
+can trigger cascading renders
+  reports\v2.6-lint-after-errors
+.txt:620:
+  reports\v2.6-lint-after-errors
+.txt:621:Effects are intended 
+to synchronize state between 
+React and external systems such 
+as manually updating the DOM, 
+state management libraries, or 
+other platform APIs. In 
+general, the body of an effect 
+should do one or both of the 
+following:
+  reports\v2.6-lint-after-errors
+.txt:622:* Update external 
+systems with the latest state 
+from React.
+  reports\v2.6-lint-after-errors
+.txt:623:* Subscribe for 
+updates from some external 
+system, calling setState in a 
+callback function when external 
+state changes.
+  reports\v2.6-lint-after-errors
+.txt:624:
+  reports\v2.6-lint-after-errors
+.txt:625:Calling setState 
+synchronously within an effect 
+body causes cascading renders 
+that can hurt performance, and 
+is not recommended. (https://rea
+ct.dev/learn/you-might-not-need-
+an-effect).
+> reports\v2.6-lint-after-errors
+.txt:637:   6:11  warning  
+Unexpected any. Specify a 
+different type                  
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                       @typescri
+pt-eslint/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:638:   7:21  warning  
+Unexpected any. Specify a 
+different type                  
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                       @typescri
+pt-eslint/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:639:  16:5   warning  
+Error: Calling setState 
+synchronously within an effect 
+can trigger cascading renders
+  reports\v2.6-lint-after-errors
+.txt:640:
+  reports\v2.6-lint-after-errors
+.txt:641:Effects are intended 
+to synchronize state between 
+React and external systems such 
+as manually updating the DOM, 
+state management libraries, or 
+other platform APIs. In 
+general, the body of an effect 
+should do one or both of the 
+following:
+  reports\v2.6-lint-after-errors
+.txt:642:* Update external 
+systems with the latest state 
+from React.
+  reports\v2.6-lint-after-errors
+.txt:643:* Subscribe for 
+updates from some external 
+system, calling setState in a 
+callback function when external 
+state changes.
+  reports\v2.6-lint-after-errors
+.txt:644:
+  reports\v2.6-lint-after-errors
+.txt:645:Calling setState 
+synchronously within an effect 
+body causes cascading renders 
+that can hurt performance, and 
+is not recommended. (https://rea
+ct.dev/learn/you-might-not-need-
+an-effect).
+> reports\v2.6-lint-after-errors
+.txt:655:  25:11  warning  
+Unused eslint-disable directive 
+(no problems were reported from 
+'react/no-array-index-key')
+  reports\v2.6-lint-after-errors
+.txt:656:
+  reports\v2.6-lint-after-errors
+.txt:657:C:\Users\oondr\Document
+s\digiemu\src\components\marketp
+lace\productCard.tsx
+> reports\v2.6-lint-after-errors
+.txt:658:  4:61  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:659:
+  reports\v2.6-lint-after-errors
+.txt:660:C:\Users\oondr\Document
+s\digiemu\src\components\product
+\ProductCard.tsx
+> reports\v2.6-lint-after-errors
+.txt:661:  24:11  warning  
+Using `<img>` could result in 
+slower LCP and higher 
+bandwidth. Consider using 
+`<Image />` from `next/image` 
+or a custom image loader to 
+automatically optimize images. 
+This may incur additional usage 
+or cost from your provider. 
+See: https://nextjs.org/docs/mes
+sages/no-img-element  
+@next/next/no-img-element
+  reports\v2.6-lint-after-errors
+.txt:662:
+  reports\v2.6-lint-after-errors
+.txt:663:C:\Users\oondr\Document
+s\digiemu\src\components\product
+\ProductUploadClient.tsx
+> reports\v2.6-lint-after-errors
+.txt:664:  25:14  warning  
+'err' is defined but never used 
+ @typescript-eslint/no-unused-va
+rs
+  reports\v2.6-lint-after-errors
+.txt:665:
+  reports\v2.6-lint-after-errors
+.txt:666:C:\Users\oondr\Document
+s\digiemu\src\components\profile
+\ProfileImageUploader.tsx
+> reports\v2.6-lint-after-errors
+.txt:667:   97:13  warning  
+Using `<img>` could result in 
+slower LCP and higher 
+bandwidth. Consider using 
+`<Image />` from `next/image` 
+or a custom image loader to 
+automatically optimize images. 
+This may incur additional usage 
+or cost from your provider. 
+See: https://nextjs.org/docs/mes
+sages/no-img-element  
+@next/next/no-img-element
+> reports\v2.6-lint-after-errors
+.txt:668:  119:13  warning  
+Using `<img>` could result in 
+slower LCP and higher 
+bandwidth. Consider using 
+`<Image />` from `next/image` 
+or a custom image loader to 
+automatically optimize images. 
+This may incur additional usage 
+or cost from your provider. 
+See: https://nextjs.org/docs/mes
+sages/no-img-element  
+@next/next/no-img-element
+  reports\v2.6-lint-after-errors
+.txt:669:
+  reports\v2.6-lint-after-errors
+.txt:670:C:\Users\oondr\Document
+s\digiemu\src\components\ui\Prod
+uctCard.tsx
+> reports\v2.6-lint-after-errors
+.txt:671:  36:13  warning  
+Using `<img>` could result in 
+slower LCP and higher 
+bandwidth. Consider using 
+`<Image />` from `next/image` 
+or a custom image loader to 
+automatically optimize images. 
+This may incur additional usage 
+or cost from your provider. 
+See: https://nextjs.org/docs/mes
+sages/no-img-element  
+@next/next/no-img-element
+  reports\v2.6-lint-after-errors
+.txt:672:
+  reports\v2.6-lint-after-errors
+.txt:673:C:\Users\oondr\Document
+s\digiemu\src\components\vendor\
+ConversionChart.tsx
+> reports\v2.6-lint-after-errors
+.txt:674:  18:18  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:675:
+  reports\v2.6-lint-after-errors
+.txt:676:C:\Users\oondr\Document
+s\digiemu\src\components\vendor\
+EarningsChart.tsx
+> reports\v2.6-lint-after-errors
+.txt:677:  16:18  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:678:
+  reports\v2.6-lint-after-errors
+.txt:679:C:\Users\oondr\Document
+s\digiemu\src\components\vendor\
+LowPerformanceList.tsx
+> reports\v2.6-lint-after-errors
+.txt:680:  42:19  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:681:  56:19  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:682:
+  reports\v2.6-lint-after-errors
+.txt:683:C:\Users\oondr\Document
+s\digiemu\src\components\vendor\
+ProductDetailModal.tsx
+> reports\v2.6-lint-after-errors
+.txt:684:  10:18  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:685:
+  reports\v2.6-lint-after-errors
+.txt:686:C:\Users\oondr\Document
+s\digiemu\src\components\vendor\
+ProductDrilldownModal.tsx
+> reports\v2.6-lint-after-errors
+.txt:687:  24:36  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:688:  26:40  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:689:
+  reports\v2.6-lint-after-errors
+.txt:690:C:\Users\oondr\Document
+s\digiemu\src\components\vendor\
+VendorFunnelChart.tsx
+> reports\v2.6-lint-after-errors
+.txt:691:  41:29  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:692:  48:28  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:693:
+  reports\v2.6-lint-after-errors
+.txt:694:C:\Users\oondr\Document
+s\digiemu\src\hooks\useVendorEar
+nings.ts
+> reports\v2.6-lint-after-errors
+.txt:695:  26:14  warning  'e' 
+is defined but never used  @type
+script-eslint/no-unused-vars
+  reports\v2.6-lint-after-errors
+.txt:696:
+  reports\v2.6-lint-after-errors
+.txt:697:C:\Users\oondr\Document
+s\digiemu\src\lib\analytics.ts
+> reports\v2.6-lint-after-errors
+.txt:698:  31:12  warning  'e' 
+is defined but never used  @type
+script-eslint/no-unused-vars
+  reports\v2.6-lint-after-errors
+.txt:699:
+  reports\v2.6-lint-after-errors
+.txt:700:C:\Users\oondr\Document
+s\digiemu\src\lib\auth.ts
+> reports\v2.6-lint-after-errors
+.txt:701:   48:16  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:702:   61:30  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:703:   62:31  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:704:   63:32  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:705:   75:24  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:706:   79:24  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:707:   94:35  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:708:   95:44  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:709:  106:22  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:710:  107:24  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:711:  111:26  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:712:  111:46  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:713:  112:26  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:714:  112:48  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:715:
+  reports\v2.6-lint-after-errors
+.txt:716:C:\Users\oondr\Document
+s\digiemu\src\lib\blockedGuard.t
+s
+> reports\v2.6-lint-after-errors
+.txt:717:  3:47  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:718:
+  reports\v2.6-lint-after-errors
+.txt:719:C:\Users\oondr\Document
+s\digiemu\src\lib\guards\blocked
+UserGuard.ts
+> reports\v2.6-lint-after-errors
+.txt:720:  3:53  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:721:
+  reports\v2.6-lint-after-errors
+.txt:722:C:\Users\oondr\Document
+s\digiemu\src\lib\lazy.ts
+> reports\v2.6-lint-after-errors
+.txt:723:   4:53  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:724:  10:31  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:725:
+  reports\v2.6-lint-after-errors
+.txt:726:C:\Users\oondr\Document
+s\digiemu\src\lib\logAuditEvent.
+ts
+> reports\v2.6-lint-after-errors
+.txt:727:  9:10  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:728:
+  reports\v2.6-lint-after-errors
+.txt:729:C:\Users\oondr\Document
+s\digiemu\src\lib\marketplace-vi
+sibility.ts
+> reports\v2.6-lint-after-errors
+.txt:730:  6:50  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:731:
+  reports\v2.6-lint-after-errors
+.txt:732:C:\Users\oondr\Document
+s\digiemu\src\lib\products.ts
+> reports\v2.6-lint-after-errors
+.txt:733:   59:25  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:734:   69:16  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:735:   78:18  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:736:   94:16  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:737:  123:58  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:738:
+  reports\v2.6-lint-after-errors
+.txt:739:C:\Users\oondr\Document
+s\digiemu\src\lib\rateLimit.ts
+> reports\v2.6-lint-after-errors
+.txt:740:  47:52  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:741:  49:21  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:742:
+  reports\v2.6-lint-after-errors
+.txt:743:C:\Users\oondr\Document
+s\digiemu\src\lib\withAdminLogin
+Audit.ts
+> reports\v2.6-lint-after-errors
+.txt:744:  4:49  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+> reports\v2.6-lint-after-errors
+.txt:745:  4:60  warning  
+Unexpected any. Specify a 
+different type  @typescript-esli
+nt/no-explicit-any
+  reports\v2.6-lint-after-errors
+.txt:746:
+  reports\v2.6-lint-after-errors
+.txt:747:C:\Users\oondr\Document
+s\digiemu\src\middleware.disable
+d.ts
+> reports\v2.6-lint-after-errors
+.txt:748:  5:28  warning  'req' 
+is defined but never used  @type
+script-eslint/no-unused-vars
+  reports\v2.6-lint-after-errors
+.txt:749:
+  reports\v2.6-lint-after-errors
+.txt:750:C:\Users\oondr\Document
+s\digiemu\src\proxy.ts
+> reports\v2.6-lint-after-errors
+.txt:751:  4:23  warning  'req' 
+is defined but never used  @type
+script-eslint/no-unused-vars
+  reports\v2.6-lint-after-errors
+.txt:752:
+  reports\v2.6-lint-after-errors
+.txt:753:C:\Users\oondr\Document
+s\digiemu\src\types\next-auth.d.
+ts
+> reports\v2.6-lint-after-errors
+.txt:754:  1:8  warning  
+'NextAuth' is defined but never 
+used  @typescript-eslint/no-unus
+ed-vars
+  reports\v2.6-lint-after-errors
+.txt:755:
+> reports\v2.6-lint-after-errors
+.txt:756:Ô£û 336 problems (0 
+errors, 336 warnings)
+> reports\v2.6-lint-after-errors
+.txt:757:  0 errors and 2 
+warnings potentially fixable 
+with the `--fix` option.
+  reports\v2.6-lint-after-errors
+.txt:758:
+
+

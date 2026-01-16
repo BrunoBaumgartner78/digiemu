@@ -22,7 +22,7 @@ export default function ProductGrid({ items = [], children, skeletonCount = 6 }:
     return (
       <div className="grid">
         {Array.from({ length: skeletonCount }).map((_, i) => (
-          // eslint-disable-next-line react/no-array-index-key
+           
           <ProductCardSkeleton key={i} />
         ))}
       </div>

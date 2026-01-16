@@ -18,7 +18,7 @@ type SessionLike = {
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function GET(req: Request) {
+export async function GET(_req: Request) {
   const session = (await getServerSession(authOptions)) as SessionLike | null;
 
   const vendorId = session?.user?.id;

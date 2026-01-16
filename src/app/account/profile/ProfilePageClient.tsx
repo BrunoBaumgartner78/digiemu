@@ -237,7 +237,7 @@ export default function ProfilePageClient({
                 className={styles.fileInput}
                 type="file"
                 accept="image/*"
-                onChange={(e) => onPickBanner(e.target.files?.[0] ?? null)}
+                onChange={(_e) => onPickBanner(e.target.files?.[0] ?? null)}
               />
             </label>
 
@@ -284,7 +284,7 @@ export default function ProfilePageClient({
                 className={styles.fileInput}
                 type="file"
                 accept="image/*"
-                onChange={(e) => onPickAvatar(e.target.files?.[0] ?? null)}
+                onChange={(_e) => onPickAvatar(e.target.files?.[0] ?? null)}
               />
             </label>
 
@@ -322,13 +322,13 @@ export default function ProfilePageClient({
         <h2 className={styles.h2}>Profilinfos</h2>
 
         <label className={styles.label}>Anzeigename</label>
-        <input className={styles.input} value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
+        <input className={styles.input} value={displayName} onChange={(_e) => setDisplayName(e.target.value)} />
 
         <label className={styles.label}>Bio</label>
-        <textarea className={styles.textarea} value={bio} onChange={(e) => setBio(e.target.value)} />
+        <textarea className={styles.textarea} value={bio} onChange={(_e) => setBio(e.target.value)} />
 
         <label className={styles.checkRow}>
-          <input type="checkbox" checked={isPublic} onChange={(e) => setIsPublic(e.target.checked)} />
+          <input type="checkbox" checked={isPublic} onChange={(_e) => setIsPublic(e.target.checked)} />
           <span>Profil öffentlich anzeigen</span>
         </label>
 
@@ -355,7 +355,7 @@ export default function ProfilePageClient({
           <div className={styles.previewInner}>
             <div className={styles.previewTop}>
               <div className={styles.previewAvatarWrap}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
+                { }
                 {avatarUrl ? (
                   <img className={styles.previewAvatar} src={avatarUrl} alt="avatar" />
                 ) : (
