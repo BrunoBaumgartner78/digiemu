@@ -2,7 +2,7 @@
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "@/lib/prisma";
-import { isRecord, getStringProp } from "@/lib/guards";
+import { isRecord, getStringProp, getErrorMessage } from "@/lib/guards";
 
 export const authOptions: NextAuthOptions = {
   session: { strategy: "jwt" },
@@ -47,8 +47,8 @@ export const authOptions: NextAuthOptions = {
             name: user.name ?? undefined,
             role: user.role,
           };
-        } catch (_e) {
-          console.error("[NEXTAUTH_AUTHORIZE_ERROR]", _e);
+        } catch (_e: unknown) {
+          console.error("[NEXTAUTH_AUTHORIZE_ERROR]", getErrorMessage(_e));
           return null;
         }
       },
