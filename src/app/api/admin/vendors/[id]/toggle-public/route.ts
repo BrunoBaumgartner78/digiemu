@@ -11,7 +11,7 @@ export async function POST(
   context: { params: Promise<{ id: string }> }
 ) {
   const session = await getServerSession(authOptions);
-  if (!session || (session.user as any)?.role !== "ADMIN") {
+  if (!session || (session.user as { role?: string })?.role !== "ADMIN") {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
@@ -38,8 +38,16 @@ export async function POST(
     });
 
     return NextResponse.json({ ok: true, vendorProfile: updated });
-  } catch (e: any) {
+  } catch (e: unknown) {
     console.error("[admin/vendors/toggle-public]", e);
-    return NextResponse.json({ message: e?.message || "Server error" }, { status: 500 });
+    const getMessage = (err: unknown) => {
+      if (typeof err === "string") return err;
+      if (err && typeof err === "object" && "message" in err) {
+        const m = (err as Record<string, unknown>).message;
+        return typeof m === "string" ? m : JSON.stringify(m);
+      }
+      return "Server error";
+    };
+    return NextResponse.json({ message: getMessage(e) }, { status: 500 });
   }
 }

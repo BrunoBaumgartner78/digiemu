@@ -12,7 +12,7 @@ type Body = {
 
 export async function POST(_req: NextRequest, context: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
-  if (!session?.user || (session.user as any).role !== "ADMIN") {
+  if (!session?.user || (session.user as { role?: string }).role !== "ADMIN") {
     return NextResponse.json({ ok: false, message: "Unauthorized" }, { status: 401 });
   }
 

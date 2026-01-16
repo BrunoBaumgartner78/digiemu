@@ -13,13 +13,16 @@ export async function POST(
   context: { params: Promise<{ id: string }> }
 ) {
   const session = await getServerSession(authOptions);
-  if (!session || (session.user as any)?.role !== "ADMIN") {
+  if (!session || (session.user as { role?: string })?.role !== "ADMIN") {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
   const { id } = await context.params; // userId
-  const body = await _req.json().catch(() => ({}));
-  const nextStatus = String(body?.status ?? "").toUpperCase().trim();
+  const raw = await _req.json().catch(() => ({} as unknown));
+  const nextStatus =
+    typeof raw === "object" && raw && "status" in raw
+      ? String((raw as Record<string, unknown>).status ?? "").toUpperCase().trim()
+      : "";
 
   if (!id) return NextResponse.json({ message: "Missing id" }, { status: 400 });
   if (!ALLOWED.has(nextStatus)) {
@@ -58,8 +61,16 @@ export async function POST(
     });
 
     return NextResponse.json({ ok: true });
-  } catch (e: any) {
+  } catch (e: unknown) {
     console.error("[admin/vendors/set-vendor-status]", e);
-    return NextResponse.json({ message: e?.message || "Server error" }, { status: 500 });
+    const getMessage = (err: unknown) => {
+      if (typeof err === "string") return err;
+      if (err && typeof err === "object" && "message" in err) {
+        const m = (err as Record<string, unknown>).message;
+        return typeof m === "string" ? m : JSON.stringify(m);
+      }
+      return "Server error";
+    };
+    return NextResponse.json({ message: getMessage(e) }, { status: 500 });
   }
 }

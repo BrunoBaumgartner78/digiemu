@@ -13,7 +13,7 @@ type Body = {
 
 export async function POST(_req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
-  if (!session?.user || (session.user as any).role !== "ADMIN") {
+  if (!session?.user || (session.user as { role?: string }).role !== "ADMIN") {
     return NextResponse.json({ ok: false, message: "Unauthorized" }, { status: 401 });
   }
 
@@ -43,8 +43,8 @@ export async function POST(_req: NextRequest, ctx: { params: Promise<{ id: strin
 
       if (!vp) throw new Error("VendorProfile fehlt. Vendor muss zuerst /become-seller ausführen.");
 
-      const data: any = {};
-      if (nextStatus) data.status = nextStatus;
+      const data: Partial<{ status: "PENDING" | "APPROVED" | "BLOCKED"; isPublic: boolean }> = {};
+      if (nextStatus) data.status = nextStatus as "PENDING" | "APPROVED" | "BLOCKED";
       if (typeof nextIsPublic === "boolean") data.isPublic = nextIsPublic;
 
       const newVp = await tx.vendorProfile.update({
@@ -57,8 +57,16 @@ export async function POST(_req: NextRequest, ctx: { params: Promise<{ id: strin
     });
 
     return NextResponse.json({ ok: true, vendorProfile: updated });
-  } catch (e: any) {
+  } catch (e: unknown) {
     console.error("[admin vendors vendorprofile]", e);
-    return NextResponse.json({ ok: false, message: e?.message || "Server error" }, { status: 500 });
+    const getMessage = (err: unknown) => {
+      if (typeof err === "string") return err;
+      if (err && typeof err === "object" && "message" in err) {
+        const m = (err as Record<string, unknown>).message;
+        return typeof m === "string" ? m : JSON.stringify(m);
+      }
+      return "Server error";
+    };
+    return NextResponse.json({ ok: false, message: getMessage(e) }, { status: 500 });
   }
 }
