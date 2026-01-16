@@ -40,7 +40,9 @@ export default async function DashboardPage() {
   // ✅ nur 30 Tage (kein Toggle mehr)
   const rangeDays = 30;
   const rangeMs = rangeDays * 24 * 60 * 60 * 1000;
-  const rangeStart = new Date(Date.now() - rangeMs);
+  // eslint-disable-next-line react-hooks/purity -- stable server-time needed for chart buckets
+  const now = Date.now();
+  const rangeStart = new Date(now - rangeMs);
 
   // ✅ nur bezahlte Orders zählen (wie Earnings/Payouts)
   const paidLikeStatuses = [
@@ -161,7 +163,7 @@ export default async function DashboardPage() {
 
   const days: { day: string; sum: number }[] = [];
   for (let i = rangeDays - 1; i >= 0; i--) {
-    const d = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
+    const d = new Date(now - i * 86400000).toISOString().slice(0, 10);
     days.push({ day: d, sum: dayMap[d] ?? 0 });
   }
 

@@ -1,0 +1,104 @@
+﻿
+> lint.log:13:  2:26  error  A `require()` style import is forbidden  
+@typescript-eslint/no-require-imports
+  lint.log:14:
+  lint.log:15:C:\Users\oondr\Documents\digiemu\scripts\approve-admin-vend
+orprofile.ts
+> lint.log:16:  12:37  error  Unexpected any. Specify a different type  
+@typescript-eslint/no-explicit-any
+> lint.log:17:  15:29  error  Unexpected any. Specify a different type  
+@typescript-eslint/no-explicit-any
+  lint.log:18:
+  lint.log:19:C:\Users\oondr\Documents\digiemu\scripts\backfill-vendorpor
+file-status.js
+> lint.log:20:  10:34  error  Unexpected any. Specify a different type  
+@typescript-eslint/no-explicit-any
+  lint.log:21:
+  lint.log:22:C:\Users\oondr\Documents\digiemu\scripts\backfill-vendorpro
+file-status.ts
+> lint.log:23:  5:30  error  Unexpected any. Specify a different type  
+@typescript-eslint/no-explicit-any
+> lint.log:24:  6:34  error  Unexpected any. Specify a different type  
+@typescript-eslint/no-explicit-any
+  lint.log:25:
+  lint.log:26:C:\Users\oondr\Documents\digiemu\scripts\db-check.js
+> lint.log:27:  2:1   error  A `require()` style import is forbidden  
+@typescript-eslint/no-require-imports
+> lint.log:28:  4:26  error  A `require()` style import is forbidden  
+@typescript-eslint/no-require-imports
+  lint.log:29:
+  lint.log:30:C:\Users\oondr\Documents\digiemu\scripts\lint.cjs
+> lint.log:31:  2:23  error  A `require()` style import is forbidden  
+@typescript-eslint/no-require-imports
+  lint.log:32:
+  lint.log:33:C:\Users\oondr\Documents\digiemu\src\app\(app)\admin\audit-
+log\page.tsx
+> lint.log:124:  234:9   error    Do not use an `<a>` element to 
+navigate to `/dashboard/products/`. Use `<Link />` from `next/link` 
+instead. See: https://nextjs.org/docs/messages/no-html-link-for-pages  
+@next/next/no-html-link-for-pages
+  lint.log:125:
+  lint.log:126:C:\Users\oondr\Documents\digiemu\src\app\(app)\dashboard\p
+age.tsx
+> lint.log:129:   43:31  error    Error: Cannot call impure function 
+during render
+  lint.log:130:
+  lint.log:131:`Date.now` is an impure function. Calling an impure 
+function can produce unstable results that update unpredictably when the 
+component happens to re-render. (https://react.dev/reference/rules/compon
+ents-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+> lint.log:150:  164:24  error    Error: Cannot call impure function 
+during render
+  lint.log:151:
+  lint.log:152:`Date.now` is an impure function. Calling an impure 
+function can produce unstable results that update unpredictably when the 
+component happens to re-render. (https://react.dev/reference/rules/compon
+ents-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+> lint.log:535:  10:19  warning  Error: Calling setState synchronously 
+within an effect can trigger cascading renders
+  lint.log:536:
+  lint.log:537:Effects are intended to synchronize state between React 
+and external systems such as manually updating the DOM, state management 
+libraries, or other platform APIs. In general, the body of an effect 
+should do one or both of the following:
+> lint.log:578:  24:21  warning  Error: Calling setState synchronously 
+within an effect can trigger cascading renders
+  lint.log:579:
+  lint.log:580:Effects are intended to synchronize state between React 
+and external systems such as manually updating the DOM, state management 
+libraries, or other platform APIs. In general, the body of an effect 
+should do one or both of the following:
+> lint.log:603:  24:21  warning  Error: Calling setState synchronously 
+within an effect can trigger cascading renders
+  lint.log:604:
+  lint.log:605:Effects are intended to synchronize state between React 
+and external systems such as manually updating the DOM, state management 
+libraries, or other platform APIs. In general, the body of an effect 
+should do one or both of the following:
+> lint.log:629:  13:5   warning  Error: Calling setState synchronously 
+within an effect can trigger cascading renders
+  lint.log:630:
+  lint.log:631:Effects are intended to synchronize state between React 
+and external systems such as manually updating the DOM, state management 
+libraries, or other platform APIs. In general, the body of an effect 
+should do one or both of the following:
+> lint.log:649:  56:5   warning  Error: Calling setState synchronously 
+within an effect can trigger cascading renders
+  lint.log:650:
+  lint.log:651:Effects are intended to synchronize state between React 
+and external systems such as manually updating the DOM, state management 
+libraries, or other platform APIs. In general, the body of an effect 
+should do one or both of the following:
+> lint.log:669:  16:5   warning  Error: Calling setState synchronously 
+within an effect can trigger cascading renders
+  lint.log:670:
+  lint.log:671:Effects are intended to synchronize state between React 
+and external systems such as manually updating the DOM, state management 
+libraries, or other platform APIs. In general, the body of an effect 
+should do one or both of the following:
+> lint.log:786:Ô£û 342 problems (12 errors, 330 warnings)
+> lint.log:787:  0 errors and 2 warnings potentially fixable with the 
+`--fix` option.
+  lint.log:788:
+
+

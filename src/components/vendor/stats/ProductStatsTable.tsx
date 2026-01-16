@@ -1,7 +1,6 @@
 "use client";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
-import Link from "next/link";
 
 export type ProductStat = {
   productId: string;
