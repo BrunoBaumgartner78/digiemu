@@ -10,10 +10,9 @@ export interface RevenueChartData {
 
 type AdminChartRevenueProps = {
   title?: string;
-  data?: RevenueChartData[];
 };
 
-export default function AdminChartRevenue({ title = "Revenue", data }: AdminChartRevenueProps) {
+export default function AdminChartRevenue({ title = "Revenue" }: AdminChartRevenueProps) {
   // Simple placeholder component so imports resolve.
   return (
     <div className="rounded-xl bg-[#111] border border-[#333] p-4 shadow-md">

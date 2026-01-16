@@ -83,8 +83,8 @@ function convert(src) {
         fs.writeFileSync(f, out, 'utf8');
         changedFiles.push(f);
       }
-    } catch (err) {
-      console.error('err reading', f, err.message || err);
+    } catch (_err) {
+      console.error('err reading', f, _err.message || _err);
     }
   }
 
