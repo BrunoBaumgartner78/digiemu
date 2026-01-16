@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { isErrorResponse } from "@/lib/guards";
 
 type Props = {
   userId: string;
@@ -22,13 +23,15 @@ export default function AdminVendorPublicToggle({ userId, initialIsPublic }: Pro
         body: JSON.stringify({ isPublic: !isPublic }),
       });
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data?.message || "Toggle fehlgeschlagen");
+        const data: unknown = await res.json().catch(() => ({}));
+        const msg = isErrorResponse(data) ? data.message : "Toggle fehlgeschlagen";
+        throw new Error(msg);
       }
       // optimistic toggle
       setIsPublic((v) => !v);
     } catch (e: any) {
-      setErr(e?.message || "Fehler");
+      const err = e as unknown;
+      setErr(err instanceof Error ? err.message : String(err ?? "Fehler"));
     } finally {
       setLoading(false);
     }

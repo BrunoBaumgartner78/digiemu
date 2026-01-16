@@ -35,9 +35,8 @@ export default function AdminVendorStatusToggle({ userId, initialStatus }: Props
         throw new Error(msg);
       }
       setStatus(String(next).toUpperCase());
-    } catch (e: any) {
-      const error = e as unknown;
-      const msg = error instanceof Error ? error.message : String(error ?? "Fehler");
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e ?? "Fehler");
       setErr(msg);
     } finally {
       setLoading(false);

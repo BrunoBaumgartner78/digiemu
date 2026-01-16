@@ -42,9 +42,8 @@ export default function AdminVendorStatusControls({ userId, initialIsPublic, ini
       }
       setStatus(String(next).toUpperCase());
       setMsg("Status gespeichert.");
-    } catch (e: any) {
-      const error = e as unknown;
-      setMsg(error instanceof Error ? error.message : String(error ?? "Fehler."));
+    } catch (e: unknown) {
+      setMsg(e instanceof Error ? e.message : String(e ?? "Fehler."));
     } finally {
       setBusy(false);
     }
@@ -64,9 +63,8 @@ export default function AdminVendorStatusControls({ userId, initialIsPublic, ini
       }
       setIsPublic((v) => !v);
       setMsg("Public-Status gespeichert.");
-    } catch (e: any) {
-      const error = e as unknown;
-      setMsg(error instanceof Error ? error.message : String(error ?? "Fehler."));
+    } catch (e: unknown) {
+      setMsg(e instanceof Error ? e.message : String(e ?? "Fehler."));
     } finally {
       setBusy(false);
     }

@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import type { AdminProductListRow } from "@/lib/admin-types";
+import type { Prisma } from "@prisma/client";
 import Link from "next/link";
 import AdminProductStatusToggle from "./AdminProductStatusToggle";
 import { getMarketplaceVisibilityDebug } from "@/lib/marketplace-visibility";
@@ -74,7 +75,7 @@ export default async function AdminProductsPage(props: Props) {
   const requestedPage = parseInt(pageRaw, 10) || 1;
   const pageSize = 20;
 
-  const where: any = {};
+  const where: Prisma.ProductWhereInput = {};
 
   if (search.trim()) {
     where.OR = [

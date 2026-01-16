@@ -26,7 +26,7 @@ function fmtDate(d: Date) {
 export default async function AdminVendorDetailPage(props: { params: Promise<Params> }) {
   const session = await getServerSession(authOptions);
   if (!session) redirect("/login");
-  if ((session.user as any)?.role !== "ADMIN") redirect("/dashboard");
+  if ((session.user as { role?: string })?.role !== "ADMIN") redirect("/dashboard");
 
   const { vendorId } = await props.params;
 
