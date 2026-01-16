@@ -13,7 +13,8 @@ export async function GET(_req: NextRequest, ctx: RouteContext) {
     const { id } = await ctx.params;
 
     const session = await getServerSession(authOptions);
-    const userId = (session?.user as any)?.id as string | undefined;
+    const user = (session?.user as { id?: string; role?: string } | null) ?? null;
+    const userId = user?.id as string | undefined;
 
     const [likesCount, userLike] = await Promise.all([
       prisma.like.count({ where: { productId: id } }),
@@ -31,8 +32,8 @@ export async function GET(_req: NextRequest, ctx: RouteContext) {
       likesCount,
       liked: !!userLike,
     });
-  } catch (_err) {
-    console.error("[GET /api/products/[id]/like]", _err);
+  } catch (_err: unknown) {
+    console.error("[GET /api/products/[id]/like]", _err instanceof Error ? _err.message : String(_err));
     return NextResponse.json(
       { ok: false, message: "Fehler beim Laden der Likes." },
       { status: 500 }
@@ -46,7 +47,7 @@ export async function POST(req: NextRequest, ctx: RouteContext) {
     const { id } = await ctx.params;
 
     const session = await getServerSession(authOptions);
-    const user = session?.user as any;
+    const user = (session?.user as { id?: string; role?: string } | null) ?? null;
 
     if (!user || !user.id) {
       return NextResponse.json(
@@ -110,8 +111,8 @@ export async function POST(req: NextRequest, ctx: RouteContext) {
       liked,
       likesCount,
     });
-  } catch (_err) {
-    console.error("[POST /api/products/[id]/like]", _err);
+  } catch (_err: unknown) {
+    console.error("[POST /api/products/[id]/like]", _err instanceof Error ? _err.message : String(_err));
     return NextResponse.json(
       { ok: false, message: "Fehler beim Aktualisieren des Likes." },
       { status: 500 }

@@ -16,7 +16,7 @@ function json(message: string, status = 400) {
 
 export async function PUT(_req: Request, ctx: Ctx) {
   const session = await getServerSession(authOptions);
-  const user = session?.user as any;
+  const user = (session?.user as { id?: string; role?: string } | null) ?? null;
 
   if (!user?.id) return json("Not authenticated", 401);
 

@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { isRecord, getStringProp, getErrorMessage } from "@/lib/guards";
 
 function dayKey(d = new Date()) {
   const yyyy = d.getUTCFullYear();
@@ -16,13 +17,14 @@ export async function POST(_req: Request) {
     const session = await getServerSession(authOptions);
     const body = await _req.json().catch(() => null);
 
-    const productId = body?.productId as string | undefined;
+    const productId = isRecord(body) ? (getStringProp(body, "productId") ?? undefined) : undefined;
 
     if (!productId || typeof productId !== "string") {
       return NextResponse.json({ error: "productId is required" }, { status: 400 });
     }
 
-    const userId = (session?.user as any)?.id as string | undefined;
+    const user = (session?.user as { id?: string; role?: string } | null) ?? null;
+    const userId = user?.id as string | undefined;
 
     const ip =
       (_req.headers.get("x-forwarded-for") || "").split(",")[0]?.trim() || _req.headers.get("x-real-ip") || "unknown";
@@ -50,8 +52,8 @@ export async function POST(_req: Request) {
     }
 
     return NextResponse.json({ ok: true });
-  } catch (_err) {
-    console.error("Product view log error", _err);
+  } catch (_err: unknown) {
+    console.error("Product view log error", getErrorMessage(_err));
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

@@ -26,7 +26,8 @@ export async function POST(_req: NextRequest, ctx: Ctx) {
 
   // Identify user if logged in
   const session = await getServerSession(auth);
-  const userId = (session?.user as any)?.id as string | undefined;
+  const user = (session?.user as { id?: string; role?: string } | null) ?? null;
+  const userId = user?.id as string | undefined;
 
   // best-effort anonymous fingerprint (works behind proxies too)
   const ip = _req.headers.get("x-forwarded-for")?.split(",")[0]?.trim()

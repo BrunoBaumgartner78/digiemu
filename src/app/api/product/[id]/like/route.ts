@@ -13,7 +13,8 @@ export async function POST(_req: Request, ctx: RouteCtx) {
   const { id: productId } = await ctx.params;
 
   const session = await getServerSession(authOptions);
-  const userId = (session?.user as any)?.id;
+  const user = (session?.user as { id?: string; role?: string } | null) ?? null;
+  const userId = user?.id;
   if (!userId) {
     return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
   }
