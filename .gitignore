@@ -47,7 +47,7 @@ next-env.d.ts
 # local caches
 .eslintcache
 
-# local reports
+# local reports (do not commit)
 reports/*.txt
 
 # temporary scripts
