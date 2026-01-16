@@ -9,7 +9,7 @@ export async function PUT(_req: Request) {
   const userId = user?.id as string | undefined;
   if (!userId || user?.role !== "ADMIN") return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 403 });
 
-  const body = (await req.json().catch(() => null)) as any;
+  const body = (await _req.json().catch(() => null)) as any;
   if (!body) return NextResponse.json({ error: "INVALID_BODY" }, { status: 400 });
 
   const data = {

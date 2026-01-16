@@ -17,7 +17,7 @@ export async function POST(_req: Request) {
   try {
     // Rate limit: registration attempts per IP (~10 per 60s)
     try {
-      const key = keyFromReq(req, "auth_register");
+      const key = keyFromReq(_req, "auth_register");
       const rl = rateLimitCheck(key, 10, 60_000);
       if (!rl.allowed) {
         return NextResponse.json(
@@ -27,9 +27,9 @@ export async function POST(_req: Request) {
       }
     } catch (_e) {
       // don't block on rateLimit errors
-      console.warn("rateLimit check failed", e);
+      console.warn("rateLimit check failed", _e);
     }
-    const body: RegisterBody | null = await req.json().catch(() => null);
+    const body: RegisterBody | null = await _req.json().catch(() => null);
 
     if (!body) {
       return NextResponse.json(

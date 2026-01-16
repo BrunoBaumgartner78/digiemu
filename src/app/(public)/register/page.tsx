@@ -69,7 +69,7 @@ export default function RegisterPage() {
 
       router.push("/dashboard");
     } catch (_err) {
-      console.error("REGISTER FETCH ERROR:", err);
+      console.error("REGISTER FETCH ERROR:", _err);
       setError("Netzwerkfehler. Bitte versuche es erneut.");
     } finally {
       setLoading(false);

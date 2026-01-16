@@ -11,7 +11,7 @@ export async function POST(_req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const data = await req.json();
+  const data = await _req.json();
 
   const title = String(data.title ?? "").trim();
   const description = String(data.description ?? "").trim();

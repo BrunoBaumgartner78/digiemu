@@ -10,7 +10,7 @@ export async function POST(_req: Request) {
 
   if (!userId) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
-  const body = await req.json();
+  const body = await _req.json();
   const productId = String(body.id ?? "").trim();
   if (!productId) return NextResponse.json({ message: "Missing id" }, { status: 400 });
 

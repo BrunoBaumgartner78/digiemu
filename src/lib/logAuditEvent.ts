@@ -26,6 +26,6 @@ export async function logAuditEvent(params: AuditLogParams) {
     });
   } catch (_e) {
     // Logging darf Core-Flow nicht blockieren
-    console.error("[AuditLog] Logging failed", e);
+    console.error("[AuditLog] Logging failed", _e);
   }
 }

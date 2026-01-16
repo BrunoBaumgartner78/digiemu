@@ -19,7 +19,7 @@ export async function POST(_req: Request) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) return jsonError("Unauthorized", 401);
 
-    const form = await req.formData();
+    const form = await _req.formData();
     const file = form.get("file");
 
     // ✅ kind absichern (nur erlaubte Werte)

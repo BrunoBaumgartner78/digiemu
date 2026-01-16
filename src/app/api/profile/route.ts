@@ -23,7 +23,7 @@ export async function PUT(_req: Request) {
     return new NextResponse("Unauthorized", { status: 401 });
   }
 
-  const json = await req.json();
+  const json = await _req.json();
   const parsed = profileSchema.safeParse(json);
   if (!parsed.success) {
     return NextResponse.json(

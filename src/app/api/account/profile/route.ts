@@ -25,7 +25,7 @@ async function handleUpsert(_req: Request) {
     );
   }
 
-  const body = (await req.json().catch(() => null)) as Record<string, any> | null;
+  const body = (await _req.json().catch(() => null)) as Record<string, any> | null;
   if (!body) {
     return NextResponse.json(
       { ok: false, message: "INVALID_BODY" },
@@ -115,9 +115,9 @@ async function handleUpsert(_req: Request) {
 
 // ✅ akzeptiere PUT (Client) + POST (falls irgendwo noch alt verwendet)
 export async function PUT(_req: Request) {
-  return handleUpsert(req);
+  return handleUpsert(_req);
 }
 
 export async function POST(_req: Request) {
-  return handleUpsert(req);
+  return handleUpsert(_req);
 }

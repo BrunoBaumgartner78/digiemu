@@ -14,7 +14,7 @@ export async function POST(_req: Request) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
-  const form = await req.formData();
+  const form = await _req.formData();
   const vendorId = String(form.get("vendorId") ?? "").trim();
   const returnTo = String(form.get("returnTo") ?? "").trim();
 
@@ -30,7 +30,7 @@ export async function POST(_req: Request) {
 
   if (existingPending) {
     const redirectUrl = returnTo || `/admin/payouts/vendor/${vendorId}`;
-    return NextResponse.redirect(new URL(redirectUrl, req.url));
+    return NextResponse.redirect(new URL(redirectUrl, _req.url));
   }
 
   // Pending berechnen (wie in deiner Page)
@@ -73,9 +73,9 @@ export async function POST(_req: Request) {
     // If the partial unique index triggers under concurrency,
     // just redirect back (another request created the pending payout).
     const redirectUrl = returnTo || `/admin/payouts/vendor/${vendorId}`;
-    return NextResponse.redirect(new URL(redirectUrl, req.url));
+    return NextResponse.redirect(new URL(redirectUrl, _req.url));
   }
 
   const redirectUrl = returnTo || `/admin/payouts/vendor/${vendorId}`;
-  return NextResponse.redirect(new URL(redirectUrl, req.url));
+  return NextResponse.redirect(new URL(redirectUrl, _req.url));
 }

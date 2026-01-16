@@ -237,7 +237,7 @@ export default function ProfilePageClient({
                 className={styles.fileInput}
                 type="file"
                 accept="image/*"
-                onChange={(_e) => onPickBanner(e.target.files?.[0] ?? null)}
+                onChange={(_e) => onPickBanner(_e.target.files?.[0] ?? null)}
               />
             </label>
 
@@ -284,7 +284,7 @@ export default function ProfilePageClient({
                 className={styles.fileInput}
                 type="file"
                 accept="image/*"
-                onChange={(_e) => onPickAvatar(e.target.files?.[0] ?? null)}
+                onChange={(_e) => onPickAvatar(_e.target.files?.[0] ?? null)}
               />
             </label>
 
@@ -322,13 +322,13 @@ export default function ProfilePageClient({
         <h2 className={styles.h2}>Profilinfos</h2>
 
         <label className={styles.label}>Anzeigename</label>
-        <input className={styles.input} value={displayName} onChange={(_e) => setDisplayName(e.target.value)} />
+        <input className={styles.input} value={displayName} onChange={(_e) => setDisplayName(_e.target.value)} />
 
         <label className={styles.label}>Bio</label>
-        <textarea className={styles.textarea} value={bio} onChange={(_e) => setBio(e.target.value)} />
+        <textarea className={styles.textarea} value={bio} onChange={(_e) => setBio(_e.target.value)} />
 
         <label className={styles.checkRow}>
-          <input type="checkbox" checked={isPublic} onChange={(_e) => setIsPublic(e.target.checked)} />
+          <input type="checkbox" checked={isPublic} onChange={(_e) => setIsPublic(_e.target.checked)} />
           <span>Profil öffentlich anzeigen</span>
         </label>
 

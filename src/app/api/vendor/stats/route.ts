@@ -88,7 +88,7 @@ export async function GET(req: NextRequest) {
       downloadsInRange,
     });
   } catch (_err) {
-    console.error("/api/vendor/products/stats error", err);
+    console.error("/api/vendor/products/stats error", _err);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }

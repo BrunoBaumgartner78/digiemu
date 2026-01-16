@@ -7,13 +7,13 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function POST(_req: Request) {
-  const form = await req.formData();
+  const form = await _req.formData();
   const rawEmail = form.get("email");
 
   const email = typeof rawEmail === "string" ? rawEmail.trim().toLowerCase() : "";
 
   // immer neutral antworten (keine Info-Leaks)
-  const redirectUrl = new URL("/forgot-password?sent=1", req.url);
+  const redirectUrl = new URL("/forgot-password?sent=1", _req.url);
 
   if (!email) {
     return NextResponse.redirect(redirectUrl);

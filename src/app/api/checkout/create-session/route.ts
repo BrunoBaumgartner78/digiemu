@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "TOO_MANY_REQUESTS" }, { status: 429, headers: { "Retry-After": String(rl.retryAfter ?? 60) } });
     }
   } catch (_e) {
-    console.warn("rateLimit check failed for checkout_create", e);
+    console.warn("rateLimit check failed for checkout_create", _e);
   }
   const session = await getServerSession(authOptions);
   const userId = (session?.user as any)?.id as string | undefined;

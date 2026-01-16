@@ -20,13 +20,13 @@ export async function POST(_req: Request) {
   // 2. VendorId aus dem FormData/JSON extrahieren
   let vendorId: string | undefined;
 
-  const contentType = req.headers.get("content-type") || "";
+  const contentType = _req.headers.get("content-type") || "";
 
   if (contentType.includes("application/json")) {
-    const json = await req.json().catch(() => null);
+    const json = await _req.json().catch(() => null);
     vendorId = json?.vendorId;
   } else {
-    const form = await req.formData().catch(() => null);
+    const form = await _req.formData().catch(() => null);
     vendorId = form?.get("vendorId")?.toString();
   }
 

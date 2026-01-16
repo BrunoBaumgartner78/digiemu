@@ -46,7 +46,7 @@ export default function ResetPasswordForm({ token }: { token: string }) {
         <input
           type="password"
           value={pw1}
-          onChange={(_e) => setPw1(e.target.value)}
+          onChange={(_e) => setPw1(_e.target.value)}
           className="w-full rounded-xl border px-3 py-2 bg-white"
           autoComplete="new-password"
           required
@@ -58,7 +58,7 @@ export default function ResetPasswordForm({ token }: { token: string }) {
         <input
           type="password"
           value={pw2}
-          onChange={(_e) => setPw2(e.target.value)}
+          onChange={(_e) => setPw2(_e.target.value)}
           className="w-full rounded-xl border px-3 py-2 bg-white"
           autoComplete="new-password"
           required

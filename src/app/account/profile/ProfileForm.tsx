@@ -54,7 +54,7 @@ export default function ProfileForm({
           className={styles.input}
           id="displayName"
           value={form.displayName}
-          onChange={(_e) => onChange("displayName", e.target.value)}
+          onChange={(_e) => onChange("displayName", _e.target.value)}
           placeholder="z.B. Bruno Baumgartner"
         />
       </div>
@@ -67,7 +67,7 @@ export default function ProfileForm({
           className={styles.textarea}
           id="bio"
           value={form.bio}
-          onChange={(_e) => onChange("bio", e.target.value)}
+          onChange={(_e) => onChange("bio", _e.target.value)}
           placeholder="Kurzbeschreibung…"
           rows={4}
         />
@@ -79,7 +79,7 @@ export default function ProfileForm({
           id="isPublic"
           type="checkbox"
           checked={form.isPublic}
-          onChange={(_e) => onChange("isPublic", e.target.checked)}
+          onChange={(_e) => onChange("isPublic", _e.target.checked)}
         />
         <label className={styles.checkLabel} htmlFor="isPublic">
           Profil öffentlich anzeigen

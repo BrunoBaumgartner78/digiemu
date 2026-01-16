@@ -14,7 +14,7 @@ export async function POST(_req: Request) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
-  const form = await req.formData();
+  const form = await _req.formData();
   const payoutId = String(form.get("payoutId") ?? "").trim();
   const returnTo = String(form.get("returnTo") ?? "").trim();
 
@@ -31,5 +31,5 @@ export async function POST(_req: Request) {
   const redirectUrl =
     returnTo || (vendorId ? `/admin/payouts/vendor/${vendorId}` : "/admin/payouts");
 
-  return NextResponse.redirect(new URL(redirectUrl, req.url));
+  return NextResponse.redirect(new URL(redirectUrl, _req.url));
 }

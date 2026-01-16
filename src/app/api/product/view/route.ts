@@ -14,7 +14,7 @@ function dayKey(d = new Date()) {
 export async function POST(_req: Request) {
   try {
     const session = await getServerSession(authOptions);
-    const body = await req.json().catch(() => null);
+    const body = await _req.json().catch(() => null);
 
     const productId = body?.productId as string | undefined;
 
@@ -25,8 +25,8 @@ export async function POST(_req: Request) {
     const userId = (session?.user as any)?.id as string | undefined;
 
     const ip =
-      (req.headers.get("x-forwarded-for") || "").split(",")[0]?.trim() || req.headers.get("x-real-ip") || "unknown";
-    const ua = req.headers.get("user-agent") || "unknown";
+      (_req.headers.get("x-forwarded-for") || "").split(",")[0]?.trim() || _req.headers.get("x-real-ip") || "unknown";
+    const ua = _req.headers.get("user-agent") || "unknown";
     const fingerprint = `${ip}__${ua}`.slice(0, 190);
 
     const today = dayKey();
@@ -51,7 +51,7 @@ export async function POST(_req: Request) {
 
     return NextResponse.json({ ok: true });
   } catch (_err) {
-    console.error("Product view log error", err);
+    console.error("Product view log error", _err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

@@ -48,7 +48,7 @@ export function ProfileImageUploader({
         description: "Dein Profilbild wurde erfolgreich gespeichert.",
       });
     } catch (_err) {
-      console.error(err);
+      console.error(_err);
       toast({
         variant: "destructive",
         title: "Upload fehlgeschlagen",
@@ -77,7 +77,7 @@ export function ProfileImageUploader({
         description: "Dein Profilbanner wurde erfolgreich gespeichert.",
       });
     } catch (_err) {
-      console.error(err);
+      console.error(_err);
       toast({
         variant: "destructive",
         title: "Upload fehlgeschlagen",

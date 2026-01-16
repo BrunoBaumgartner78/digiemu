@@ -79,8 +79,8 @@ export default function EditProductForm(props: Props) {
     return Number.isFinite(n) && n >= 0 ? n : null;
   }
 
-  function handleThumbFileChange(e: ChangeEvent<HTMLInputElement>) {
-    setThumbFile(e.target.files?.[0] || null);
+  function handleThumbFileChange(_e: ChangeEvent<HTMLInputElement>) {
+    setThumbFile(_e.target.files?.[0] || null);
   }
 
   async function uploadThumbnailToStorage(file: File) {
@@ -101,7 +101,7 @@ export default function EditProductForm(props: Props) {
           );
           setThumbProgress(pct);
         },
-        (_err) => reject(err),
+        (_err) => reject(_err),
         async () => {
           const url = await getDownloadURL(uploadTask.snapshot.ref);
           resolve(url);
@@ -124,7 +124,7 @@ export default function EditProductForm(props: Props) {
       setThumbFile(null);
       setSuccessMsg("Thumbnail wurde hochgeladen.");
     } catch (_err) {
-      console.error(err);
+      console.error(_err);
       setErrorMsg("Thumbnail-Upload fehlgeschlagen.");
     } finally {
       setThumbUploading(false);
@@ -224,7 +224,7 @@ export default function EditProductForm(props: Props) {
           <input
             className={styles.input}
             value={title}
-            onChange={(_e) => setTitle(e.target.value)}
+            onChange={(_e) => setTitle(_e.target.value)}
             disabled={isBlocked}
           />
 
@@ -232,7 +232,7 @@ export default function EditProductForm(props: Props) {
           <textarea
             className={styles.textarea}
             value={description}
-            onChange={(_e) => setDescription(e.target.value)}
+            onChange={(_e) => setDescription(_e.target.value)}
             disabled={isBlocked}
           />
 
@@ -240,7 +240,7 @@ export default function EditProductForm(props: Props) {
           <select
             className={styles.input}
             value={category}
-            onChange={(_e) => setCategory(e.target.value)}
+            onChange={(_e) => setCategory(_e.target.value)}
             disabled={isBlocked}
           >
             {CATEGORY_OPTIONS.map((c) => (
@@ -259,7 +259,7 @@ export default function EditProductForm(props: Props) {
           <input
             className={styles.input}
             value={priceChf}
-            onChange={(_e) => setPriceChf(e.target.value)}
+            onChange={(_e) => setPriceChf(_e.target.value)}
             placeholder="z.B. 19.90"
             disabled={isBlocked}
           />
@@ -297,7 +297,7 @@ export default function EditProductForm(props: Props) {
           <input
             className={styles.input}
             value={thumbnailUrl}
-            onChange={(_e) => setThumbnailUrl(e.target.value)}
+            onChange={(_e) => setThumbnailUrl(_e.target.value)}
             placeholder="/fallback-thumbnail.svg"
             disabled={isBlocked}
           />
@@ -338,7 +338,7 @@ export default function EditProductForm(props: Props) {
               src={thumbnailUrl || "/fallback-thumbnail.svg"}
               alt="Thumbnail"
               onError={(_e) => {
-                (e.currentTarget as HTMLImageElement).src =
+                (_e.currentTarget as HTMLImageElement).src =
                   "/fallback-thumbnail.svg";
               }}
             />

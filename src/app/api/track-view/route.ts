@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 
 export async function POST(_req: Request) {
   try {
-    const body = await req.json().catch(() => ({}));
+    const body = await _req.json().catch(() => ({}));
     const productId = String(body?.productId ?? "").trim();
 
     if (!productId) {

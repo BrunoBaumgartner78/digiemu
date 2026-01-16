@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 
 export async function POST(_req: Request) {
   try {
-    const body = await req.json().catch(() => null) as
+    const body = await _req.json().catch(() => null) as
       | { vendorProfileId?: string; productId?: string; source?: string }
       | null;
 

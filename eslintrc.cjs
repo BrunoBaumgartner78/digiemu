@@ -1,0 +1,9 @@
+// .eslintrc.cjs
+module.exports = {
+  extends: ["next/core-web-vitals", "next/typescript"],
+  rules: {
+    "@typescript-eslint/no-explicit-any": "warn",
+    "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
+    "react-hooks/exhaustive-deps": "warn",
+  },
+};

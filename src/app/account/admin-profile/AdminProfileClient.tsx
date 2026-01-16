@@ -58,21 +58,21 @@ export default function AdminProfileClient({ userId, initialData }: Props) {
       <form onSubmit={handleSubmit} className="space-y-4">
         <label>
           <div className="text-sm mb-1">Interner Anzeigename</div>
-          <input value={form.displayName} onChange={(_e) => handleChange("displayName", e.target.value)} className="input" />
+          <input value={form.displayName} onChange={(_e) => handleChange("displayName", _e.target.value)} className="input" />
         </label>
 
         <label>
           <div className="text-sm mb-1">Moderations-Signatur</div>
-          <input value={form.signature} onChange={(_e) => handleChange("signature", e.target.value)} className="input" />
+          <input value={form.signature} onChange={(_e) => handleChange("signature", _e.target.value)} className="input" />
         </label>
 
         <label className="flex items-center gap-2">
-          <input type="checkbox" checked={form.notifyOnDownload} onChange={(_e) => handleChange("notifyOnDownload", e.target.checked)} />
+          <input type="checkbox" checked={form.notifyOnDownload} onChange={(_e) => handleChange("notifyOnDownload", _e.target.checked)} />
           <span className="text-sm">Bei Download benachrichtigen</span>
         </label>
 
         <label className="flex items-center gap-2">
-          <input type="checkbox" checked={form.notifyOnPayoutRequest} onChange={(_e) => handleChange("notifyOnPayoutRequest", e.target.checked)} />
+          <input type="checkbox" checked={form.notifyOnPayoutRequest} onChange={(_e) => handleChange("notifyOnPayoutRequest", _e.target.checked)} />
           <span className="text-sm">Bei Payout-Anfrage benachrichtigen</span>
         </label>
 

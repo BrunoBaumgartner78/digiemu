@@ -91,7 +91,7 @@ export default function ProductModerationToggle({
         className="input-neu w-full"
         rows={3}
         value={note}
-        onChange={(_e) => setNote(e.target.value)}
+        onChange={(_e) => setNote(_e.target.value)}
         placeholder="Grund für Blockierung…"
       />
 

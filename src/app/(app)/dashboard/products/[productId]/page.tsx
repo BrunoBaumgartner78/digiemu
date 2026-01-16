@@ -21,7 +21,7 @@ async function safeFindProductById(id: string) {
     });
     return product;
   } catch (_err) {
-    console.error("[safeFindProductById] Prisma-Fehler:", err);
+    console.error("[safeFindProductById] Prisma-Fehler:", _err);
     return null;
   }
 }

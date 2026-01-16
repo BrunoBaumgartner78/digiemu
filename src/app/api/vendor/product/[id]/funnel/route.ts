@@ -25,7 +25,7 @@ export async function GET(_req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const rangeDays = parseRangeDays(req.url);
+  const rangeDays = parseRangeDays(_req.url);
   const since = new Date(Date.now() - rangeDays * 24 * 60 * 60 * 1000);
 
   try {
@@ -103,7 +103,7 @@ export async function GET(_req: Request) {
       },
     });
   } catch (_err) {
-    console.error("Error in /api/vendor/funnel", err);
+    console.error("Error in /api/vendor/funnel", _err);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

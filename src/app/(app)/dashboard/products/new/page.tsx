@@ -89,7 +89,7 @@ export default function NewProductPage() {
           type="text"
           placeholder="Titel"
           className={styles.input}
-          onChange={(_e) => setData({ ...data, title: e.target.value })}
+          onChange={(_e) => setData({ ...data, title: _e.target.value })}
         />
 
         <textarea
@@ -97,7 +97,7 @@ export default function NewProductPage() {
           className={styles.input}
           rows={4}
           onChange={(_e) =>
-            setData({ ...data, description: e.target.value })
+            setData({ ...data, description: _e.target.value })
           }
         />
 
@@ -106,7 +106,7 @@ export default function NewProductPage() {
           placeholder="Kategorie"
           className={styles.input}
           onChange={(_e) =>
-            setData({ ...data, category: e.target.value })
+            setData({ ...data, category: _e.target.value })
           }
         />
 
@@ -117,7 +117,7 @@ export default function NewProductPage() {
           onChange={(_e) =>
             setData({
               ...data,
-              priceCents: String(Number(e.target.value) * 100),
+              priceCents: String(Number(_e.target.value) * 100),
             })
           }
         />

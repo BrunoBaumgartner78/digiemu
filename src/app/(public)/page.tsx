@@ -53,7 +53,7 @@ async function getPublicMetrics(): Promise<Metrics> {
           vendorCHF: typeof vendorCents === "number" ? vendorCents / 100 : null,
         };
       } catch (_e) {
-        console.error("[home metrics] order.aggregate failed:", e);
+        console.error("[home metrics] order.aggregate failed:", _e);
         return { gmvCHF: null, platformCHF: null, vendorCHF: null };
       }
     })();
@@ -86,7 +86,7 @@ async function getPublicMetrics(): Promise<Metrics> {
       activeProducts,
     };
   } catch (_e) {
-    console.error("[home metrics] failed:", e);
+    console.error("[home metrics] failed:", _e);
     return {
       users: null,
       orders: null,

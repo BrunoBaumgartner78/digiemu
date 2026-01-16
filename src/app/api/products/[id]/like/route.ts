@@ -32,7 +32,7 @@ export async function GET(_req: NextRequest, ctx: RouteContext) {
       liked: !!userLike,
     });
   } catch (_err) {
-    console.error("[GET /api/products/[id]/like]", err);
+    console.error("[GET /api/products/[id]/like]", _err);
     return NextResponse.json(
       { ok: false, message: "Fehler beim Laden der Likes." },
       { status: 500 }
@@ -111,7 +111,7 @@ export async function POST(req: NextRequest, ctx: RouteContext) {
       likesCount,
     });
   } catch (_err) {
-    console.error("[POST /api/products/[id]/like]", err);
+    console.error("[POST /api/products/[id]/like]", _err);
     return NextResponse.json(
       { ok: false, message: "Fehler beim Aktualisieren des Likes." },
       { status: 500 }

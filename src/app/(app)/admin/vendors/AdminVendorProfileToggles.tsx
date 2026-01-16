@@ -69,7 +69,7 @@ export default function AdminVendorProfileToggles({ userId, initialStatus, initi
         className="input-neu w-36 text-xs"
         value={status}
         disabled={busy !== null}
-        onChange={(_e) => setVendorStatus(e.target.value)}
+        onChange={(_e) => setVendorStatus(_e.target.value)}
       >
         <option value="PENDING">PENDING</option>
         <option value="APPROVED">APPROVED</option>

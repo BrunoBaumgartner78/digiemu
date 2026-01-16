@@ -61,7 +61,7 @@ export async function GET(req: NextRequest) {
       },
     });
   } catch (_err) {
-    console.error("Vendor funnel error:", err);
+    console.error("Vendor funnel error:", _err);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

@@ -8,7 +8,7 @@ export async function PUT(_req: Request) {
   const userId = (session?.user as any)?.id as string | undefined;
   if (!userId) return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
 
-  const body = (await req.json().catch(() => null)) as any;
+  const body = (await _req.json().catch(() => null)) as any;
   if (!body) return NextResponse.json({ error: "INVALID_BODY" }, { status: 400 });
 
   const avatarUrl = typeof body.avatarUrl === "string" ? body.avatarUrl : "";

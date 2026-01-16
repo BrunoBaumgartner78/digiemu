@@ -9,7 +9,7 @@ export async function GET(_req: Request) {
 
   const token = process.env.HEALTHCHECK_TOKEN?.trim();
   if (token) {
-    const provided = req.headers.get("x-health-token")?.trim();
+    const provided = _req.headers.get("x-health-token")?.trim();
     if (!provided || provided !== token) {
       return NextResponse.json({ ok: false, status: "forbidden" }, { status: 403 });
     }
@@ -36,7 +36,7 @@ export async function GET(_req: Request) {
       ts: new Date().toISOString(),
     });
   } catch (_e) {
-    console.error("healthcheck failed", e);
+    console.error("healthcheck failed", _e);
     return NextResponse.json(
       { ok: false, status: "unhealthy", env, latencyMs: Date.now() - startedAt, ts: new Date().toISOString() },
       { status: 500 }

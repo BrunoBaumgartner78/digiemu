@@ -23,7 +23,7 @@ export function FileSelect({ label, onChange }: Props) {
         ref={inputRef}
         className="hidden"
         onChange={(_e) => {
-          const file = e.target.files?.[0];
+          const file = _e.target.files?.[0];
           if (file) onChange(file);
         }}
       />

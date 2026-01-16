@@ -167,7 +167,7 @@ export async function POST(req: NextRequest) {
         },
       });
     } catch (_e) {
-      console.error("❌ stripeWebhookError.create failed:", e);
+      console.error("❌ stripeWebhookError.create failed:", _e);
     }
 
     return NextResponse.json(

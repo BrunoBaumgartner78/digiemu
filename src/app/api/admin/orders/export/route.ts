@@ -9,7 +9,7 @@ export async function GET(_req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const url = new URL(req.url);
+  const url = new URL(_req.url);
   const daysParam = url.searchParams.get("days");
   let fromDate: Date | undefined = undefined;
   if (daysParam === "7" || daysParam === "30" || daysParam === "90") {

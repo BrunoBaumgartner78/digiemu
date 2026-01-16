@@ -17,7 +17,7 @@ export function useTrackProductView(productId?: string) {
       method: "POST",
     }).catch((_err) => {
       if (process.env.NODE_ENV !== "production") {
-        console.error("Failed to track product view", err);
+        console.error("Failed to track product view", _err);
       }
     });
   }, [productId]);

@@ -88,7 +88,7 @@ export default function NewProductForm() {
               type="text"
               placeholder="Z. B. ‚Workbook: DigiEmu Launch Guide‘"
               value={title}
-              onChange={(_e) => setTitle(e.target.value)}
+              onChange={(_e) => setTitle(_e.target.value)}
             />
           </div>
 
@@ -102,7 +102,7 @@ export default function NewProductForm() {
               rows={6}
               placeholder="Beschreibe kurz den Inhalt deines digitalen Produkts, Zielgruppe und Nutzen."
               value={description}
-              onChange={(_e) => setDescription(e.target.value)}
+              onChange={(_e) => setDescription(_e.target.value)}
             />
           </div>
         </div>
@@ -121,7 +121,7 @@ export default function NewProductForm() {
                 step="0.05"
                 min="0"
                 value={priceChf}
-                onChange={(_e) => setPriceChf(e.target.value)}
+                onChange={(_e) => setPriceChf(_e.target.value)}
               />
               <span className={styles.priceHint}>inkl. MwSt. / Sofort-Download</span>
             </div>
@@ -137,7 +137,7 @@ export default function NewProductForm() {
               type="url"
               placeholder="https://…/dein-thumbnail.png"
               value={thumbnail}
-              onChange={(_e) => setThumbnail(e.target.value)}
+              onChange={(_e) => setThumbnail(_e.target.value)}
             />
             <p className={styles.helpText}>
               Später kannst du hier dein Bild aus Firebase / Storage eintragen

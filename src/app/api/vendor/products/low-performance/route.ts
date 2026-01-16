@@ -12,7 +12,7 @@ export async function GET() {
       { status: 200 }
     );
   } catch (_e) {
-    console.error("Low-performance API error", e);
+    console.error("Low-performance API error", _e);
 
     // Selbst im Fehlerfall: niemals 500 an den Client, immer gültiges JSON
     return NextResponse.json(

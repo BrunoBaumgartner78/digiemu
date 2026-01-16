@@ -21,7 +21,7 @@ export async function PUT(_req: Request) {
   const userId = (session?.user as any)?.id as string | undefined;
   if (!userId) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
-  const body = await req.json().catch(() => ({}));
+  const body = await _req.json().catch(() => ({}));
   const displayName = String(body.displayName ?? "").trim();
   const bio = String(body.bio ?? "").trim();
   const avatarUrl = String(body.avatarUrl ?? "").trim();

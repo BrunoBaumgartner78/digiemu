@@ -20,7 +20,7 @@ export async function GET(_req: Request) {
 
     const vendorId = user.id;
 
-    const url = new URL(req.url);
+    const url = new URL(_req.url);
     const rangeDaysParam = url.searchParams.get("range_days");
     const rangeDays = Number.isFinite(Number(rangeDaysParam))
       ? Number(rangeDaysParam)
@@ -105,7 +105,7 @@ export async function GET(_req: Request) {
       },
     });
   } catch (_err) {
-    console.error("/api/vendor/products/stats error", err);
+    console.error("/api/vendor/products/stats error", _err);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

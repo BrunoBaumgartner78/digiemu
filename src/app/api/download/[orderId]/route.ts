@@ -16,7 +16,7 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ orderId: st
       return NextResponse.json({ error: "TOO_MANY_REQUESTS" }, { status: 429, headers: { "Retry-After": String(rl.retryAfter ?? 60) } });
     }
   } catch (_e) {
-    console.warn("rateLimit check failed for download_api", e);
+    console.warn("rateLimit check failed for download_api", _e);
   }
   const session = await getServerSession(auth);
   const userId = (session?.user as any)?.id as string | undefined;
