@@ -1,0 +1,2 @@
+No internal <a href="/..."> occurrences found in src/app (scan run: 2026-01-16).
+If you expected matches, run a more aggressive scan or search the whole repo.
