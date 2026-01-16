@@ -1,79 +1,74 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { auth } from "@/lib/auth";
+import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import {
+  isRecord,
+  getStringProp,
+  getNumberProp,
+  getBooleanProp,
+  toNumber,
+  getErrorMessage,
+} from "@/lib/guards";
 
-export async function POST(_req: Request) {
-  const session = await getServerSession(auth);
-  const userId = (session?.user as any)?.id as string | undefined;
-  const role = (session?.user as any)?.role as string | undefined;
+export async function POST(req: Request) {
+  try {
+    const session = await getServerSession(authOptions);
+    const user = isRecord(session?.user) ? session!.user as Record<string, unknown> : null;
+    const userId = getStringProp(user, "id");
+    const role = getStringProp(user, "role");
 
-  if (!userId) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    if (!userId) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
-  const body = await _req.json();
-  const productId = String(body.id ?? "").trim();
-  if (!productId) return NextResponse.json({ message: "Missing id" }, { status: 400 });
+    const body = await req.json().catch(() => ({}));
+    const productId = getStringProp(body, "id");
+    if (!productId) return NextResponse.json({ message: "Missing id" }, { status: 400 });
 
-  const existing = await prisma.product.findUnique({
-    where: { id: productId },
-    select: { id: true, vendorId: true, status: true },
-  });
+    const existing = await prisma.product.findUnique({ where: { id: productId }, select: { id: true, vendorId: true, status: true } });
+    if (!existing) return NextResponse.json({ message: "Not found" }, { status: 404 });
 
-  if (!existing) return NextResponse.json({ message: "Not found" }, { status: 404 });
+    const isAdmin = role === "ADMIN";
+    const isVendorOwner = existing.vendorId === userId;
+    if (!isAdmin && !isVendorOwner) return NextResponse.json({ message: "Forbidden" }, { status: 403 });
 
-  const isAdmin = role === "ADMIN";
-  const isVendorOwner = existing.vendorId === userId;
-
-  // Vendor darf nur eigene Produkte ändern
-  if (!isAdmin && !isVendorOwner) {
-    return NextResponse.json({ message: "Forbidden" }, { status: 403 });
-  }
-
-  // 🔒 Wenn Produkt BLOCKED ist: nur Admin darf überhaupt ändern
-  if (existing.status === "BLOCKED" && !isAdmin) {
-    return NextResponse.json(
-      { message: "Dieses Produkt ist gesperrt und kann nicht bearbeitet werden." },
-      { status: 403 }
-    );
-  }
-
-  // 🔒 Vendor darf niemals BLOCKED setzen/ändern
-  if (!isAdmin) {
-    if (body.status === "BLOCKED") {
-      return NextResponse.json({ message: "Forbidden status change" }, { status: 403 });
+    if (existing.status === "BLOCKED" && !isAdmin) {
+      return NextResponse.json({ message: "Dieses Produkt ist gesperrt und kann nicht bearbeitet werden." }, { status: 403 });
     }
-    // optional: Vendor darf Status nur zwischen DRAFT/ACTIVE wechseln
-    if (body.status && !["DRAFT", "ACTIVE"].includes(body.status)) {
-      return NextResponse.json({ message: "Invalid status" }, { status: 400 });
+
+    // Vendor darf niemals BLOCKED setzen/ändern
+    const requestedStatus = getStringProp(body, "status");
+    if (!isAdmin) {
+      if (requestedStatus === "BLOCKED") return NextResponse.json({ message: "Forbidden status change" }, { status: 403 });
+      if (requestedStatus && !["DRAFT", "ACTIVE"].includes(requestedStatus)) return NextResponse.json({ message: "Invalid status" }, { status: 400 });
     }
-  }
 
-  // updateData whitelisten (sehr wichtig)
-  const updateData: any = {
-    title: String(body.title ?? "").trim(),
-    description: String(body.description ?? "").trim(),
-    category: String(body.category ?? "").trim(),
-    moderationNote: isAdmin ? (body.moderationNote ?? null) : undefined,
-  };
+    // build update object with allowlist
+    const updateData: Record<string, unknown> = {};
+    const title = getStringProp(body, "title");
+    const description = getStringProp(body, "description");
+    const category = getStringProp(body, "category");
+    const moderationNote = isAdmin ? getStringProp(body, "moderationNote") : null;
 
-  // Preis-Validierung Beispiel (min 1 CHF)
-  if (body.priceChf !== undefined) {
-    const n = Number(String(body.priceChf).replace(",", "."));
-    if (!Number.isFinite(n) || n < 1) {
-      return NextResponse.json({ message: "Mindestpreis ist 1.00 CHF" }, { status: 400 });
+    if (title !== null) updateData.title = title;
+    if (description !== null) updateData.description = description;
+    if (category !== null) updateData.category = category;
+    if (moderationNote !== null) updateData.moderationNote = moderationNote;
+
+    // Preis-Validierung (min 1 CHF)
+    if (body !== undefined && Object.prototype.hasOwnProperty.call(body, "priceChf")) {
+      const n = toNumber((body as Record<string, unknown>).priceChf);
+      if (n === null || n < 1) return NextResponse.json({ message: "Mindestpreis ist 1.00 CHF" }, { status: 400 });
+      updateData.priceCents = Math.round(n * 100);
     }
-    updateData.priceCents = Math.round(n * 100);
+
+    if (requestedStatus && (isAdmin || ["DRAFT", "ACTIVE"].includes(requestedStatus))) {
+      updateData.status = requestedStatus;
+    }
+
+    const updated = await prisma.product.update({ where: { id: productId }, data: updateData });
+    return NextResponse.json({ ok: true, updated });
+  } catch (err: unknown) {
+    console.error("❌ products.update error:", getErrorMessage(err));
+    return NextResponse.json({ message: "server_error" }, { status: 500 });
   }
-
-  // status nur Admin oder Vendor erlaubt (DRAFT/ACTIVE)
-  if (body.status && (isAdmin || ["DRAFT", "ACTIVE"].includes(body.status))) {
-    updateData.status = body.status;
-  }
-
-  const updated = await prisma.product.update({
-    where: { id: productId },
-    data: updateData,
-  });
-
-  return NextResponse.json({ ok: true, updated });
 }

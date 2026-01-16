@@ -7,25 +7,27 @@ import { getErrorMessage } from "@/lib/guards";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
-  apiVersion: "2024-06-20" as any,
-});
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
 
 export async function POST(req: NextRequest) {
   const sig = req.headers.get("stripe-signature");
   const webhookSecret = (process.env.STRIPE_WEBHOOK_SECRET ?? "").trim();
 
-  if (!sig || !webhookSecret) {
-    return NextResponse.json(
-      { message: "Missing stripe-signature or STRIPE_WEBHOOK_SECRET" },
-      { status: 400 }
-    );
+  // Fail-closed: missing secret is a server misconfiguration
+  if (!webhookSecret) {
+    console.error("❌ STRIPE_WEBHOOK_SECRET missing or empty - failing closed");
+    return NextResponse.json({ message: "Server misconfiguration" }, { status: 500 });
+  }
+
+  if (!sig) {
+    return NextResponse.json({ message: "Missing stripe-signature header" }, { status: 400 });
   }
 
   let event: Stripe.Event;
 
   try {
-    const buf = Buffer.from(await req.arrayBuffer());
+    const text = await req.text();
+    const buf = Buffer.from(text, "utf8");
     event = stripe.webhooks.constructEvent(buf, sig, webhookSecret);
   } catch (err: unknown) {
     console.error("❌ Webhook signature verification failed:", getErrorMessage(err));
@@ -50,7 +52,9 @@ export async function POST(req: NextRequest) {
   } catch (e: unknown) {
     // Prisma unique violation => already processed
     // P2002 = Unique constraint failed
-    if ((e as { code?: string })?.code === "P2002") {
+    if (
+      (typeof e === "object" && e !== null && "code" in e && (e as Record<string, unknown>).code === "P2002")
+    ) {
       console.log("↩️ Duplicate webhook event ignored:", event.id, event.type);
       return NextResponse.json({ received: true, duplicate: true }, { status: 200 });
     }
@@ -65,11 +69,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ received: true }, { status: 200 });
     }
 
-    const eventSession = event.data.object as Stripe.Checkout.Session;
+    const dataObj: unknown = event.data?.object;
+    if (!dataObj || typeof event.id !== "string") {
+      console.error("❌ Webhook event malformed", { id: event.id, type: event.type });
+      return NextResponse.json({ received: true }, { status: 200 });
+    }
+
+    if (!event.type || event.type !== "checkout.session.completed") {
+      return NextResponse.json({ received: true }, { status: 200 });
+    }
+
+    if (typeof (dataObj as Record<string, unknown>).id !== "string") {
+      console.error("❌ Webhook session object missing id", { dataObj });
+      return NextResponse.json({ received: true }, { status: 200 });
+    }
 
     // ✅ Session frisch holen (stabiler als event.data.object)
-    const session = await stripe.checkout.sessions.retrieve(eventSession.id);
-
+    const session = await stripe.checkout.sessions.retrieve(String((dataObj as Record<string, unknown>).id));
     const stripeSessionId = session.id;
 
     // Optional: Extra-Safety (sollte bei completed eigentlich paid sein)
@@ -153,17 +169,17 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ received: true }, { status: 200 });
   } catch (err: unknown) {
-    console.error("❌ Webhook handler error:", getErrorMessage(err));
+  console.error("❌ Webhook handler error:", getErrorMessage(err));
 
     // Best-effort error log (no User relation; safe for production)
     try {
       await prisma.stripeWebhookError.create({
         data: {
-          eventId: (event as { id?: string })?.id ?? null,
-          type: (event as { type?: string })?.type ?? null,
+          eventId: typeof event.id === "string" ? event.id : null,
+          type: typeof event.type === "string" ? event.type : null,
           message: getErrorMessage(err) ?? String(err),
           meta: {
-            stack: (err as { stack?: string })?.stack,
+            stack: String((err as Record<string, unknown>)?.stack ?? null),
           },
         },
       });

@@ -116,7 +116,31 @@ export function getOptionalNumber(value: unknown): number | null {
 export function getStringProp(obj: unknown, key: string): string | null {
   if (!isRecord(obj)) return null;
   const v = (obj as Record<string, unknown>)[key];
-  return isString(v) ? v : null;
+  return isString(v) ? String((v as string).trim()) || null : null;
+}
+
+export function getRequiredString(obj: unknown, key: string): string | null {
+  const v = getStringProp(obj, key);
+  return v && v.trim() !== "" ? v : null;
+}
+
+export function requireRole(session: unknown, roles: string[]): boolean {
+  if (!isRecord(session)) return false;
+  const user = (session as Record<string, unknown>)["user"];
+  if (!isRecord(user)) return false;
+  const role = getStringProp(user, "role");
+  return role !== null && roles.includes(role);
+}
+
+// Lightweight safe JSON parsing from a Request-like object
+export async function parseJsonSafe(req: { text: () => Promise<string> }): Promise<unknown> {
+  try {
+    const t = await req.text();
+    if (!t || !t.trim()) return {};
+    return JSON.parse(t);
+  } catch (e: unknown) {
+    return e;
+  }
 }
 
 export function getBooleanProp(obj: unknown, key: string): boolean | null {
