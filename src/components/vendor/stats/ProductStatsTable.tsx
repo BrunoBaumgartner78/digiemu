@@ -1,4 +1,5 @@
 "use client";
+import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import Link from "next/link";
 
@@ -26,6 +27,7 @@ const columns = [
 export default function ProductStatsTable({ stats }: { stats: ProductStat[] }) {
   const [sortKey, setSortKey] = useState<string>("revenueCents");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const router = useRouter();
 
   if (!stats || stats.length === 0) {
     return (
@@ -72,7 +74,7 @@ export default function ProductStatsTable({ stats }: { stats: ProductStat[] }) {
               key={stat.productId}
               className={`border-b last:border-0 ${stat.productId === topId ? "bg-accent-soft" : ""}`}
               style={{ cursor: "pointer" }}
-              onClick={() => window.location.href = `/dashboard/products/${stat.productId}`}
+              onClick={() => router.push(`/dashboard/products/${stat.productId}`)}
             >
               <td className="py-2 pr-4 font-semibold">{stat.title}</td>
               <td className="py-2 pr-4">{stat.sales}</td>
