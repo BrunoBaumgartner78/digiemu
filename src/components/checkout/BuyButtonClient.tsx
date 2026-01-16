@@ -1,5 +1,7 @@
 "use client";
 
+
+import Link from "next/link";
 import * as React from "react";
 
 type Props = {
@@ -186,9 +188,9 @@ export default function BuyButtonClient({ productId }: Props) {
             </button>
 
             {error.code === "PRODUCT_FILE_MISSING" || error.code === "GENERIC" ? (
-              <a href="/help" className="neobtn ghost" style={{ fontSize: 14, minWidth: 0, padding: "4px 14px" }}>
+              <Link className="neobtn ghost" style={{ fontSize: 14, minWidth: 0, padding: "4px 14px" }} href="/help">
                 Hilfe
-              </a>
+              </Link>
             ) : null}
           </div>
         </div>

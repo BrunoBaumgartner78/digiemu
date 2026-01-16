@@ -1,0 +1,4 @@
+src\app\(public)\help\page.tsx:34: <a href="#buyers" className={styles.quickNavLink}> 🛒 Für Käufer </a>
+src\app\(public)\help\page.tsx:37: <a href="#vendors" className={styles.quickNavLink}> 🧾 Für Verkäufer </a>
+src\app\(public)\help\page.tsx:40: <a href="#tech" className={styles.quickNavLink}> 🔒 Technik &amp; Sicherheit </a>
+src\components\layout\AppFooter.tsx:84: <a className={styles.link} href="mailto:support@bellu.ch"> support@bellu.ch </a>

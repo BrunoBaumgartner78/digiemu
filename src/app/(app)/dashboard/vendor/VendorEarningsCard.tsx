@@ -1,5 +1,6 @@
 import React from "react";
 
+import Link from "next/link";
 export function VendorEarningsCard({
   totalRevenueCents,
   platformFeeCents,
@@ -49,9 +50,9 @@ export function VendorEarningsCard({
       ) : orderCount === 0 ? (
         <div className="text-sm text-[var(--color-text-muted)] flex flex-col gap-2">
           <span>Noch keine Verkäufe.</span>
-          <a href="/marketplace" className="neobtn primary w-max mt-2">
+          <Link className="neobtn primary w-max mt-2" href="/marketplace">
             Produkt bewerben
-          </a>
+          </Link>
         </div>
       ) : (
         <>

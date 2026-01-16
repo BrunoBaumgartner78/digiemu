@@ -1,4 +1,6 @@
 "use client";
+
+import Link from "next/link";
 import { useState } from "react";
 
 export function DownloadButton({ orderId }: { orderId: string }) {
@@ -64,9 +66,9 @@ export function DownloadButton({ orderId }: { orderId: string }) {
         <div style={{ marginTop: 8, color: "#b91c1c" }}>
           <div>{getErrorMessage(error)}</div>
           <div style={{ marginTop: 6, display: "flex", gap: 12 }}>
-            <a href="/help" className="neobtn primary">
+            <Link className="neobtn primary" href="/help">
               Hilfe & FAQ
-            </a>
+            </Link>
             {retryCount < 1 && (
               <button
                 className="neobtn ghost"

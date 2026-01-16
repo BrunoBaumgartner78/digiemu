@@ -19,22 +19,21 @@ export default function AdminBreadcrumbs() {
     );
   }
 
-  let url = "/admin";
-
   return (
     <div className="admin-breadcrumbs">
       <span className="admin-breadcrumbs-dot" />
       <Link href="/admin" className="admin-breadcrumbs-link">
         Admin
       </Link>
+
       {segments.map((seg, i) => {
-        url += `/${seg}`;
+        const href = `/admin/${segments.slice(0, i + 1).join("/")}`;
         const label = seg.replace(/-/g, " ");
 
         return (
-          <span key={i} className="flex items-center gap-1">
+          <span key={href} className="flex items-center gap-1">
             <span className="text-[10px] opacity-60">›</span>
-            <Link href={url} className="admin-breadcrumbs-link capitalize">
+            <Link href={href} className="admin-breadcrumbs-link capitalize">
               {label}
             </Link>
           </span>

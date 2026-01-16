@@ -1,5 +1,6 @@
 // src/app/register-vendor/page.tsx
 import { getServerSession } from "next-auth";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -36,26 +37,13 @@ export default async function RegisterVendorPage() {
           </p>
 
           <div className="flex flex-wrap gap-4">
-            <a
-              href="/dashboard"
-              className="inline-flex items-center justify-center px-4 py-2 rounded-full
-                         bg-[var(--color-accent)] text-white text-sm font-medium
-                         shadow-[0_8px_24px_rgba(59,130,246,0.35)]
-                         hover:scale-[1.02] active:scale-[0.98] transition-all"
-            >
+            <Link className="inline-flex items-center justify-center px-4 py-2 rounded-full bg-[var(--color-accent)] text-white text-sm font-medium shadow-[0_8px_24px_rgba(59,130,246,0.35)] hover:scale-[1.02] active:scale-[0.98] transition-all" href="/dashboard">
               Verkäufer-Übersicht
-            </a>
+            </Link>
 
-            <a
-              href="/dashboard/vendor"
-              className="inline-flex items-center justify-center px-4 py-2 rounded-full
-                         bg-[var(--color-surface)] text-[var(--color-text-primary)] text-sm font-medium
-                         shadow-[0_6px_18px_rgba(15,23,42,0.35),inset_0_1px_0_rgba(255,255,255,0.3)]
-                         hover:bg-[var(--color-surface-strong)] hover:scale-[1.02]
-                         active:scale-[0.98] transition-all"
-            >
+            <Link className="inline-flex items-center justify-center px-4 py-2 rounded-full bg-[var(--color-surface)] text-[var(--color-text-primary)] text-sm font-medium shadow-[0_6px_18px_rgba(15,23,42,0.35),inset_0_1px_0_rgba(255,255,255,0.3)] hover:bg-[var(--color-surface-strong)] hover:scale-[1.02] active:scale-[0.98] transition-all" href="/dashboard/vendor">
               Analytics-Dashboard
-            </a>
+            </Link>
           </div>
 
           <p className="text-xs text-[var(--color-text-muted)]">

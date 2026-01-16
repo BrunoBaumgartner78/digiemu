@@ -1,0 +1,4 @@
+File,Line,Href,Text
+"src/components/checkout/BuyButtonClient.tsx",189,"/help","<a href=\"/help\" className=\"neobtn ghost\" style={{ fontSize: 14, minWidth: 0, padding: \"4px 14px\" }}>"
+"src/app/(app)/download/[orderId]/DownloadButton.tsx",67,"/help","<a href=\"/help\" className=\"neobtn primary\">"
+"src/app/(app)/dashboard/vendor/VendorEarningsCard.tsx",52,"/marketplace","<a href=\"/marketplace\" className=\"neobtn primary w-max mt-2\">"
