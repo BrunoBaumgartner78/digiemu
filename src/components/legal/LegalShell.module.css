@@ -16,6 +16,24 @@
   border-radius: 24px;
 }
 
+.page {
+  padding: 2rem 0 4rem 0;
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
+.inner {
+  width: min(1180px, calc(100% - 2rem));
+  margin: 0 auto;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.header {
+  padding: 1.4rem;
+  border-radius: 24px;
+}
+
 .eyebrow {
   margin: 0 0 0.35rem 0;
   font-size: 0.85rem;
@@ -38,39 +56,83 @@
 }
 
 .card {
+  /* more breathing room for legal long text */
   margin-top: 1rem;
-  padding: 1.2rem;
+  padding: 1.5rem;
   border-radius: 24px;
 }
 
 /* Important: prevent long words/urls from causing overflow */
 .content {
-  line-height: 1.65;
+  /* legal typography */
+  font-size: 1rem;
+  line-height: 1.8;
   overflow-wrap: anywhere;
   word-break: break-word;
 }
 
+.content h1 {
+  margin: 0 0 0.8rem 0;
+  font-size: 1.6rem;
+  line-height: 1.15;
+}
+
 .content h2 {
-  margin: 1.3rem 0 0.6rem 0;
+  margin: 1.7rem 0 0.65rem 0;
   font-size: 1.35rem;
   line-height: 1.2;
 }
 
+.content h3 {
+  margin: 1.25rem 0 0.55rem 0;
+  font-size: 1.1rem;
+  line-height: 1.25;
+  opacity: 0.95;
+}
+
 .content p {
-  margin: 0.6rem 0;
+  margin: 0.85rem 0;
   opacity: 0.92;
 }
 
-.content ul {
-  margin: 0.6rem 0 0.6rem 1.1rem;
+.content a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.content strong {
+  font-weight: 850;
+}
+
+.content hr {
+  border: 0;
+  border-top: 1px solid rgba(0,0,0,0.06);
+  margin: 1.2rem 0;
+}
+
+.content ul,
+.content ol {
+  margin: 0.85rem 0 0.85rem 1.2rem;
+  padding: 0;
 }
 
 .content li {
-  margin: 0.25rem 0;
+  margin: 0.45rem 0;
+  opacity: 0.92;
+}
+
+@media (max-width: 640px) {
+  .header { padding: 1.1rem; }
+  .card { padding: 1.15rem; }
+}
+
+.content li {
+  margin: 0.35rem 0;
   opacity: 0.9;
 }
 
 @media (max-width: 640px) {
   .header { padding: 1.1rem; }
-  .card { padding: 1rem; }
+  .card { padding: 1.15rem; } /* keep padding comfy on mobile */
 }
