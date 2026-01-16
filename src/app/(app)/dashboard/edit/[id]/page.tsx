@@ -1,6 +1,6 @@
 // src/app/dashboard/edit/[id]/page.tsx
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { isRecord, isString } from "@/lib/guards";
 import { getServerSession } from "next-auth";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -14,7 +14,11 @@ type PageProps = {
 
 export default async function DashboardEditLegacyPage({ params }: PageProps) {
   const session = await getServerSession(auth);
-  const userId = (session?.user as any)?.id as string | undefined;
+  const maybeUser = session?.user as unknown;
+  let userId: string | undefined;
+  if (isRecord(maybeUser) && isString((maybeUser as Record<string, unknown>).id)) {
+    userId = (maybeUser as Record<string, unknown>).id;
+  }
   if (!userId) redirect("/login");
 
   const productId = String(params?.id ?? "").trim();

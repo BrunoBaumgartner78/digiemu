@@ -2,8 +2,7 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import type { AdminVendorListRow, AdminVendorListRowLite } from "@/lib/admin-types";
-import { Prisma } from "@prisma/client";
+import type { AdminVendorListRowLite } from "@/lib/admin-types";
 import Link from "next/link";
 import AdminVendorStatusControls from "./AdminVendorStatusControls";
 
@@ -78,7 +77,7 @@ export default async function AdminVendorsPage(props: { searchParams: Promise<Se
   const pageSize = 25;
   const requestedPage = Number.parseInt(pageRaw, 10) || 1;
 
-  const where: any = { role: "VENDOR" };
+  const where: Record<string, unknown> = { role: "VENDOR" };
 
   if (search.trim()) {
     where.OR = [

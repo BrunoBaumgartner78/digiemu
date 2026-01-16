@@ -40,7 +40,7 @@ async function main() {
           console.log('patched', f);
         }
       }
-    } catch (err) {
+    } catch {
       // ignore missing folders
     }
   }

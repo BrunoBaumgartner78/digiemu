@@ -44,7 +44,7 @@ async function main() {
           console.log('patched anon export in', f);
         }
       }
-    } catch (_err) {
+    } catch {
       // ignore missing folders
     }
   }

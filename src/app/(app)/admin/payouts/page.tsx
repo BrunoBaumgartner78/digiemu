@@ -2,7 +2,7 @@
 import { getServerSession } from "next-auth";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import type { AdminVendorListRowLite, AdminPayoutListRow } from "@/lib/admin-types";
+import type { AdminVendorListRowLite } from "@/lib/admin-types";
 import Link from "next/link";
 
 export const metadata = {
