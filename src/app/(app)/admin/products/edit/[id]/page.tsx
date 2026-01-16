@@ -17,7 +17,7 @@ export default async function AdminProductEditPage({ params }: PageProps) {
   if (!productId) notFound();
 
   const session = await getServerSession(authOptions);
-  const user = session?.user as any;
+  const user = session?.user as { id?: string; role?: string } | undefined;
 
   if (!user?.id) redirect("/login");
   if (user.role !== "ADMIN") redirect("/dashboard");
@@ -54,7 +54,7 @@ export default async function AdminProductEditPage({ params }: PageProps) {
           thumbnail: p.thumbnail ?? "",
           category: p.category ?? "other",
           isActive: !!p.isActive,
-          status: (p.status as any) ?? "DRAFT",
+          status: (p.status as "DRAFT" | "ACTIVE" | "BLOCKED") ?? "DRAFT",
           moderationNote: p.moderationNote ?? "",
           vendorEmail: p.vendor?.email ?? "unbekannt",
           vendorIsBlocked: !!p.vendor?.isBlocked,
