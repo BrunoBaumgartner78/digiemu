@@ -1,3 +1,5 @@
+import { Prisma } from "@prisma/client";
+
 export function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
@@ -57,6 +59,46 @@ export function getBoolean(value: unknown): boolean | null {
 
 export function getId(value: unknown): string | null {
   return isIdLike(value) ? value : null;
+}
+
+// SearchParams / param helpers
+export function parseSearchParams(value: unknown): URLSearchParams | null {
+  if (value instanceof URLSearchParams) return value;
+  if (isString(value)) return new URLSearchParams(value);
+  return null;
+}
+
+export function getIdFromSearchParams(value: unknown, key = "id"): string | null {
+  const params = parseSearchParams(value);
+  if (!params) return null;
+  const v = params.get(key);
+  return v && v.trim() ? v : null;
+}
+
+export function parseParamToNumber(value: unknown): number | null {
+  if (isNumber(value)) return value;
+  if (isString(value)) {
+    const n = Number(value);
+    return Number.isFinite(n) ? n : null;
+  }
+  return null;
+}
+
+// JSON / Prisma JsonValue guard
+export function isJsonValue(v: unknown): v is Prisma.JsonValue {
+  if (v === null) return true;
+  if (typeof v === "string" || typeof v === "number" || typeof v === "boolean") return true;
+  if (Array.isArray(v)) return v.every((x) => isJsonValue(x));
+  if (isRecord(v)) return Object.values(v).every((x) => isJsonValue(x));
+  return false;
+}
+
+export function safeStringifyJson(v: unknown): string {
+  try {
+    return JSON.stringify(v);
+  } catch {
+    return String(v ?? "");
+  }
 }
 
 // Response guards for fetch results

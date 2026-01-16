@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { isErrorResponse } from "@/lib/guards";
 
 type Props = {
   userId: string;
@@ -29,12 +30,15 @@ export default function AdminVendorStatusToggle({ userId, initialStatus }: Props
         body: JSON.stringify({ status: next }),
       });
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data?.message || "Update fehlgeschlagen");
+        const data: unknown = await res.json().catch(() => ({}));
+        const msg = isErrorResponse(data) ? data.message : "Update fehlgeschlagen";
+        throw new Error(msg);
       }
       setStatus(String(next).toUpperCase());
     } catch (e: any) {
-      setErr(e?.message || "Fehler");
+      const error = e as unknown;
+      const msg = error instanceof Error ? error.message : String(error ?? "Fehler");
+      setErr(msg);
     } finally {
       setLoading(false);
     }

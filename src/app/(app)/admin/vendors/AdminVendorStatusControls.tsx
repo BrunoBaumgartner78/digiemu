@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { isErrorResponse } from "@/lib/guards";
 
 type Props = {
   userId: string;
@@ -8,7 +9,7 @@ type Props = {
   initialStatus: string | null;
 };
 
-function Badge({ children }: { children: any }) {
+function Badge({ children }: { children: React.ReactNode }) {
   return (
     <span
       className="px-2 py-1 rounded-full text-[11px] font-semibold bg-[rgba(148,163,184,0.12)] border border-[var(--neo-card-border)]"
@@ -35,13 +36,15 @@ export default function AdminVendorStatusControls({ userId, initialIsPublic, ini
         body: JSON.stringify({ status: next }),
       });
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data?.message || "Fehler beim Setzen des Status.");
+        const data: unknown = await res.json().catch(() => ({}));
+        const msg = isErrorResponse(data) ? data.message : "Fehler beim Setzen des Status.";
+        throw new Error(msg);
       }
       setStatus(String(next).toUpperCase());
       setMsg("Status gespeichert.");
     } catch (e: any) {
-      setMsg(e?.message || "Fehler.");
+      const error = e as unknown;
+      setMsg(error instanceof Error ? error.message : String(error ?? "Fehler."));
     } finally {
       setBusy(false);
     }
@@ -55,13 +58,15 @@ export default function AdminVendorStatusControls({ userId, initialIsPublic, ini
         method: "POST",
       });
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data?.message || "Fehler beim Toggle.");
+        const data: unknown = await res.json().catch(() => ({}));
+        const msg = isErrorResponse(data) ? data.message : "Fehler beim Toggle.";
+        throw new Error(msg);
       }
       setIsPublic((v) => !v);
       setMsg("Public-Status gespeichert.");
     } catch (e: any) {
-      setMsg(e?.message || "Fehler.");
+      const error = e as unknown;
+      setMsg(error instanceof Error ? error.message : String(error ?? "Fehler."));
     } finally {
       setBusy(false);
     }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { isErrorResponse } from "@/lib/guards";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -27,16 +28,18 @@ export default function AdminVendorProfileToggles({ userId, initialStatus, initi
         body: JSON.stringify({ status: next }),
       });
       if (!res.ok) {
-        const json = await res.json().catch(() => ({}));
-        toast({ title: "Speichern fehlgeschlagen", description: json?.message ?? "Unbekannter Fehler", variant: "destructive" });
+        const json: unknown = await res.json().catch(() => ({}));
+        const msg = isErrorResponse(json) ? json.message : "Unbekannter Fehler";
+        toast({ title: "Speichern fehlgeschlagen", description: msg, variant: "destructive" });
         return;
       }
       // optimistic update
       setStatus(next.toString().toUpperCase());
       toast({ title: "Vendor Status gespeichert", description: `Status aktualisiert`, variant: "success" });
       router.refresh();
-    } catch (e: any) {
-      toast({ title: "Netzwerkfehler", description: e?.message ?? "Bitte erneut versuchen", variant: "destructive" });
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : String(error ?? "Bitte erneut versuchen");
+      toast({ title: "Netzwerkfehler", description: msg, variant: "destructive" });
     } finally {
       setBusy(null);
     }
@@ -56,8 +59,9 @@ export default function AdminVendorProfileToggles({ userId, initialStatus, initi
       setIsPublic((s) => !s);
       toast({ title: "Profil Sichtbarkeit aktualisiert", description: isPublic ? "Private" : "Public", variant: "success" });
       router.refresh();
-    } catch (e: any) {
-      toast({ title: "Netzwerkfehler", description: e?.message ?? "Bitte erneut versuchen", variant: "destructive" });
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : String(error ?? "Bitte erneut versuchen");
+      toast({ title: "Netzwerkfehler", description: msg, variant: "destructive" });
     } finally {
       setBusy(null);
     }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { isErrorResponse } from "@/lib/guards";
 
 type Props = { userId: string; isBlocked: boolean };
 
@@ -30,12 +31,15 @@ export default function AdminUserStatusToggle({ userId, isBlocked }: Props) {
       if (!res.ok) {
         // rollback on error
         setBlocked(prev);
-        throw new Error("Konnte Sperrstatus nicht ändern.");
+        const payload: unknown = await res.json().catch(() => ({}));
+        const msg = isErrorResponse(payload) ? payload.message : "Konnte Sperrstatus nicht ändern.";
+        throw new Error(msg);
       }
 
       // success: do not render any returned JSON; UI already updated
-    } catch (e: any) {
-      setErr(e?.message || "Fehler");
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : String(error ?? "Fehler");
+      setErr(msg);
     } finally {
       setPending(false);
     }
