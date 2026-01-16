@@ -65,9 +65,10 @@ export default function NewProductForm() {
         router.push("/dashboard/products");
         router.refresh();
       }, 700);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      setErrorMsg(err.message ?? "Unbekannter Fehler.");
+      const msg = err instanceof Error ? err.message : String(err ?? "Unbekannter Fehler.");
+      setErrorMsg(msg);
     } finally {
       setIsSubmitting(false);
     }

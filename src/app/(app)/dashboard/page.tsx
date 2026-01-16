@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@prisma/client";
 import styles from "./DashboardHome.module.css";
 import { LineChart, Trophy, DownloadCloud, Package } from "lucide-react";
 import VendorProfileGateCard from "@/components/vendor/VendorProfileGateCard";
@@ -18,18 +19,18 @@ export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
   if (!session?.user) redirect("/login");
 
-  const user = session.user as any;
+  const user = session.user as { id?: string; role?: string };
   if (user.role !== "VENDOR" && user.role !== "ADMIN") {
     redirect("/account/downloads");
   }
 
-  const vendorId = user.id as string;
+  const vendorId = String(user.id);
 
   // fetch vendor profile for gate (only for VENDOR role)
-  let vp: any = null;
+  let vp: Prisma.VendorProfileGetPayload<{ select: { status: true; isPublic: true } }> | null = null;
   if (user.role === "VENDOR") {
     vp = await prisma.vendorProfile.findUnique({
-      where: { userId: user.id },
+      where: { userId: user.id ?? undefined },
       select: { status: true, isPublic: true },
     });
   }
@@ -68,6 +69,7 @@ export default async function DashboardPage() {
     prisma.product.findMany({
       where: { vendorId },
       orderBy: { updatedAt: "desc" },
+      select: { id: true, title: true },
     }),
 
     prisma.order.findMany({
@@ -133,11 +135,11 @@ export default async function DashboardPage() {
 
   /* ===================== KPIs (20/80 Split) ===================== */
   // Brutto (100%)
-  const grossAllCents = ordersAll.reduce((s: number, o: any) => s + (o.amountCents ?? 0), 0);
-  const grossRangeCents = ordersRange.reduce((s: number, o: any) => s + (o.amountCents ?? 0), 0);
+  const grossAllCents = ordersAll.reduce((s: number, o) => s + (o.amountCents ?? 0), 0);
+  const grossRangeCents = ordersRange.reduce((s: number, o) => s + (o.amountCents ?? 0), 0);
 
   // Vendor (80%) – prefer gespeichertes vendorEarningsCents, fallback 80% von gross
-  let vendorAllCents = ordersAll.reduce((s: number, o: any) => s + (o.vendorEarningsCents ?? 0), 0);
+  let vendorAllCents = ordersAll.reduce((s: number, o) => s + (o.vendorEarningsCents ?? 0), 0);
   if (vendorAllCents === 0 && grossAllCents > 0) {
     vendorAllCents = Math.round(grossAllCents * 0.8);
   }
@@ -184,7 +186,7 @@ export default async function DashboardPage() {
     .map(([id, sum]) => ({
       id,
       sum,
-      title: products.find((p: any) => p.id === id)?.title ?? "Produkt",
+      title: products.find((p) => p.id === id)?.title ?? "Produkt",
     }))
     .sort((a, b) => b.sum - a.sum)
     .slice(0, 5);
@@ -352,7 +354,7 @@ export default async function DashboardPage() {
             <p className="text-xs text-white/70">Noch keine Downloads</p>
           ) : (
             <ul className={styles.recentList ?? "space-y-2"}>
-              {recentDownloads.map((d: any) => (
+              {recentDownloads.map((d) => (
                 <li key={d.id} className={styles.recentItem ?? ""}>
                   <span className={styles.recentBullet ?? ""}>⬇</span>
                   <span className={styles.recentTitle ?? ""}>

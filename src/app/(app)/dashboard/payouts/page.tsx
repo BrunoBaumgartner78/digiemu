@@ -19,9 +19,10 @@ export default async function VendorPayoutsPage() {
   const session = await getServerSession(auth);
 
   if (!session?.user) redirect("/login");
-  if (session.user.role !== "VENDOR") redirect("/login");
+  const user = session.user as { id?: string; role?: string };
+  if (user.role !== "VENDOR") redirect("/login");
 
-  const vendorId = session.user.id;
+  const vendorId = String(user.id);
 
   // ✅ Robust: ältere/abweichende Status-Werte berücksichtigen
   const paidLikeStatuses = [
