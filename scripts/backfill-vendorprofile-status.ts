@@ -1,8 +1,11 @@
 import { prisma } from "../src/lib/prisma";
 
 async function main() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const result = await prisma.vendorProfile.updateMany({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     where: { status: null as any }, // Prisma typing: allow null check
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     data: { status: "PENDING" as any },
   });
 

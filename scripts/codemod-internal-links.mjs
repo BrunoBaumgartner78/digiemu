@@ -85,7 +85,7 @@ function hasUnsafeAnchorAttrs(openTag) {
 const A_TAG_RE = /<a\b([\s\S]*?)\bhref\s*=\s*(['"])([\s\S]*?)\2([\s\S]*?)>([\s\S]*?)<\/a>/gi;
 
 function collectATags(file, src) {
-  const lines = src.split(/\r?\n/);
+  const _lines = src.split(/\r?\n/);
   const hits = [];
   let m;
   while ((m = A_TAG_RE.exec(src))) {

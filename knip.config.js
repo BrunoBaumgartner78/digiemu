@@ -1,4 +1,4 @@
-﻿export default {
+﻿const knipConfig = {
   // Only analyze actual app source
   project: ['src/**/*.{ts,tsx,js,jsx}'],
 
@@ -12,4 +12,6 @@
     'build/**',
     'coverage/**',
   ],
-};
+}
+
+export default knipConfig

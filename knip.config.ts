@@ -1,4 +1,6 @@
 // knip.config.js
-export default {
+const knipConfig = {
   project: ['src/**/*.{ts,tsx,js,jsx}'],
-};
+}
+
+export default knipConfig
