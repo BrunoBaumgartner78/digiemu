@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { isRecord, getStringProp, getBooleanProp } from "@/lib/guards";
+import { isRecord, getStringProp, getBooleanProp, getErrorMessage } from "@/lib/guards";
 import { Prisma } from "@prisma/client";
 
 const ALLOWED_ROLES = ["BUYER", "VENDOR", "ADMIN"] as const;
@@ -76,8 +76,8 @@ export async function PATCH(
     });
 
     return NextResponse.json(updated);
-  } catch (error) {
-    console.error("Admin user update error", error);
+  } catch (e: unknown) {
+    console.error("Admin user update error", getErrorMessage(e));
     return NextResponse.json({ error: "Failed to update user" }, { status: 500 });
   }
 }

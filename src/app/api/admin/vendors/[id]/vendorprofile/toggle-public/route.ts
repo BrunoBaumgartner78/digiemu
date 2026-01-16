@@ -42,7 +42,7 @@ export async function POST(_req: NextRequest, context: { params: Promise<{ id: s
     await prisma.vendorProfile.update({ where: { userId }, data: { isPublic: !updated.isPublic } });
     return NextResponse.json({ ok: true }, { status: 200, headers: { "Cache-Control": "no-store" } });
   } catch (e: unknown) {
-    console.error("[admin-vendorprofile-toggle-public]", e);
+    console.error("[admin-vendorprofile-toggle-public]", getErrorMessage(e));
     return NextResponse.json({ message: getErrorMessage(e) }, { status: 500, headers: { "Cache-Control": "no-store" } });
   }
 }

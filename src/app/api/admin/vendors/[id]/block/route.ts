@@ -3,7 +3,6 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { isRecord, getBooleanProp, getStringProp } from "@/lib/guards";
-import type { VendorStatus } from "@prisma/client";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";

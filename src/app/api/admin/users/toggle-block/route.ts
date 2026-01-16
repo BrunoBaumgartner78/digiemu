@@ -62,7 +62,7 @@ export async function POST(_req: NextRequest) {
 
     return NextResponse.json({ ok: true, user: updated });
   } catch (e: unknown) {
-    console.error("[toggle-block]", e);
+    console.error("[toggle-block]", getErrorMessage(e));
     return NextResponse.json({ message: getErrorMessage(e) || "Server error" }, { status: 500 });
   }
 }

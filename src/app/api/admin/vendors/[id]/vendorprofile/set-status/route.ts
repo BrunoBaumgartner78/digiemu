@@ -3,7 +3,6 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { isRecord, getStringProp, getErrorMessage } from "@/lib/guards";
-import { Prisma } from "@prisma/client";
 import type { VendorStatus } from "@prisma/client";
 
 export const runtime = "nodejs";
@@ -42,7 +41,7 @@ export async function POST(_req: NextRequest, context: { params: Promise<{ id: s
 
     return NextResponse.json({ ok: true }, { status: 200, headers: { "Cache-Control": "no-store" } });
   } catch (e: unknown) {
-    console.error("[admin-vendorprofile-set-status]", e);
+    console.error("[admin-vendorprofile-set-status]", getErrorMessage(e));
     return NextResponse.json({ message: getErrorMessage(e) }, { status: 500, headers: { "Cache-Control": "no-store" } });
   }
 }

@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { prisma } from "@/lib/prisma";
+import { getErrorMessage } from "@/lib/guards";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -26,10 +27,10 @@ export async function POST(req: NextRequest) {
   try {
     const buf = Buffer.from(await req.arrayBuffer());
     event = stripe.webhooks.constructEvent(buf, sig, webhookSecret);
-  } catch (err: any) {
-    console.error("❌ Webhook signature verification failed:", err?.message);
+  } catch (err: unknown) {
+    console.error("❌ Webhook signature verification failed:", getErrorMessage(err));
     return NextResponse.json(
-      { message: `Webhook Error: ${err?.message ?? "Invalid signature"}` },
+      { message: `Webhook Error: ${getErrorMessage(err) ?? "Invalid signature"}` },
       { status: 400 }
     );
   }
@@ -46,15 +47,15 @@ export async function POST(req: NextRequest) {
         type: event.type,
       },
     });
-  } catch (e: any) {
+  } catch (e: unknown) {
     // Prisma unique violation => already processed
     // P2002 = Unique constraint failed
-    if (e?.code === "P2002") {
+    if ((e as { code?: string })?.code === "P2002") {
       console.log("↩️ Duplicate webhook event ignored:", event.id, event.type);
       return NextResponse.json({ received: true, duplicate: true }, { status: 200 });
     }
     // Any other DB error: return 500 so Stripe can retry
-    console.error("❌ stripeWebhookEvent.create failed:", e);
+    console.error("❌ stripeWebhookEvent.create failed:", getErrorMessage(e));
     return NextResponse.json({ message: "DB error" }, { status: 500 });
   }
 
@@ -151,27 +152,27 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({ received: true }, { status: 200 });
-  } catch (err: any) {
-    console.error("❌ Webhook handler error:", err);
+  } catch (err: unknown) {
+    console.error("❌ Webhook handler error:", getErrorMessage(err));
 
     // Best-effort error log (no User relation; safe for production)
     try {
       await prisma.stripeWebhookError.create({
         data: {
-          eventId: event?.id ?? null,
-          type: event?.type ?? null,
-          message: err?.message ?? String(err),
+          eventId: (event as { id?: string })?.id ?? null,
+          type: (event as { type?: string })?.type ?? null,
+          message: getErrorMessage(err) ?? String(err),
           meta: {
-            stack: err?.stack,
+            stack: (err as { stack?: string })?.stack,
           },
         },
       });
-    } catch (_e) {
-      console.error("❌ stripeWebhookError.create failed:", _e);
+    } catch (_e: unknown) {
+      console.error("❌ stripeWebhookError.create failed:", getErrorMessage(_e));
     }
 
     return NextResponse.json(
-      { message: err?.message ?? "Webhook handler failed" },
+      { message: getErrorMessage(err) ?? "Webhook handler failed" },
       { status: 500 }
     );
   }
