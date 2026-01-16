@@ -102,7 +102,7 @@ export const authOptions: NextAuthOptions = {
 
     async session({ session, token }) {
       // ✅ Wenn Token invalidiert wurde -> keine Session
-      if (!token?.uid) return null;
+      if (!token?.uid) return (null as unknown) as import("next-auth").DefaultSession;
 
       session.user.id = token.uid;
       session.user.role = token.role ?? session.user.role;

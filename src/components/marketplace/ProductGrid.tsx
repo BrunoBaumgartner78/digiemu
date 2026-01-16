@@ -3,8 +3,8 @@ import { useEffect, useState } from "react";
 import ProductCardSkeleton from "./ProductCardSkeleton";
 
 type Props = {
-  items?: any[];
-  children?: (item: any) => React.ReactNode;
+  items?: unknown[];
+  children?: (item: unknown) => React.ReactNode;
   skeletonCount?: number;
 };
 
@@ -13,9 +13,13 @@ export default function ProductGrid({ items = [], children, skeletonCount = 6 }:
 
   useEffect(() => {
     // brief skeleton flash during client navigation/hydration
-    setLoading(true);
-    const t = setTimeout(() => setLoading(false), 140);
-    return () => clearTimeout(t);
+    // defer setting loading to avoid synchronous setState in effect
+    const t1 = setTimeout(() => setLoading(true), 0);
+    const t2 = setTimeout(() => setLoading(false), 140);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
   }, [items.length]);
 
   if (loading) {

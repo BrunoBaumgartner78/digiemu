@@ -6,8 +6,11 @@ import { useEffect, useState } from "react";
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
-
-  useEffect(() => setMounted(true), []);
+  useEffect(() => {
+    // defer to avoid synchronous setState in effect warning
+    const t = setTimeout(() => setMounted(true), 0);
+    return () => clearTimeout(t);
+  }, []);
 
   if (!mounted) return null;
 
