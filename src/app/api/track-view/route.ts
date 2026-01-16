@@ -1,7 +1,7 @@
 // src/app/api/track-view/route.ts
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { prisma } from "@/lib/prisma";
+import { getErrorMessage } from "@/lib/guards";
 
 export async function POST(_req: Request) {
   try {
@@ -36,9 +36,9 @@ export async function POST(_req: Request) {
     // await prisma.product.update({ where: { id: productId }, data: { viewCount: { increment: 1 } } });
 
     return NextResponse.json({ ok: true, viewerId });
-  } catch (e: any) {
+  } catch (e: unknown) {
     return NextResponse.json(
-      { error: "Track view failed", details: e?.message ?? String(e) },
+      { error: "Track view failed", details: getErrorMessage(e) ?? String(e) },
       { status: 500 }
     );
   }

@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { isRecord, getBooleanProp, getStringProp } from "@/lib/guards";
+import type { VendorStatus } from "@prisma/client";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -24,7 +25,7 @@ export async function POST(
   const shouldBlock = typeof shouldBlockValue === "boolean" ? shouldBlockValue : true;
   const nextVendorStatus = shouldBlock ? "BLOCKED" : "PENDING";
 
-  const result = await prisma.$transaction(async (tx) => {
+  await prisma.$transaction(async (tx) => {
     // vendor profile status
     const vp = await tx.vendorProfile.findUnique({ where: { userId } });
     if (vp) {
@@ -50,5 +51,6 @@ export async function POST(
 
     return { ok: true };
   });
+
   return NextResponse.json({ ok: true });
 }

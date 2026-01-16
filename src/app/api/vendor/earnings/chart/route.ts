@@ -11,15 +11,16 @@ export const dynamic = "force-dynamic";
 export async function GET(_req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
+    const user = session?.user as { id?: string; role?: string } | undefined;
 
-    if (!session?.user?.id || session.user.role !== "VENDOR") {
+    if (!user?.id || user.role !== "VENDOR") {
       return NextResponse.json(
         { error: "Unauthorized", daily: [], totalEarnings: 0 },
         { status: 401 }
       );
     }
 
-    const vendorId = session.user.id;
+    const vendorId = String(user.id);
 
     // ✅ Lade alle PAID/COMPLETED Orders für Vendor-Produkte
     // (Passe Status ggf. an dein System an: "PAID" / "COMPLETED")

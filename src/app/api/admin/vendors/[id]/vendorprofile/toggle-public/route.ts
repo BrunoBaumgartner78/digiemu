@@ -3,7 +3,6 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { isRecord, getStringProp, getErrorMessage } from "@/lib/guards";
-import { Prisma } from "@prisma/client";
 import type { VendorStatus } from "@prisma/client";
 
 export const runtime = "nodejs";

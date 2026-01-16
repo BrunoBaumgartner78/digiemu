@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 
 export async function POST(_req: NextRequest) {
   const session = await getServerSession(auth);
-  const maybeUser = session?.user;
+  const maybeUser = session?.user as { id?: string; role?: string } | undefined;
   if (!isRecord(maybeUser) || getStringProp(maybeUser, "role") !== "ADMIN") {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
@@ -17,9 +17,6 @@ export async function POST(_req: NextRequest) {
   const bodyUnknown = await _req.json().catch(() => null);
   const userId = getStringProp(bodyUnknown, "userId") ?? "";
   if (!userId.trim()) {
-    return NextResponse.json({ message: "Missing userId" }, { status: 400 });
-  }
-  if (!userId) {
     return NextResponse.json({ message: "Missing userId" }, { status: 400 });
   }
 

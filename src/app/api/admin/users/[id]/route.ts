@@ -15,8 +15,7 @@ export async function PATCH(
 ) {
   const params = await context.params;
   const session = await getServerSession(authOptions);
-
-  const maybeUser = session?.user;
+  const maybeUser = session?.user as { id?: string; role?: string } | undefined;
   if (!isRecord(maybeUser) || getStringProp(maybeUser, "role") !== "ADMIN") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
