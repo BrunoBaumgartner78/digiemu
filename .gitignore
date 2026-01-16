@@ -43,3 +43,13 @@ lint.log
 *.tsbuildinfo
 next-env.d.ts
 .env*.local
+
+# local caches
+.eslintcache
+
+# local reports
+reports/*.txt
+
+# temporary scripts
+scripts/*v2.*.mjs
+
