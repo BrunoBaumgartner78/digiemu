@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { isRecord, getString, getNumber } from "@/lib/guards";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -41,27 +42,29 @@ export async function PUT(_req: Request, ctx: Ctx) {
     return json("Product is blocked", 403);
   }
 
-  const body = await _req.json().catch(() => ({}));
+  const body: unknown = await _req.json().catch(() => ({}));
 
-  const title = typeof body.title === "string" ? body.title.trim() : "";
-  const description =
-    typeof body.description === "string" ? body.description.trim() : "";
-  const category =
-    typeof body.category === "string" && body.category.trim()
-      ? body.category.trim()
-      : "other";
-  const thumbnail =
-    typeof body.thumbnailUrl === "string" && body.thumbnailUrl.trim()
-      ? body.thumbnailUrl.trim()
-      : null;
+  const title = isRecord(body) ? (getString(body.title) ?? "").trim() : "";
+  const description = isRecord(body) ? (getString(body.description) ?? "").trim() : "";
+  const category = isRecord(body) && getString(body.category) && getString(body.category)!.trim()
+    ? getString(body.category)!.trim()
+    : "other";
+  const thumbnail = isRecord(body) && getString(body.thumbnailUrl) && getString(body.thumbnailUrl)!.trim()
+    ? getString(body.thumbnailUrl)!.trim()
+    : null;
 
-  const priceChf = Number(body.priceChf);
+  let priceChf = NaN;
+  if (isRecord(body)) {
+    const v = body.priceChf;
+    if (typeof v === "number") priceChf = v;
+    else if (typeof v === "string" && v.trim() !== "") priceChf = Number(v);
+  }
   if (!Number.isFinite(priceChf) || priceChf < 0) {
     return json("Invalid priceChf", 400);
   }
   const priceCents = Math.round(priceChf * 100);
 
-  const isActive = !!body.isActive;
+  const isActive = isRecord(body) ? !!body.isActive : false;
 
   // Enforce: if product.status === 'BLOCKED', server forces isActive = false
   const finalIsActive = product.status === "BLOCKED" ? false : isActive;

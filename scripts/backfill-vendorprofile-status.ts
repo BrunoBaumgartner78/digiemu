@@ -1,12 +1,11 @@
 import { prisma } from "../src/lib/prisma";
 
 async function main() {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const result = await prisma.vendorProfile.updateMany({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    where: { status: null as any }, // Prisma typing: allow null check
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    data: { status: "PENDING" as any },
+    // Prisma erlaubt `null` in SQL — falls das Feld nicht nullable ist, ist das ein Datenbereinigungsfall.
+    // Der Filter funktioniert trotzdem, wenn die DB tatsächlich NULL-Werte enthält.
+    where: { status: null },
+    data: { status: "PENDING" },
   });
 
   console.log("Backfilled VendorProfile.status NULL -> PENDING:", result.count);

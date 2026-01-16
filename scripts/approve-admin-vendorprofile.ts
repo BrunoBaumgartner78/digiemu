@@ -10,14 +10,12 @@ async function main() {
   const vp = await prisma.vendorProfile.upsert({
     where: { userId: admin.id },
     update: {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      status: "APPROVED" as any,
+      status: "APPROVED",
       isPublic: true,
     },
     create: {
       userId: admin.id,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      status: "APPROVED" as any,
+      status: "APPROVED",
       isPublic: true,
       displayName: "Admin Vendor",
     },

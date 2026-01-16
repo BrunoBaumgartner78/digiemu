@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { isRecord, getString } from "@/lib/guards";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -40,18 +41,18 @@ export async function POST(_req: NextRequest) {
     }
 
     // Body
-    const body = await _req.json().catch(() => ({}));
-    const title = typeof body.title === "string" ? body.title.trim() : "";
-    const description = typeof body.description === "string" ? body.description.trim() : "";
-    const category =
-      typeof body.category === "string" && body.category.trim() ? body.category.trim() : "other";
+    const body: unknown = await _req.json().catch(() => ({}));
+    const title = isRecord(body) ? (getString(body.title) ?? "").trim() : "";
+    const description = isRecord(body) ? (getString(body.description) ?? "").trim() : "";
+    const category = isRecord(body) && getString(body.category) && getString(body.category)!.trim()
+      ? getString(body.category)!.trim()
+      : "other";
 
-    const fileUrl = typeof body.downloadUrl === "string" ? body.downloadUrl.trim() : "";
-    const priceCents = toPriceCents(body.priceChf);
-    const thumbnail =
-      typeof body.thumbnailUrl === "string" && body.thumbnailUrl.trim()
-        ? body.thumbnailUrl.trim()
-        : null;
+    const fileUrl = isRecord(body) && getString(body.downloadUrl) ? getString(body.downloadUrl)!.trim() : "";
+    const priceCents = isRecord(body) ? toPriceCents(body.priceChf) : null;
+    const thumbnail = isRecord(body) && getString(body.thumbnailUrl) && getString(body.thumbnailUrl)!.trim()
+      ? getString(body.thumbnailUrl)!.trim()
+      : null;
 
     if (!title) return NextResponse.json({ message: "Titel fehlt." }, { status: 400 });
     if (!description) return NextResponse.json({ message: "Beschreibung fehlt." }, { status: 400 });

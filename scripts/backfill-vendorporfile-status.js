@@ -7,8 +7,8 @@ async function main() {
 
   const res = await prisma.vendorProfile.updateMany({
     where: { status: null },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    data: { status: "PENDING" as any },
+    // (lint) JS script; keep minimal.
+    data: { status: "PENDING" },
   });
 
   const afterNull = await prisma.vendorProfile.count({

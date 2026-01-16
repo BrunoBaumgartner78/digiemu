@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { isRecord, getString } from "@/lib/guards";
 import Stripe from "stripe";
 import { rateLimitCheck, keyFromReq } from "@/lib/rateLimit";
 
@@ -35,8 +36,8 @@ export async function POST(_req: NextRequest) {
     return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
   }
 
-  const body = await _req.json().catch(() => ({}));
-  const productId = body?.productId as string | undefined;
+  const body: unknown = await _req.json().catch(() => ({}));
+  const productId = isRecord(body) ? (getString(body.productId) ?? undefined) : undefined;
 
   if (!productId) {
     return NextResponse.json({ error: "productId required" }, { status: 400 });
