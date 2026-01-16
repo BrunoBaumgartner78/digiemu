@@ -17,7 +17,7 @@ function dayKey(d = new Date()) {
 
 type Ctx = { params: Promise<{ id: string }> };
 
-export async function POST(req: NextRequest, ctx: Ctx) {
+export async function POST(_req: NextRequest, ctx: Ctx) {
   const { id } = await ctx.params;
   const productId = String(id || "").trim();
   if (!productId) {
@@ -29,10 +29,10 @@ export async function POST(req: NextRequest, ctx: Ctx) {
   const userId = (session?.user as any)?.id as string | undefined;
 
   // best-effort anonymous fingerprint (works behind proxies too)
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
-    || req.headers.get("x-real-ip")
+  const ip = _req.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
+    || _req.headers.get("x-real-ip")
     || "unknown";
-  const ua = req.headers.get("user-agent") || "unknown";
+  const ua = _req.headers.get("user-agent") || "unknown";
   const fingerprint = `${ip}__${ua}`.slice(0, 190);
 
   const day = dayKey();

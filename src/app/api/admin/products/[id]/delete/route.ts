@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { logAuditEvent } from "@/lib/logAuditEvent";
 
 export async function POST(
-  req: NextRequest,
+  _req: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
   const params = await context.params;
@@ -32,7 +32,7 @@ export async function POST(
       });
     }
     // For forms, redirect back to admin products page
-    return NextResponse.redirect(new URL("/admin/products", req.url));
+    return NextResponse.redirect(new URL("/admin/products", _req.url));
   } catch (error) {
     console.error("Admin delete error:", error);
     return NextResponse.json(

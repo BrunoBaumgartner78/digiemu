@@ -11,7 +11,7 @@ function toPriceCents(priceChf: unknown): number | null {
   return Math.round(priceChf * 100);
 }
 
-export async function POST(req: NextRequest) {
+export async function POST(_req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Body
-    const body = await req.json().catch(() => ({}));
+    const body = await _req.json().catch(() => ({}));
     const title = typeof body.title === "string" ? body.title.trim() : "";
     const description = typeof body.description === "string" ? body.description.trim() : "";
     const category =

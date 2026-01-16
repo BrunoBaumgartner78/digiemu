@@ -7,10 +7,10 @@ import { rateLimitCheck, keyFromReq } from "@/lib/rateLimit";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function GET(req: NextRequest, ctx: { params: Promise<{ orderId: string }> }) {
+export async function GET(_req: NextRequest, ctx: { params: Promise<{ orderId: string }> }) {
   // Rate limit: download API per IP (protect hotlinking/abuse)
   try {
-    const key = keyFromReq(req, "download_api");
+    const key = keyFromReq(_req, "download_api");
     const rl = rateLimitCheck(key, 30, 60_000);
     if (!rl.allowed) {
       return NextResponse.json({ error: "TOO_MANY_REQUESTS" }, { status: 429, headers: { "Retry-After": String(rl.retryAfter ?? 60) } });
@@ -22,7 +22,7 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ orderId: st
   const userId = (session?.user as any)?.id as string | undefined;
 
   if (!userId) {
-    return NextResponse.redirect(new URL("/auth/login", req.url), { status: 303 });
+    return NextResponse.redirect(new URL("/auth/login", _req.url), { status: 303 });
   }
 
   const { orderId } = await ctx.params;

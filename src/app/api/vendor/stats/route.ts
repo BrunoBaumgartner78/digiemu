@@ -4,7 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
 
     const vendorId = (session.user as any).id;
 
-    const url = new URL(req.url);
+    const url = new URL(_req.url);
     const rangeDays = Number(url.searchParams.get("range_days") ?? "30");
     const since = new Date(Date.now() - rangeDays * 24 * 60 * 60 * 1000);
 

@@ -19,7 +19,7 @@ export async function GET(_req: Request, ctx: Ctx) {
   return NextResponse.json(comments);
 }
 
-export async function POST(req: Request, ctx: Ctx) {
+export async function POST(_req: Request, ctx: Ctx) {
   const { id } = await ctx.params;
 
   const session = await getServerSession(authOptions);
@@ -29,7 +29,7 @@ export async function POST(req: Request, ctx: Ctx) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { content } = await req.json();
+  const { content } = await _req.json();
 
   if (!content || typeof content !== "string") {
     return NextResponse.json(

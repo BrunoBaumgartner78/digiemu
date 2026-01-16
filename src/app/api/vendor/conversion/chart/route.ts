@@ -11,7 +11,7 @@ type DayAgg = {
   sales: number;
 };
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   const session = await getServerSession(authOptions);
   const vendorId = session?.user?.id;
 
@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { searchParams } = new URL(req.url);
+  const { searchParams } = new URL(_req.url);
   const range = (searchParams.get("range") ?? "30") as RangeParam;
 
   const days =

@@ -6,7 +6,7 @@ import { authOptions } from "@/lib/auth";
 
 type Ctx = { params: Promise<{ id: string }> };
 
-export async function GET(req: NextRequest, { params }: Ctx) {
+export async function GET(_req: NextRequest, { params }: Ctx) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -16,7 +16,7 @@ export async function GET(req: NextRequest, { params }: Ctx) {
   const vendorId = session.user.id;
 
   // Optional: query params (z.B. includeStats=1)
-  const { searchParams } = new URL(req.url);
+  const { searchParams } = new URL(_req.url);
   const includeStats = searchParams.get("includeStats") === "1";
 
   const product = await prisma.product.findFirst({

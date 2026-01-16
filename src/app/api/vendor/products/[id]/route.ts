@@ -14,7 +14,7 @@ function toInt(v: unknown): number | null {
   return Number.isFinite(n) ? Math.trunc(n) : null;
 }
 
-export async function PATCH(req: Request, ctx: Ctx) {
+export async function PATCH(_req: Request, ctx: Ctx) {
   const session = await getServerSession(auth);
   const userId = (session?.user as any)?.id as string | undefined;
   const role = (session?.user as any)?.role as string | undefined;
@@ -65,7 +65,7 @@ export async function PATCH(req: Request, ctx: Ctx) {
     return NextResponse.json({ message: "Produkt ist gesperrt." }, { status: 403 });
   }
 
-  const body = await req.json().catch(() => ({}));
+  const body = await _req.json().catch(() => ({}));
 
   const title = String(body.title ?? "").trim();
   const description = String(body.description ?? "").trim();

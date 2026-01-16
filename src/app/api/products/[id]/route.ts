@@ -13,7 +13,7 @@ function json(message: string, status = 400) {
   return NextResponse.json({ message }, { status });
 }
 
-export async function PUT(req: Request, ctx: Ctx) {
+export async function PUT(_req: Request, ctx: Ctx) {
   const session = await getServerSession(authOptions);
   const user = session?.user as any;
 
@@ -41,7 +41,7 @@ export async function PUT(req: Request, ctx: Ctx) {
     return json("Product is blocked", 403);
   }
 
-  const body = await req.json().catch(() => ({}));
+  const body = await _req.json().catch(() => ({}));
 
   const title = typeof body.title === "string" ? body.title.trim() : "";
   const description =

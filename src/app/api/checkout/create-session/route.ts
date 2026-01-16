@@ -17,10 +17,10 @@ export function GET() {
   return new NextResponse("Method Not Allowed", { status: 405 });
 }
 
-export async function POST(req: NextRequest) {
+export async function POST(_req: NextRequest) {
   // Rate limit: checkout creation per IP
   try {
-    const key = keyFromReq(req, "checkout_create");
+    const key = keyFromReq(_req, "checkout_create");
     const rl = rateLimitCheck(key, 20, 60_000);
     if (!rl.allowed) {
       return NextResponse.json({ error: "TOO_MANY_REQUESTS" }, { status: 429, headers: { "Retry-After": String(rl.retryAfter ?? 60) } });
@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
   }
 
-  const body = await req.json().catch(() => ({}));
+  const body = await _req.json().catch(() => ({}));
   const productId = body?.productId as string | undefined;
 
   if (!productId) {
@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "PRODUCT_FILE_MISSING" }, { status: 409 });
   }
 
-  const origin = req.nextUrl.origin;
+  const origin = _req.nextUrl.origin;
 
   // 1) Checkout Session zuerst erstellen (ohne orderId)
   const checkout = await stripe.checkout.sessions.create({

@@ -19,7 +19,7 @@ export async function GET(_req: Request, ctx: Ctx) {
   return NextResponse.json(reviews);
 }
 
-export async function POST(req: Request, ctx: Ctx) {
+export async function POST(_req: Request, ctx: Ctx) {
   const { id: productId } = await ctx.params;
 
   const session = await getServerSession(authOptions);
@@ -29,7 +29,7 @@ export async function POST(req: Request, ctx: Ctx) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { rating, content } = await req.json();
+  const { rating, content } = await _req.json();
 
   if (typeof rating !== "number" || rating < 1 || rating > 5) {
     return NextResponse.json({ error: "Invalid rating" }, { status: 400 });

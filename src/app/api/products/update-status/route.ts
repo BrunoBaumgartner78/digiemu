@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function POST(req: NextRequest) {
+export async function POST(_req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
     const dbUser = await prisma.user.findUnique({ where: { email: session.user.email }, select: { id: true, role: true } });
     if (!dbUser) return NextResponse.json({ message: "User not found" }, { status: 400 });
 
-    const body = await req.json().catch(() => ({}));
+    const body = await _req.json().catch(() => ({}));
     const productId = typeof body.productId === "string" ? body.productId : String(body.productId ?? "");
     if (!productId) return NextResponse.json({ message: "productId required" }, { status: 400 });
 
