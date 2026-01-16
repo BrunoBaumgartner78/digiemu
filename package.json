@@ -10,7 +10,7 @@
     "dev:allfeatures": "cross-env NEXT_PUBLIC_FEATURE_ADMIN=true NEXT_PUBLIC_FEATURE_COMMUNITY=true NEXT_PUBLIC_FEATURE_ANALYTICS=true next dev",
     "dev": "next dev --webpack",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "node scripts/lint.cjs",
     "postinstall": "prisma generate",
     "build": "prisma generate && next build",
     "build:local": "prisma generate && next build"
