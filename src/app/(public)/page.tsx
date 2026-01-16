@@ -342,7 +342,7 @@ export default async function HomePage() {
           Umsätze erzielen.
         </p>
         <p style={{ opacity: 0.85, lineHeight: 1.75, marginTop: 10, maxWidth: 980 }}>
-          Unser Anspruch ist ein Marktplatz, der nicht „laut" sein muss, um zu funktionieren: saubere
+          Unser Anspruch ist ein Marktplatz, der nicht „laut&quot; sein muss, um zu funktionieren: saubere
           Performance, klare Navigation, und ein Design, das sich angenehm anfühlt.
         </p>
       </section>
