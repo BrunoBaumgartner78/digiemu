@@ -101,6 +101,17 @@ export function safeStringifyJson(v: unknown): string {
   }
 }
 
+export function getStringArray(value: unknown): string[] | null {
+  if (isArrayOfStrings(value)) return value;
+  if (isString(value)) return [value];
+  return null;
+}
+
+export function getOptionalNumber(value: unknown): number | null {
+  if (value === undefined || value === null) return null;
+  return parseParamToNumber(value);
+}
+
 // Response guards for fetch results
 export function isOkResponse(obj: unknown): obj is { ok: true } {
   return isRecord(obj) && obj.ok === true;

@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import type { AdminProductListRow } from "@/lib/admin-types";
 import Link from "next/link";
 import AdminProductStatusToggle from "./AdminProductStatusToggle";
 import { getMarketplaceVisibilityDebug } from "@/lib/marketplace-visibility";
@@ -60,7 +61,7 @@ function getPageItems(current: number, total: number) {
 export default async function AdminProductsPage(props: Props) {
   const session = await getServerSession(authOptions);
   if (!session) redirect("/login");
-  const user = session.user as any;
+  const user = session.user as { role?: string };
   if (user.role !== "ADMIN") redirect("/dashboard");
 
   const sp = props.searchParams ? await props.searchParams : {};
@@ -91,7 +92,7 @@ export default async function AdminProductsPage(props: Props) {
   const totalPages = Math.max(1, Math.ceil(totalProducts / pageSize));
   const page = clamp(requestedPage, 1, totalPages);
 
-  const [products, vendorProfiles] = await Promise.all([
+  const [productsRaw, vendorProfiles] = await Promise.all([
     prisma.product.findMany({
       where,
       orderBy: { createdAt: "desc" },
@@ -114,9 +115,11 @@ export default async function AdminProductsPage(props: Props) {
     }),
   ]);
 
-  const hasPrev = page > 1;
-  const hasNext = page < totalPages;
-  const pageItems = getPageItems(page, totalPages);
+    const products = productsRaw as AdminProductListRow[];
+
+    const hasPrev = page > 1;
+    const hasNext = page < totalPages;
+    const pageItems = getPageItems(page, totalPages);
 
   return (
     <div className="admin-shell">

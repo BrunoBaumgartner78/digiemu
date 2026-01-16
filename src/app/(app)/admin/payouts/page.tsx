@@ -2,6 +2,7 @@
 import { getServerSession } from "next-auth";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import type { AdminVendorListRowLite, AdminPayoutListRow } from "@/lib/admin-types";
 import Link from "next/link";
 
 export const metadata = {
@@ -26,7 +27,7 @@ export default async function AdminPayoutsPage() {
   }
 
   // Alle Vendoren laden
-  const vendors = await prisma.user.findMany({
+  const vendorsRaw = await prisma.user.findMany({
     where: { role: "VENDOR" },
     include: {
       vendorProfile: true,
@@ -44,11 +45,11 @@ export default async function AdminPayoutsPage() {
     },
   });
 
+  const vendors = vendorsRaw as AdminVendorListRowLite[];
+
   // Berechnung der Vendor-Earnings
   const vendorRows = vendors.map((vendor) => {
-    const earnings = vendor.products.flatMap((p) =>
-      p.orders.map((o) => o.vendorEarningsCents || 0)
-    );
+    const earnings = vendor.products.flatMap((p) => p.orders.map((o) => o.vendorEarningsCents || 0));
 
     const totalEarnings = earnings.reduce((a, b) => a + b, 0);
 
@@ -63,6 +64,11 @@ export default async function AdminPayoutsPage() {
       totalEarnings,
       alreadyPaid,
       pending,
+    } as {
+      vendor: AdminVendorListRowLite;
+      totalEarnings: number;
+      alreadyPaid: number;
+      pending: number;
     };
   });
 

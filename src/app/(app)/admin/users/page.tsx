@@ -2,6 +2,9 @@
 import { getServerSession } from "next-auth";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
+import type { Role } from "@prisma/client";
+import type { AdminUserListRow } from "@/lib/admin-types";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import AdminUserStatusToggle from "./AdminUserStatusToggle";
@@ -58,7 +61,7 @@ export default async function AdminUsersPage({
   searchParams: Promise<AdminUsersSearchParams>;
 }) {
   const session = await getServerSession(auth);
-  if (!session || (session.user as any)?.role !== "ADMIN") {
+  if (!session || (session.user as { role?: string })?.role !== "ADMIN") {
     redirect("/dashboard");
   }
 
@@ -71,25 +74,27 @@ export default async function AdminUsersPage({
   const page = clampInt(params.page, 1, 1, 10_000);
   const pageSize = clampInt(params.pageSize, 25, 10, 100);
 
-  const where: any = {};
+  const where: Prisma.UserWhereInput = {};
   if (search.trim()) {
     where.OR = [
       { email: { contains: search.trim(), mode: "insensitive" } },
       { name: { contains: search.trim(), mode: "insensitive" } },
     ];
   }
-  if (role !== "ALL") where.role = role;
+  if (role !== "ALL") where.role = role as Role;
 
-  const [users, totalCount] = await Promise.all([
+  const [usersRaw, totalCount] = await Promise.all([
     prisma.user.findMany({
       where,
       orderBy: { createdAt: "desc" },
       take: pageSize,
       skip: (page - 1) * pageSize,
-      include: { orders: true, products: true },
+      include: { orders: { select: { id: true } }, products: { select: { id: true } } },
     }),
     prisma.user.count({ where }),
   ]);
+
+  const users = usersRaw as AdminUserListRow[];
 
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
   const safePage = Math.min(page, totalPages);

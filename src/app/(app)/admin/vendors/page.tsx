@@ -2,6 +2,8 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import type { AdminVendorListRow, AdminVendorListRowLite } from "@/lib/admin-types";
+import { Prisma } from "@prisma/client";
 import Link from "next/link";
 import AdminVendorStatusControls from "./AdminVendorStatusControls";
 
@@ -51,7 +53,7 @@ function getPageItems(current: number, total: number) {
 export default async function AdminVendorsPage(props: { searchParams: Promise<SearchParams> }) {
   const session = await getServerSession(authOptions);
 
-  if (!session || (session.user as any)?.role !== "ADMIN") {
+  if (!session || (session.user as { role?: string })?.role !== "ADMIN") {
     return (
       <main className="min-h-[70vh] flex items-center justify-center px-4">
         <div className="neumorph-card p-6 max-w-md text-center">
@@ -93,7 +95,7 @@ export default async function AdminVendorsPage(props: { searchParams: Promise<Se
   const pageCount = Math.max(1, Math.ceil(totalCount / pageSize));
   const page = clamp(requestedPage, 1, pageCount);
 
-  const [vendors] = await Promise.all([
+  const [vendorsRaw] = await Promise.all([
     prisma.user.findMany({
       where,
       skip: (page - 1) * pageSize,
@@ -103,10 +105,12 @@ export default async function AdminVendorsPage(props: { searchParams: Promise<Se
         products: {
           include: { orders: { select: { vendorEarningsCents: true } } },
         },
-        vendorProfile: { select: { id: true, isPublic: true, status: true } },
+        vendorProfile: { select: { id: true, isPublic: true, status: true, displayName: true } },
       },
     }),
   ]);
+
+  const vendors = vendorsRaw as unknown as AdminVendorListRowLite[];
 
   const hasPrev = page > 1;
   const hasNext = page < pageCount;
@@ -179,7 +183,7 @@ export default async function AdminVendorsPage(props: { searchParams: Promise<Se
           </thead>
 
           <tbody>
-            {vendors.length === 0 ? (
+              {vendors.length === 0 ? (
               <tr>
                 <td colSpan={9} className="py-8 text-center text-[var(--text-muted)]">
                   <div className="flex flex-col items-center gap-1">
@@ -193,19 +197,14 @@ export default async function AdminVendorsPage(props: { searchParams: Promise<Se
                   </div>
                 </td>
               </tr>
-            ) : (
-              vendors.map((v: any) => {
-                const revenueCents = v.products.reduce((sumP: number, p: any) => {
-                  const productSum = p.orders.reduce(
-                    (sumO: number, o: any) => sumO + (o.vendorEarningsCents ?? 0),
-                    0
-                  );
+              ) : (
+              vendors.map((v) => {
+                const revenueCents = v.products.reduce((sumP, p) => {
+                  const productSum = p.orders.reduce((sumO, o) => sumO + (o.vendorEarningsCents ?? 0), 0);
                   return sumP + productSum;
                 }, 0);
 
-                const derivedStatus =
-                  (v.vendorProfile?.status as string | undefined) ??
-                  (v.isBlocked ? "BLOCKED" : "PENDING");
+                const derivedStatus = v.vendorProfile?.status ?? (v.isBlocked ? "BLOCKED" : "PENDING");
 
                 return (
                   <tr key={v.id} className="border-b border-slate-100 last:border-0">
@@ -218,7 +217,7 @@ export default async function AdminVendorsPage(props: { searchParams: Promise<Se
                     <td className="py-2 px-3">
                       <span
                         className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                          derivedStatus === "ACTIVE"
+                          derivedStatus === "APPROVED"
                             ? "bg-emerald-500/10 text-emerald-400"
                             : "bg-rose-500/10 text-rose-500"
                         }`}

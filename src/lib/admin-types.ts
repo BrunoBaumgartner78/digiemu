@@ -39,3 +39,40 @@ export type AdminProductRow = Prisma.ProductGetPayload<{
 }>;
 
 export type JsonValue = Prisma.JsonValue;
+
+// List / page row variants used in admin pages
+export type AdminUserListRow = Prisma.UserGetPayload<{
+  include: { orders: { select: { id: true } }; products: { select: { id: true } } };
+}>;
+
+export type AdminVendorListRow = Prisma.UserGetPayload<{
+  include: {
+    vendorProfile: { select: { id: true; displayName: true; isPublic: true; status: true } };
+    products: { include: { orders: { select: { vendorEarningsCents: true } } } };
+  };
+}>;
+
+// Lightweight variant matching queries that only select product.id + orders.vendorEarningsCents
+export type AdminVendorListRowLite = Prisma.UserGetPayload<{
+  include: {
+    vendorProfile: { select: { id: true; displayName: true; isPublic: true; status: true } };
+    products: { select: { id: true; orders: { select: { vendorEarningsCents: true } } } };
+    payouts?: true;
+  };
+}>;
+
+export type AdminProductListRow = Prisma.ProductGetPayload<{
+  include: {
+    vendor: { select: { id: true; email: true; isBlocked: true } };
+    vendorProfile: { select: { id: true; userId: true; status: true; isPublic: true } };
+    _count: { select: { orders: true } };
+  };
+}>;
+
+export type AdminDownloadRow = Prisma.DownloadLinkGetPayload<{
+  include: { order: { select: { id: true; buyer: { select: { id: true; email: true } } } } };
+}>;
+
+export type AdminPayoutListRow = Prisma.PayoutGetPayload<{
+  include: { vendor: { select: { id: true; email: true; vendorProfile: { select: { displayName: true } } } } };
+}>;
