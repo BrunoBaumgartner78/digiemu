@@ -1,0 +1,25 @@
+﻿
+> 
+reports\v2.9-lint-before.txt:7: 
+ 1:1  warning  Assign object to 
+a variable before exporting as 
+module default  import/no-anonym
+ous-default-export
+  
+reports\v2.9-lint-before.txt:8:
+  reports\v2.9-lint-before.txt:9
+:C:\Users\oondr\Documents\digiem
+u\knip.config.ts
+> reports\v2.9-lint-before.txt:1
+0:  2:1  warning  Assign object 
+to a variable before exporting 
+as module default  import/no-ano
+nymous-default-export
+  
+reports\v2.9-lint-before.txt:11:
+  reports\v2.9-lint-before.txt:1
+2:C:\Users\oondr\Documents\digie
+mu\scripts\approve-admin-vendorp
+rofile.ts
+
+

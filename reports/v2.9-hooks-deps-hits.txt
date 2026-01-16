@@ -1,0 +1,175 @@
+﻿
+> reports\v2.9-lint-before.txt:7
+01:  24:32  warning  React Hook 
+useEffect has a missing 
+dependency: 'load'. Either 
+include it or remove the 
+dependency array                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                     
+react-hooks/exhaustive-deps
+  reports\v2.9-lint-before.txt:7
+02:  41:20  warning  '_e' is 
+defined but never used          
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+    @typescript-eslint/no-unused
+-vars
+  reports\v2.9-lint-before.txt:7
+03:
+> reports\v2.9-lint-before.txt:7
+27:  24:32  warning  React Hook 
+useEffect has a missing 
+dependency: 'load'. Either 
+include it or remove the 
+dependency array                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                    
+react-hooks/exhaustive-deps
+  reports\v2.9-lint-before.txt:7
+28:  45:20  warning  '_e' is 
+defined but never used          
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+   @typescript-eslint/no-unused-
+vars
+  reports\v2.9-lint-before.txt:7
+29:  53:20  warning  '_e' is 
+defined but never used          
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+   @typescript-eslint/no-unused-
+vars
+
+
