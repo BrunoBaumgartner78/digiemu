@@ -1,4 +1,6 @@
 // src/app/download/[orderId]/page.tsx
+import { rateLimitCheck } from "@/lib/rateLimit";
+import { headers } from "next/headers";
 import React from "react";
 import { getServerSession } from "next-auth";
 import { auth } from "@/lib/auth";
@@ -60,6 +62,8 @@ function IconDownload() {
 }
 
 export default async function DownloadPage(props: { params: Promise<Params> }) {
+  // v1.0.1: soft rate limit for download page requests
+  // limit: 20 / minute per ip+ua+orderId (MVP safe)
   const session = await getServerSession(auth);
 
   if (!session?.user) {
@@ -80,7 +84,24 @@ export default async function DownloadPage(props: { params: Promise<Params> }) {
     );
   }
 
+  const h = headers();
+  const ip = (h.get("x-forwarded-for") || h.get("x-real-ip") || "unknown").split(",")[0].trim();
+  const ua = h.get("user-agent") || "ua";
+
   const { orderId } = await props.params;
+
+  const rl = rateLimitCheck(`dl:${ip}:${ua}:${orderId}`, 20, 60_000);
+  if (!rl.allowed) {
+    // For a page, we render a friendly message instead of 429
+    return (
+      <div style={{ padding: "2rem", maxWidth: 860, margin: "0 auto" }}>
+        <h1 style={{ margin: 0 }}>Zu viele Anfragen</h1>
+        <p style={{ opacity: 0.8, lineHeight: 1.6 }}>
+          Bitte warte kurz und versuche es erneut. (Retry in ca. {rl.retryAfter}s)
+        </p>
+      </div>
+    );
+  }
 
   const order = await prisma.order.findUnique({
     where: { id: orderId },

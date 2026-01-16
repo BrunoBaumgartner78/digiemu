@@ -153,6 +153,23 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ received: true }, { status: 200 });
   } catch (err: any) {
     console.error("❌ Webhook handler error:", err);
+
+    // Best-effort error log (no User relation; safe for production)
+    try {
+      await prisma.stripeWebhookError.create({
+        data: {
+          eventId: event?.id ?? null,
+          type: event?.type ?? null,
+          message: err?.message ?? String(err),
+          meta: {
+            stack: err?.stack,
+          },
+        },
+      });
+    } catch (e) {
+      console.error("❌ stripeWebhookError.create failed:", e);
+    }
+
     return NextResponse.json(
       { message: err?.message ?? "Webhook handler failed" },
       { status: 500 }

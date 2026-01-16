@@ -19,6 +19,18 @@ model StripeWebhookEvent {
   @@index([createdAt])
 }
 
+model StripeWebhookError {
+  id        String   @id @default(cuid())
+  eventId   String?
+  type      String?
+  message   String
+  meta      Json?
+  createdAt DateTime @default(now())
+
+  @@index([eventId])
+  @@index([createdAt])
+}
+
 // ------------------------------------------------------------
 // Existing models
 // ------------------------------------------------------------
