@@ -76,3 +76,24 @@ export type AdminDownloadRow = Prisma.DownloadLinkGetPayload<{
 export type AdminPayoutListRow = Prisma.PayoutGetPayload<{
   include: { vendor: { select: { id: true; email: true; vendorProfile: { select: { displayName: true } } } } };
 }>;
+
+// Detail payload for a single vendor used in the admin vendor detail page
+export type AdminVendorDetail = Prisma.UserGetPayload<{
+  include: {
+    vendorProfile: true;
+    products: {
+      orderBy: { createdAt: "desc" };
+      include: { orders: { select: { vendorEarningsCents: true; createdAt: true } } };
+    };
+    payouts: { orderBy: { createdAt: "desc" } };
+  };
+}>;
+
+// Detail payload for a single product (if needed)
+export type AdminProductDetail = Prisma.ProductGetPayload<{
+  include: {
+    vendor: { select: { id: true; email: true; isBlocked: true } };
+    vendorProfile: { select: { id: true; userId: true; status: true; isPublic: true } };
+    _count: { select: { orders: true } };
+  };
+}>;

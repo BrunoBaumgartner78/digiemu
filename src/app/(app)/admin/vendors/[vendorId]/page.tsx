@@ -2,6 +2,7 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import type { AdminVendorDetail } from "@/lib/admin-types";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -56,19 +57,21 @@ export default async function AdminVendorDetailPage(props: { params: Promise<Par
     );
   }
 
-  const totalEarningsCents = vendor.products.reduce((sumP, p: any) => {
-    const s = p.orders.reduce((sumO: number, o: any) => sumO + (o.vendorEarningsCents ?? 0), 0);
+  const v = vendor as unknown as AdminVendorDetail;
+
+  const totalEarningsCents = v.products.reduce((sumP, p) => {
+    const s = p.orders.reduce((sumO: number, o) => sumO + (o.vendorEarningsCents ?? 0), 0);
     return sumP + s;
   }, 0);
 
-  const alreadyPaidCents = vendor.payouts
-    .filter((p: any) => p.status === "PAID")
-    .reduce((sum: number, p: any) => sum + (p.amountCents ?? 0), 0);
+  const alreadyPaidCents = v.payouts
+    .filter((p) => p.status === "PAID")
+    .reduce((sum: number, p) => sum + (p.amountCents ?? 0), 0);
 
   const pendingCents = Math.max(totalEarningsCents - alreadyPaidCents, 0);
 
-  const status = vendor.isBlocked ? "BLOCKED" : "ACTIVE";
-  const profileStatus = vendor.vendorProfile ? "PROFILE" : "NO_PROFILE";
+  const status = v.isBlocked ? "BLOCKED" : "ACTIVE";
+  const profileStatus = v.vendorProfile ? "PROFILE" : "NO_PROFILE";
 
   const statusBadge =
     status === "ACTIVE"
@@ -90,8 +93,8 @@ export default async function AdminVendorDetailPage(props: { params: Promise<Par
 
             <div className="mt-1 flex flex-wrap items-center gap-2">
               <h1 className="text-xl md:text-2xl font-bold text-[var(--text-main)] truncate">
-                {vendor.name || "—"} <span className="opacity-50">·</span>{" "}
-                <span className="font-mono text-sm md:text-base">{vendor.email}</span>
+                {v.name || "—"} <span className="opacity-50">·</span>{" "}
+                <span className="font-mono text-sm md:text-base">{v.email}</span>
               </h1>
 
               <span className={`inline-flex rounded-full px-3 py-0.5 text-xs font-medium ${statusBadge}`}>
@@ -104,7 +107,7 @@ export default async function AdminVendorDetailPage(props: { params: Promise<Par
             </div>
 
             <div className="mt-2 text-xs text-[var(--text-muted)]">
-              Vendor-ID: <span className="font-mono">{vendor.id}</span>
+              Vendor-ID: <span className="font-mono">{v.id}</span>
             </div>
           </div>
 
@@ -112,7 +115,7 @@ export default async function AdminVendorDetailPage(props: { params: Promise<Par
             <Link href="/admin/vendors" className="neobtn-sm ghost">
               ← Zurück
             </Link>
-            <Link href={`/admin/payouts/vendor/${vendor.id}`} className="neobtn-sm">
+            <Link href={`/admin/payouts/vendor/${v.id}`} className="neobtn-sm">
               Payout-Übersicht
             </Link>
           </div>
@@ -182,10 +185,10 @@ export default async function AdminVendorDetailPage(props: { params: Promise<Par
       <section className="rounded-3xl bg-[var(--neo-card-bg-soft)] border border-[var(--neo-card-border)] shadow-[var(--neo-card-shadow-soft)] p-5 md:p-6">
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <h2 className="text-lg font-semibold text-[var(--text-main)]">Produkte</h2>
-          <div className="text-xs text-[var(--text-muted)]">{vendor.products.length} Produkte</div>
+          <div className="text-xs text-[var(--text-muted)]">{v.products.length} Produkte</div>
         </div>
 
-        {vendor.products.length === 0 ? (
+        {v.products.length === 0 ? (
           <div className="mt-3 text-sm text-[var(--text-muted)]">Dieser Vendor hat noch keine Produkte.</div>
         ) : (
           <div className="mt-4 overflow-x-auto">
@@ -199,9 +202,9 @@ export default async function AdminVendorDetailPage(props: { params: Promise<Par
                 </tr>
               </thead>
               <tbody>
-                {vendor.products.map((p: any) => {
+                {v.products.map((p) => {
                   const productRevenue = p.orders.reduce(
-                    (sum: number, o: any) => sum + (o.vendorEarningsCents ?? 0),
+                    (sum: number, o) => sum + (o.vendorEarningsCents ?? 0),
                     0
                   );
 
@@ -239,10 +242,10 @@ export default async function AdminVendorDetailPage(props: { params: Promise<Par
       <section className="rounded-3xl bg-[var(--neo-card-bg-soft)] border border-[var(--neo-card-border)] shadow-[var(--neo-card-shadow-soft)] p-5 md:p-6">
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <h2 className="text-lg font-semibold text-[var(--text-main)]">Bisherige Auszahlungen</h2>
-          <div className="text-xs text-[var(--text-muted)]">{vendor.payouts.length} Einträge</div>
+          <div className="text-xs text-[var(--text-muted)]">{v.payouts.length} Einträge</div>
         </div>
 
-        {vendor.payouts.length === 0 ? (
+        {v.payouts.length === 0 ? (
           <div className="mt-3 text-sm text-[var(--text-muted)]">Noch keine Auszahlungen erfasst.</div>
         ) : (
           <div className="mt-4 overflow-x-auto">
@@ -255,7 +258,7 @@ export default async function AdminVendorDetailPage(props: { params: Promise<Par
                 </tr>
               </thead>
               <tbody>
-                {vendor.payouts.map((p: any) => {
+                {v.payouts.map((p) => {
                   const badge =
                     p.status === "PAID"
                       ? "bg-emerald-500/10 text-emerald-400"

@@ -79,9 +79,9 @@ export default async function AdminOrdersPage({ searchParams }: Props) {
   const where: Prisma.OrderWhereInput = {};
   if (status !== "ALL") where.status = status;
   // ✅ Product.vendorId ist bei dir User-ID des Vendors
-  if (vendor !== "ALL") where.product = { vendorId: vendor } as any;
+  if (vendor !== "ALL") where.product = { vendorId: vendor } as Prisma.ProductWhereInput;
 
-  const [total, orders, vendors] = await Promise.all([
+  const [total, ordersRaw, vendors] = await Promise.all([
     prisma.order.count({ where }),
     prisma.order.findMany({
       where,
@@ -117,6 +117,8 @@ export default async function AdminOrdersPage({ searchParams }: Props) {
 
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const safePage = Math.min(page, totalPages);
+
+  const orders = ordersRaw as AdminOrderRow[];
 
   const baseParams = {
     status,

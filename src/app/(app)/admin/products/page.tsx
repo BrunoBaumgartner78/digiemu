@@ -196,7 +196,7 @@ export default async function AdminProductsPage(props: Props) {
                   </td>
                 </tr>
               ) : (
-                products.map((p: any) => {
+                products.map((p) => {
                   const vis = getMarketplaceVisibilityDebug(p);
 
                   return (

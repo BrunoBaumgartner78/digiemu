@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { isErrorResponse } from "@/lib/guards";
 
 type InitialProduct = {
   id: string;
@@ -102,7 +103,7 @@ export default function AdminProductEditClient({
 
       const data: unknown = await res.json().catch(() => ({}));
       if (!res.ok) {
-        const msg = typeof data === "object" && data !== null && "message" in data ? (data as any).message : "Speichern fehlgeschlagen.";
+        const msg = isErrorResponse(data) ? data.message : "Speichern fehlgeschlagen.";
         throw new Error(msg);
       }
 

@@ -45,8 +45,10 @@ export default function AdminVendorApprovalToggle({ userId, initialStatus }: Pro
 
       // Optional: server is source of truth
       if (data?.status) setStatus(String(data.status).toUpperCase());
-    } catch (e: any) {
-      setErr(e?.message || "Konnte Status nicht ändern.");
+    } catch (e: unknown) {
+      const err = e as unknown;
+      const msg = err instanceof Error ? err.message : String(err ?? "Konnte Status nicht ändern.");
+      setErr(msg);
       setStatus(prev);
     } finally {
       setLoading(false);
@@ -68,7 +70,7 @@ export default function AdminVendorApprovalToggle({ userId, initialStatus }: Pro
       <select
         className="input-neu text-xs h-9"
         value={s}
-        onChange={(_e) => update(_e.target.value as any)}
+        onChange={(_e) => update(_e.target.value as "PENDING" | "APPROVED" | "BLOCKED")}
         disabled={loading}
         title="Vendor Freischaltung"
       >
