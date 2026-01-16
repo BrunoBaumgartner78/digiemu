@@ -53,8 +53,9 @@ export async function POST(req: NextRequest) {
       console.log("↩️ Duplicate webhook event ignored:", event.id, event.type);
       return NextResponse.json({ received: true, duplicate: true }, { status: 200 });
     }
+    // Any other DB error: return 500 so Stripe can retry
     console.error("❌ stripeWebhookEvent.create failed:", e);
-    return NextResponse.json({ received: true }, { status: 200 });
+    return NextResponse.json({ message: "DB error" }, { status: 500 });
   }
 
   try {
