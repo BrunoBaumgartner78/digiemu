@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import { isNumber } from "../../lib/guards";
 import {
   ResponsiveContainer,
   LineChart,
@@ -45,7 +46,7 @@ export default function AdminRevenueChart({ data }: AdminRevenueChartProps) {
             <Tooltip
               contentStyle={{ background: "#fff", border: "1px solid #eee", color: "#222" }}
               labelStyle={{ color: "#888" }}
-              formatter={(value: number) => `${value.toFixed(2)} CHF`}
+              formatter={(value: unknown) => (isNumber(value) ? `${value.toFixed(2)} CHF` : String(value ?? ""))}
               labelFormatter={(label) => `Datum: ${label}`}
             />
             <Line

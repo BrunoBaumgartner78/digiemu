@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { getErrorMessage, isRecord, isString } from "../../lib/guards";
 
 export default function ProductModerationToggle({
   productId,
@@ -19,16 +20,13 @@ export default function ProductModerationToggle({
   const [error, setError] = useState<string | null>(null);
 
   const toggleStatus = () => {
-    const next =
-      status === "BLOCKED"
-        ? "ACTIVE"
-        : "BLOCKED";
+    const next: "ACTIVE" | "BLOCKED" = status === "BLOCKED" ? "ACTIVE" : "BLOCKED";
 
     setStatus(next);
     save(next, note);
   };
 
-  const save = async (newStatus: string, newNote: string) => {
+  const save = async (newStatus: "DRAFT" | "ACTIVE" | "BLOCKED", newNote: string) => {
     try {
       setLoading(true);
       setError(null);
@@ -43,14 +41,18 @@ export default function ProductModerationToggle({
       });
 
       if (!res.ok) {
-        const data = await res.json();
-        setError(data.error || "Update failed");
+        const data = await res.json() as unknown;
+        if (isRecord(data) && isString((data as Record<string, unknown>).error)) {
+          setError((data as Record<string, unknown>).error as string);
+        } else {
+          setError("Update failed");
+        }
         return;
       }
 
       if (onUpdated) onUpdated();
-    } catch (_err) {
-      setError("Netzwerkfehler");
+    } catch (e: unknown) {
+      setError(getErrorMessage(e) || "Netzwerkfehler");
     } finally {
       setLoading(false);
     }

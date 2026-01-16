@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import { isNumber } from "../../../lib/guards";
 import {
   ResponsiveContainer,
   BarChart,
@@ -40,11 +41,10 @@ export default function TopProductsBarChart({ data }: Props) {
         />
         <YAxis tickFormatter={v => formatCHF(v * 100)} tick={{ fontSize: 12 }} width={70} />
         <Tooltip
-          formatter={(value: any, name: string) =>
-            name === "totalRevenueCents"
-              ? formatCHF(value)
-              : value
-          }
+          formatter={(value: unknown, name: string) => {
+            if (name === "totalRevenueCents" && isNumber(value)) return formatCHF(value);
+            return String(value ?? "");
+          }}
           labelFormatter={label => `Produkt: ${label}`}
           contentStyle={{ fontSize: 14 }}
         />

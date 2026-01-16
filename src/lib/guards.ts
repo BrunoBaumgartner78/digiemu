@@ -118,5 +118,11 @@ export function isOkResponse(obj: unknown): obj is { ok: true } {
 }
 
 export function isErrorResponse(obj: unknown): obj is { message: string } {
-  return isRecord(obj) && typeof (obj as any).message === "string";
+  return isRecord(obj) && isString((obj as Record<string, unknown>).message);
+}
+
+export function getErrorMessage(e: unknown): string {
+  if (e instanceof Error) return e.message;
+  if (isRecord(e) && isString((e as Record<string, unknown>).message)) return (e as Record<string, unknown>).message as string;
+  return String(e ?? "");
 }
