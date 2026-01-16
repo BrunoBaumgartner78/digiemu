@@ -7,7 +7,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function POST(
-  req: Request,
+  _req: Request,
   ctx: { params: Promise<{ id: string }> }
 ) {
   const session = await getServerSession(authOptions);
@@ -18,7 +18,7 @@ export async function POST(
 
   const { id } = await ctx.params;
 
-  const body = await req.json().catch(() => ({}));
+  const body = await _req.json().catch(() => ({}));
   const status = String(body.status ?? "").toUpperCase();
   const isActive = !!body.isActive;
 

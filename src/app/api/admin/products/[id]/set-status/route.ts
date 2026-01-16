@@ -11,7 +11,7 @@ type Body = {
   note?: string | null;
 };
 
-export async function POST(req: NextRequest, context: { params: Promise<{ id: string }> }) {
+export async function POST(_req: NextRequest, context: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
   if (!session?.user || (session.user as any).role !== "ADMIN") {
     return NextResponse.json({ ok: false, message: "Unauthorized" }, { status: 401 });
@@ -19,7 +19,7 @@ export async function POST(req: NextRequest, context: { params: Promise<{ id: st
 
   const { id } = await context.params;
 
-  const body = (await req.json().catch(() => ({}))) as Body;
+  const body = (await _req.json().catch(() => ({}))) as Body;
   const status = body.status;
 
   if (status !== "ACTIVE" && status !== "DRAFT" && status !== "BLOCKED") {

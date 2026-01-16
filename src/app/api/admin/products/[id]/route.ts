@@ -8,7 +8,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function PATCH(
-  req: NextRequest,
+  _req: NextRequest,
   { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   const session = await getServerSession(authOptions);
@@ -26,7 +26,7 @@ export async function PATCH(
     return NextResponse.json({ message: "Missing product id" }, { status: 400 });
   }
 
-  const body = await req.json().catch(() => null);
+  const body = await _req.json().catch(() => null);
   if (!body) {
     return NextResponse.json({ message: "Invalid JSON" }, { status: 400 });
   }

@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function POST(req: NextRequest, context: { params: Promise<{ id: string }> }) {
+export async function POST(_req: NextRequest, context: { params: Promise<{ id: string }> }) {
   const params = await context.params;
   const session = await getServerSession(authOptions);
 
@@ -15,7 +15,7 @@ export async function POST(req: NextRequest, context: { params: Promise<{ id: st
   }
 
   const userId = (params?.id ?? "").toString();
-  const body = await req.json().catch(() => null);
+  const body = await _req.json().catch(() => null);
   const nextStatus = (body?.status ?? "").toString().toUpperCase();
 
   if (!userId) return NextResponse.json({ error: "Missing id" }, { status: 400 });

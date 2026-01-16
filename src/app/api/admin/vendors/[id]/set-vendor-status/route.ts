@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 const ALLOWED = new Set(["PENDING", "APPROVED", "BLOCKED"]);
 
 export async function POST(
-  req: NextRequest,
+  _req: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
   const session = await getServerSession(authOptions);
@@ -18,7 +18,7 @@ export async function POST(
   }
 
   const { id } = await context.params; // userId
-  const body = await req.json().catch(() => ({}));
+  const body = await _req.json().catch(() => ({}));
   const nextStatus = String(body?.status ?? "").toUpperCase().trim();
 
   if (!id) return NextResponse.json({ message: "Missing id" }, { status: 400 });

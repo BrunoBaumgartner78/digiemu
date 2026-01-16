@@ -10,14 +10,14 @@ type Body = {
   isPublic?: boolean;
 };
 
-export async function POST(req: NextRequest, context: { params: Promise<{ id: string }> }) {
+export async function POST(_req: NextRequest, context: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
   if (!session?.user || (session.user as any).role !== "ADMIN") {
     return NextResponse.json({ ok: false, message: "Unauthorized" }, { status: 401 });
   }
 
   const { id: userId } = await context.params;
-  const body = (await req.json().catch(() => ({}))) as Body;
+  const body = (await _req.json().catch(() => ({}))) as Body;
 
   // Ensure VendorProfile exists
   const vp = await prisma.vendorProfile.findUnique({ where: { userId }, select: { id: true, isPublic: true } });

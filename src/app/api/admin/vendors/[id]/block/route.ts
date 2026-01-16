@@ -7,7 +7,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function POST(
-  req: NextRequest,
+  _req: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
   const session = await getServerSession(authOptions);
@@ -17,7 +17,7 @@ export async function POST(
 
   const { id: userId } = await context.params;
 
-  const body = await req.json().catch(() => ({}));
+  const body = await _req.json().catch(() => ({}));
   const shouldBlock = typeof body?.block === "boolean" ? body.block : true; // default: block
   const nextVendorStatus = shouldBlock ? "BLOCKED" : "PENDING";
 

@@ -6,13 +6,13 @@ import { prisma } from "@/lib/prisma";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function POST(req: NextRequest) {
+export async function POST(_req: NextRequest) {
   const session = await getServerSession(auth);
   if (!session || (session.user as any)?.role !== "ADMIN") {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
-  const body = await req.json().catch(() => null);
+  const body = await _req.json().catch(() => null);
   const userId = String(body?.userId ?? "").trim();
   if (!userId) {
     return NextResponse.json({ message: "Missing userId" }, { status: 400 });

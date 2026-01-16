@@ -8,7 +8,7 @@ const ALLOWED_ROLES = ["BUYER", "VENDOR", "ADMIN"] as const;
 type AllowedRole = (typeof ALLOWED_ROLES)[number];
 
 export async function PATCH(
-  req: NextRequest,
+  _req: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
   const params = await context.params;
@@ -22,7 +22,7 @@ export async function PATCH(
   let body: { role?: string; isBlocked?: boolean };
 
   try {
-    body = await req.json();
+    body = await _req.json();
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }

@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 type Body = { status?: "PENDING" | "APPROVED" | "BLOCKED" };
 
 export async function POST(
-  req: NextRequest,
+  _req: NextRequest,
   context: { params: { id: string } }
 ) {
   const session = await getServerSession(authOptions);
@@ -22,7 +22,7 @@ export async function POST(
 
   const userId = context.params.id;
 
-  const body = (await req.json().catch(() => ({}))) as Body;
+  const body = (await _req.json().catch(() => ({}))) as Body;
   const status = body.status;
 
   if (status !== "PENDING" && status !== "APPROVED" && status !== "BLOCKED") {
