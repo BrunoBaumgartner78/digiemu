@@ -231,9 +231,9 @@ export default function NewProductPage() {
   return (
     <main className="page-shell-wide">
       <div className={styles.wrapper}>
-        <a href="/dashboard/products" className={styles.backLink}>
+        <Link href="/dashboard/products" className={styles.backLink}>
           Zur Produktübersicht
-        </a>
+        </Link>
 
         <header style={{ marginTop: "0.6rem", marginBottom: "1.4rem" }}>
           <h1 className="text-2xl font-semibold text-[var(--color-text-primary)]">
