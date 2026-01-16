@@ -1,9 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // ✅ verhindert, dass `next build` wegen ESLint-Fehlern abbricht
-  eslint: {
-  ignoreDuringBuilds: true,
-},
+  // removed: Next.js 16 no longer supports `eslint` in next.config.ts
 
 
   images: {
