@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { isRecord } from "@/lib/guards";
+import { isRecord, getStringProp, getBooleanProp, getErrorMessage } from "@/lib/guards";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -10,13 +10,16 @@ export const dynamic = "force-dynamic";
 export async function POST(_req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.email) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    const userObj = isRecord(session?.user) ? session!.user as Record<string, unknown> : null;
+    const userEmail = getStringProp(userObj, "email");
+    if (!userEmail) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
-    const dbUser = await prisma.user.findUnique({ where: { email: session.user.email }, select: { id: true, role: true } });
+    const dbUser = await prisma.user.findUnique({ where: { email: userEmail }, select: { id: true, role: true } });
     if (!dbUser) return NextResponse.json({ message: "User not found" }, { status: 400 });
 
-    const body: unknown = await _req.json().catch(() => ({}));
-    const productId = (isRecord(body) && typeof body.productId === "string") ? body.productId : String((isRecord(body) ? body.productId : undefined) ?? "");
+    const body: unknown = await _req.json().catch(() => ({} as unknown));
+    const bodyForVendor: unknown = body;
+    const productId = getStringProp(body, "productId") ?? "";
     if (!productId) return NextResponse.json({ message: "productId required" }, { status: 400 });
 
     const product = await prisma.product.findUnique({ where: { id: productId }, include: { vendorProfile: true } });
@@ -25,8 +28,10 @@ export async function POST(_req: NextRequest) {
     // Admins may always change status
     if (dbUser.role === "ADMIN") {
       const updates: Record<string, unknown> = {};
-      if (isRecord(body) && typeof body.status === "string") updates.status = body.status;
-      if (isRecord(body) && typeof body.isActive === "boolean") updates.isActive = body.isActive;
+      const status = getStringProp(body, "status");
+      const isActive = getBooleanProp(body, "isActive");
+      if (status !== null) updates.status = status;
+      if (isActive !== null) updates.isActive = isActive;
       const updated = await prisma.product.update({ where: { id: productId }, data: updates });
       return NextResponse.json({ ok: true, product: { id: updated.id, status: updated.status, isActive: updated.isActive } });
     }
@@ -47,8 +52,10 @@ export async function POST(_req: NextRequest) {
       }
 
       const updates: Record<string, unknown> = {};
-      if (isRecord(body) && typeof body.status === "string") updates.status = body.status;
-      if (isRecord(body) && typeof body.isActive === "boolean") updates.isActive = body.isActive;
+      const status = getStringProp(bodyForVendor, "status");
+      const isActive = getBooleanProp(bodyForVendor, "isActive");
+      if (status !== null) updates.status = status;
+      if (isActive !== null) updates.isActive = isActive;
 
       // Ensure vendors cannot accidentally set BLOCKED (only admins)
       if (updates.status === "BLOCKED") delete updates.status;
@@ -59,7 +66,7 @@ export async function POST(_req: NextRequest) {
 
     return NextResponse.json({ message: "Forbidden" }, { status: 403 });
   } catch (error: unknown) {
-    console.error("[API /products/update-status]", error);
+    console.error("[API /products/update-status]", getErrorMessage(error));
     return NextResponse.json({ message: "Internal error" }, { status: 500 });
   }
 }

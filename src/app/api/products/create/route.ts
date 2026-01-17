@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { isRecord, getString } from "@/lib/guards";
+import { isRecord, getStringProp, toNumber, getErrorMessage } from "@/lib/guards";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -15,15 +15,12 @@ function toPriceCents(priceChf: unknown): number | null {
 export async function POST(_req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
+    const userObj = isRecord(session?.user) ? session!.user as Record<string, unknown> : null;
+    const userEmail = getStringProp(userObj, "email");
+    if (!userEmail) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
     // DB-User via Email (FK safe)
-    const dbUser = await prisma.user.findUnique({
-      where: { email: session.user.email },
-      select: { id: true, role: true, isBlocked: true },
-    });
+    const dbUser = await prisma.user.findUnique({ where: { email: userEmail }, select: { id: true, role: true, isBlocked: true } });
 
     if (!dbUser) {
       return NextResponse.json(
@@ -41,18 +38,15 @@ export async function POST(_req: NextRequest) {
     }
 
     // Body
-    const body: unknown = await _req.json().catch(() => ({}));
-    const title = isRecord(body) ? (getString(body.title) ?? "").trim() : "";
-    const description = isRecord(body) ? (getString(body.description) ?? "").trim() : "";
-    const category = isRecord(body) && getString(body.category) && getString(body.category)!.trim()
-      ? getString(body.category)!.trim()
-      : "other";
+    const body: unknown = await _req.json().catch(() => ({} as unknown));
+    const title = isRecord(body) ? (getStringProp(body, "title") ?? "").trim() : "";
+    const description = isRecord(body) ? (getStringProp(body, "description") ?? "").trim() : "";
+    const category = isRecord(body) && getStringProp(body, "category") ? (getStringProp(body, "category") ?? "other").trim() : "other";
 
-    const fileUrl = isRecord(body) && getString(body.downloadUrl) ? getString(body.downloadUrl)!.trim() : "";
-    const priceCents = isRecord(body) ? toPriceCents(body.priceChf) : null;
-    const thumbnail = isRecord(body) && getString(body.thumbnailUrl) && getString(body.thumbnailUrl)!.trim()
-      ? getString(body.thumbnailUrl)!.trim()
-      : null;
+    const fileUrl = isRecord(body) ? (getStringProp(body, "downloadUrl") ?? "").trim() : "";
+    const rawPrice = isRecord(body) ? (body as Record<string, unknown>).priceChf : undefined;
+    const priceCents = toPriceCents(toNumber(rawPrice));
+    const thumbnail = isRecord(body) ? (getStringProp(body, "thumbnailUrl") ?? null) : null;
 
     if (!title) return NextResponse.json({ message: "Titel fehlt." }, { status: 400 });
     if (!description) return NextResponse.json({ message: "Beschreibung fehlt." }, { status: 400 });
@@ -102,7 +96,7 @@ export async function POST(_req: NextRequest) {
 
     return NextResponse.json({ ok: true, id: created.id }, { status: 201 });
   } catch (error: unknown) {
-    console.error("[API /products/create] Fehler:", error);
+    console.error("[API /products/create] Fehler:", getErrorMessage(error));
     return NextResponse.json(
       { message: "Interner Fehler beim Anlegen des Produkts." },
       { status: 500 }
