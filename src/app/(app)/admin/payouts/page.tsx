@@ -5,6 +5,13 @@ import { prisma } from "@/lib/prisma";
 import type { AdminVendorListRowLite } from "@/lib/admin-types";
 import Link from "next/link";
 import { parsePayoutSearchParams, serializePayoutFilters } from "@/lib/payout-filters";
+import { Prisma } from "@prisma/client";
+import type { PayoutStatus } from "@prisma/client";
+
+function isPayoutStatus(v: unknown): v is PayoutStatus {
+  return v === "PENDING" || v === "PAID" || v === "CANCELLED";
+}
+import AdminPayoutFilters from "./AdminPayoutFilters";
 
 type SearchParams = { [key: string]: string | string[] | undefined };
 type Props = { searchParams?: Promise<SearchParams> };
@@ -59,12 +66,14 @@ export default async function AdminPayoutsPage(props: Props) {
   const pageSize = 25;
   const page = Math.max(1, filters.page ?? 1);
 
-  const payoutsWhere: any = {};
-  if (filters.status) payoutsWhere.status = filters.status;
+  const payoutsWhere: Prisma.PayoutWhereInput = {};
+  if (filters.status && isPayoutStatus(filters.status)) payoutsWhere.status = filters.status as PayoutStatus;
   if (filters.vendorId) payoutsWhere.vendorId = filters.vendorId;
-  if (filters.dateFrom || filters.dateTo) payoutsWhere.createdAt = {};
-  if (filters.dateFrom) payoutsWhere.createdAt.gte = new Date(filters.dateFrom);
-  if (filters.dateTo) payoutsWhere.createdAt.lte = new Date(filters.dateTo);
+  if (filters.dateFrom || filters.dateTo) {
+    payoutsWhere.createdAt = {} as Prisma.DateTimeFilter;
+    if (filters.dateFrom) payoutsWhere.createdAt.gte = new Date(filters.dateFrom);
+    if (filters.dateTo) payoutsWhere.createdAt.lte = new Date(filters.dateTo);
+  }
 
   const [payoutsRaw, payoutsCount] = await Promise.all([
     prisma.payout.findMany({
@@ -125,51 +134,12 @@ export default async function AdminPayoutsPage(props: Props) {
       <section className="space-y-8">
         {/* Filters + Payouts list */}
         <section className="admin-card p-4">
-          <form method="GET" className="flex flex-wrap gap-2 items-end">
-            <div>
-              <label className="text-xs">Status</label>
-              <select name="status" defaultValue={filters.status ?? ""} className="input-neu">
-                <option value="">Alle</option>
-                <option value="PENDING">PENDING</option>
-                <option value="PAID">PAID</option>
-                <option value="CANCELLED">CANCELLED</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="text-xs">Vendor</label>
-              <select name="vendorId" defaultValue={filters.vendorId ?? ""} className="input-neu w-56">
-                <option value="">Alle Vendoren</option>
-                {vendors.map((v) => (
-                  <option key={v.id} value={v.id}>{v.vendorProfile?.displayName ?? v.email}</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="text-xs">Von</label>
-              <input type="date" name="from" defaultValue={filters.dateFrom ?? ""} className="input-neu" />
-            </div>
-
-            <div>
-              <label className="text-xs">Bis</label>
-              <input type="date" name="to" defaultValue={filters.dateTo ?? ""} className="input-neu" />
-            </div>
-
-            <div className="flex gap-2">
-              <button type="submit" className="neobtn-sm">Anwenden</button>
-              <a href="/admin/payouts" className="neobtn-sm ghost">Zurücksetzen</a>
-            </div>
-
-            <div className="ml-auto">
-              <a href={`/api/admin/payouts/list?${serializePayoutFilters({ status: filters.status, vendorId: filters.vendorId, dateFrom: filters.dateFrom, dateTo: filters.dateTo })}&format=csv`} className="neobtn-sm">Export CSV</a>
-            </div>
-          </form>
+          <AdminPayoutFilters vendors={vendors} initialFilters={filters} />
         </section>
 
         {/* Payouts list table */}
         <section className="admin-card p-4">
-          <div className="mb-2 text-xs text-[var(--text-muted)]">{payoutsCount} Auszahlungen · Seite {filters.page} / {payoutPages}</div>
+          <div className="mb-2 text-xs text-[var(--text-muted)]">{payoutsCount} Auszahlungen · Seite {filters.page ?? 1} / {payoutPages}</div>
 
           {payoutsRaw.length === 0 ? (
             <div className="text-sm text-[var(--text-muted)]">Keine Auszahlungen gefunden.</div>
@@ -203,11 +173,43 @@ export default async function AdminPayoutsPage(props: Props) {
           {/* Pagination controls */}
           {payoutPages > 1 && (
             <div className="mt-4 flex items-center gap-2">
-              {Array.from({ length: payoutPages }, (_, i) => i + 1).map((pg) => (
-                <Link key={pg} href={`/admin/payouts?${serializePayoutFilters({ status: filters.status, vendorId: filters.vendorId, dateFrom: filters.dateFrom, dateTo: filters.dateTo, page: pg })}`} className={`px-3 py-1 rounded-full border text-xs ${pg === (filters.page ?? 1) ? 'bg-[var(--accent)] text-white' : ''}`}>
-                  {pg}
-                </Link>
-              ))}
+              {(() => {
+                const current = Math.max(1, filters.page ?? 1);
+                const window = 2;
+                const start = Math.max(1, current - window);
+                const end = Math.min(payoutPages, current + window);
+                const pages: number[] = [];
+                for (let p = start; p <= end; p++) pages.push(p);
+                return (
+                  <>
+                    {current > 1 && (
+                      <Link href={`/admin/payouts?${serializePayoutFilters({ status: filters.status, vendorId: filters.vendorId, dateFrom: filters.dateFrom, dateTo: filters.dateTo, page: current - 1 })}`} className="px-3 py-1 rounded-full border text-xs">Prev</Link>
+                    )}
+
+                    {start > 1 && (
+                      <Link href={`/admin/payouts?${serializePayoutFilters({ status: filters.status, vendorId: filters.vendorId, dateFrom: filters.dateFrom, dateTo: filters.dateTo, page: 1 })}`} className="px-3 py-1 rounded-full border text-xs">1</Link>
+                    )}
+
+                    {start > 2 && <span className="px-2">…</span>}
+
+                    {pages.map((pg) => (
+                      <Link key={pg} href={`/admin/payouts?${serializePayoutFilters({ status: filters.status, vendorId: filters.vendorId, dateFrom: filters.dateFrom, dateTo: filters.dateTo, page: pg })}`} className={`px-3 py-1 rounded-full border text-xs ${pg === (filters.page ?? 1) ? 'bg-[var(--accent)] text-white' : ''}`}>
+                        {pg}
+                      </Link>
+                    ))}
+
+                    {end < payoutPages - 1 && <span className="px-2">…</span>}
+
+                    {end < payoutPages && (
+                      <Link href={`/admin/payouts?${serializePayoutFilters({ status: filters.status, vendorId: filters.vendorId, dateFrom: filters.dateFrom, dateTo: filters.dateTo, page: payoutPages })}`} className="px-3 py-1 rounded-full border text-xs">{payoutPages}</Link>
+                    )}
+
+                    {current < payoutPages && (
+                      <Link href={`/admin/payouts?${serializePayoutFilters({ status: filters.status, vendorId: filters.vendorId, dateFrom: filters.dateFrom, dateTo: filters.dateTo, page: current + 1 })}`} className="px-3 py-1 rounded-full border text-xs">Next</Link>
+                    )}
+                  </>
+                );
+              })()}
             </div>
           )}
         </section>
@@ -274,7 +276,7 @@ export default async function AdminPayoutsPage(props: Props) {
                   </Link>
 
                   <a
-                    href={`/api/admin/payouts/list?vendorId=${encodeURIComponent(vendor.id)}&format=csv`}
+                    href={`/api/admin/payouts/export?${serializePayoutFilters({ vendorId: vendor.id, status: filters.status, dateFrom: filters.dateFrom, dateTo: filters.dateTo })}`}
                     className="neobtn-sm"
                   >
                     CSV export
