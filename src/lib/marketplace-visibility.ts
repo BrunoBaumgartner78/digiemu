@@ -3,7 +3,16 @@
 // IMPORTANT: Keep logic in sync with DB query below.
 export type VisibilityDebug = { isVisible: boolean; reasons: string[] };
 
-export function getMarketplaceVisibilityDebug(p: any): VisibilityDebug {
+type VisibilityInput = {
+  status?: string | null;
+  isActive?: boolean | null;
+  vendor?: { isBlocked?: boolean } | null;
+  vendorProfile?: { status?: string | null; isPublic?: boolean | null } | null;
+  // optional fields used elsewhere
+  [k: string]: unknown;
+};
+
+export function getMarketplaceVisibilityDebug(p: VisibilityInput): VisibilityDebug {
   const reasons: string[] = [];
   if (!p) return { isVisible: false, reasons: ["no-product"] };
 

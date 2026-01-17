@@ -14,7 +14,7 @@ type Props = {
 // so site administrators can always access admin UI in MVP.
 export default function FeatureGate({ feature, children, fallback = null }: Props) {
   const { data: session } = useSession();
-  const role = (session?.user as any)?.role;
+  const role = session?.user?.role;
   const isAdmin = role === "ADMIN";
 
   // Admin bypass: admins always see admin feature
@@ -27,8 +27,8 @@ export default function FeatureGate({ feature, children, fallback = null }: Prop
 
   // Existing gating logic (fallback to NEXT_PUBLIC_FEATURE_* env vars)
   const isEnabled =
-    typeof (globalThis as any).__FEATURES__?.[feature] === "boolean"
-      ? (globalThis as any).__FEATURES__[feature]
+    typeof globalThis.__FEATURES__?.[feature] === "boolean"
+      ? globalThis.__FEATURES__[feature]
       : process.env["NEXT_PUBLIC_FEATURE_" + feature.toUpperCase()] === "1" ||
         process.env["NEXT_PUBLIC_FEATURE_" + feature.toUpperCase()] === "true";
 

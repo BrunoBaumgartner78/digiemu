@@ -5,22 +5,22 @@ import { prisma } from "@/lib/prisma";
 
 export async function PUT(_req: Request) {
   const session = await getServerSession(auth);
-  const userId = (session?.user as any)?.id as string | undefined;
+  const userId = session?.user?.id;
   if (!userId) return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
 
-  const body = (await _req.json().catch(() => null)) as any;
-  if (!body) return NextResponse.json({ error: "INVALID_BODY" }, { status: 400 });
+  const body: unknown = await _req.json().catch(() => null);
+  const b = body && typeof body === "object" ? (body as Record<string, unknown>) : {};
 
-  const avatarUrl = typeof body.avatarUrl === "string" ? body.avatarUrl : "";
+  const avatarUrl = typeof b.avatarUrl === "string" ? b.avatarUrl : "";
   if (avatarUrl.startsWith("blob:")) {
     return NextResponse.json({ error: "INVALID_IMAGE_URL", message: "Bitte Avatar zuerst hochladen." }, { status: 400 });
   }
 
   const data = {
-    displayName: typeof body.displayName === "string" ? body.displayName : "",
-    bio: typeof body.bio === "string" ? body.bio : "",
+    displayName: typeof b.displayName === "string" ? b.displayName : "",
+    bio: typeof b.bio === "string" ? b.bio : "",
     avatarUrl,
-    isPublic: Boolean(body.isPublic),
+    isPublic: Boolean(b.isPublic),
   };
 
   const saved = await prisma.buyerProfile.upsert({

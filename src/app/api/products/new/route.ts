@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { getErrorMessage } from "@/lib/guards";
 
 export const dynamic = "force-dynamic";
 
@@ -20,11 +21,12 @@ export async function POST(_req: Request) {
   const session = await getServerSession(authOptions);
 
   // Nur Vendor darf Produkte erstellen
-  if (!session || (session.user as any)?.role !== "VENDOR") {
+  if (!session || session.user?.role !== "VENDOR") {
     return NextResponse.json({ error: "Nicht berechtigt." }, { status: 403 });
   }
 
-  const vendorId = (session.user as any)?.id as string;
+  const vendorId = session.user?.id;
+  if (!vendorId) return NextResponse.json({ error: "Nicht berechtigt." }, { status: 403 });
 
   let data: Body;
   try {
@@ -69,10 +71,10 @@ export async function POST(_req: Request) {
     });
 
     return NextResponse.json({ success: true, product }, { status: 201 });
-  } catch (err: any) {
-    console.error("CREATE PRODUCT ERROR:", err);
+  } catch (err: unknown) {
+    console.error("CREATE PRODUCT ERROR:", getErrorMessage(err));
     return NextResponse.json(
-      { error: err?.message || "Fehler beim Erstellen." },
+      { error: getErrorMessage(err) || "Fehler beim Erstellen." },
       { status: 500 }
     );
   }

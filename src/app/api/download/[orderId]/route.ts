@@ -19,7 +19,7 @@ export async function GET(_req: NextRequest, ctx: { params: Promise<{ orderId: s
     console.warn("rateLimit check failed for download_api", _e);
   }
   const session = await getServerSession(auth);
-  const userId = (session?.user as any)?.id as string | undefined;
+  const userId = session?.user?.id as string | undefined;
 
   if (!userId) {
     return NextResponse.redirect(new URL("/auth/login", _req.url), { status: 303 });

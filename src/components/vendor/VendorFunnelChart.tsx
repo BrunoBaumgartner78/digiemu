@@ -28,7 +28,7 @@ type VendorFunnel = {
   };
 };
 
-export default function VendorFunnelChart({ funnel }: { funnel: VendorFunnel }) {
+export default function VendorFunnelChart({ funnel }: { funnel: VendorFunnel | Record<string, unknown> }) {
   if (!funnel) {
     return (
       <div className="neumorph-card p-4 text-center opacity-70 text-sm">
@@ -37,19 +37,50 @@ export default function VendorFunnelChart({ funnel }: { funnel: VendorFunnel }) 
     );
   }
 
-  // 🔹 Counts: unterstützt alte (counts.*) und neue (direkt auf funnel) Struktur
-  const counts = (funnel as any).counts ?? funnel;
+  // Helper to safely extract counts and rates from either structure
+  const countsSource = ((): { impressions: number; views: number; purchases: number } => {
+    if (typeof funnel === "object" && funnel !== null && "counts" in funnel) {
+      const c = (funnel as any).counts;
+      if (c && typeof c === "object") {
+        return {
+          impressions: Number((c as Record<string, unknown>).impressions ?? 0),
+          views: Number((c as Record<string, unknown>).views ?? 0),
+          purchases: Number((c as Record<string, unknown>).purchases ?? 0),
+        };
+      }
+    }
+    return {
+      impressions: Number((funnel as any).impressions ?? 0),
+      views: Number((funnel as any).views ?? 0),
+      purchases: Number((funnel as any).purchases ?? 0),
+    };
+  })();
 
-  const impressions = counts?.impressions ?? 0;
-  const views = counts?.views ?? 0;
-  const purchases = counts?.purchases ?? 0;
+  const ratesSource = ((): { viewRate: number; purchaseRate: number; fullFunnelRate: number } => {
+    if (typeof funnel === "object" && funnel !== null && "rates" in funnel) {
+      const r = (funnel as any).rates;
+      if (r && typeof r === "object") {
+        return {
+          viewRate: Number((r as Record<string, unknown>).viewRate ?? 0),
+          purchaseRate: Number((r as Record<string, unknown>).purchaseRate ?? 0),
+          fullFunnelRate: Number((r as Record<string, unknown>).fullFunnelRate ?? 0),
+        };
+      }
+    }
+    return {
+      viewRate: Number((funnel as any).viewRate ?? 0),
+      purchaseRate: Number((funnel as any).purchaseRate ?? 0),
+      fullFunnelRate: Number((funnel as any).fullFunnelRate ?? 0),
+    };
+  })();
 
-  // 🔹 Rates: unterstützt alte (rates.*) und neue (direkt auf funnel) Struktur
-  const rates = (funnel as any).rates ?? funnel;
+  const impressions = countsSource.impressions;
+  const views = countsSource.views;
+  const purchases = countsSource.purchases;
 
-  const viewRate = rates?.viewRate ?? 0;
-  const purchaseRate = rates?.purchaseRate ?? 0;
-  const fullFunnelRate = rates?.fullFunnelRate ?? 0;
+  const viewRate = ratesSource.viewRate;
+  const purchaseRate = ratesSource.purchaseRate;
+  const fullFunnelRate = ratesSource.fullFunnelRate;
 
   const chartData = [
     { name: "Impressions", value: impressions },

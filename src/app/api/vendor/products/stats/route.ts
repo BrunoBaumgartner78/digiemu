@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getErrorMessage } from "@/lib/guards";
 
 export async function GET(_req: Request) {
   try {
@@ -13,7 +14,7 @@ export async function GET(_req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const user = session.user as any;
+    const user = session.user;
     if (user.role !== "VENDOR" && user.role !== "ADMIN") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
@@ -104,11 +105,8 @@ export async function GET(_req: Request) {
         revenueCents, // <-- wichtig für stats.totals.revenueCents
       },
     });
-  } catch (_err) {
-    console.error("/api/vendor/products/stats error", _err);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
-  }
+    } catch (_err: unknown) {
+      console.error("/api/vendor/products/stats error", getErrorMessage(_err));
+      return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    }
 }

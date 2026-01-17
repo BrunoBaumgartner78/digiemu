@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getErrorMessage } from "@/lib/guards";
 
 export async function GET(_req: NextRequest) {
   try {
@@ -11,7 +12,7 @@ export async function GET(_req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const vendorId = (session.user as any).id;
+    const vendorId = session.user.id;
 
     const url = new URL(_req.url);
     const rangeDays = Number(url.searchParams.get("range_days") ?? "30");
@@ -87,11 +88,8 @@ export async function GET(_req: NextRequest) {
       downloadsTotal,
       downloadsInRange,
     });
-  } catch (_err) {
-    console.error("/api/vendor/products/stats error", _err);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
+  } catch (_err: unknown) {
+    console.error("/api/vendor/products/stats error", getErrorMessage(_err));
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }

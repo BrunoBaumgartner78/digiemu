@@ -6,8 +6,11 @@ type Product = {
   title: string;
   views30: number;
   sales30: number;
+  conversionRate?: number;
+  revenueCents?: number;
   dailyStats?: { date: string; views: number; sales: number }[];
-  [key: string]: any;
+  // dynamic fields can be kept as a safe record if needed
+  extras?: Record<string, unknown>;
 };
 
 interface ProductDetailModalProps {
@@ -58,14 +61,14 @@ export default function ProductDetailModal({ open, onClose, product }: ProductDe
           <div className="neumorph-card p-3 text-center flex-1">
             <div className="text-xs opacity-60">Conversion</div>
             <div className="text-lg font-semibold">
-              {(product.conversionRate * 100).toFixed(1)}%
+              {((product.conversionRate ?? 0) * 100).toFixed(1)}%
             </div>
           </div>
 
           <div className="neumorph-card p-3 text-center flex-1">
             <div className="text-xs opacity-60">Umsatz</div>
             <div className="text-lg font-semibold">
-              CHF {(product.revenueCents / 100).toFixed(2)}
+              CHF {((product.revenueCents ?? 0) / 100).toFixed(2)}
             </div>
           </div>
         </div>

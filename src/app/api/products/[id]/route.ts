@@ -3,7 +3,8 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { isRecord, getString, getNumber } from "@/lib/guards";
+import { isRecord, getString, getNumber, getErrorMessage } from "@/lib/guards";
+import { ProductStatus } from "@prisma/client";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -88,7 +89,7 @@ export async function PUT(_req: Request, ctx: Ctx) {
 
 export async function DELETE(req: Request, ctx: Ctx) {
   const session = await getServerSession(authOptions);
-  const user = session?.user as any;
+  const user = session?.user;
 
   if (!user?.id) return json("Not authenticated", 401);
 
@@ -107,7 +108,7 @@ export async function DELETE(req: Request, ctx: Ctx) {
   // "Löschen" = set to draft + hide
   await prisma.product.update({
     where: { id },
-    data: { status: "DRAFT", isActive: false },
+    data: { status: ProductStatus.DRAFT, isActive: false },
     select: { id: true },
   });
 

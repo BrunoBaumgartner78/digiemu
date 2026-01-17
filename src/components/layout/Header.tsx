@@ -10,7 +10,7 @@ export function Header() {
   const isClient = typeof window !== "undefined";
 
   const user = session?.user;
-  const role = (session?.user as any)?.role;
+  const role = session?.user?.role;
   const isVendor = role === "VENDOR";
   const isAdmin = role === "ADMIN";
 

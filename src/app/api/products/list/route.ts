@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@prisma/client";
+import { ProductStatus } from "@prisma/client";
 
 export async function GET() {
   try {
-    const where: any = {
+    const where: Prisma.ProductWhereInput = {
       isActive: true,
-      status: "ACTIVE",
+      status: ProductStatus.ACTIVE,
     };
 
     const [total, products] = await Promise.all([

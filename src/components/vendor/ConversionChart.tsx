@@ -11,19 +11,17 @@ import {
   Legend
 } from "recharts";
 
-type ConversionChartData = {
-  date: string;
-  value?: number;
-  conversion?: number;
-  [key: string]: any;
-};
+import type { ConversionDTO } from "@/types/ui";
+
+type ConversionPoint = { date: string; views?: number; sales?: number; ctr?: number };
 
 interface ConversionChartProps {
-  data: ConversionChartData[];
+  data: ConversionPoint[] | ConversionDTO;
 }
 
 export default function ConversionChart({ data }: ConversionChartProps) {
-  if (!data || data.length === 0) {
+  const points: ConversionPoint[] = Array.isArray(data) ? data : data?.points ?? [];
+  if (points.length === 0) {
     return (
       <div className="text-center py-6 opacity-70">
         Keine Daten für diesen Zeitraum.
@@ -34,7 +32,7 @@ export default function ConversionChart({ data }: ConversionChartProps) {
   return (
     <div className="w-full h-64 md:h-80">
       <ResponsiveContainer>
-        <LineChart data={data}>
+        <LineChart data={points}>
           <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
 
           <XAxis dataKey="date" tick={{ fontSize: 12 }} />
@@ -62,35 +60,11 @@ export default function ConversionChart({ data }: ConversionChartProps) {
 
           <Legend />
 
-          <Line
-            yAxisId="left"
-            type="monotone"
-            dataKey="views"
-            stroke="#8884d8"
-            strokeWidth={2}
-            dot={false}
-            name="Views"
-          />
+          <Line yAxisId="left" type="monotone" dataKey="views" stroke="#8884d8" strokeWidth={2} dot={false} name="Views" />
 
-          <Line
-            yAxisId="left"
-            type="monotone"
-            dataKey="sales"
-            stroke="#82ca9d"
-            strokeWidth={2}
-            dot={false}
-            name="Sales"
-          />
+          <Line yAxisId="left" type="monotone" dataKey="sales" stroke="#82ca9d" strokeWidth={2} dot={false} name="Sales" />
 
-          <Line
-            yAxisId="right"
-            type="monotone"
-            dataKey="ctr"
-            stroke="#ffb100"
-            strokeWidth={3}
-            dot={false}
-            name="CTR"
-          />
+          <Line yAxisId="right" type="monotone" dataKey="ctr" stroke="#ffb100" strokeWidth={3} dot={false} name="CTR" />
         </LineChart>
       </ResponsiveContainer>
     </div>

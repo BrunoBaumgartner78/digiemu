@@ -2,13 +2,14 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { PayoutStatus } from "@prisma/client";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function POST(_req: Request) {
   const session = await getServerSession(authOptions);
-  const user = session?.user as any;
+  const user = session?.user;
 
   if (!user?.id || user.role !== "ADMIN") {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
@@ -24,10 +25,10 @@ export async function POST(_req: Request) {
 
   const payout = await prisma.payout.update({
     where: { id: payoutId },
-    data: { status: "CANCELLED" } as any,
+    data: { status: PayoutStatus.CANCELLED },
   });
 
-  const vendorId = (payout as any)?.vendorId as string | undefined;
+  const vendorId = payout.vendorId as string | undefined;
   const redirectUrl =
     returnTo || (vendorId ? `/admin/payouts/vendor/${vendorId}` : "/admin/payouts");
 

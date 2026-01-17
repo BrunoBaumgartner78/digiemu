@@ -10,18 +10,17 @@ import {
   CartesianGrid,
 } from "recharts";
 
-type EarningsChartData = {
-  date: string;
-  earningsCents: number;
-  [key: string]: any;
-};
+import type { EarningsDTO } from "@/types/ui";
+
+type EarningsPoint = { date: string; earningsCents: number };
 
 interface EarningsChartProps {
-  data: EarningsChartData[];
+  data: EarningsPoint[] | EarningsDTO;
 }
 
 export default function EarningsChart({ data }: EarningsChartProps) {
-  if (!data || data.length === 0) {
+  const points: EarningsPoint[] = Array.isArray(data) ? data : data?.points ?? [];
+  if (points.length === 0) {
     return (
       <div className="text-center py-6 opacity-70">
         Keine Daten für diesen Zeitraum.
@@ -32,7 +31,7 @@ export default function EarningsChart({ data }: EarningsChartProps) {
   return (
     <div className="w-full h-64 md:h-80">
       <ResponsiveContainer>
-        <LineChart data={data}>
+        <LineChart data={points}>
           <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
           <XAxis dataKey="date" tick={{ fontSize: 12 }} />
           <YAxis
@@ -43,13 +42,7 @@ export default function EarningsChart({ data }: EarningsChartProps) {
             formatter={(v) => typeof v === "number" ? `CHF ${(v / 100).toFixed(2)}` : v}
             labelFormatter={(l) => `Datum: ${l}`}
           />
-          <Line
-            type="monotone"
-            dataKey="earningsCents"
-            stroke="#ffb100"
-            strokeWidth={3}
-            dot={false}
-          />
+          <Line type="monotone" dataKey="earningsCents" stroke="#ffb100" strokeWidth={3} dot={false} />
         </LineChart>
       </ResponsiveContainer>
     </div>

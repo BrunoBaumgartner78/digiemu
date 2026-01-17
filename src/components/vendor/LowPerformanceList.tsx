@@ -39,24 +39,32 @@ export default function LowPerformanceList() {
           return;
         }
 
-        let json: any;
+        let parsed: unknown;
         try {
-          json = JSON.parse(text);
-        } catch (_e) {
+          parsed = JSON.parse(text);
+        } catch (_e: unknown) {
           console.error("LowPerformanceList: JSON parse error", _e, text);
-          if (!cancelled) {
-            setItems([]);
-          }
+          if (!cancelled) setItems([]);
           return;
         }
 
         if (!cancelled) {
-          setItems(json.products || []);
+          if (
+            parsed &&
+            typeof parsed === "object" &&
+            "products" in (parsed as Record<string, unknown>) &&
+            Array.isArray((parsed as Record<string, unknown>).products)
+          ) {
+            setItems(((parsed as Record<string, unknown>).products as unknown) as LowPerfProduct[]);
+          } else {
+            setItems([]);
+          }
         }
-      } catch (e: any) {
+      } catch (e: unknown) {
         console.error("LowPerformanceList: fetch error", e);
         if (!cancelled) {
-          setError(e.message ?? "Unbekannter Fehler");
+          const msg = (e && typeof e === "object" && "message" in e) ? String((e as any).message) : "Unbekannter Fehler";
+          setError(msg);
           setItems([]);
         }
       } finally {

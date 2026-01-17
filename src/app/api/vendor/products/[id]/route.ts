@@ -16,8 +16,8 @@ function toInt(v: unknown): number | null {
 
 export async function PATCH(_req: Request, ctx: Ctx) {
   const session = await getServerSession(auth);
-  const userId = (session?.user as any)?.id as string | undefined;
-  const role = (session?.user as any)?.role as string | undefined;
+  const userId = session?.user?.id as string | undefined;
+  const role = session?.user?.role as string | undefined;
 
   if (!session || !userId) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });

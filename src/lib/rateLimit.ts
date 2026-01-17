@@ -44,9 +44,34 @@ export function rateLimitCheck(key: string, limit = 20, windowMs = 60_000) {
   return { allowed: true, remaining: Math.max(0, limit - e.timestamps.length), limit, windowMs };
 }
 
-export function keyFromReq(reqOrHeaders: Request | any, suffix = "", includeUa = false) {
-  // Accept either a Next.js headers() object or Request
-  const get = (obj: any, k: string) => obj?.get?.(k) ?? obj?.headers?.get?.(k) ?? undefined;
+export function keyFromReq(reqOrHeaders: Request | unknown, suffix = "", includeUa = false) {
+  // Accept either a Next.js headers() object or Request-like object
+  const get = (obj: unknown, k: string) => {
+    if (!obj || typeof obj !== "object") return undefined as string | undefined;
+    const o = obj as {
+      get?: (key: string) => unknown;
+      headers?: unknown;
+    };
+
+    // support headers-like get() first
+    const headersGet = (() => {
+      const h = o.headers as unknown;
+      if (!h || typeof h !== "object") return undefined as ((k: string) => unknown) | undefined;
+      const hg = (h as { get?: (key: string) => unknown }).get;
+      if (typeof hg === "function") {
+        // call the original getter with the headers object as thisArg
+        return (key: string) => hg.call(h as object, key);
+      }
+      return undefined;
+    })();
+
+    const v = o.get?.(k) ?? headersGet?.(k);
+    if (v === undefined && o.headers && typeof o.headers === "object") {
+      const objh = o.headers as Record<string, unknown>;
+      if (objh[k] !== undefined) return String(objh[k]);
+    }
+    return typeof v === "string" ? v : undefined;
+  };
 
   const xff = get(reqOrHeaders, "x-forwarded-for") || get(reqOrHeaders, "x-real-ip");
   const ip = typeof xff === "string" ? String(xff).split(",")[0].trim() : "unknown";

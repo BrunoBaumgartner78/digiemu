@@ -12,7 +12,7 @@ export const metadata = {
 
 export default async function AdminAuditLogPage({ searchParams }: { searchParams?: { action?: string; targetType?: string } }) {
   const session = await getServerSession(auth);
-  if (!session || session.user.role !== "ADMIN") {
+  if (session?.user?.role !== "ADMIN") {
     return (
       <div className="min-h-screen flex items-center justify-center p-6">
         <div className="neumorph-card p-8 text-center max-w-md">

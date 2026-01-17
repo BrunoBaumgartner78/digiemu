@@ -1,6 +1,7 @@
 // src/app/api/vendor/report/route.ts
 import PDFDocument from "pdfkit";
 import { prisma } from "@/lib/prisma";
+import { Role } from "@prisma/client";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -10,7 +11,7 @@ function renderPdf(vendors: Array<{ email: string; name: string | null }>) {
     const doc = new PDFDocument({ size: "A4", margin: 50 });
     const chunks: Buffer[] = [];
 
-    doc.on("data", (chunk: any) => {
+    doc.on("data", (chunk: Buffer | Uint8Array) => {
       chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
     });
 
@@ -30,7 +31,7 @@ function renderPdf(vendors: Array<{ email: string; name: string | null }>) {
 
 export async function GET() {
   const vendors = await prisma.user.findMany({
-    where: { role: "VENDOR" },
+    where: { role: Role.VENDOR },
     select: { email: true, name: true },
     orderBy: { createdAt: "desc" },
   });

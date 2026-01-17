@@ -4,6 +4,13 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "@/lib/prisma";
 import { isRecord, getStringProp, getErrorMessage } from "@/lib/guards";
 
+// App roles used across the app
+type AppRole = "BUYER" | "VENDOR" | "ADMIN";
+
+function isAppRole(v: unknown): v is AppRole {
+  return v === "BUYER" || v === "VENDOR" || v === "ADMIN";
+}
+
 export const authOptions: NextAuthOptions = {
   session: { strategy: "jwt" },
 
@@ -56,60 +63,86 @@ export const authOptions: NextAuthOptions = {
   ],
 
   callbacks: {
-    async jwt({ token, user }) {
-      const invalidate = () => ({}) as typeof token;
+  async jwt({ token, user }) {
+    // If a user becomes invalid/blocked, we keep the token but strip auth fields.
+    const invalidate = () => {
+      delete (token as { uid?: string }).uid;
+      delete (token as { role?: AppRole }).role;
+      return token;
+    };
 
-      // ✅ 1) Beim Login übernehmen
-      if (user && isRecord(user)) {
-        const uid = getStringProp(user, "id");
-        const role = getStringProp(user, "role");
-        const email = getStringProp(user, "email");
-        if (uid) token.uid = uid;
-        if (role) token.role = role;
-        if (email) token.email = email;
-      }
+    // 1) On sign-in, persist id/role/email from authorize() result.
+    if (user && isRecord(user)) {
+      const uid = getStringProp(user, "id");
+      const email = getStringProp(user, "email");
 
-      // ✅ 2) uid/role nachziehen wenn nötig
-      if (!token.uid && token.email) {
-        const dbUser = await prisma.user.findUnique({
-          where: { email: String(token.email) },
-          select: { id: true, role: true, isBlocked: true },
-        });
+      // role must be validated into the union
+      const rawRole = (user as unknown as { role?: unknown }).role;
+      const role = isAppRole(rawRole) ? rawRole : undefined;
 
-        if (!dbUser) return invalidate();
-        if (dbUser.isBlocked) return invalidate();
+      if (uid) token.uid = uid;
+      if (role) token.role = role;
+      if (email) token.email = email;
+    }
 
-        token.uid = dbUser.id;
-        token.role = dbUser.role;
-        return token;
-      }
+    // Mirror `sub` to `uid` for resilience
+    if (!token.uid && typeof token.sub === "string") {
+      token.uid = token.sub;
+    }
 
-      // ✅ 3) wenn uid vorhanden → block-status prüfen
-      if (token.uid) {
-        const dbUser = await prisma.user.findUnique({
-          where: { id: String(token.uid) },
-          select: { isBlocked: true, role: true },
-        });
+    // 2) If we still lack uid but have email, re-hydrate from DB
+    if (!token.uid && token.email) {
+      const dbUser = await prisma.user.findUnique({
+        where: { email: String(token.email) },
+        select: { id: true, role: true, isBlocked: true },
+      });
 
-        if (!dbUser) return invalidate();
-        if (dbUser.isBlocked) return invalidate();
+      if (!dbUser || dbUser.isBlocked) return invalidate();
 
-        token.role = dbUser.role;
-      }
+      token.uid = dbUser.id;
+      if (isAppRole(dbUser.role)) token.role = dbUser.role;
 
       return token;
-    },
+    }
 
-    async session({ session, token }) {
-      // ✅ Wenn Token invalidiert wurde -> keine Session
-      if (!token?.uid) return (null as unknown) as import("next-auth").DefaultSession;
+    // 3) If uid exists, validate user is not blocked + keep role fresh
+    if (token.uid) {
+      const dbUser = await prisma.user.findUnique({
+        where: { id: String(token.uid) },
+        select: { isBlocked: true, role: true },
+      });
 
-      session.user.id = token.uid;
-      session.user.role = token.role ?? session.user.role;
+      if (!dbUser || dbUser.isBlocked) return invalidate();
 
-      return session;
-    },
+      if (isAppRole(dbUser.role)) token.role = dbUser.role;
+    }
+
+    return token;
   },
+
+  async session({ session, token }) {
+    // Mirror sub -> uid if needed
+    const uid =
+      typeof token.uid === "string"
+        ? token.uid
+        : typeof token.sub === "string"
+          ? token.sub
+          : "";
+
+    // With non-optional augmentation, session.user exists.
+    // Still keep it defensive in case of partial sessions.
+    session.user = session.user ?? { name: null, email: null, image: null, id: "", role: "BUYER" };
+
+    session.user.id = uid || session.user.id || "";
+    session.user.role = isAppRole(token.role) ? token.role : (session.user.role ?? "BUYER");
+
+    // Optional: keep email in sync from token if present
+    if (typeof token.email === "string") session.user.email = token.email;
+
+    return session;
+  },
+},
+
 
   pages: {
     signIn: "/login",

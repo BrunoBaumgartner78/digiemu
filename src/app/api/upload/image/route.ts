@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { getErrorMessage } from "@/lib/guards";
 import { adminBucket } from "@/lib/firebaseAdmin";
 import { randomUUID } from "crypto";
 
@@ -72,9 +73,9 @@ export async function POST(_req: Request) {
       path: objectPath,
       url: downloadUrl,
     });
-  } catch (err: any) {
-    console.error("UPLOAD_API_ERROR", err);
-    const msg = err?.message || String(err) || "Upload failed";
+  } catch (err: unknown) {
+    console.error("UPLOAD_API_ERROR", getErrorMessage(err));
+    const msg = getErrorMessage(err) || "Upload failed";
     return NextResponse.json({ ok: false, message: msg }, { status: 500 });
   }
 }

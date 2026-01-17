@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { ProductStatus } from "@prisma/client";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -15,7 +16,7 @@ export async function PATCH(
   if (!session) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
-  const user = session.user as any;
+  const user = session.user;
   if (user.role !== "ADMIN") {
     return NextResponse.json({ message: "Forbidden" }, { status: 403 });
   }
@@ -59,7 +60,7 @@ export async function PATCH(
     );
   }
 
-  if (!["ACTIVE", "DRAFT", "BLOCKED"].includes(status)) {
+  if (![ProductStatus.ACTIVE, ProductStatus.DRAFT, ProductStatus.BLOCKED].includes(status as ProductStatus)) {
     return NextResponse.json(
       { message: "Ungültiger Status." },
       { status: 400 }
@@ -77,7 +78,7 @@ export async function PATCH(
       category,
       priceCents: Math.round(priceCents),
       thumbnail,
-      status: status as any,
+      status: status as ProductStatus,
       isActive: finalIsActive,
       moderationNote,
     },

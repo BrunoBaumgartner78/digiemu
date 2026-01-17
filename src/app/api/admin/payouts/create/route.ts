@@ -2,13 +2,14 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { PayoutStatus } from "@prisma/client";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function POST(_req: Request) {
   const session = await getServerSession(authOptions);
-  const user = session?.user as any;
+  const user = session?.user;
 
   if (!user?.id || user.role !== "ADMIN") {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
@@ -24,7 +25,7 @@ export async function POST(_req: Request) {
 
   // ✅ Guard: Gibt es schon einen Pending-Payout? Dann wiederverwenden.
   const existingPending = await prisma.payout.findFirst({
-    where: { vendorId, status: "PENDING" as any },
+    where: { vendorId, status: PayoutStatus.PENDING },
     orderBy: { createdAt: "desc" },
   });
 
@@ -52,7 +53,7 @@ export async function POST(_req: Request) {
 
   // Wichtig: alreadyPaid = PAID + optional PENDING? -> NEIN, nur PAID
   const alreadyPaid = vendor.payouts
-    .filter((p) => p.status === "PAID")
+    .filter((p) => p.status === PayoutStatus.PAID)
     .reduce((sum, p) => sum + p.amountCents, 0);
 
   const pendingAmount = Math.max(totalEarnings - alreadyPaid, 0);
@@ -66,10 +67,10 @@ export async function POST(_req: Request) {
       data: {
         vendorId,
         amountCents: pendingAmount,
-        status: "PENDING",
-      } as any,
+        status: PayoutStatus.PENDING,
+      },
     });
-  } catch (e: any) {
+  } catch (e: unknown) {
     // If the partial unique index triggers under concurrency,
     // just redirect back (another request created the pending payout).
     const redirectUrl = returnTo || `/admin/payouts/vendor/${vendorId}`;

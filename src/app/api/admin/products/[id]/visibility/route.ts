@@ -11,7 +11,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
-  const user = session.user as any;
+  const user = session.user;
   if (user.role !== "ADMIN") return NextResponse.json({ message: "Forbidden" }, { status: 403 });
 
   const { id } = await ctx.params;
