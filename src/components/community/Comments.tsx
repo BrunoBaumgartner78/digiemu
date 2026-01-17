@@ -1,13 +1,19 @@
 "use client";
 import { useState, useEffect } from "react";
+import type { CommentDTO } from "@/types/ui";
 
-export default function Comments({ productId }: any) {
-  const [comments, setComments] = useState<any[]>([]);
+export default function Comments({ productId }: { productId: string }) {
+  const [comments, setComments] = useState<CommentDTO[]>([]);
   const [content, setContent] = useState("");
 
   async function load() {
     const res = await fetch(`/api/product/${productId}/comments`);
-    setComments(await res.json());
+    const json: unknown = await res.json().catch(() => null);
+    if (Array.isArray(json)) {
+      setComments(json as CommentDTO[]);
+    } else {
+      setComments([]);
+    }
   }
 
   async function submit() {
@@ -30,7 +36,7 @@ export default function Comments({ productId }: any) {
       <div className="flex flex-col gap-3 mb-4">
         {comments.map((c) => (
           <div key={c.id} className="bg-white p-3 rounded shadow border">
-            <div className="text-sm text-gray-600">{c.user.email}</div>
+            <div className="text-sm text-gray-600">{c.user?.email ?? ""}</div>
             <div>{c.content}</div>
           </div>
         ))}

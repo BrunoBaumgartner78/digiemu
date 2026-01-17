@@ -1,14 +1,17 @@
 "use client";
 import { useEffect, useState } from "react";
+import type { ReviewDTO } from "@/types/ui";
 
-export default function Reviews({ productId }: any) {
-  const [reviews, setReviews] = useState<any[]>([]);
-  const [rating, setRating] = useState(5);
-  const [content, setContent] = useState("");
+export default function Reviews({ productId }: { productId: string }) {
+  const [reviews, setReviews] = useState<ReviewDTO[]>([]);
+  const [rating, setRating] = useState<number>(5);
+  const [content, setContent] = useState<string>("");
 
   async function load() {
     const res = await fetch(`/api/product/${productId}/reviews`);
-    setReviews(await res.json());
+    const json: unknown = await res.json().catch(() => null);
+    if (Array.isArray(json)) setReviews(json as ReviewDTO[]);
+    else setReviews([]);
   }
 
   async function submit() {

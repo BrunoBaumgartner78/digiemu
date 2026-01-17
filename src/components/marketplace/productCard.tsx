@@ -1,7 +1,8 @@
 import Link from "next/link";
 import styles from "./ProductCard.module.css";
+import type { MarketplaceProduct } from "@/types/ui";
 
-export default function ProductCard({ product }: { product: any }) {
+export default function ProductCard({ product }: { product: MarketplaceProduct }) {
   const title = product.title ?? "Untitled";
   const description = product.description ?? null;
   const thumb = product.thumbnail ?? null;
