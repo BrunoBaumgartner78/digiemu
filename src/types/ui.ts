@@ -7,11 +7,14 @@ export type MarketplaceProduct = {
   description?: string | null;
   vendorId?: string | null;
   vendorProfile?: {
+    id?: string | null;
     displayName?: string | null;
     user?: { id?: string; name?: string | null } | null;
     avatarUrl?: string | null;
+    isPublic?: boolean | null;
   } | null;
   vendor?: { id?: string; name?: string | null } | null;
+  category?: string | null;
 };
 
 export type CommentDTO = {

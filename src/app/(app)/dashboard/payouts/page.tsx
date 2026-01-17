@@ -4,6 +4,8 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import RequestPayoutButton from "./RequestPayoutButton";
+type SearchParams = { [key: string]: string | string[] | undefined };
+type Props = { searchParams?: Promise<SearchParams> };
 
 export const metadata = {
   title: "Auszahlungen – Vendor Dashboard",
@@ -15,8 +17,10 @@ function chf(cents: number) {
   return `CHF ${(cents / 100).toFixed(2)}`;
 }
 
-export default async function VendorPayoutsPage() {
+export default async function VendorPayoutsPage(props: Props) {
   const session = await getServerSession(auth);
+  const params = props.searchParams ? await props.searchParams : {};
+  const rangeParam = typeof params.range === "string" ? params.range : undefined;
 
   if (!session?.user) redirect("/login");
   const user = session.user as { id?: string; role?: string };
@@ -53,6 +57,9 @@ export default async function VendorPayoutsPage() {
       where: {
         vendorId,
         order: { status: { in: paidLikeStatuses } },
+        ...(rangeParam && rangeParam !== "all"
+          ? { createdAt: { gte: new Date(Date.now() - Number(rangeParam) * 24 * 60 * 60 * 1000) } }
+          : {}),
       },
     });
     totalEarnings = agg?._sum?.vendorEarningsCents ?? 0;
@@ -62,6 +69,7 @@ export default async function VendorPayoutsPage() {
       where: {
         product: { vendorId },
         status: { in: paidLikeStatuses as any },
+        ...(rangeParam && rangeParam !== "all" ? { createdAt: { gte: new Date(Date.now() - Number(rangeParam) * 24 * 60 * 60 * 1000) } } : {}),
       },
     });
     totalEarnings = agg._sum.vendorEarningsCents ?? 0;
@@ -86,7 +94,7 @@ export default async function VendorPayoutsPage() {
 
   // ✅ Historie
   const payouts = await prisma.payout.findMany({
-    where: { vendorId },
+    where: rangeParam && rangeParam !== "all" ? { vendorId, createdAt: { gte: new Date(Date.now() - Number(rangeParam) * 24 * 60 * 60 * 1000) } } : { vendorId },
     orderBy: { createdAt: "desc" },
   });
 

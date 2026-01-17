@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, FormEvent, ChangeEvent, useEffect, useMemo } from "react";
+import SafeImg from "@/components/ui/SafeImg";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useToast } from "@/components/ui/use-toast";
@@ -355,15 +356,11 @@ export default function NewProductPage() {
                   }}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
+                  <SafeImg
                     src={thumbnailUrl || "/fallback-thumbnail.svg"}
+                    fallbackSrc="/fallback-thumbnail.svg"
                     alt="Thumbnail-Vorschau"
                     style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                    onError={(_e) => {
-                      const img = _e.currentTarget;
-                      const fallback = "/fallback-thumbnail.svg";
-                      if (!img.src.endsWith(fallback)) img.src = fallback;
-                    }}
                   />
                 </div>
 

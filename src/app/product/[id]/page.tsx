@@ -232,3 +232,29 @@ export default async function ProductPage({ params }: ProductPageProps) {
     </div>
   );
 }
+
+// Dynamic metadata for product pages (uses server fetch)
+export async function generateMetadata({ params }: ProductPageProps) {
+  const { id } = await params;
+  const pid = String(id ?? "").trim();
+  if (!pid) return {};
+
+  const p = await prisma.product.findUnique({ where: { id: pid }, select: { title: true, description: true, thumbnail: true } });
+  if (!p) return {};
+
+  const productThumb = getProductThumbUrl({ thumbnailUrl: p.thumbnail });
+
+  const title = `${p.title} · DigiEmu`;
+  const description = p.description ? (p.description.length > 160 ? p.description.slice(0, 157) + "…" : p.description) : "Digitales Produkt auf DigiEmu";
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      images: productThumb ? [{ url: productThumb, alt: p.title }] : undefined,
+    },
+    alternates: { canonical: `/product/${pid}` },
+  } as any;
+}

@@ -6,8 +6,11 @@ import { getMarketplaceProducts, PAGE_SIZE } from "@/lib/products";
 // removed dev visibility debug import
 import styles from "./Marketplace.module.css";
 import SellerLink from "@/components/seller/SellerLink";
+import type { MarketplaceProduct } from "src/types/ui";
+import SafeImg from "@/components/ui/SafeImg";
 
-export const dynamic = "force-dynamic";
+
+export const revalidate = 60; // ISR: revalidate every 60s to reduce DB load
 
 const CATEGORY_FILTERS = [
   { key: "all", label: "Alle" },
@@ -259,44 +262,50 @@ export default async function MarketplacePage(props: MarketplacePageProps) {
         {items.length > 0 && (
           <section className={styles.gridSection}>
             <div className={styles.grid}>
-              {items.map((p: any) => {
-                const price = typeof p.priceCents === "number" ? (p.priceCents / 100).toFixed(2) : "0.00";
+                  {items.map((p: MarketplaceProduct) => {
+                    const priceFormatter = new Intl.NumberFormat("de-CH", {
+                      style: "currency",
+                      currency: "CHF",
+                      maximumFractionDigits: 2,
+                    });
 
-                const hasRealThumbnail =
-                  typeof p.thumbnail === "string" &&
-                  p.thumbnail.trim().length > 0 &&
-                  !p.thumbnail.includes("example.com");
+                    const formattedPrice = typeof p.priceCents === "number" ? priceFormatter.format(p.priceCents / 100) : priceFormatter.format(0);
 
-                const vendorProfile = p.vendorProfile ?? null;
+                    const hasRealThumbnail =
+                      typeof p.thumbnail === "string" &&
+                      p.thumbnail.trim().length > 0 &&
+                      !p.thumbnail.includes("example.com");
 
-                const rawSellerName =
-                  (vendorProfile?.displayName as string | undefined) ||
-                  (vendorProfile?.user?.name as string | undefined) ||
-                  "Verkäufer";
+                    const vendorProfile = p.vendorProfile ?? null;
 
-                const sellerName = (rawSellerName || "Verkäufer").trim() || "Verkäufer";
-                const avatarUrl: string | undefined = vendorProfile?.avatarUrl ?? undefined;
+                    const rawSellerName =
+                      (vendorProfile?.displayName as string | undefined) ||
+                      (vendorProfile?.user?.name as string | undefined) ||
+                      "Verkäufer";
 
-                const isPublic = vendorProfile?.isPublic === true;
-                const vendorProfileId: string | null = vendorProfile?.id ?? null;
+                    const sellerName = (rawSellerName || "Verkäufer").trim() || "Verkäufer";
+                    const avatarUrl: string | undefined = vendorProfile?.avatarUrl ?? undefined;
 
-                return (
+                    const isPublic = vendorProfile?.isPublic === true;
+                    const vendorProfileId: string | null = vendorProfile?.id ?? null;
+
+                    return (
                   <article key={p.id} className={`${styles.card} neonCard glowSoft`}>
                     <Link href={`/product/${p.id}`} className={styles.cardBody}>
-                      <div className={styles.cardImageWrapper}>
+                          <div className={styles.cardImageWrapper} style={{ position: "relative", aspectRatio: "4/3" }}>
                         {hasRealThumbnail ? (
                           <Image
-                            src={p.thumbnail as string}
+                                src={p.thumbnail as string}
                             alt={p.title}
                             fill
                             className={styles.cardImage}
                             sizes="(min-width: 1024px) 280px, (min-width: 640px) 50vw, 100vw"
                           />
                         ) : (
-                          <div className={styles.cardImagePlaceholder}>
-                            <div className={styles.cardImageIcon} aria-hidden="true" />
-                            <span className={styles.cardImageLabel}>Digitales Produkt</span>
-                          </div>
+                              <div className={styles.cardImagePlaceholder} style={{ aspectRatio: "4/3", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                <div className={styles.cardImageIcon} aria-hidden="true" />
+                                <span className={styles.cardImageLabel}>Digitales Produkt</span>
+                              </div>
                         )}
                       </div>
 
@@ -310,7 +319,7 @@ export default async function MarketplacePage(props: MarketplacePageProps) {
                     </Link>
 
                     {/* Seller Block */}
-                   <div className={styles.cardSeller}>
+                      <div className={styles.cardSeller}>
 
                       <span style={{ opacity: 0.7 }}>Verkauft von</span>
 
@@ -331,11 +340,13 @@ export default async function MarketplacePage(props: MarketplacePageProps) {
                         aria-hidden="true"
                       >
                         {avatarUrl ? (
+                          // Use client SafeImg to handle onError safely
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img
+                          <SafeImg
                             src={avatarUrl}
-                            alt=""
+                            alt={sellerName}
                             style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                            fallback={<span>{sellerName.charAt(0).toUpperCase()}</span>}
                           />
                         ) : (
                           <span>{sellerName.charAt(0).toUpperCase()}</span>
@@ -359,12 +370,12 @@ export default async function MarketplacePage(props: MarketplacePageProps) {
                       )}
                     </div>
 
-                    <div className={styles.cardFooter}>
+                      <div className={styles.cardFooter}>
                       <Link href={`/product/${p.id}`} className={styles.cardButton} aria-label={`Produkt kaufen: ${p.title}`}>
                         Kaufen
                       </Link>
                       <div className={styles.priceBlock}>
-                        <span className={styles.cardPrice}>CHF {price}</span>
+                        <span className={styles.cardPrice}>{formattedPrice}</span>
                         <span className={styles.cardPriceHint}>Einmal zahlen · sofort laden</span>
                       </div>
                     </div>

@@ -80,6 +80,12 @@ export default async function VendorPayoutPage(props: { params: Promise<Params> 
             <Link href="/admin/payouts" className="neobtn-sm ghost">
               ← Payout-Übersicht
             </Link>
+            <a
+              href={`/api/admin/payouts/list?vendorId=${encodeURIComponent(vendor.id)}&format=csv`}
+              className="neobtn-sm"
+            >
+              Export CSV
+            </a>
           </div>
         </div>
       </header>
