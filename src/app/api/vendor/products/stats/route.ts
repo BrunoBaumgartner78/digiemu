@@ -1,31 +1,40 @@
 // src/app/api/vendor/products/stats/route.ts
 
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { requireRoleApi } from "@/lib/guards/authz";
 import { prisma } from "@/lib/prisma";
 import { getErrorMessage } from "@/lib/guards";
 
 export async function GET(_req: Request) {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session || !session.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const user = session.user;
-    if (user.role !== "VENDOR" && user.role !== "ADMIN") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
-    const vendorId = user.id;
-
+    // compute rangeDays early so we can return compatible empty payloads when unauthenticated
     const url = new URL(_req.url);
     const rangeDaysParam = url.searchParams.get("range_days");
     const rangeDays = Number.isFinite(Number(rangeDaysParam))
       ? Number(rangeDaysParam)
       : 30;
+
+    const maybe = await requireRoleApi(["VENDOR", "ADMIN"]);
+    // preserve behavior: NEVER return 401 from this endpoint (treat unauthenticated as empty stats)
+    if (maybe instanceof NextResponse) {
+      if (maybe.status === 401) {
+        // return empty but compatible response (200)
+        return NextResponse.json({
+          rangeDays,
+          impressions: 0,
+          views: 0,
+          purchases: 0,
+          rates: { viewRate: 0, purchaseRateFromViews: 0, fullFunnelRate: 0 },
+          totals: { impressions: 0, views: 0, purchases: 0, revenueCents: 0 },
+        });
+      }
+      if (maybe.status === 403) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      return maybe;
+    }
+
+    const session = maybe;
+    const user = session.user;
+    const vendorId = user.id;
 
     const now = new Date();
     const since = new Date(

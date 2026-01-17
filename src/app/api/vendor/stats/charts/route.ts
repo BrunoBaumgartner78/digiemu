@@ -1,8 +1,7 @@
 // src/app/api/vendor/stats/charts/route.ts
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { requireVendorApi } from "@/lib/guards/authz";
 
 type SessionUser = {
   id: string;
@@ -19,12 +18,12 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET(_req: Request) {
-  const session = (await getServerSession(authOptions)) as SessionLike | null;
+  const maybe = await requireVendorApi();
+  if (maybe instanceof NextResponse) return maybe;
+  const session = maybe as SessionLike;
 
   const vendorId = session?.user?.id;
-  if (!vendorId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  if (!vendorId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { searchParams } = new URL(_req.url);
   const range = searchParams.get("range") ?? "30";

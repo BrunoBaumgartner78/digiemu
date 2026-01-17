@@ -1,8 +1,7 @@
 // src/app/api/vendor/funnel/route.ts
 
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { requireVendorApi } from "@/lib/guards/authz";
 import { prisma } from "@/lib/prisma";
 
 // Hilfsfunktion: Range in Tagen aus Query lesen (?range oder ?range_days)
@@ -18,12 +17,9 @@ function parseRangeDays(url: string): number {
 }
 
 export async function GET(_req: Request) {
-  const session = await getServerSession(authOptions);
-
-  // Nur Vendors dürfen diese Route nutzen
-  if (!session?.user?.id || session.user.role !== "VENDOR") {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const maybe = await requireVendorApi();
+  if (maybe instanceof NextResponse) return maybe;
+  const session = maybe;
 
   const rangeDays = parseRangeDays(_req.url);
   const since = new Date(Date.now() - rangeDays * 24 * 60 * 60 * 1000);

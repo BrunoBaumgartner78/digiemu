@@ -1,17 +1,14 @@
 // src/app/api/vendor/products/stats/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { requireVendorApi } from "../../../../lib/guards/authz";
 import { prisma } from "@/lib/prisma";
 import { getErrorMessage } from "@/lib/guards";
 
 export async function GET(_req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
+    const maybe = await requireVendorApi();
+    if (maybe instanceof NextResponse) return maybe;
+    const session = maybe;
     const vendorId = session.user.id;
 
     const url = new URL(_req.url);

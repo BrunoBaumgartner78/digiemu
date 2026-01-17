@@ -1,6 +1,5 @@
 // src/app/admin/payouts/page.tsx
-import { getServerSession } from "next-auth";
-import { auth } from "@/lib/auth";
+import { requireAdminPage } from "@/lib/guards/authz";
 import { prisma } from "@/lib/prisma";
 import type { AdminVendorListRowLite } from "@/lib/admin-types";
 import Link from "next/link";
@@ -21,9 +20,9 @@ export const metadata = {
 };
 
 export default async function AdminPayoutsPage(props: Props) {
-  const session = await getServerSession(auth);
+  const session = await requireAdminPage();
 
-  if (!session || session.user.role !== "ADMIN") {
+  if (!session) {
     // Unauthorized-View beibehalten
     return (
       <div className="min-h-screen flex items-center justify-center p-6">

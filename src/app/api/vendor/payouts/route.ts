@@ -1,21 +1,20 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { requireVendorApi } from "@/lib/guards/authz";
 
 export async function GET(req: Request) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id || session.user.role !== "VENDOR") {
-    return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
-  }
+  const maybe = await requireVendorApi();
+  if (maybe instanceof NextResponse) return maybe;
+  const session = maybe;
+  const userId = session.user.id;
 
-  const vendor = await prisma.vendorProfile.findUnique({ where: { userId: session.user.id } });
+  const vendor = await prisma.vendorProfile.findUnique({ where: { userId } });
   if (!vendor) return NextResponse.json({ ok: false, error: "No VendorProfile" }, { status: 403 });
 
   const url = new URL(req.url);
   const range = url.searchParams.get("range") ?? "30";
 
-  const where: any = { vendorId: session.user.id };
+  const where: any = { vendorId: userId };
   if (range !== "all") {
     const days = Number(range) || 30;
     const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);

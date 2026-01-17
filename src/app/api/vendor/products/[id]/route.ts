@@ -1,7 +1,6 @@
 // src/app/api/vendor/products/[id]/route.ts
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { auth } from "@/lib/auth";
+import { requireRoleApi } from "@/lib/guards/authz";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -15,16 +14,15 @@ function toInt(v: unknown): number | null {
 }
 
 export async function PATCH(_req: Request, ctx: Ctx) {
-  const session = await getServerSession(auth);
+  const maybe = await requireRoleApi(["VENDOR", "ADMIN"]);
+  if (maybe instanceof NextResponse) {
+    if (maybe.status === 401) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    if (maybe.status === 403) return NextResponse.json({ message: "Forbidden" }, { status: 403 });
+    return maybe;
+  }
+  const session = maybe;
   const userId = session?.user?.id as string | undefined;
   const role = session?.user?.role as string | undefined;
-
-  if (!session || !userId) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
-  if (role !== "VENDOR" && role !== "ADMIN") {
-    return NextResponse.json({ message: "Forbidden" }, { status: 403 });
-  }
 
   const { id } = await ctx.params;
   const productId = String(id ?? "").trim();

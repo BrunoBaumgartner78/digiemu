@@ -1,7 +1,6 @@
 // src/app/api/vendor/profile/route.ts
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { requireSessionApi, requireRoleApi } from "../../../../lib/guards/authz";
 import { prisma } from "@/lib/prisma";
 import { getStringProp, getBooleanProp, getErrorMessage, isRecord } from "@/lib/guards";
 
@@ -9,7 +8,9 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const session = await getServerSession(authOptions);
+  const maybe = await requireSessionApi();
+  if (maybe instanceof NextResponse) return maybe;
+  const session = maybe;
   const user = isRecord(session?.user) ? session!.user as Record<string, unknown> : null;
   const userId = getStringProp(user, "id");
   if (!userId) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
@@ -20,7 +21,13 @@ export async function GET() {
 
 export async function PUT(req: Request) {
   try {
-    const session = await getServerSession(authOptions);
+    const maybe = await requireRoleApi(["VENDOR", "ADMIN"]);
+    if (maybe instanceof NextResponse) {
+      if (maybe.status === 401) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+      if (maybe.status === 403) return NextResponse.json({ error: "forbidden" }, { status: 403 });
+      return maybe;
+    }
+    const session = maybe;
     const user = isRecord(session?.user) ? session!.user as Record<string, unknown> : null;
     const userId = getStringProp(user, "id");
     const userRole = getStringProp(user, "role");

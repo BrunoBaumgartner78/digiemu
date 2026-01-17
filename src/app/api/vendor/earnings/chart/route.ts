@@ -1,7 +1,6 @@
 // src/app/api/vendor/earnings/chart/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { requireVendorApi } from "../../../../../lib/guards/authz";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -10,8 +9,16 @@ export const dynamic = "force-dynamic";
 // ✅ Next 16 compatible signature
 export async function GET(_req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    const user = session?.user as { id?: string; role?: string } | undefined;
+    const maybe = await requireVendorApi();
+    if (maybe instanceof NextResponse) {
+      return NextResponse.json(
+        { error: "Unauthorized", daily: [], totalEarnings: 0 },
+        { status: 401 }
+      );
+    }
+    const session = maybe;
+
+    const user = session.user as { id?: string; role?: string } | undefined;
 
     if (!user?.id || user.role !== "VENDOR") {
       return NextResponse.json(

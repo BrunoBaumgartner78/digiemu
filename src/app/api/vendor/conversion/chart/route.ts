@@ -1,8 +1,7 @@
 // src/app/api/vendor/conversion/chart/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { requireVendorApi } from "@/lib/guards/authz";
 
 type RangeParam = "7" | "30" | "90" | "all";
 
@@ -12,12 +11,12 @@ type DayAgg = {
 };
 
 export async function GET(_req: NextRequest) {
-  const session = await getServerSession(authOptions);
+  const maybe = await requireVendorApi();
+  if (maybe instanceof NextResponse) return maybe;
+  const session = maybe;
   const vendorId = session?.user?.id;
 
-  if (!vendorId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  if (!vendorId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { searchParams } = new URL(_req.url);
   const range = (searchParams.get("range") ?? "30") as RangeParam;

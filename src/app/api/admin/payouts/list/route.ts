@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { requireAdminApi } from "@/lib/guards/authz";
 
 function toCsv(rows: any[]) {
   const header = ["id", "vendorId", "vendorEmail", "amountCents", "status", "createdAt", "paidAt", "note"];
@@ -15,10 +14,9 @@ function toCsv(rows: any[]) {
 }
 
 export async function GET(req: Request) {
-  const session = await getServerSession(authOptions);
-  if (!session || session.user?.role !== "ADMIN") {
-    return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
-  }
+  const maybeSession = await requireAdminApi();
+  if (maybeSession instanceof NextResponse) return maybeSession;
+  const session = maybeSession;
 
   const url = new URL(req.url);
   const vendorId = url.searchParams.get("vendorId") ?? undefined;

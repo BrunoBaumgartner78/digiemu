@@ -1,18 +1,12 @@
 // src/app/api/vendor/onboard/route.ts
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { requireSessionApi } from "../../../../lib/guards/authz";
 import { prisma } from "@/lib/prisma";
 
 export async function POST() {
-  const session = await getServerSession(authOptions);
-
-  if (!session || !session.user) {
-    return NextResponse.json(
-      { ok: false, error: "Unauthorized" },
-      { status: 401 }
-    );
-  }
+  const maybe = await requireSessionApi();
+  if (maybe instanceof NextResponse) return maybe;
+  const session = maybe;
 
   const email = session.user.email;
 

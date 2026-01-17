@@ -1,19 +1,14 @@
 // src/app/api/vendor/funnel/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { requireVendorApi } from "@/lib/guards/authz";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(_req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-
-    // 👉 Nur eingeloggt checken
-    if (!session || !session.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const vendorId = session.user.id;
+    const maybe = await requireVendorApi();
+    if (maybe instanceof NextResponse) return maybe;
+    const session = maybe;
+    const userId = session.user.id;
 
     const { searchParams } = new URL(_req.url);
     const rangeParam = searchParams.get("range") ?? "30";
@@ -28,12 +23,12 @@ export async function GET(_req: NextRequest) {
     }
 
     const viewWhere = {
-      product: { vendorId },
+      product: { vendorId: userId },
       ...(since ? { createdAt: { gte: since } } : {}),
     };
 
     const orderWhere = {
-      product: { vendorId },
+      product: { vendorId: userId },
       status: "COMPLETED",
       ...(since ? { createdAt: { gte: since } } : {}),
     };

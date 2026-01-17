@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import type { PayoutStatus } from "@prisma/client";
+import { requireAdminApi } from "@/lib/guards/authz";
 
 function isPayoutStatus(v: unknown): v is PayoutStatus {
   return v === "PENDING" || v === "PAID" || v === "CANCELLED";
@@ -19,10 +18,9 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: Request) {
-  const session = await getServerSession(auth);
-  if (!session?.user || session.user.role !== "ADMIN") {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const maybe = await requireAdminApi();
+  if (maybe instanceof NextResponse) return maybe;
+  const session = maybe;
 
   const url = new URL(req.url);
   const sp: Record<string, string | string[] | undefined> = {};

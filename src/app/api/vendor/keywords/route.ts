@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { requireVendorApi } from "@/lib/guards/authz";
 import { prisma } from "@/lib/prisma";
 
 const STOP_WORDS = [
@@ -18,15 +17,13 @@ function extractKeywords(text: string): string[] {
 }
 
 export async function GET() {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const vendorId = session.user.id;
+  const maybe = await requireVendorApi();
+  if (maybe instanceof NextResponse) return maybe;
+  const session = maybe;
+  const userId = session.user.id;
 
   const products = await prisma.product.findMany({
-    where: { vendorId },
+    where: { vendorId: userId },
     select: {
       id: true,
       title: true,

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { requireSessionApi } from "@/lib/guards/authz";
 import { prisma } from "@/lib/prisma";
 import { getBooleanProp, getStringProp, getErrorMessage, isRecord } from "@/lib/guards";
 
@@ -12,7 +11,9 @@ export async function POST(
   context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
+    const maybe = await requireSessionApi();
+    if (maybe instanceof NextResponse) return maybe;
+    const session = maybe;
     const user = isRecord(session?.user) ? session!.user as Record<string, unknown> : null;
     const userId = getStringProp(user, "id");
     const userRole = getStringProp(user, "role");
