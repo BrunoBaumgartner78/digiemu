@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma";
 
-export async function requireNotBlocked(user: any) {
+export async function requireNotBlocked(
+  user: { email?: string; isBlocked?: boolean } | null | undefined
+) {
   if (!user?.email) {
     return { ok: false, status: 401, message: "Nicht eingeloggt" };
   }

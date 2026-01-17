@@ -30,7 +30,7 @@ export default async function DownloadsPage() {
   }
 
   const session = await getServerSession(auth);
-  const userId = (session?.user as any)?.id as string | undefined;
+  const userId = session?.user?.id as string | undefined;
 
   if (!userId) {
     return (

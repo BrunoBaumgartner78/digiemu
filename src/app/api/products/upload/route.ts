@@ -32,16 +32,13 @@ export async function POST(_req: Request) {
   }
 
   // --- Body (JSON) ---
-  let body: any;
-  try {
-    body = await _req.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
-  }
+  const body: unknown = await _req.json().catch(() => null);
+  if (!body || typeof body !== "object") return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
 
-  const fileUrl = String(body?.fileUrl ?? "").trim();
-  const thumbnail = body?.thumbnail ? String(body.thumbnail).trim() : null;
-  const originalName = body?.originalName ? String(body.originalName).trim() : null;
+  const b = body as Record<string, unknown>;
+  const fileUrl = String(b.fileUrl ?? "").trim();
+  const thumbnail = b.thumbnail ? String(b.thumbnail).trim() : null;
+  const originalName = b.originalName ? String(b.originalName).trim() : null;
 
   if (!fileUrl) {
     return NextResponse.json({ error: "Missing fileUrl" }, { status: 400 });

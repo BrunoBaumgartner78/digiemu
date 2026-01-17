@@ -54,22 +54,14 @@ export async function GET(_req: Request) {
 
     const productIds = products.map((p) => p.id);
 
-    // 2) Views zählen – defensiv über any, damit es nicht crasht
-    const prismaAny = prisma as any;
+    // 2) Views zählen. If productView doesn't exist or the query fails, fall back to 0.
     let viewsCount = 0;
-
-    if (
-      prismaAny.productView &&
-      typeof prismaAny.productView.count === "function"
-    ) {
-      viewsCount = await prismaAny.productView.count({
-        where: {
-          productId: { in: productIds },
-          createdAt: { gte: since },
-        },
+    try {
+      viewsCount = await prisma.productView.count({
+        where: { productId: { in: productIds }, createdAt: { gte: since } },
       });
-    } else {
-      // Fallback: kein ProductView-Model im Client → 0 Views
+    } catch (e) {
+      // If the model isn't available in this Prisma client, keep viewsCount = 0
       viewsCount = 0;
     }
 
@@ -102,7 +94,7 @@ export async function GET(_req: Request) {
         fullFunnelRate,
       },
     });
-  } catch (_err) {
+  } catch (_err: unknown) {
     console.error("Error in /api/vendor/funnel", _err);
     return NextResponse.json(
       { error: "Internal server error" },

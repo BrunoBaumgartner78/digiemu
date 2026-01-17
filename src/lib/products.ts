@@ -1,6 +1,7 @@
 // src/lib/products.ts
 import { prisma } from "@/lib/prisma";
 import { marketplaceWhereClause } from "@/lib/marketplace-visibility";
+import type { Prisma } from "@prisma/client";
 
 // Wie viele Produkte pro Seite im Marketplace
 export const PAGE_SIZE = 9;
@@ -46,7 +47,7 @@ type GetMarketplaceProductsParams = {
 };
 
 export async function getMarketplaceProducts(
-  params: GetMarketplaceProductsParams
+  params: GetMarketplaceProductsParams = {}
 ): Promise<MarketplaceQueryResult> {
   const {
     page = 1,
@@ -56,7 +57,7 @@ export async function getMarketplaceProducts(
     sort = "newest",
     minPriceCents,
     maxPriceCents,
-  } = (params ?? {}) as any;
+  } = params;
 
   const safePage = Number.isFinite(page) && page > 0 ? page : 1;
   const safePageSize =
@@ -66,24 +67,28 @@ export async function getMarketplaceProducts(
   const hasSearch = trimmedSearch.length > 0;
 
   // base visibility clause from centralized helper
-  const where: any = { AND: [marketplaceWhereClause()] };
+  const where: Prisma.ProductWhereInput = { AND: [marketplaceWhereClause()] };
 
   // Optional: Kategorie
   if (category && category !== "all") {
-    where.AND.push({ category });
+    // ensure AND is an array before pushing (Prisma types allow single or array)
+    if (!Array.isArray(where.AND)) {
+      where.AND = where.AND ? [where.AND as Prisma.ProductWhereInput] : [];
+    }
+    (where.AND as Prisma.ProductWhereInput[]).push({ category });
   }
 
   // Optional: Preisrange
   if (typeof minPriceCents === "number" || typeof maxPriceCents === "number") {
-    const price: any = {};
+    const price: Partial<Prisma.IntFilter> = {};
     if (typeof minPriceCents === "number") price.gte = Math.round(minPriceCents);
     if (typeof maxPriceCents === "number") price.lte = Math.round(maxPriceCents);
-    where.AND.push({ priceCents: price });
+    (where.AND as Prisma.ProductWhereInput[]).push({ priceCents: price as Prisma.IntFilter });
   }
 
   // Optional: Suche
   if (hasSearch) {
-    where.AND.push({
+    (where.AND as Prisma.ProductWhereInput[]).push({
       OR: [
         { title: { contains: trimmedSearch, mode: "insensitive" } },
         { description: { contains: trimmedSearch, mode: "insensitive" } },
@@ -91,7 +96,7 @@ export async function getMarketplaceProducts(
     });
   }
 
-  let orderBy: any = { createdAt: "desc" };
+  let orderBy: Prisma.ProductOrderByWithRelationInput = { createdAt: "desc" };
   if (sort === "price_asc") orderBy = { priceCents: "asc" };
   else if (sort === "price_desc") orderBy = { priceCents: "desc" };
 
@@ -120,7 +125,7 @@ export async function getMarketplaceProducts(
     }),
   ]);
 
-  const normalized: MarketplaceProduct[] = items.map((p: any) => {
+  const normalized: MarketplaceProduct[] = items.map((p) => {
     const vp = p.vendorProfile ?? null;
     return {
       id: p.id,

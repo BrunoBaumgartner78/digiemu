@@ -12,7 +12,7 @@ export async function GET() {
     return NextResponse.json({ status: "UNAUTHENTICATED" }, { status: 401 });
   }
 
-  const user = session.user as any;
+  const user = session.user;
 
   if (user.role !== "VENDOR" && user.role !== "ADMIN") {
     return NextResponse.json({ status: "FORBIDDEN" }, { status: 403 });

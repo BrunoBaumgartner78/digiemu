@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getErrorMessage } from "@/lib/guards";
 
 export async function GET() {
   try {
@@ -10,10 +11,10 @@ export async function GET() {
       products,
       db_url: process.env.DATABASE_URL || "not found",
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     return NextResponse.json({
       ok: false,
-      error: err.message,
+      error: getErrorMessage(err) || String(err),
       db_url: process.env.DATABASE_URL || "not found",
     }, { status: 500 });
   }

@@ -5,18 +5,19 @@ import { prisma } from "@/lib/prisma";
 
 export async function PUT(_req: Request) {
   const session = await getServerSession(auth);
-  const user = session?.user as any;
+  const user = session?.user;
   const userId = user?.id as string | undefined;
   if (!userId || user?.role !== "ADMIN") return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 403 });
 
-  const body = (await _req.json().catch(() => null)) as any;
-  if (!body) return NextResponse.json({ error: "INVALID_BODY" }, { status: 400 });
+  const body = (await _req.json().catch(() => null)) as unknown;
+  if (!body || typeof body !== "object") return NextResponse.json({ error: "INVALID_BODY" }, { status: 400 });
 
+  const b = body as Record<string, unknown>;
   const data = {
-    displayName: typeof body.displayName === "string" ? body.displayName : "",
-    signature: typeof body.signature === "string" ? body.signature : "",
-    notifyOnDownload: Boolean(body.notifyOnDownload),
-    notifyOnPayoutRequest: Boolean(body.notifyOnPayoutRequest),
+    displayName: typeof b.displayName === "string" ? b.displayName : "",
+    signature: typeof b.signature === "string" ? b.signature : "",
+    notifyOnDownload: Boolean(b.notifyOnDownload),
+    notifyOnPayoutRequest: Boolean(b.notifyOnPayoutRequest),
   };
 
   const saved = await prisma.adminProfile.upsert({

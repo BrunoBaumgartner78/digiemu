@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { ProductStatus } from "@prisma/client";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -13,7 +14,7 @@ type Body = {
 
 export async function POST(_req: NextRequest, context: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
-  if (!session?.user || (session.user as any).role !== "ADMIN") {
+  if (!session?.user || session.user.role !== "ADMIN") {
     return NextResponse.json({ ok: false, message: "Unauthorized" }, { status: 401 });
   }
 
@@ -22,7 +23,7 @@ export async function POST(_req: NextRequest, context: { params: Promise<{ id: s
   const body = (await _req.json().catch(() => ({}))) as Body;
   const status = body.status;
 
-  if (status !== "ACTIVE" && status !== "DRAFT" && status !== "BLOCKED") {
+  if (status !== ProductStatus.ACTIVE && status !== ProductStatus.DRAFT && status !== ProductStatus.BLOCKED) {
     return NextResponse.json({ ok: false, message: "Invalid status" }, { status: 400 });
   }
 
@@ -31,7 +32,7 @@ export async function POST(_req: NextRequest, context: { params: Promise<{ id: s
   await prisma.product.update({
     where: { id },
     data: {
-      status,
+      status: status as ProductStatus,
       isActive,
       ...(isActive ? { isPublic: true } : {}),
       moderationNote: body.note === undefined ? undefined : body.note,

@@ -113,8 +113,8 @@ function SectionTitle({ kicker, title }: { kicker?: string; title: string }) {
 
 export default async function HomePage() {
   const session = await getServerSession(auth);
-  const isLoggedIn = !!(session?.user as any)?.id;
-  const role = ((session?.user as any)?.role as string | undefined) ?? undefined;
+  const isLoggedIn = !!session?.user?.id;
+  const role = (session?.user?.role as string | undefined) ?? undefined;
 
   const metrics = await getPublicMetrics();
 

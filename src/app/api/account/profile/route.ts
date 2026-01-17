@@ -79,11 +79,15 @@ async function handleUpsert(_req: Request) {
     // ✅ Unique constraint: slug already taken
     if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
       const meta = (err as unknown as { meta?: unknown }).meta;
-      const target = Array.isArray(meta && (meta as any).target ? (meta as any).target : (meta as unknown))
-        ? ((meta as any).target as string[])
-        : undefined;
-      if (Array.isArray(target) && target.includes("slug")) {
-        return NextResponse.json({ ok: false, message: "SLUG_TAKEN" }, { status: 409 });
+      // meta may be an object with `target` array
+      if (isRecord(meta)) {
+        const tgt = (meta as Record<string, unknown>).target;
+        if (Array.isArray(tgt) && tgt.every((x) => typeof x === "string")) {
+          const target = tgt as string[];
+          if (target.includes("slug")) {
+            return NextResponse.json({ ok: false, message: "SLUG_TAKEN" }, { status: 409 });
+          }
+        }
       }
       return NextResponse.json({ ok: false, message: "UNIQUE_CONSTRAINT" }, { status: 409 });
     }

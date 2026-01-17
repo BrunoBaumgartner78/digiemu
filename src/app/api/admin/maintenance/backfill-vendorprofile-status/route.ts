@@ -8,20 +8,20 @@ export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
-  if (!session?.user || (session.user as any).role !== "ADMIN") {
+  if (!session?.user || session.user.role !== "ADMIN") {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401, headers: { "Cache-Control": "no-store" } });
   }
 
   try {
-    const result = await prisma.vendorProfile.updateMany({
-      // TypeScript/Prisma enums are strict; cast null to any for this one-time backfill.
-      where: { status: null as any },
-      data: { status: "PENDING" },
-    });
+    // Use a raw SQL update to set NULL statuses to PENDING without casting Prisma enums.
+    // This is a one-time maintenance operation and avoids `as any` enum casts.
+    const result = await prisma.$executeRaw`
+      UPDATE "VendorProfile" SET status = 'PENDING' WHERE status IS NULL
+    `;
 
-    return NextResponse.json({ ok: true, updatedCount: result.count }, { status: 200, headers: { "Cache-Control": "no-store" } });
-  } catch (e: any) {
+    return NextResponse.json({ ok: true, updatedCount: Number(result) }, { status: 200, headers: { "Cache-Control": "no-store" } });
+  } catch (e: unknown) {
     console.error("[admin-backfill-vendorprofile-status]", e);
-    return NextResponse.json({ message: e?.message ?? "Server error" }, { status: 500, headers: { "Cache-Control": "no-store" } });
+    return NextResponse.json({ message: String(e) ?? "Server error" }, { status: 500, headers: { "Cache-Control": "no-store" } });
   }
 }
