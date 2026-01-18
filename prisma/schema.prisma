@@ -265,3 +265,15 @@ enum PayoutStatus {
   PAID
   CANCELLED
 }
+
+model StripeWebhookError {
+  id        String   @id @default(cuid())
+  eventId   String?
+  type      String?
+  message   String
+  createdAt DateTime @default(now())
+
+  @@index([eventId])
+  @@index([type])
+  @@index([createdAt])
+}
