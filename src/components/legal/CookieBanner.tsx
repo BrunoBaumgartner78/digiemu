@@ -43,24 +43,20 @@ export default function CookieBanner() {
   if (!isOpen) return null;
 
   return (
-    <div
-      className={styles.wrapper}
-      role="dialog"
-      aria-live="polite"
-      aria-label="Cookie Einstellungen"
-    >
-      <div className={styles.card}>
+  <div className={styles.wrapper} role="dialog" aria-live="polite" aria-label="Cookie Einstellungen">
+    <div className={styles.card}>
+      <div className={styles.row}>
         <div className={styles.text}>
           <strong>Cookies</strong>
-          <p>
-            Wir verwenden notwendige Cookies für die Funktion der Website. Optionale
-            Cookies (Analytics) helfen uns, die Nutzung zu verstehen und zu verbessern.
-          </p>
+          <div className={styles.muted}>
+            Wir verwenden notwendige Cookies für die Funktion der Website. Optionale Cookies (Analytics) helfen uns,
+            die Nutzung zu verstehen und zu verbessern.
+          </div>
         </div>
 
         <div className={styles.actions}>
           <button
-            className={styles.secondary}
+            className={styles.btn}
             onClick={() => {
               const v: Consent = { necessary: true, analytics: false };
               writeConsent(v);
@@ -71,7 +67,7 @@ export default function CookieBanner() {
           </button>
 
           <button
-            className={styles.primary}
+            className={`${styles.btn} ${styles.primary}`}
             onClick={() => {
               const v: Consent = { necessary: true, analytics: true };
               writeConsent(v);
@@ -83,5 +79,6 @@ export default function CookieBanner() {
         </div>
       </div>
     </div>
-  );
+  </div>
+);
 }

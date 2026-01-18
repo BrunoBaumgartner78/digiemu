@@ -16,9 +16,9 @@ export default function ImpressumPage() {
         <div className="space-y-3 text-sm text-[var(--text-main)]">
           <p><strong>Betreiber:</strong> DigiEmu / Baumgartner Web Design & Development</p>
           <p><strong>Inhaber:</strong> Bruno Baumgartner</p>
-          <p><strong>Adresse:</strong> Musterstrasse 1, 8000 Zürich (Bitte auf echte Adresse anpassen)</p>
+          <p><strong>Adresse:</strong> Le pré-aux-Boeufs 222, 2615 Sonvilier</p>
           <p><strong>Kontakt:</strong> support@bellu.ch</p>
-          <p><strong>UID / Handelsregister:</strong> (sofern vorhanden, bitte ergänzen)</p>
+          <p><strong>UID / Handelsregister:</strong></p>
 
           <p className="text-[var(--text-muted)]">
             Hinweis: Dieses Impressum ist ein MVP-Entwurf und enthält Beispielangaben. Ergänze die tatsächlichen Firmendaten vor dem öffentlichen Start.

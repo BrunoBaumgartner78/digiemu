@@ -1,50 +1,63 @@
-.wrap {
+.wrapper {
   position: fixed;
   left: 0;
   right: 0;
   bottom: 0;
+
+  /* Wichtig: über Footer & Overlays */
   z-index: 2147483647;
-  pointer-events: auto;
+
+  /* Nicht den ganzen Screen blocken */
+  pointer-events: none;
+
   padding: 12px;
+  padding-bottom: calc(12px + env(safe-area-inset-bottom));
 }
 
 .card {
+  pointer-events: auto; /* nur die Card ist klickbar */
   max-width: 980px;
   margin: 0 auto;
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.96);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+
+  border-radius: 18px;
+
+  /* Neo / Neon look (passt zu deinen Variablen) */
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(120, 255, 220, 0.18);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+
   box-shadow:
-    0 10px 30px rgba(0, 0, 0, 0.12),
-    0 2px 8px rgba(0, 0, 0, 0.08);
-  padding: 14px;
+    0 10px 30px rgba(0, 0, 0, 0.35),
+    0 0 0 1px rgba(120, 255, 220, 0.08) inset,
+    0 0 22px rgba(120, 255, 220, 0.12);
+
+  padding: 14px 14px;
 }
 
 .row {
   display: flex;
-  gap: 12px;
+  gap: 14px;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
 }
 
 .text {
-  font-size: 14px;
+  color: var(--text-main);
+  font-size: 13px;
   line-height: 1.35;
-  color: rgba(15, 23, 42, 0.92);
-  margin: 0;
 }
 
 .text strong {
   display: inline-block;
-  margin-bottom: 4px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  margin-bottom: 2px;
 }
 
-.link {
-  text-decoration: underline;
-  color: inherit;
+.muted {
+  color: var(--text-muted);
 }
 
 .actions {
@@ -55,25 +68,32 @@
 
 .btn {
   appearance: none;
-  border: 1px solid rgba(15, 23, 42, 0.18);
-  background: #fff;
-  color: rgba(15, 23, 42, 0.92);
+  border: 1px solid rgba(120, 255, 220, 0.22);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-main);
+
   padding: 10px 14px;
-  border-radius: 12px;
+  border-radius: 14px;
   font-size: 13px;
   cursor: pointer;
-  transition: transform 120ms ease, box-shadow 120ms ease, opacity 120ms ease;
+
+  box-shadow:
+    0 10px 22px rgba(0, 0, 0, 0.22),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+
+  transition: transform 120ms ease, opacity 120ms ease, box-shadow 120ms ease;
 }
 
 .btn:hover {
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.10);
   transform: translateY(-1px);
+  box-shadow:
+    0 14px 28px rgba(0, 0, 0, 0.26),
+    0 0 18px rgba(120, 255, 220, 0.14);
 }
 
-.btnPrimary {
-  background: #0f172a;
-  color: #fff;
-  border-color: #0f172a;
+.primary {
+  border-color: rgba(120, 255, 220, 0.35);
+  background: rgba(120, 255, 220, 0.12);
 }
 
 @media (max-width: 520px) {
