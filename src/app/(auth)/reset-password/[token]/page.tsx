@@ -1,5 +1,6 @@
 // app/(auth)/reset-password/[token]/page.tsx
 import { prisma } from "@/lib/prisma";
+import crypto from "crypto";
 import Link from "next/link";
 import ResetPasswordForm from "./ResetPasswordForm";
 
@@ -13,8 +14,10 @@ export default async function ResetPasswordPage({
 }) {
   const token = params.token;
 
+  const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+
   const reset = await prisma.passwordReset.findUnique({
-    where: { token },
+    where: { token: tokenHash },
     select: { id: true, token: true, expiresAt: true, userId: true },
   });
 
