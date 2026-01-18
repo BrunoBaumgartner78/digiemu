@@ -1,0 +1,278 @@
+/* src/app/(public)/help/page.module.css */
+
+
+/* Layout */
+.page {
+  min-height: 100vh;
+  padding: clamp(20px, 4vw, 48px);
+  display: flex;
+  justify-content: center;
+
+  /* Soft background wash (works with your global theme vars) */
+  background:
+    radial-gradient(900px 500px at 15% 10%, rgba(0, 255, 122, 0.10), transparent 55%),
+    radial-gradient(700px 420px at 85% 20%, rgba(0, 180, 255, 0.10), transparent 55%),
+    radial-gradient(900px 520px at 50% 90%, rgba(255, 140, 0, 0.06), transparent 60%);
+}
+
+.inner {
+  width: min(1100px, 100%);
+}
+
+/* Header */
+.header {
+  margin-bottom: clamp(18px, 3vw, 28px);
+  padding: clamp(18px, 2.8vw, 26px);
+  border-radius: 22px;
+
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 12px 30px rgba(0, 0, 0, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px);
+}
+
+.eyebrow {
+  margin: 0 0 8px 0;
+  font-size: 0.85rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted, rgba(255, 255, 255, 0.70));
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(1.5rem, 2.6vw, 2.25rem);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--text, rgba(255, 255, 255, 0.92));
+}
+
+.subtitle {
+  margin: 10px 0 0 0;
+  max-width: 75ch;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--text-muted, rgba(255, 255, 255, 0.72));
+}
+
+/* Quick nav chips */
+.quickNav {
+  margin-top: 18px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.quickNavLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  padding: 10px 12px;
+  border-radius: 999px;
+
+  font-size: 0.95rem;
+  text-decoration: none;
+  color: var(--text, rgba(255, 255, 255, 0.88));
+
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  box-shadow:
+    0 10px 22px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+
+  transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+}
+
+.quickNavLink:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(0, 255, 122, 0.22);
+}
+
+.quickNavLink:active {
+  transform: translateY(0);
+}
+
+/* Grid layout */
+.grid {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: repeat(12, 1fr);
+  align-items: start;
+}
+
+/* Sections */
+.section {
+  grid-column: span 6;
+}
+
+.sectionWide {
+  grid-column: 1 / -1;
+}
+
+.sectionCard {
+  border-radius: 22px;
+  padding: clamp(16px, 2.4vw, 22px);
+
+  /* If neonCard/neonBorder exist globally: great.
+     If not, this still looks good. */
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 14px 34px rgba(0, 0, 0, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px);
+}
+
+.sectionTitle {
+  margin: 0 0 8px 0;
+  font-size: 1.15rem;
+  letter-spacing: -0.01em;
+  color: var(--text, rgba(255, 255, 255, 0.92));
+}
+
+.sectionIntro {
+  margin: 0 0 14px 0;
+  line-height: 1.55;
+  color: var(--text-muted, rgba(255, 255, 255, 0.72));
+  max-width: 85ch;
+}
+
+/* FAQ list */
+.faqList {
+  display: grid;
+  gap: 10px;
+}
+
+/* details */
+.faqItem {
+  border-radius: 16px;
+  overflow: hidden;
+
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.16);
+
+  transition: border-color 160ms ease, background 160ms ease;
+}
+
+.faqItem[open] {
+  border-color: rgba(0, 255, 122, 0.18);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.faqSummary {
+  list-style: none;
+  cursor: pointer;
+  user-select: none;
+
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  font-weight: 600;
+  color: var(--text, rgba(255, 255, 255, 0.90));
+}
+
+.faqSummary::-webkit-details-marker {
+  display: none;
+}
+
+/* Custom caret */
+.faqSummary::after {
+  content: "▾";
+  opacity: 0.75;
+  transform: rotate(0deg);
+  transition: transform 160ms ease, opacity 160ms ease;
+}
+
+.faqItem[open] .faqSummary::after {
+  transform: rotate(180deg);
+  opacity: 0.95;
+}
+
+.faqBody {
+  padding: 0 14px 14px 14px;
+  color: var(--text-muted, rgba(255, 255, 255, 0.74));
+  line-height: 1.6;
+}
+
+.faqBody p {
+  margin: 10px 0 0 0;
+}
+
+.faqBody p:first-child {
+  margin-top: 0;
+}
+
+.linkInline {
+  color: rgba(0, 255, 122, 0.95);
+  text-decoration: none;
+  border-bottom: 1px dashed rgba(0, 255, 122, 0.35);
+  transition: border-color 160ms ease, opacity 160ms ease;
+}
+
+.linkInline:hover {
+  border-bottom-color: rgba(0, 255, 122, 0.70);
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .section {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Focus styles (keyboard friendly) */
+.quickNavLink:focus-visible,
+.faqSummary:focus-visible,
+.linkInline:focus-visible {
+  outline: 2px solid rgba(0, 255, 122, 0.45);
+  outline-offset: 3px;
+  border-radius: 14px;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .quickNavLink,
+  .faqSummary::after {
+    transition: none;
+  }
+}
+@media (prefers-color-scheme: light) {
+  .title,
+  .faqSummary,
+  .sectionTitle {
+    color: #0f172a;
+  }
+
+  .subtitle,
+  .eyebrow,
+  .sectionIntro,
+  .faqBody {
+    color: rgba(15, 23, 42, 0.78);
+  }
+
+  /* Buttons (Quick Nav) */
+  .quickNavLink {
+    color: #0f172a;
+    background: rgba(255, 255, 255, 0.78);
+    border: 1px solid rgba(15, 23, 42, 0.14);
+    box-shadow: 0 10px 22px rgba(15, 23, 42, 0.10), inset 0 1px 0 rgba(255, 255, 255, 0.75);
+  }
+
+  .quickNavLink:hover {
+    background: rgba(255, 255, 255, 0.88);
+    border-color: rgba(15, 23, 42, 0.20);
+    transform: translateY(-1px);
+  }
+
+  .quickNavLink:active {
+    transform: translateY(0);
+  }
+}
