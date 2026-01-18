@@ -7,12 +7,13 @@ export const dynamic = "force-dynamic";
 export async function GET(_req: Request) {
   const startedAt = Date.now();
 
+  // Public minimal healthcheck: do not return 403 for missing/invalid tokens.
+  // Keep token around for logging or advanced checks, but always respond with 200 unless DB fails.
   const token = process.env.HEALTHCHECK_TOKEN?.trim();
-  if (token) {
-    const provided = _req.headers.get("x-health-token")?.trim();
-    if (!provided || provided !== token) {
-      return NextResponse.json({ ok: false, status: "forbidden" }, { status: 403 });
-    }
+  const provided = _req.headers.get("x-health-token")?.trim();
+  if (token && (!provided || provided !== token)) {
+    // token mismatch — do not block; continue to perform health checks but note mismatch in logs
+    console.warn("healthcheck token mismatch");
   }
 
   const env = {
