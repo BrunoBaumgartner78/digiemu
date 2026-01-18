@@ -11,8 +11,12 @@ function readConsent(): Consent | null {
   try {
     const raw = localStorage.getItem(KEY);
     if (!raw) return null;
-    const parsed = JSON.parse(raw) as Consent;
+
+    const parsed = JSON.parse(raw) as Partial<Consent>;
+
     if (typeof parsed?.analytics !== "boolean") return null;
+
+    // necessary ist immer true (hard-coded)
     return { necessary: true, analytics: parsed.analytics };
   } catch {
     return null;
@@ -39,13 +43,18 @@ export default function CookieBanner() {
   if (!isOpen) return null;
 
   return (
-    <div className={styles.wrapper} role="dialog" aria-live="polite" aria-label="Cookie Einstellungen">
+    <div
+      className={styles.wrapper}
+      role="dialog"
+      aria-live="polite"
+      aria-label="Cookie Einstellungen"
+    >
       <div className={styles.card}>
         <div className={styles.text}>
           <strong>Cookies</strong>
           <p>
-            Wir verwenden notwendige Cookies für die Funktion der Website. Optionale Cookies (Analytics) helfen uns,
-            die Nutzung zu verstehen und zu verbessern.
+            Wir verwenden notwendige Cookies für die Funktion der Website. Optionale
+            Cookies (Analytics) helfen uns, die Nutzung zu verstehen und zu verbessern.
           </p>
         </div>
 
@@ -53,7 +62,7 @@ export default function CookieBanner() {
           <button
             className={styles.secondary}
             onClick={() => {
-              const v = { necessary: true, analytics: false };
+              const v: Consent = { necessary: true, analytics: false };
               writeConsent(v);
               setConsent(v);
             }}
@@ -64,7 +73,7 @@ export default function CookieBanner() {
           <button
             className={styles.primary}
             onClick={() => {
-              const v = { necessary: true, analytics: true };
+              const v: Consent = { necessary: true, analytics: true };
               writeConsent(v);
               setConsent(v);
             }}
