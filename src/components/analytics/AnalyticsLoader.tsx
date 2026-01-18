@@ -24,8 +24,28 @@ export default function AnalyticsLoader() {
   const [allowed, setAllowed] = useState(false);
 
   useEffect(() => {
-    const consent = safeParse(localStorage.getItem(KEY));
-    setAllowed(Boolean(consent?.analytics));
+    const read = () => {
+      const consent = safeParse(localStorage.getItem(KEY));
+      setAllowed(Boolean(consent?.analytics));
+    };
+
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === KEY) read();
+    };
+
+    // Initial read
+    read();
+
+    // Same-tab updates (from CookieBanner via hook)
+    window.addEventListener("cookie-consent-updated", read);
+
+    // Cross-tab updates
+    window.addEventListener("storage", onStorage);
+
+    return () => {
+      window.removeEventListener("cookie-consent-updated", read);
+      window.removeEventListener("storage", onStorage);
+    };
   }, []);
 
   const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;

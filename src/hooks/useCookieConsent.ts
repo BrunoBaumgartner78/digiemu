@@ -28,6 +28,12 @@ export function useCookieConsent() {
     setConsent(value);
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(value));
+    // Notify other client components in the same tab that consent changed
+    try {
+      window.dispatchEvent(new Event("cookie-consent-updated"));
+    } catch {
+      // ignore (e.g., non-window environments)
+    }
     } catch {
       // ignore
     }
