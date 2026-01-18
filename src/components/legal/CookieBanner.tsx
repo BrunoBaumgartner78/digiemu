@@ -1,40 +1,75 @@
 "use client";
 
-import Link from "next/link";
-import { useCookieConsent } from "@/hooks/useCookieConsent";
+import { useEffect, useMemo, useState } from "react";
+import styles from "./CookieBanner.module.css";
+
+type Consent = { necessary: true; analytics: boolean };
+
+const KEY = "cookie-consent-v1";
+
+function readConsent(): Consent | null {
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Consent;
+    if (typeof parsed?.analytics !== "boolean") return null;
+    return { necessary: true, analytics: parsed.analytics };
+  } catch {
+    return null;
+  }
+}
+
+function writeConsent(v: Consent) {
+  localStorage.setItem(KEY, JSON.stringify(v));
+  // custom event for same-tab listeners
+  window.dispatchEvent(new CustomEvent("cookie-consent-changed", { detail: v }));
+}
 
 export default function CookieBanner() {
-  const { consent, isReady, acceptAll, acceptNecessary } = useCookieConsent();
+  const [mounted, setMounted] = useState(false);
+  const [consent, setConsent] = useState<Consent | null>(null);
 
-  // Show banner only after hydration and only if no consent was stored
-  if (!isReady || consent) return null;
+  useEffect(() => {
+    setMounted(true);
+    setConsent(readConsent());
+  }, []);
+
+  const isOpen = useMemo(() => mounted && consent === null, [mounted, consent]);
+
+  if (!isOpen) return null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t shadow-lg">
-      <div className="mx-auto max-w-5xl px-4 py-4 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <p className="text-sm text-gray-700">
-          <strong>Cookies &amp; Datenschutz</strong>
-          <br />
-          Wir verwenden notwendige Cookies für den sicheren Betrieb der Website.
-          Optionale Cookies (z.&nbsp;B. anonyme Analyse) verwenden wir nur mit Ihrer
-          Zustimmung. {" "}
-          <Link href="/datenschutz" className="underline" target="_blank">
-            Mehr erfahren
-          </Link>
-        </p>
+    <div className={styles.wrapper} role="dialog" aria-live="polite" aria-label="Cookie Einstellungen">
+      <div className={styles.card}>
+        <div className={styles.text}>
+          <strong>Cookies</strong>
+          <p>
+            Wir verwenden notwendige Cookies für die Funktion der Website. Optionale Cookies (Analytics) helfen uns,
+            die Nutzung zu verstehen und zu verbessern.
+          </p>
+        </div>
 
-        <div className="flex gap-2">
+        <div className={styles.actions}>
           <button
-            onClick={acceptNecessary}
-            className="px-4 py-2 text-sm border rounded-md"
+            className={styles.secondary}
+            onClick={() => {
+              const v = { necessary: true, analytics: false };
+              writeConsent(v);
+              setConsent(v);
+            }}
           >
-            Nur notwendige
+            Ablehnen
           </button>
+
           <button
-            onClick={acceptAll}
-            className="px-4 py-2 text-sm bg-black text-white rounded-md"
+            className={styles.primary}
+            onClick={() => {
+              const v = { necessary: true, analytics: true };
+              writeConsent(v);
+              setConsent(v);
+            }}
           >
-            Alle akzeptieren
+            Akzeptieren
           </button>
         </div>
       </div>

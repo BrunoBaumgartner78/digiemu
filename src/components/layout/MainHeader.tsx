@@ -8,7 +8,6 @@ import * as React from "react";
 import { useEffect, useState } from "react";
 import { signOut, useSession } from "next-auth/react";
 
-// OPTIONAL: nur importieren wenn du es wirklich nutzt
 import FeatureGate from "@/components/FeatureGate";
 
 type Role = "ADMIN" | "VENDOR" | "BUYER" | undefined;
@@ -44,6 +43,7 @@ export function MainHeader() {
     }
   }, [status, role, isAdmin, session?.user]);
 
+  // ✅ Scroll lock when mobile menu open
   useEffect(() => {
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = mobileOpen ? "hidden" : prevOverflow || "";
@@ -52,11 +52,10 @@ export function MainHeader() {
     };
   }, [mobileOpen]);
 
+  // ✅ Close menu ONLY when route changes (no instant timeout close)
   useEffect(() => {
-    if (!mobileOpen) return;
-    const t = setTimeout(() => setMobileOpen(false), 0);
-    return () => clearTimeout(t);
-  }, [pathname, mobileOpen]);
+    setMobileOpen(false);
+  }, [pathname]);
 
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href) && href !== "/";
@@ -129,7 +128,6 @@ export function MainHeader() {
                 </Link>
               )}
 
-              {/* Vendor-only Analytics */}
               {role === "VENDOR" && (
                 <Link
                   href="/dashboard/vendor"
@@ -139,7 +137,6 @@ export function MainHeader() {
                 </Link>
               )}
 
-              {/* Admin-only: erst Role prüfen, dann optional FeatureGate */}
               {isAdmin ? (
                 <FeatureGate feature="admin" fallback={AdminLink}>
                   {AdminLink}
@@ -294,10 +291,18 @@ export function MainHeader() {
                 </>
               ) : (
                 <>
-                  <Link href="/login" onClick={() => setMobileOpen(false)} className={"mobile-nav-pill" + (isActive("/login") ? " mobile-nav-pill-active" : "")}>
+                  <Link
+                    href="/login"
+                    onClick={() => setMobileOpen(false)}
+                    className={"mobile-nav-pill" + (isActive("/login") ? " mobile-nav-pill-active" : "")}
+                  >
                     Login
                   </Link>
-                  <Link href="/register" onClick={() => setMobileOpen(false)} className={"mobile-nav-pill" + (isActive("/register") ? " mobile-nav-pill-active" : "")}>
+                  <Link
+                    href="/register"
+                    onClick={() => setMobileOpen(false)}
+                    className={"mobile-nav-pill" + (isActive("/register") ? " mobile-nav-pill-active" : "")}
+                  >
                     Konto erstellen
                   </Link>
                 </>
@@ -309,4 +314,3 @@ export function MainHeader() {
     </header>
   );
 }
-      

@@ -1,75 +1,54 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import Script from "next/script";
-import { useEffect, useState } from "react";
 
 type Consent = { necessary: true; analytics: boolean };
+const KEY = "cookie-consent-v1";
 
-const KEY = "cookie-consent";
-
-function safeParse(raw: string | null): Consent | null {
-  if (!raw) return null;
+function hasAnalyticsConsent() {
   try {
-    const v = JSON.parse(raw) as Partial<Consent>;
-    if (v && v.necessary === true && typeof v.analytics === "boolean") {
-      return { necessary: true, analytics: v.analytics };
-    }
-    return null;
+    const raw = localStorage.getItem(KEY);
+    if (!raw) return false;
+    const parsed = JSON.parse(raw) as Consent;
+    return parsed?.analytics === true;
   } catch {
-    return null;
+    return false;
   }
 }
 
 export default function AnalyticsLoader() {
-  const [allowed, setAllowed] = useState(false);
+  const [enabled, setEnabled] = useState(false);
+  const loadedRef = useRef(false);
 
   useEffect(() => {
-    const read = () => {
-      const consent = safeParse(localStorage.getItem(KEY));
-      setAllowed(Boolean(consent?.analytics));
-    };
+    // initial
+    setEnabled(hasAnalyticsConsent());
 
-    const onStorage = (e: StorageEvent) => {
-      if (e.key === KEY) read();
-    };
+    const onChange = () => setEnabled(hasAnalyticsConsent());
+    window.addEventListener("cookie-consent-changed", onChange);
 
-    // Initial read
-    read();
-
-    // Same-tab updates (from CookieBanner via hook)
-    window.addEventListener("cookie-consent-updated", read);
-
-    // Cross-tab updates
-    window.addEventListener("storage", onStorage);
-
-    return () => {
-      window.removeEventListener("cookie-consent-updated", read);
-      window.removeEventListener("storage", onStorage);
-    };
+    return () => window.removeEventListener("cookie-consent-changed", onChange);
   }, []);
 
-  const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+  const GA_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
-  if (!allowed) return null;
-
-  if (!gaId) return null;
+  // Never load twice
+  if (!GA_ID) return null;
+  if (!enabled) return null;
+  if (loadedRef.current) return null;
+  loadedRef.current = true;
 
   return (
     <>
-      {/* Google tag (gtag.js) */}
-      <Script
-        src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
-        strategy="afterInteractive"
-      />
-      <Script id="ga4-init" strategy="afterInteractive">
+      <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} strategy="afterInteractive" />
+      <Script id="ga-init" strategy="afterInteractive">
         {`
-                  window.dataLayer = window.dataLayer || [];
-                  function gtag(){dataLayer.push(arguments);} 
-                  gtag('js', new Date());
-                  gtag('config', '${gaId}', {
-                    anonymize_ip: true
-                  });
-                `}
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', '${GA_ID}', { anonymize_ip: true });
+        `}
       </Script>
     </>
   );
