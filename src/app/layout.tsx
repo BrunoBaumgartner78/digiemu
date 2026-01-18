@@ -1,6 +1,7 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import CookieBanner from "@/components/legal/CookieBanner";
+import AnalyticsLoader from "@/components/analytics/AnalyticsLoader";
 
 export const metadata: Metadata = {
   title: "DigiEmu – Digitaler Marktplatz",
@@ -26,6 +27,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="bg-[var(--page-bg)] text-[var(--text-main)]">
         {children}
         <CookieBanner />
+        <AnalyticsLoader />
       </body>
     </html>
   );
