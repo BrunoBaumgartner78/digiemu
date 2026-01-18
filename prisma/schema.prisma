@@ -8,32 +8,15 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-
 model StripeWebhookEvent {
   id        String   @id @default(cuid())
   eventId   String   @unique
   type      String
   createdAt DateTime @default(now())
-  
+
   @@index([type])
   @@index([createdAt])
 }
-
-model StripeWebhookError {
-  id        String   @id @default(cuid())
-  eventId   String?
-  type      String?
-  message   String
-  meta      Json?
-  createdAt DateTime @default(now())
-
-  @@index([eventId])
-  @@index([createdAt])
-}
-
-// ------------------------------------------------------------
-// Existing models
-// ------------------------------------------------------------
 
 model AuditLog {
   id         String   @id @default(cuid())
@@ -45,8 +28,7 @@ model AuditLog {
   ipAddress  String?
   userAgent  String?
   createdAt  DateTime @default(now())
-
-  actor User @relation("AuditActor", fields: [actorId], references: [id])
+  actor      User     @relation("AuditActor", fields: [actorId], references: [id])
 
   @@index([actorId])
   @@index([action])
@@ -56,82 +38,77 @@ model AuditLog {
 }
 
 model User {
-  id            String         @id @default(cuid())
-  email         String         @unique
-  name          String?
-  password      String?
-  role          Role           @default(BUYER)
-  isBlocked     Boolean        @default(false)
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-
-  comments      Comment[]
-  likes         Like[]
-  orders        Order[]
-  payouts       Payout[]
-  products      Product[]      @relation("VendorProducts")
-  reviews       Review[]
-  vendorProfile VendorProfile?
-  buyerProfile  BuyerProfile?
-  adminProfile  AdminProfile?
-
-  // ✅ Audit relation
+  id             String          @id @default(cuid())
+  email          String          @unique
+  name           String?
+  password       String?
+  role           Role            @default(BUYER)
+  isBlocked      Boolean         @default(false)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  adminProfile   AdminProfile?
   auditLogs      AuditLog[]      @relation("AuditActor")
+  buyerProfile   BuyerProfile?
+  comments       Comment[]
+  likes          Like[]
+  orders         Order[]
   passwordResets PasswordReset[]
-
-  // ✅ FIX: Product views relation
+  payouts        Payout[]
+  products       Product[]       @relation("VendorProducts")
   views          ProductView[]
+  reviews        Review[]
+  vendorProfile  VendorProfile?
 }
 
 model VendorProfile {
-  id           String    @id @default(cuid())
-  userId       String    @unique
-  displayName  String?   @db.VarChar(120)
-  bio          String?
-  avatarUrl    String?   @db.VarChar(500)
-  bannerUrl    String?   @db.VarChar(500)
-  websiteUrl   String?   @db.VarChar(500)
-  twitterUrl   String?   @db.VarChar(500)
-  instagramUrl String?   @db.VarChar(500)
-  tiktokUrl    String?   @db.VarChar(500)
-  facebookUrl  String?   @db.VarChar(500)
-  slug         String?   @unique
-  isPublic     Boolean   @default(true)
+  id             String       @id @default(cuid())
+  userId         String       @unique
+  displayName    String?      @db.VarChar(120)
+  bio            String?
+  avatarUrl      String?      @db.VarChar(500)
+  bannerUrl      String?      @db.VarChar(500)
+  websiteUrl     String?      @db.VarChar(500)
+  twitterUrl     String?      @db.VarChar(500)
+  instagramUrl   String?      @db.VarChar(500)
+  tiktokUrl      String?      @db.VarChar(500)
+  facebookUrl    String?      @db.VarChar(500)
+  slug           String?      @unique
+  isPublic       Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
   /// Vendor moderation status:
   /// - PENDING: wartet auf Admin-Freigabe (darf keine Produkte erstellen)
   /// - APPROVED: darf Produkte erstellen
   /// - BLOCKED: gesperrt
-  status       VendorStatus @default(PENDING)
+  status         VendorStatus @default(PENDING)
   /// optionaler Admin-Hinweis (z.B. Ablehnungsgrund)
   moderationNote String?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  products     Product[] @relation("VendorProfileProducts")
-  user         User      @relation(fields: [userId], references: [id])
+  products       Product[]    @relation("VendorProfileProducts")
+  user           User         @relation(fields: [userId], references: [id])
 }
 
 model BuyerProfile {
   id          String   @id @default(cuid())
   userId      String   @unique
-  user        User     @relation(fields: [userId], references: [id])
   displayName String   @default("")
   bio         String   @default("")
   avatarUrl   String   @default("")
   isPublic    Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id])
 }
 
 model AdminProfile {
   id                    String   @id @default(cuid())
   userId                String   @unique
-  user                  User     @relation(fields: [userId], references: [id])
   displayName           String   @default("")
   signature             String   @default("")
   notifyOnDownload      Boolean  @default(true)
   notifyOnPayoutRequest Boolean  @default(true)
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
+  user                  User     @relation(fields: [userId], references: [id])
 }
 
 model Product {
@@ -147,16 +124,14 @@ model Product {
   vendorProfileId String?
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
-
+  /// Interne Moderations-Notiz für Admins (z.B. Sperr-Grund).
+  moderationNote  String?
   /// Produktstatus für Sichtbarkeit & Moderation.
   /// Mögliche Werte (Konvention, kein Enum):
   /// - "DRAFT"   : nur Vendor + Admin sehen das Produkt
   /// - "ACTIVE"  : Produkt ist im Marketplace sichtbar
   /// - "BLOCKED" : durch Admin gesperrt, nicht sichtbar für Käufer
   status          ProductStatus  @default(DRAFT)
-  /// Interne Moderations-Notiz für Admins (z.B. Sperr-Grund).
-  moderationNote  String?
-
   comments        Comment[]
   likes           Like[]
   orders          Order[]
@@ -166,32 +141,19 @@ model Product {
   reviews         Review[]
 }
 
-enum VendorStatus {
-  PENDING
-  APPROVED
-  BLOCKED
-}
-
-enum ProductStatus {
-  DRAFT
-  ACTIVE
-  BLOCKED
-}
-
 model ProductView {
   id          String   @id @default(cuid())
   productId   String
-  userId      String?
-  fingerprint String?
-  day         String
   createdAt   DateTime @default(now())
+  day         String
+  fingerprint String?
+  userId      String?
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user        User?    @relation(fields: [userId], references: [id])
 
-  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-  user    User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
-
-  @@index([productId])
   @@unique([productId, userId, day], name: "productId_userId_day")
   @@unique([productId, fingerprint, day], name: "productId_fingerprint_day")
+  @@index([productId])
 }
 
 model Like {
@@ -245,32 +207,51 @@ model Order {
 }
 
 model DownloadLink {
-  id      String @id @default(cuid())
-  orderId String @unique
-  fileUrl String
-
+  id            String   @id @default(cuid())
+  orderId       String   @unique
+  fileUrl       String
   expiresAt     DateTime
+  createdAt     DateTime @default(now())
   downloadCount Int      @default(0)
-  maxDownloads  Int      @default(3)
   isActive      Boolean  @default(true)
-
-  createdAt DateTime @default(now())
-
-  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  maxDownloads  Int      @default(3)
+  order         Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@index([orderId])
   @@index([expiresAt])
 }
 
 model Payout {
-  id          String    @id @default(cuid())
+  id          String       @id @default(cuid())
   vendorId    String
   amountCents Int
-  status      PayoutStatus    @default(PENDING)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
   paidAt      DateTime?
-  vendor      User      @relation(fields: [vendorId], references: [id])
+  status      PayoutStatus @default(PENDING)
+  vendor      User         @relation(fields: [vendorId], references: [id])
+}
+
+model PasswordReset {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+enum VendorStatus {
+  PENDING
+  APPROVED
+  BLOCKED
+}
+
+enum ProductStatus {
+  DRAFT
+  ACTIVE
+  BLOCKED
 }
 
 enum Role {
@@ -283,14 +264,4 @@ enum PayoutStatus {
   PENDING
   PAID
   CANCELLED
-}
-
-model PasswordReset {
-  id        String   @id @default(cuid())
-  token     String   @unique
-  userId    String
-  expiresAt DateTime
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
 }

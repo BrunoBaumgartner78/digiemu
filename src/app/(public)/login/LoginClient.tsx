@@ -1,14 +1,14 @@
-// src/app/(public)/login/LoginClient.tsx
 "use client";
 
 import { useState, FormEvent } from "react";
-import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { signIn, getSession } from "next-auth/react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import styles from "./LoginPage.module.css";
 
 export default function LoginClient() {
   const router = useRouter();
+  const sp = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -23,14 +23,31 @@ export default function LoginClient() {
 
     const res = await signIn("credentials", { redirect: false, email, password });
 
-    setLoading(false);
-
     if (!res || res.error) {
+      setLoading(false);
       setErrorMessage("E-Mail oder Passwort ist falsch.");
       return;
     }
 
-    router.push("/dashboard");
+    // ✅ Session neu einlesen (Cookie ist jetzt gesetzt)
+    const session = await getSession();
+    const role = session?.user?.role;
+
+    // ✅ Optional: callbackUrl respektieren (wenn vorhanden)
+    const callbackUrl = sp.get("callbackUrl");
+
+    if (callbackUrl) {
+      router.replace(callbackUrl);
+      return;
+    }
+
+    // ✅ Rollen-Ziel: Buyer NICHT auf /dashboard schicken
+    if (role === "ADMIN" || role === "VENDOR") {
+      router.replace("/dashboard");
+    } else {
+      // BUYER: weg von /account/downloads (dead end ohne menu) → Home
+      router.replace("/");
+    }
   }
 
   return (
@@ -51,40 +68,16 @@ export default function LoginClient() {
 
         <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.field}>
-            <div className={styles.labelRow}>
-              <label htmlFor="email" className={styles.label}>
-                E-Mail-Adresse
-              </label>
-            </div>
-            <input
-              id="email"
-              type="email"
-              name="email"
-              required
-              autoComplete="email"
-              placeholder="du@beispiel.ch"
-              className={styles.input}
-            />
+            <label htmlFor="email" className={styles.label}>E-Mail-Adresse</label>
+            <input id="email" type="email" name="email" required autoComplete="email" className={styles.input} />
           </div>
 
           <div className={styles.field}>
             <div className={styles.labelRow}>
-              <label htmlFor="password" className={styles.label}>
-                Passwort
-              </label>
-              <Link href="/forgot-password" className={styles.forgot}>
-                Passwort vergessen?
-              </Link>
+              <label htmlFor="password" className={styles.label}>Passwort</label>
+              <Link href="/forgot-password" className={styles.forgot}>Passwort vergessen?</Link>
             </div>
-            <input
-              id="password"
-              type="password"
-              name="password"
-              required
-              autoComplete="current-password"
-              placeholder="••••••••"
-              className={styles.input}
-            />
+            <input id="password" type="password" name="password" required autoComplete="current-password" className={styles.input} />
           </div>
 
           <button
@@ -98,14 +91,8 @@ export default function LoginClient() {
 
         <div className={styles.meta}>
           Noch kein Konto?{" "}
-          <Link href="/register" className={styles.link}>
-            Jetzt registrieren
-          </Link>
+          <Link href="/register" className={styles.link}>Jetzt registrieren</Link>
         </div>
-
-        <p className={styles.helper}>
-          Mit dem Login akzeptierst du unsere Nutzungsbedingungen und Datenschutzbestimmungen.
-        </p>
       </div>
     </div>
   );

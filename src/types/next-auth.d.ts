@@ -1,23 +1,28 @@
+// src/types/next-auth.d.ts
 import "next-auth";
+import "next-auth/jwt";
 import type { DefaultSession } from "next-auth";
+
+export type AppRole = "BUYER" | "VENDOR" | "ADMIN";
 
 declare module "next-auth" {
   interface Session {
-    user: {
+    user: DefaultSession["user"] & {
       id: string;
-      role: "BUYER" | "VENDOR" | "ADMIN";
-    } & DefaultSession["user"];
+      role: AppRole;
+    };
   }
 
   interface User {
     id: string;
-    role: "BUYER" | "VENDOR" | "ADMIN";
+    role: AppRole;
   }
 }
 
 declare module "next-auth/jwt" {
   interface JWT {
     uid?: string;
-    role?: "BUYER" | "VENDOR" | "ADMIN";
+    email?: string | null;
+    role?: AppRole;
   }
 }

@@ -18,18 +18,28 @@ export default async function DashboardPage() {
   const session = await requireRolePage(["VENDOR", "ADMIN"]);
   if (!session?.user) redirect("/login");
 
-  const user = session.user as { id?: string; role?: string };
-  if (user.role !== "VENDOR" && user.role !== "ADMIN") {
+  // ✅ dank typisiertem authz.ts ist role sauber AppRole
+  const user = session.user;
+  const role = user.role;
+
+  if (role !== "VENDOR" && role !== "ADMIN") {
     redirect("/account/downloads");
   }
 
-  const vendorId = String(user.id);
+  // vendorId im Datenmodell = User.id (Vendor)
+  const vendorId = String(user.id ?? "");
+
+  // Falls aus irgendeinem Grund keine ID in der Session ist:
+  if (!vendorId) redirect("/login");
 
   // fetch vendor profile for gate (only for VENDOR role)
-  let vp: Prisma.VendorProfileGetPayload<{ select: { status: true; isPublic: true } }> | null = null;
-  if (user.role === "VENDOR") {
+  let vp: Prisma.VendorProfileGetPayload<{
+    select: { status: true; isPublic: true };
+  }> | null = null;
+
+  if (role === "VENDOR") {
     vp = await prisma.vendorProfile.findUnique({
-      where: { userId: user.id ?? undefined },
+      where: { userId: user.id }, // user.id ist bei AppSession vorhanden (ggf. optional, aber hier ok)
       select: { status: true, isPublic: true },
     });
   }
@@ -52,7 +62,7 @@ export default async function DashboardPage() {
     "completed",
     "SUCCESS",
     "success",
-  ];
+  ] as const;
 
   /* ===================== DATA ===================== */
   const [
@@ -101,7 +111,6 @@ export default async function DashboardPage() {
       where: {
         order: {
           product: { vendorId },
-          // optional: Downloads nur von bezahlten Orders zählen
           status: { in: paidLikeStatuses as any },
         },
       },
@@ -134,18 +143,17 @@ export default async function DashboardPage() {
 
   /* ===================== KPIs (20/80 Split) ===================== */
   // Brutto (100%)
-  const grossAllCents = ordersAll.reduce((s: number, o) => s + (o.amountCents ?? 0), 0);
-  const grossRangeCents = ordersRange.reduce((s: number, o) => s + (o.amountCents ?? 0), 0);
+  const grossAllCents = ordersAll.reduce((s, o) => s + (o.amountCents ?? 0), 0);
+  const grossRangeCents = ordersRange.reduce((s, o) => s + (o.amountCents ?? 0), 0);
 
   // Vendor (80%) – prefer gespeichertes vendorEarningsCents, fallback 80% von gross
-  let vendorAllCents = ordersAll.reduce((s: number, o) => s + (o.vendorEarningsCents ?? 0), 0);
+  let vendorAllCents = ordersAll.reduce((s, o) => s + (o.vendorEarningsCents ?? 0), 0);
   if (vendorAllCents === 0 && grossAllCents > 0) {
     vendorAllCents = Math.round(grossAllCents * 0.8);
   }
 
-  let vendorRangeCents = 0;
   // range orders haben vendorEarningsCents nicht selektiert → 80% fallback
-  if (grossRangeCents > 0) vendorRangeCents = Math.round(grossRangeCents * 0.8);
+  const vendorRangeCents = grossRangeCents > 0 ? Math.round(grossRangeCents * 0.8) : 0;
 
   const platformAllCents = Math.max(grossAllCents - vendorAllCents, 0);
 
@@ -170,8 +178,7 @@ export default async function DashboardPage() {
 
   const maxDay = Math.max(1, ...days.map((d) => d.sum));
   const maxIndex = days.findIndex((d) => d.sum === maxDay && d.sum > 0);
-  const maxLabel =
-    maxDay > 0 ? `Max ${(maxDay / 100).toFixed(2)} CHF` : "Max 0 CHF";
+  const maxLabel = maxDay > 0 ? `Max ${(maxDay / 100).toFixed(2)} CHF` : "Max 0 CHF";
 
   /* ===================== TOP PRODUCTS (ALL TIME) ===================== */
   const productMap: Record<string, number> = {};
@@ -192,15 +199,11 @@ export default async function DashboardPage() {
 
   return (
     <main className="page-shell-wide">
-      <section
-        className={`neo-surface p-6 md:p-8 space-y-10 ${styles.dashboardShell}`}
-      >
+      <section className={`neo-surface p-6 md:p-8 space-y-10 ${styles.dashboardShell}`}>
         {/* HEADER */}
         <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <h1 className="text-2xl md:text-3xl font-semibold text-white">
-              Verkäufer-Dashboard
-            </h1>
+            <h1 className="text-2xl md:text-3xl font-semibold text-white">Verkäufer-Dashboard</h1>
             <p className="text-sm opacity-80">Verkäufe, Einnahmen & Downloads</p>
           </div>
 
@@ -215,12 +218,12 @@ export default async function DashboardPage() {
           )}
         </header>
 
-          {/* Vendor profile gate */}
-          {user.role === "VENDOR" ? (
-            <div className="mt-4">
-              <VendorProfileGateCard status={vp?.status ?? null} isPublic={vp?.isPublic ?? null} />
-            </div>
-          ) : null}
+        {/* Vendor profile gate */}
+        {role === "VENDOR" ? (
+          <div className="mt-4">
+            <VendorProfileGateCard status={vp?.status ?? null} isPublic={vp?.isPublic ?? null} />
+          </div>
+        ) : null}
 
         {/* EMPTY STATE */}
         {isEmpty && (
@@ -248,17 +251,12 @@ export default async function DashboardPage() {
         {/* KPI GRID */}
         <section className={styles.kpiGrid}>
           <Kpi label="Produkte" value={products.length} />
-          <Kpi
-            label="Downloads"
-            value={downloadsAll}
-            sub={`${rangeDays} Tage: ${downloadsRange}`}
-          />
+          <Kpi label="Downloads" value={downloadsAll} sub={`${rangeDays} Tage: ${downloadsRange}`} />
 
-          {/* ✅ jetzt sauber: Brutto + Split */}
           <Kpi
             label="Umsatz (Brutto)"
             value={chf(grossAllCents)}
-            sub={`${rangeDays} Tage: ${chf(grossRangeCents)}`}
+            sub={`${rangeDays} Tage: ${chf(grossRangeCents)} · Vendor: ${chf(vendorRangeCents)}`}
           />
 
           <Kpi
@@ -307,9 +305,7 @@ export default async function DashboardPage() {
               })}
             </div>
 
-            <p className="mt-3 text-[12px] text-white/65">
-              Hover: Balken-Highlight · Max-Tag markiert
-            </p>
+            <p className="mt-3 text-[12px] text-white/65">Hover: Balken-Highlight · Max-Tag markiert</p>
           </div>
         </section>
 
@@ -331,14 +327,10 @@ export default async function DashboardPage() {
                   <div className="text-sm text-white/90 font-medium truncate">
                     #{idx + 1} {p.title}
                   </div>
-                  <div className="text-xs text-white/80 font-mono">
-                    {(p.sum / 100).toFixed(2)} CHF
-                  </div>
+                  <div className="text-xs text-white/80 font-mono">{(p.sum / 100).toFixed(2)} CHF</div>
                 </div>
               ))}
-              <p className="text-[11px] text-white/60">
-                Darstellung als Ranking (stabil & immer sichtbar).
-              </p>
+              <p className="text-[11px] text-white/60">Darstellung als Ranking (stabil & immer sichtbar).</p>
             </div>
           )}
         </section>
@@ -349,7 +341,7 @@ export default async function DashboardPage() {
             <DownloadCloud size={16} /> Neueste Downloads
           </h2>
 
-              {recentDownloads.length === 0 ? (
+          {recentDownloads.length === 0 ? (
             <p className="text-xs text-white/70">Noch keine Downloads</p>
           ) : (
             <ul className={styles.recentList ?? "space-y-2"}>
@@ -371,16 +363,19 @@ export default async function DashboardPage() {
             <Package size={16} /> Deine Produkte
           </h2>
 
-              {products.length === 0 ? (
+          {products.length === 0 ? (
             <p className="text-sm text-white/70">Noch keine Produkte</p>
           ) : (
             <ul className={styles.productsList ?? "space-y-2"}>
-              {products.map((p: any) => (
+              {products.map((p) => (
                 <li key={p.id} className={styles.productRow}>
                   <span className={styles.productTitle}>{p.title}</span>
 
                   <div className={styles.productActions}>
-                    <Link href={`/dashboard/products/${p.id}/edit`} className={styles.productActionLink}>
+                    <Link
+                      href={`/dashboard/products/${p.id}/edit`}
+                      className={styles.productActionLink}
+                    >
                       Bearbeiten
                     </Link>
                   </div>
