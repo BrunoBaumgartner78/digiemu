@@ -1,10 +1,10 @@
-{
+﻿{
   "name": "digiemu",
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "knip": "knip -c knip.config.js",
-    "knip:prod": "knip -c knip.config.js --production",
+    "knip": "knip -c knip.config.ts",
+    "knip:prod": "knip -c knip.config.ts --production",
     "dev:admin": "cross-env NEXT_PUBLIC_FEATURE_ADMIN=true next dev",
     "dev:community": "cross-env NEXT_PUBLIC_FEATURE_COMMUNITY=true next dev",
     "dev:allfeatures": "cross-env NEXT_PUBLIC_FEATURE_ADMIN=true NEXT_PUBLIC_FEATURE_COMMUNITY=true NEXT_PUBLIC_FEATURE_ANALYTICS=true next dev",
@@ -65,3 +65,4 @@
     "react-server-dom-parcel": "19.2.2"
   }
 }
+
