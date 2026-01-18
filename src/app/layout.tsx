@@ -1,5 +1,6 @@
 import "./globals.css";
 import type { Metadata } from "next";
+import CookieBanner from "@/components/legal/CookieBanner";
 
 export const metadata: Metadata = {
   title: "DigiEmu – Digitaler Marktplatz",
@@ -22,7 +23,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="de" suppressHydrationWarning>
-      <body className="bg-[var(--page-bg)] text-[var(--text-main)]">{children}</body>
+      <body className="bg-[var(--page-bg)] text-[var(--text-main)]">
+        {children}
+        <CookieBanner />
+      </body>
     </html>
   );
 }
