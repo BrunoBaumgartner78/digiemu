@@ -10,7 +10,6 @@ function isAppRole(v: unknown): v is AppRole {
 }
 
 export const authOptions: NextAuthOptions = {
-  trustHost: true,
   secret: process.env.NEXTAUTH_SECRET,
   session: { strategy: "jwt" },
 
