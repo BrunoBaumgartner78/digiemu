@@ -53,3 +53,7 @@ reports/*.txt
 # temporary scripts
 scripts/*v2.*.mjs
 
+cookies.txt
+/scripts/*.mjs
+
+
