@@ -3,8 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth";
-import { auth } from "@/lib/auth";
+import { requireSessionPage } from "@/lib/guards/authz";
 import { getProductThumbUrl } from "@/lib/productThumb";
 import LikeButtonClient from "@/components/product/LikeButtonClient";
 import BuyButtonClient from "@/components/checkout/BuyButtonClient";
@@ -40,7 +39,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const pid = String(id ?? "").trim();
   if (!pid) notFound();
 
-  const session = await getServerSession(auth);
+  const session = await requireSessionPage();
   const userId = ((session?.user as any)?.id as string | undefined) ?? null;
 
   const p = await prisma.product.findUnique({

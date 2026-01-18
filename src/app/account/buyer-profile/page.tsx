@@ -1,10 +1,9 @@
-import { getServerSession } from "next-auth";
-import { auth } from "@/lib/auth";
+import { requireSessionPage } from "@/lib/guards/authz";
 import { prisma } from "@/lib/prisma";
 import BuyerProfileClient from "./BuyerProfileClient";
 
 export default async function Page() {
-  const session = await getServerSession(auth);
+  const session = await requireSessionPage();
   const userId = (session?.user as any)?.id as string | undefined;
 
   const buyerProfile = userId ? await prisma.buyerProfile.findUnique({ where: { userId } }) : null;

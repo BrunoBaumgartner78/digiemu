@@ -1,5 +1,5 @@
 // src/app/dashboard/payouts/page.tsx
-import { getServerSession } from "next-auth";
+import { requireVendorPage } from "@/lib/guards/authz";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
@@ -18,7 +18,7 @@ function chf(cents: number) {
 }
 
 export default async function VendorPayoutsPage(props: Props) {
-  const session = await getServerSession(auth);
+  const session = await requireVendorPage();
   const params = props.searchParams ? await props.searchParams : {};
   const rangeParam = typeof params.range === "string" ? params.range : undefined;
 

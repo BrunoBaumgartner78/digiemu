@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { requireAdminApi } from "@/lib/guards/authz";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -12,13 +11,9 @@ export async function POST(
   _req: NextRequest,
   context: { params: { id: string } }
 ) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user || (session.user as { role?: string }).role !== "ADMIN") {
-    return NextResponse.json(
-      { ok: false, message: "Unauthorized" },
-      { status: 401, headers: { "Cache-Control": "no-store" } }
-    );
-  }
+  const maybe = await requireAdminApi();
+  if (maybe instanceof NextResponse) return NextResponse.json({ ok: false, message: "Unauthorized" }, { status: 401, headers: { "Cache-Control": "no-store" } });
+  const session = maybe;
 
   const userId = context.params.id;
 

@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth"; 
+import type { Session } from "next-auth";
+import { requireSessionApi } from "@/lib/guards/authz";
 import { prisma } from "@/lib/prisma";
 import { profileSchema } from "@/lib/profile-validation";
 
 export async function GET() {
-  const session = await getServerSession(authOptions);
+  const sessionOrResp = await requireSessionApi();
+  if (sessionOrResp instanceof NextResponse) return sessionOrResp;
+  const session = sessionOrResp as Session;
   if (!session?.user?.id) {
     return new NextResponse("Unauthorized", { status: 401 });
   }
@@ -18,7 +20,9 @@ export async function GET() {
 }
 
 export async function PUT(_req: Request) {
-  const session = await getServerSession(authOptions);
+  const sessionOrResp = await requireSessionApi();
+  if (sessionOrResp instanceof NextResponse) return sessionOrResp;
+  const session = sessionOrResp as Session;
   if (!session?.user?.id) {
     return new NextResponse("Unauthorized", { status: 401 });
   }

@@ -1,6 +1,5 @@
 // src/app/admin/payouts/vendor/[vendorId]/page.tsx
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { requireAdminPage } from "@/lib/guards/authz";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 
@@ -10,7 +9,7 @@ export const runtime = "nodejs";
 type Params = { vendorId: string };
 
 export default async function VendorPayoutPage(props: { params: Promise<Params> }) {
-  const session = await getServerSession(authOptions);
+  const session = await requireAdminPage();
 
   if (!session || session.user?.role !== "ADMIN") {
     return (

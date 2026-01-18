@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import type { Session } from "next-auth";
+import { requireSessionApi } from "@/lib/guards/authz";
 import { prisma } from "@/lib/prisma";
 import { isRecord, getStringProp, toNumber, getErrorMessage } from "@/lib/guards";
 
@@ -14,7 +14,9 @@ function toPriceCents(priceChf: unknown): number | null {
 
 export async function POST(_req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const sessionOrResp = await requireSessionApi();
+    if (sessionOrResp instanceof NextResponse) return sessionOrResp;
+    const session = sessionOrResp as Session;
     const userObj = isRecord(session?.user) ? session!.user as Record<string, unknown> : null;
     const userEmail = getStringProp(userObj, "email");
     if (!userEmail) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });

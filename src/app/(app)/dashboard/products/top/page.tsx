@@ -1,4 +1,4 @@
-import { getServerSession } from "next-auth";
+import { requireRolePage } from "@/lib/guards/authz";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
@@ -8,14 +8,10 @@ import styles from "./TopLikedProducts.module.css";
 export const dynamic = "force-dynamic";
 
 export default async function TopLikedProductsPage() {
-  const session = await getServerSession(authOptions);
+  const session = await requireRolePage(["VENDOR", "ADMIN"]);
   if (!session) redirect("/login");
 
   const user = session.user as any;
-  if (user.role !== "VENDOR" && user.role !== "ADMIN") {
-    redirect("/login");
-  }
-
   const vendorId = user.id;
 
   // Top-Produkte nach Likes (Fallback: Orders)

@@ -1,15 +1,14 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { auth } from "@/lib/auth";
+import { getOptionalSessionApi } from "@/lib/guards/authz";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const session = await getServerSession(auth);
+  const session = await getOptionalSessionApi();
 
-  // keep legacy semantics
+  // keep legacy semantics: unauthenticated -> special payload
   if (!session?.user?.id) {
     return NextResponse.json({ status: "UNAUTHENTICATED" }, { status: 401 });
   }

@@ -1,7 +1,6 @@
 // src/app/(public)/page.tsx
 import Link from "next/link";
-import { getServerSession } from "next-auth";
-import { auth } from "@/lib/auth";
+import { requireSessionPage } from "@/lib/guards/authz";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -112,7 +111,7 @@ function SectionTitle({ kicker, title }: { kicker?: string; title: string }) {
 }
 
 export default async function HomePage() {
-  const session = await getServerSession(auth);
+  const session = await requireSessionPage();
   const isLoggedIn = !!session?.user?.id;
   const role = (session?.user?.role as string | undefined) ?? undefined;
 

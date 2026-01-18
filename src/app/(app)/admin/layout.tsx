@@ -1,8 +1,7 @@
 // src/app/admin/layout.tsx
 import "../../globals.css";
 import Link from "next/link";
-import { getServerSession } from "next-auth";
-import { auth } from "@/lib/auth";
+import { requireAdminPage } from "@/lib/guards/authz";
 import { redirect } from "next/navigation";
 import AdminBreadcrumbs from "@/components/admin/AdminBredcrumbs";
 
@@ -11,8 +10,8 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getServerSession(auth);
-  if (!session || session.user.role !== "ADMIN") redirect("/dashboard");
+  const session = await requireAdminPage();
+  if (!session) redirect("/dashboard");
 
   const tabs = [
     { href: "/admin", label: "Dashboard" },

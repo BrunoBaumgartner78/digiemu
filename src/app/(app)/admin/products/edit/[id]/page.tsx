@@ -1,6 +1,5 @@
-import { getServerSession } from "next-auth";
 import { redirect, notFound } from "next/navigation";
-import { authOptions } from "@/lib/auth";
+import { requireAdminPage } from "@/lib/guards/authz";
 import { prisma } from "@/lib/prisma";
 import AdminProductEditClient from "./AdminProductEditClient";
 
@@ -16,11 +15,9 @@ export default async function AdminProductEditPage({ params }: PageProps) {
   const productId = String(id || "").trim();
   if (!productId) notFound();
 
-  const session = await getServerSession(authOptions);
-  const user = session?.user as { id?: string; role?: string } | undefined;
-
-  if (!user?.id) redirect("/login");
-  if (user.role !== "ADMIN") redirect("/dashboard");
+  const session = await requireAdminPage();
+  if (!session) redirect("/login");
+  if (!session.user || session.user.role !== "ADMIN") redirect("/dashboard");
 
   const p = await prisma.product.findUnique({
     where: { id: productId },

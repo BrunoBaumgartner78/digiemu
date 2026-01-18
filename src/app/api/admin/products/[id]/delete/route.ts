@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { requireAdminApi } from "@/lib/guards/authz";
 import { prisma } from "@/lib/prisma";
 import { logAuditEvent } from "@/lib/logAuditEvent";
 
@@ -9,11 +8,9 @@ export async function POST(
   context: { params: Promise<{ id: string }> }
 ) {
   const params = await context.params;
-  const session = await getServerSession(authOptions);
-
-  if (!session?.user || session.user.role !== "ADMIN") {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const maybe = await requireAdminApi();
+  if (maybe instanceof NextResponse) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const session = maybe;
 
   try {
     // Vorherige Daten für Logging holen

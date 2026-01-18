@@ -1,12 +1,14 @@
 // src/app/api/products/upload/route.ts
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
+import type { Session } from "next-auth";
 import { prisma } from "@/lib/prisma";
-import { authOptions } from "@/lib/auth";
+import { requireSessionApi } from "@/lib/guards/authz";
 
 export async function POST(_req: Request) {
-  const session = await getServerSession(authOptions);
-  const userId = session?.user?.id;
+  const sessionOrResp = await requireSessionApi();
+  if (sessionOrResp instanceof NextResponse) return sessionOrResp;
+  const session = sessionOrResp as Session;
+  const userId = session.user?.id;
 
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

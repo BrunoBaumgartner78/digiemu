@@ -1,7 +1,6 @@
 // src/app/api/admin/products/[id]/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { requireAdminApi } from "@/lib/guards/authz";
 import { prisma } from "@/lib/prisma";
 import { ProductStatus } from "@prisma/client";
 
@@ -12,14 +11,10 @@ export async function PATCH(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
-  const session = await getServerSession(authOptions);
-  if (!session) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
+  const maybe = await requireAdminApi();
+  if (maybe instanceof NextResponse) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  const session = maybe;
   const user = session.user;
-  if (user.role !== "ADMIN") {
-    return NextResponse.json({ message: "Forbidden" }, { status: 403 });
-  }
 
   const { id } = await Promise.resolve(params);
   const productId = String(id ?? "").trim();

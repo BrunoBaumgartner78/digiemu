@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
-import { getServerSession } from "next-auth";
-import { auth } from "@/lib/auth";
+import { requireSessionPage } from "@/lib/guards/authz";
 import { prisma } from "@/lib/prisma";
 import DownloadCard from "./DownloadCard";
 import ProcessingCard from "./ProcessingCard";
@@ -10,7 +9,7 @@ type SearchParams = { session_id?: string };
 type Props = { searchParams: Promise<SearchParams> };
 
 export default async function DownloadSuccessPage({ searchParams }: Props) {
-  const session = await getServerSession(auth);
+  const session = await requireSessionPage();
   const userId = (session?.user as any)?.id as string | undefined;
   if (!userId) redirect("/login");
 

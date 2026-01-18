@@ -1,7 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
-import { authOptions } from "@/lib/auth";
 
 type Ctx = {
   params: Promise<{ id: string }>;
@@ -22,7 +20,10 @@ export async function GET(_req: Request, ctx: Ctx) {
 export async function POST(_req: Request, ctx: Ctx) {
   const { id: productId } = await ctx.params;
 
-  const session = await getServerSession(authOptions);
+  const { requireSessionApi } = await import("@/lib/guards/authz");
+  const sessionOrResp = await requireSessionApi();
+  if (sessionOrResp instanceof NextResponse) return sessionOrResp;
+  const session = sessionOrResp as import("next-auth").Session;
   const userId = session?.user?.id;
 
   if (!userId) {

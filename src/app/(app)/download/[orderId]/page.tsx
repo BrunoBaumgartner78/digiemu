@@ -2,8 +2,7 @@
 import { rateLimitCheck, keyFromReq } from "@/lib/rateLimit";
 import { headers } from "next/headers";
 import React from "react";
-import { getServerSession } from "next-auth";
-import { auth } from "@/lib/auth";
+import { requireSessionPage } from "@/lib/guards/authz";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import styles from "./page.module.css";
@@ -64,7 +63,7 @@ function IconDownload() {
 export default async function DownloadPage(props: { params: Promise<Params> }) {
   // v1.0.1: soft rate limit for download page requests
   // limit: 20 / minute per ip+ua+orderId (MVP safe)
-  const session = await getServerSession(auth);
+  const session = await requireSessionPage();
 
   if (!session?.user) {
     return (

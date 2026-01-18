@@ -1,10 +1,10 @@
 import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth";
+import { requireAdminPage } from "@/lib/guards/authz";
 import { redirect } from "next/navigation";
 import AdminPayoutList from "@/components/dashboard/AdminPayoutList";
 
 export default async function AdminPayoutPage() {
-  const session = await getServerSession();
+  const session = await requireAdminPage();
   if (!session) redirect("/login");
   if (session.user.role !== "ADMIN") redirect("/dashboard");
 

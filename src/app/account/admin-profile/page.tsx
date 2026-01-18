@@ -1,10 +1,9 @@
-import { getServerSession } from "next-auth";
-import { auth } from "@/lib/auth";
+import { requireAdminPage } from "@/lib/guards/authz";
 import { prisma } from "@/lib/prisma";
 import AdminProfileClient from "./AdminProfileClient";
 
 export default async function Page() {
-  const session = await getServerSession(auth);
+  const session = await requireAdminPage();
   const user = session?.user as any;
   const userId = user?.id as string | undefined;
   if (!userId || user?.role !== "ADMIN") {

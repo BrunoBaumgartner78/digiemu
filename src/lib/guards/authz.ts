@@ -45,3 +45,22 @@ export async function requireAdminPage(): Promise<Session | null> {
   if (!session || session.user?.role !== "ADMIN") return null;
   return session as Session;
 }
+
+export async function requireVendorPage(): Promise<Session | null> {
+  const session = (await getServerSession(auth as any)) as Session | null;
+  if (!session || session.user?.role !== "VENDOR") return null;
+  return session as Session;
+}
+
+export async function requireRolePage(roles: string[]): Promise<Session | null> {
+  const session = (await getServerSession(auth as any)) as Session | null;
+  if (!session) return null;
+  if (!session.user || !roles.includes(session.user.role as string)) return null;
+  return session as Session;
+}
+
+// Return optional session for API routes that accept anonymous users
+export async function getOptionalSessionApi(): Promise<Session | null> {
+  const session = (await getServerSession(auth as any)) as Session | null;
+  return session ?? null;
+}

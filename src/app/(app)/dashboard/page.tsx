@@ -1,6 +1,5 @@
 // src/app/dashboard/page.tsx
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { requireRolePage } from "@/lib/guards/authz";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
@@ -16,7 +15,7 @@ function chf(cents: number) {
 }
 
 export default async function DashboardPage() {
-  const session = await getServerSession(authOptions);
+  const session = await requireRolePage(["VENDOR", "ADMIN"]);
   if (!session?.user) redirect("/login");
 
   const user = session.user as { id?: string; role?: string };

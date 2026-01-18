@@ -1,6 +1,5 @@
 // src/app/admin/orders/page.tsx
-import { getServerSession } from "next-auth";
-import { auth } from "@/lib/auth";
+import { requireAdminPage } from "@/lib/guards/authz";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { StatusBadge } from "@/components/admin/StatusBadge";
@@ -61,10 +60,8 @@ function paginationWindow(current: number, total: number) {
 }
 
 export default async function AdminOrdersPage({ searchParams }: Props) {
-  const session = await getServerSession(auth);
-  if (!session || session.user?.role !== "ADMIN") {
-    redirect("/login");
-  }
+  const session = await requireAdminPage();
+  if (!session) redirect("/login");
 
   const sp: SearchParams = searchParams ? await searchParams : {};
 

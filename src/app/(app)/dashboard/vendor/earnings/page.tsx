@@ -1,6 +1,5 @@
 import Link from "next/link";
-import { getServerSession } from "next-auth";
-import { auth } from "@/lib/auth";
+import { requireVendorPage } from "@/lib/guards/authz";
 import EarningsChart from "@/components/vendor/EarningsChart";
 import { prisma } from "@/lib/prisma";
 
@@ -18,7 +17,7 @@ export default async function VendorEarningsPage({
 }: {
   searchParams?: { range?: string };
 }) {
-  const session = await getServerSession(auth);
+  const session = await requireVendorPage();
 
   if (!session?.user?.id) {
     return (

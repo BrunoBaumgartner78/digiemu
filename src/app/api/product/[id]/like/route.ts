@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import type { Session } from "next-auth";
+import { requireSessionApi } from "@/lib/guards/authz";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
@@ -12,9 +12,10 @@ type RouteCtx = { params: Promise<{ id: string }> };
 export async function POST(_req: Request, ctx: RouteCtx) {
   const { id: productId } = await ctx.params;
 
-  const session = await getServerSession(authOptions);
-  const user = (session?.user as { id?: string; role?: string } | null) ?? null;
-  const userId = user?.id;
+  const sessionOrResp = await requireSessionApi();
+  if (sessionOrResp instanceof NextResponse) return sessionOrResp;
+  const session = sessionOrResp as Session;
+  const userId = session.user?.id;
   if (!userId) {
     return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
   }

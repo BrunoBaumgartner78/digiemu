@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { auth } from "@/lib/auth";
+import type { Session } from "next-auth";
+import { requireSessionApi } from "@/lib/guards/authz";
 import { prisma } from "@/lib/prisma";
 import { rateLimitCheck, keyFromReq } from "@/lib/rateLimit";
 
@@ -18,7 +18,12 @@ export async function GET(_req: NextRequest, ctx: { params: Promise<{ orderId: s
   } catch (_e) {
     console.warn("rateLimit check failed for download_api", _e);
   }
-  const session = await getServerSession(auth);
+  const sessionOrResp = await requireSessionApi();
+  if (sessionOrResp instanceof NextResponse) {
+    // Preserve legacy behavior: redirect to login when unauthenticated
+    return NextResponse.redirect(new URL("/auth/login", _req.url), { status: 303 });
+  }
+  const session = sessionOrResp as Session;
   const userId = session?.user?.id as string | undefined;
 
   if (!userId) {

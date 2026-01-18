@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { auth } from "@/lib/auth";
+import type { Session } from "next-auth";
+import { requireAdminApi } from "@/lib/guards/authz";
 import { prisma } from "@/lib/prisma";
 
 export async function PUT(_req: Request) {
-  const session = await getServerSession(auth);
-  const user = session?.user;
+  const sessionOrResp = await requireAdminApi();
+  if (sessionOrResp instanceof NextResponse) return sessionOrResp;
+  const session = sessionOrResp as Session;
+  const user = session.user;
   const userId = user?.id as string | undefined;
   if (!userId || user?.role !== "ADMIN") return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 403 });
 

@@ -1,13 +1,12 @@
 import { redirect } from "next/navigation";
-import { getServerSession } from "next-auth";
-import { auth } from "@/lib/auth";
+import { requireSessionPage } from "@/lib/guards/authz";
 import { prisma } from "@/lib/prisma";
 import VendorDashboardClient from "./VendorDashboardClient";
 
 export const dynamic = "force-dynamic";
 
 export default async function VendorPage() {
-  const session = await getServerSession(auth);
+  const session = await requireSessionPage();
   if (!session) redirect("/login");
 
   if (session.user.role !== "VENDOR") {
@@ -17,7 +16,7 @@ export default async function VendorPage() {
 
   // Vendor status check
   const vp = await prisma.vendorProfile.findUnique({
-    where: { userId: (session.user as any).id },
+    where: { userId: session.user.id },
     select: { status: true },
   });
 

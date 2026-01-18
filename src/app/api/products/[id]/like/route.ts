@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import type { Session } from "next-auth";
+import { getOptionalSessionApi, requireSessionApi } from "@/lib/guards/authz";
 import { prisma } from "@/lib/prisma";
 
 type RouteContext = {
@@ -12,7 +12,7 @@ export async function GET(_req: NextRequest, ctx: RouteContext) {
   try {
     const { id } = await ctx.params;
 
-    const session = await getServerSession(authOptions);
+    const session = await getOptionalSessionApi();
     const user = (session?.user as { id?: string; role?: string } | null) ?? null;
     const userId = user?.id as string | undefined;
 
@@ -46,7 +46,9 @@ export async function POST(req: NextRequest, ctx: RouteContext) {
   try {
     const { id } = await ctx.params;
 
-    const session = await getServerSession(authOptions);
+    const sessionOrResp = await requireSessionApi();
+    if (sessionOrResp instanceof NextResponse) return sessionOrResp;
+    const session = sessionOrResp as Session;
     const user = (session?.user as { id?: string; role?: string } | null) ?? null;
 
     if (!user || !user.id) {

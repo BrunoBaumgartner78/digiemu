@@ -1,6 +1,5 @@
 
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { requireAdminPage } from "@/lib/guards/authz";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import type { AdminProductListRow } from "@/lib/admin-types";
@@ -60,7 +59,7 @@ function getPageItems(current: number, total: number) {
 }
 
 export default async function AdminProductsPage(props: Props) {
-  const session = await getServerSession(authOptions);
+  const session = await requireAdminPage();
   if (!session) redirect("/login");
   const user = session.user as { role?: string };
   if (user.role !== "ADMIN") redirect("/dashboard");

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import type { Session } from "next-auth";
+import { requireSessionApi } from "@/lib/guards/authz";
 import { getErrorMessage } from "@/lib/guards";
 import { adminBucket } from "@/lib/firebaseAdmin";
 import { randomUUID } from "crypto";
@@ -17,7 +17,9 @@ function jsonError(message: string, status = 400) {
 
 export async function POST(_req: Request) {
   try {
-    const session = await getServerSession(authOptions);
+    const sessionOrResp = await requireSessionApi();
+    if (sessionOrResp instanceof NextResponse) return sessionOrResp;
+    const session = sessionOrResp as Session;
     if (!session?.user?.id) return jsonError("Unauthorized", 401);
 
     const form = await _req.formData();

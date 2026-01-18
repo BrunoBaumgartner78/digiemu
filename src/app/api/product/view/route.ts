@@ -1,8 +1,7 @@
 // src/app/api/product/view/route.ts
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { getOptionalSessionApi } from "@/lib/guards/authz";
 import { isRecord, getStringProp, getErrorMessage } from "@/lib/guards";
 
 function dayKey(d = new Date()) {
@@ -14,7 +13,7 @@ function dayKey(d = new Date()) {
 
 export async function POST(_req: Request) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getOptionalSessionApi();
     const body = await _req.json().catch(() => null);
 
     const productId = isRecord(body) ? (getStringProp(body, "productId") ?? undefined) : undefined;

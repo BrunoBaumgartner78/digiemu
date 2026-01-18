@@ -22,7 +22,11 @@ export async function GET(_req: Request, ctx: Ctx) {
 export async function POST(_req: Request, ctx: Ctx) {
   const { id } = await ctx.params;
 
-  const session = await getServerSession(authOptions);
+  // require authentication
+  const { requireSessionApi } = await import("@/lib/guards/authz");
+  const sessionOrResp = await requireSessionApi();
+  if (sessionOrResp instanceof NextResponse) return sessionOrResp;
+  const session = sessionOrResp as import("next-auth").Session;
   const userId = session?.user?.id;
 
   if (!userId) {

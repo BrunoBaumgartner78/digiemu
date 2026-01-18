@@ -1,16 +1,12 @@
 // src/app/dashboard/profile/page.tsx
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { requireRolePage } from "@/lib/guards/authz";
 import { redirect } from "next/navigation";
 
 export default async function ProfilePage() {
-  const session = await getServerSession(authOptions);
+  const session = await requireRolePage(["VENDOR", "ADMIN"]);
   if (!session) redirect("/login");
 
   const user = session.user as any;
-  if (user.role !== "VENDOR" && user.role !== "ADMIN") {
-    redirect("/login");
-  }
 
   return (
     <main className="page-shell-wide">

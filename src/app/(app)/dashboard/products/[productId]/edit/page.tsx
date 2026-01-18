@@ -1,7 +1,6 @@
 // src/app/dashboard/products/[productId]/edit/page.tsx
-import { getServerSession } from "next-auth";
+import { requireRolePage } from "@/lib/guards/authz";
 import { redirect, notFound } from "next/navigation";
-import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import EditProductForm from "./EditProductForm";
 
@@ -21,7 +20,7 @@ export default async function EditProductPage({ params }: PageProps) {
   const pid = String((resolvedParams as any)?.productId ?? "").trim();
   if (!pid) notFound();
 
-  const session = await getServerSession(authOptions);
+  const session = await requireRolePage(["VENDOR", "ADMIN"]);
   const user = session?.user as any;
 
   if (!user?.id) redirect("/login");

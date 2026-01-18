@@ -1,6 +1,5 @@
 // src/app/admin/vendors/page.tsx
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { requireAdminPage } from "@/lib/guards/authz";
 import { prisma } from "@/lib/prisma";
 import type { AdminVendorListRowLite } from "@/lib/admin-types";
 import Link from "next/link";
@@ -50,9 +49,9 @@ function getPageItems(current: number, total: number) {
 }
 
 export default async function AdminVendorsPage(props: { searchParams: Promise<SearchParams> }) {
-  const session = await getServerSession(authOptions);
+  const session = await requireAdminPage();
 
-  if (!session || (session.user as { role?: string })?.role !== "ADMIN") {
+  if (!session) {
     return (
       <main className="min-h-[70vh] flex items-center justify-center px-4">
         <div className="neumorph-card p-6 max-w-md text-center">

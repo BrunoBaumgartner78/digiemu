@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { auth } from "@/lib/auth";
+import type { Session } from "next-auth";
+import { requireVendorApi } from "@/lib/guards/authz";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -21,10 +21,9 @@ function splitVendorFallback(order: { amountCents: number; vendorEarningsCents: 
 }
 
 export async function POST() {
-  const session = await getServerSession(auth);
-  if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  if (session.user.role !== "VENDOR") return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-
+  const sessionOrResp = await requireVendorApi();
+  if (sessionOrResp instanceof NextResponse) return sessionOrResp;
+  const session = sessionOrResp as Session;
   const vendorId = session.user.id;
 
   // 1) Sum vendor earnings of PAID orders for this vendor

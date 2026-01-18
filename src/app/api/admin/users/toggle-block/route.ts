@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { auth } from "@/lib/auth";
+import { requireAdminApi } from "@/lib/guards/authz";
 import { prisma } from "@/lib/prisma";
 import { isRecord, getStringProp, getErrorMessage } from "@/lib/guards";
 
@@ -8,11 +7,9 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function POST(_req: NextRequest) {
-  const session = await getServerSession(auth);
-  const maybeUser = session?.user as { id?: string; role?: string } | undefined;
-  if (!isRecord(maybeUser) || getStringProp(maybeUser, "role") !== "ADMIN") {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
+  const maybe = await requireAdminApi();
+  if (maybe instanceof NextResponse) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  const session = maybe;
 
   const bodyUnknown = await _req.json().catch(() => null);
   const userId = getStringProp(bodyUnknown, "userId") ?? "";

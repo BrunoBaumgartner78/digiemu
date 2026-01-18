@@ -1,6 +1,5 @@
 // src/app/admin/users/page.tsx
-import { getServerSession } from "next-auth";
-import { auth } from "@/lib/auth";
+import { requireAdminPage } from "@/lib/guards/authz";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import type { Role } from "@prisma/client";
@@ -60,10 +59,8 @@ export default async function AdminUsersPage({
 }: {
   searchParams: Promise<AdminUsersSearchParams>;
 }) {
-  const session = await getServerSession(auth);
-  if (!session || (session.user as { role?: string })?.role !== "ADMIN") {
-    redirect("/dashboard");
-  }
+  const session = await requireAdminPage();
+  if (!session) redirect("/dashboard");
 
   const params = await searchParams;
 

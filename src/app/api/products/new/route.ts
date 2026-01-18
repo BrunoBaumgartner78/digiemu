@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import type { Session } from "next-auth";
+import { requireSessionApi } from "@/lib/guards/authz";
 import { getErrorMessage } from "@/lib/guards";
 
 export const dynamic = "force-dynamic";
@@ -18,7 +18,9 @@ type Body = {
 };
 
 export async function POST(_req: Request) {
-  const session = await getServerSession(authOptions);
+  const sessionOrResp = await requireSessionApi();
+  if (sessionOrResp instanceof NextResponse) return sessionOrResp;
+  const session = sessionOrResp as Session;
 
   // Nur Vendor darf Produkte erstellen
   if (!session || session.user?.role !== "VENDOR") {

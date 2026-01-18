@@ -1,8 +1,7 @@
 // src/app/api/product/[id]/view/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth";
-import { auth } from "@/lib/auth";
+import { getOptionalSessionApi } from "@/lib/guards/authz";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -24,8 +23,8 @@ export async function POST(_req: NextRequest, ctx: Ctx) {
     return NextResponse.json({ ok: false, reason: "MISSING_PRODUCT_ID" }, { status: 400 });
   }
 
-  // Identify user if logged in
-  const session = await getServerSession(auth);
+  // Identify user if logged in (optional)
+  const session = await getOptionalSessionApi();
   const user = (session?.user as { id?: string; role?: string } | null) ?? null;
   const userId = user?.id as string | undefined;
 

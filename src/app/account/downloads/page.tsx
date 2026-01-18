@@ -1,8 +1,7 @@
 // src/app/account/downloads/page.tsx
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getServerSession } from "next-auth";
-import { auth } from "@/lib/auth";
+import { requireSessionPage } from "@/lib/guards/authz";
 import { prisma } from "@/lib/prisma";
 
 import styles from "./page.module.css";
@@ -28,7 +27,7 @@ export default async function AccountDownloadsPage({
   // ✅ Next.js 16: searchParams ist Promise
   searchParams: Promise<SearchParams>;
 }) {
-  const session = await getServerSession(auth);
+  const session = await requireSessionPage();
   const userId = (session?.user as any)?.id as string | undefined;
 
   if (!userId) {

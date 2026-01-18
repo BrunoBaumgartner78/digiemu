@@ -1,7 +1,6 @@
 
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { requireAdminApi } from "@/lib/guards/authz";
 import { prisma } from "@/lib/prisma";
 import { isRecord, getStringProp, getBooleanProp, getErrorMessage } from "@/lib/guards";
 import { Prisma } from "@prisma/client";
@@ -14,11 +13,10 @@ export async function PATCH(
   context: { params: Promise<{ id: string }> }
 ) {
   const params = await context.params;
-  const session = await getServerSession(authOptions);
-  const maybeUser = session?.user as { id?: string; role?: string } | undefined;
-  if (!isRecord(maybeUser) || getStringProp(maybeUser, "role") !== "ADMIN") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
+  const maybe = await requireAdminApi();
+  if (maybe instanceof NextResponse) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  const session = maybe;
+  const maybeUser = session.user;
 
   const userId = params.id;
   let bodyUnknown: unknown;

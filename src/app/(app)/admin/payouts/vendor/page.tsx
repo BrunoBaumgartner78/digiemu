@@ -1,5 +1,4 @@
-import { getServerSession } from "next-auth";
-import { auth } from "@/lib/auth";
+import { requireAdminPage } from "@/lib/guards/authz";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { formatCHF } from "@/lib/format";
@@ -10,8 +9,8 @@ export const metadata = {
 };
 
 export default async function AdminVendorEarningsPage() {
-  const session = await getServerSession(auth);
-  if (!session?.user || session.user.role !== "ADMIN") {
+  const session = await requireAdminPage();
+  if (!session) {
     return (
       <main className="min-h-screen flex items-center justify-center px-4">
         <div className="neumorph-card max-w-md w-full p-8 text-center">

@@ -1,8 +1,7 @@
 // src/app/dashboard/edit/[id]/page.tsx
 import { notFound, redirect } from "next/navigation";
 import { isRecord, isString } from "@/lib/guards";
-import { getServerSession } from "next-auth";
-import { auth } from "@/lib/auth";
+import { requireSessionPage } from "@/lib/guards/authz";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -13,7 +12,7 @@ type PageProps = {
 };
 
 export default async function DashboardEditLegacyPage({ params }: PageProps) {
-  const session = await getServerSession(auth);
+  const session = await requireSessionPage();
   const maybeUser = session?.user as unknown;
   let userId: string | undefined;
   if (isRecord(maybeUser)) {

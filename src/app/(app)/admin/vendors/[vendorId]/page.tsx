@@ -1,6 +1,5 @@
 // src/app/admin/vendors/[vendorId]/page.tsx
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { requireAdminPage } from "@/lib/guards/authz";
 import { prisma } from "@/lib/prisma";
 import type { AdminVendorDetail } from "@/lib/admin-types";
 import Link from "next/link";
@@ -24,7 +23,7 @@ function fmtDate(d: Date) {
 }
 
 export default async function AdminVendorDetailPage(props: { params: Promise<Params> }) {
-  const session = await getServerSession(authOptions);
+  const session = await requireAdminPage();
   if (!session) redirect("/login");
   if ((session.user as { role?: string })?.role !== "ADMIN") redirect("/dashboard");
 

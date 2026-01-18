@@ -1,7 +1,6 @@
 import { rateLimitCheck, keyFromReq } from "@/lib/rateLimit";
 import { headers } from "next/headers";
-import { getServerSession } from "next-auth";
-import { auth } from "@/lib/auth";
+import { requireSessionPage } from "@/lib/guards/authz";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 
@@ -29,7 +28,7 @@ export default async function DownloadsPage() {
     );
   }
 
-  const session = await getServerSession(auth);
+  const session = await requireSessionPage();
   const userId = session?.user?.id as string | undefined;
 
   if (!userId) {

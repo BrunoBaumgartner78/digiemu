@@ -1,13 +1,15 @@
 // src/app/api/admin/payouts/create/route.ts
 
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import type { Session } from "next-auth";
+import { requireAdminApi } from "@/lib/guards/authz";
 import { prisma } from "@/lib/prisma";
 
 // POST /api/admin/payouts/create
 export async function POST(_req: Request) {
-  const session = await getServerSession(authOptions);
+  const sessionOrResp = await requireAdminApi();
+  if (sessionOrResp instanceof NextResponse) return sessionOrResp;
+  const session = sessionOrResp as Session;
 
   // 1. Nur Admins dürfen Payouts erstellen
   if (!session || session.user.role !== "ADMIN") {

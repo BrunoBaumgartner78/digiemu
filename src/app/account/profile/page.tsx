@@ -1,6 +1,5 @@
 // src/app/account/profile/page.tsx
-import { getServerSession } from "next-auth";
-import { auth } from "@/lib/auth";
+import { requireSessionPage } from "@/lib/guards/authz";
 import { prisma } from "@/lib/prisma";
 import ProfilePageClient from "./ProfilePageClient";
 import styles from "./profile.module.css";
@@ -8,7 +7,7 @@ import styles from "./profile.module.css";
 export const dynamic = "force-dynamic";
 
 export default async function Page() {
-  const session = await getServerSession(auth);
+  const session = await requireSessionPage();
   const userId = (session?.user as any)?.id as string | undefined;
 
   if (!userId) {

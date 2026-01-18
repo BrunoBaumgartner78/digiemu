@@ -1,7 +1,7 @@
 // src/app/api/checkout/create-session/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import type { Session } from "next-auth";
+import { requireSessionApi } from "@/lib/guards/authz";
 import { prisma } from "@/lib/prisma";
 import { isRecord, getString, getErrorMessage } from "@/lib/guards";
 import Stripe from "stripe";
@@ -27,7 +27,9 @@ export async function POST(_req: NextRequest) {
   } catch (_e: unknown) {
     console.warn("rateLimit check failed for checkout_create", getErrorMessage(_e));
   }
-  const session = await getServerSession(authOptions);
+  const sessionOrResp = await requireSessionApi();
+  if (sessionOrResp instanceof NextResponse) return sessionOrResp;
+  const session = sessionOrResp as Session;
   const user = (session?.user as { id?: string; role?: string } | null) ?? null;
   const userId = user?.id as string | undefined;
 

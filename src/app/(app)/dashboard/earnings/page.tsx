@@ -1,9 +1,8 @@
 // src/app/dashboard/earnings/page.tsx
 import Link from "next/link";
-import { getServerSession } from "next-auth";
+import { requireVendorPage } from "@/lib/guards/authz";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
 
 export const metadata = {
   title: "Einnahmen – Vendor Dashboard",
@@ -24,7 +23,7 @@ export default async function VendorEarningsPage({
 }: {
   searchParams?: { page?: string };
 }) {
-  const session = await getServerSession(auth);
+  const session = await requireVendorPage();
   if (!session?.user) redirect("/login");
   const user = session.user as { id?: string; role?: string };
   if (user.role !== "VENDOR") redirect("/login");

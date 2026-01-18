@@ -1,10 +1,10 @@
-import { getServerSession } from "next-auth";
+import { requireSessionPage } from "@/lib/guards/authz";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { auth } from "@/lib/auth";
 
 export default async function AccountOrdersPage() {
-  const session = await getServerSession(auth);
+  const session = await requireSessionPage();
   if (!session?.user?.id) {
     return (
       <div className="max-w-xl mx-auto py-12 px-4 text-center">
@@ -14,7 +14,7 @@ export default async function AccountOrdersPage() {
     );
   }
   const orders = await prisma.order.findMany({
-    where: { buyerId: session.user.id },
+  where: { buyerId: session.user.id },
     include: { product: true, downloadLink: true },
     orderBy: { createdAt: "desc" },
   });
