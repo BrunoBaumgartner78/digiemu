@@ -12,7 +12,7 @@ export default function DatenschutzPage() {
     >
       <main className="page-shell">
         <section className="neo-surface neonCard neonBorder glowSoft p-6 md:p-8 space-y-6">
-          <h1 className="text-2xl font-semibold">Datenschutzerklärung</h1>
+          <h1 className="text-2xl font-semibold">Datenschutz- erklärung</h1>
 
           <div className="space-y-4 text-sm text-[var(--text-main)]">
             <p className="text-[var(--text-muted)]">

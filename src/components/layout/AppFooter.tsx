@@ -84,14 +84,14 @@ export default function AppFooter() {
               <a className={styles.link} href="mailto:support@bellu.ch">
                 support@bellu.ch
               </a>
-              <div className={styles.chip}>MVP Beta · Neumorph Neon</div>
+              <div className={styles.chip}>MVP v1.0 softlaunch · Neumorph Neon</div>
             </div>
           </div>
         </div>
 
         <div className={styles.bottomRow}>
           <span>© {new Date().getFullYear()} DigiEmu</span>
-          <span>Made with focus · Zürich</span>
+          <span>Made with 🩵 in · Switzerland</span>
         </div>
       </div>
     </footer>
