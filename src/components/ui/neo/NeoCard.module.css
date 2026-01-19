@@ -6,6 +6,7 @@
 .card {
   position: relative;
   overflow: hidden;
+  padding: var(--pad-card, 1.5rem);
 }
 
 /* Neon-Akzent oben */

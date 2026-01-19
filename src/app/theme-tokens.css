@@ -82,6 +82,55 @@
      Focus / Accessibility
      ------------------------------------------------------- */
   --focus-ring: 0 0 0 3px rgba(37, 99, 235, 0.25);
+
+  /* =========================
+     Typography Scale
+     ========================= */
+  --fs-h1: clamp(2.15rem, 2.9vw + 1rem, 3.1rem);
+  --fs-h2: 1.45rem;
+  --fs-h3: 1.15rem;
+  --fs-body: 0.98rem;
+  --fs-small: 0.85rem;
+  --fs-label: 0.74rem;
+
+  --lh-h1: 1.08;
+  --lh-h2: 1.18;
+  --lh-body: 1.6;
+
+  --fw-h1: 900;
+  --fw-h2: 800;
+  --fw-h3: 700;
+  --fw-body: 500;
+  --fw-label: 800;
+
+  --ls-label: 0.18em;
+  --ls-tight: -0.02em;
+
+  /* =========================
+     Spacing (8px Grid)
+     ========================= */
+  --s-1: 0.25rem;  /* 4px  */
+  --s-2: 0.5rem;   /* 8px  */
+  --s-3: 0.75rem;  /* 12px */
+  --s-4: 1rem;     /* 16px */
+  --s-5: 1.25rem;  /* 20px */
+  --s-6: 1.5rem;   /* 24px */
+  --s-7: 2rem;     /* 32px */
+  --s-8: 2.5rem;   /* 40px */
+  --s-9: 3rem;     /* 48px */
+
+  /* Common paddings */
+  --pad-card: var(--s-6);
+  --pad-card-sm: var(--s-4);
+  --gap-stack: var(--s-4);
+
+  /* =========================
+     Focus / States
+     ========================= */
+  --focus-ring-strong: 0 0 0 4px rgba(37, 99, 235, 0.28);
+  --disabled-opacity: 0.6;
+  --hover-brightness: 1.03;
+  --active-brightness: 1.01;
 }
 
 /* =========================
@@ -151,6 +200,12 @@ html[data-theme="dark"] {
      Focus
      ------------------------------------------------------- */
   --focus-ring: 0 0 0 3px rgba(96, 165, 250, 0.35);
+   /* Typography (dark keeps scale; only colors differ) */
+   /* spacing and state tokens inherit from :root but can be overridden if needed */
+   --focus-ring-strong: 0 0 0 4px rgba(96, 165, 250, 0.30);
+   --disabled-opacity: 0.6;
+   --hover-brightness: 1.03;
+   --active-brightness: 1.01;
 }
 
 /* =========================
