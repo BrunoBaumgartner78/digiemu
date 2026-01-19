@@ -1,3 +1,5 @@
+/* NewProductForm.module.css */
+
 /* === Wrapper / Layout =============================================== */
 
 .wrapper {
@@ -70,34 +72,37 @@
   font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.14em;
-  font-weight: 600;
+  font-weight: 650;
   color: var(--color-text-muted);
 }
 
 /* Inputs / Textarea im DigiEmu-Neo-Stil */
 
 .input,
-.textarea {
+.textarea,
+.select {
   width: 100%;
   padding: 0.8rem 1.4rem;
   border-radius: 1.4rem;
   outline: none;
-
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   color: var(--color-text-primary);
+
   background:
-    radial-gradient(circle at 0 0, #f4f8ff, #dbe7ff),
+    radial-gradient(circle at 0 0, rgba(244, 248, 255, 0.95), rgba(219, 231, 255, 0.92)),
     var(--color-card-bg);
-  border: 1px solid #94a3b8;
+
+  border: 1px solid var(--neo-border, rgba(148, 163, 184, 0.65));
 
   box-shadow:
-    0 18px 40px rgba(15, 23, 42, 0.14),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.9);
+    0 18px 40px rgba(15, 23, 42, 0.12),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.85);
 
   transition:
     box-shadow 0.16s ease,
     border-color 0.16s ease,
-    background 0.16s ease;
+    filter 0.16s ease,
+    transform 0.16s ease;
 }
 
 .textarea {
@@ -107,42 +112,111 @@
 
 .input::placeholder,
 .textarea::placeholder {
-  color: rgba(148, 163, 184, 0.9);
+  color: rgba(100, 116, 139, 0.72);
 }
 
-.input:focus,
-.textarea:focus {
-  border-color: #3b82f6;
+/* Hover (subtil) */
+.input:hover,
+.textarea:hover,
+.select:hover {
+  border-color: rgba(74, 124, 255, 0.45);
   box-shadow:
-    0 24px 55px rgba(37, 99, 235, 0.35),
-    inset 0 0 0 1px rgba(255, 255, 255, 1);
+    0 18px 40px rgba(15, 23, 42, 0.14),
+    0 0 18px rgba(74, 124, 255, 0.10),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.9);
 }
 
-/* Dark-Mode Touch */
+/* Fokus: sauber + tastaturfreundlich */
+.input:focus-visible,
+.textarea:focus-visible,
+.select:focus-visible {
+  outline: none;
+  border-color: rgba(74, 124, 255, 0.75);
+  box-shadow:
+    0 0 0 2px rgba(74, 124, 255, 0.28),
+    0 24px 55px rgba(37, 99, 235, 0.28),
+    0 0 22px rgba(74, 124, 255, 0.18),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.95);
+}
 
+/* Disabled */
+.input:disabled,
+.textarea:disabled,
+.select:disabled {
+  opacity: 0.72;
+  cursor: not-allowed;
+  filter: grayscale(0.08);
+}
+
+/* Optional: Error-State für Inputs (falls du später className dazu gibst) */
+.inputError,
+.textareaError,
+.selectError {
+  border-color: rgba(239, 68, 68, 0.55);
+  box-shadow:
+    0 0 0 2px rgba(239, 68, 68, 0.16),
+    0 18px 40px rgba(15, 23, 42, 0.12),
+    0 0 18px rgba(239, 68, 68, 0.12),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.85);
+}
+
+/* Dark-Mode */
 @media (prefers-color-scheme: dark) {
   .input,
-  .textarea {
+  .textarea,
+  .select {
     background:
-      radial-gradient(circle at 0 0, #0b1120, #020617),
+      radial-gradient(circle at 0 0, rgba(11, 17, 32, 0.95), rgba(2, 6, 23, 0.95)),
       var(--color-card-bg);
-    border-color: rgba(51, 65, 85, 0.9);
+
+    border-color: rgba(120, 150, 255, 0.20);
+
     box-shadow:
-      0 20px 48px rgba(15, 23, 42, 0.9),
-      inset 0 0 0 1px rgba(148, 163, 184, 0.4);
+      0 20px 48px rgba(0, 0, 0, 0.55),
+      inset 0 0 0 1px rgba(148, 163, 184, 0.18);
   }
 
   .input::placeholder,
   .textarea::placeholder {
-    color: rgba(148, 163, 184, 0.7);
+    color: rgba(148, 163, 184, 0.62);
   }
 
-  .input:focus,
-  .textarea:focus {
-    border-color: #60a5fa;
+  .input:hover,
+  .textarea:hover,
+  .select:hover {
+    border-color: rgba(120, 170, 255, 0.40);
     box-shadow:
-      0 26px 60px rgba(37, 99, 235, 0.6),
-      inset 0 0 0 1px rgba(15, 23, 42, 0.9);
+      0 22px 52px rgba(0, 0, 0, 0.62),
+      0 0 20px rgba(120, 170, 255, 0.12),
+      inset 0 0 0 1px rgba(148, 163, 184, 0.22);
+  }
+
+  .input:focus-visible,
+  .textarea:focus-visible,
+  .select:focus-visible {
+    border-color: rgba(120, 170, 255, 0.65);
+    box-shadow:
+      0 0 0 2px rgba(120, 170, 255, 0.22),
+      0 26px 60px rgba(37, 99, 235, 0.45),
+      0 0 24px rgba(120, 170, 255, 0.18),
+      inset 0 0 0 1px rgba(148, 163, 184, 0.18);
+  }
+
+  .input:disabled,
+  .textarea:disabled,
+  .select:disabled {
+    opacity: 0.65;
+  }
+
+  .inputError,
+  .textareaError,
+  .selectError {
+    border-color: rgba(239, 68, 68, 0.50);
+    box-shadow:
+      0 0 0 2px rgba(239, 68, 68, 0.14),
+      0 22px 52px rgba(0, 0, 0, 0.62),
+      0 0 18px rgba(239, 68, 68, 0.12),
+      inset 0 0 0 1px rgba(148, 163, 184, 0.14);
   }
 }
 
@@ -155,7 +229,7 @@
 }
 
 .priceHint {
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   color: var(--color-text-muted);
 }
 
@@ -164,33 +238,45 @@
 .infoBox {
   border-radius: 1.4rem;
   padding: 1.4rem 1.6rem;
-  background: linear-gradient(135deg, #020617, #020617);
+  background:
+    radial-gradient(circle at 18% 0%, rgba(120, 170, 255, 0.14), transparent 60%),
+    linear-gradient(135deg, #020617, #020617);
   color: #e5e7eb;
-  border: 1px solid rgba(30, 64, 175, 0.9);
-  box-shadow: 0 22px 60px rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(120, 170, 255, 0.30);
+  box-shadow:
+    0 22px 60px rgba(0, 0, 0, 0.55),
+    0 0 26px rgba(120, 170, 255, 0.10);
 }
 
 .infoTitle {
   font-size: 0.8rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  font-weight: 600;
+  font-weight: 700;
   margin-bottom: 0.4rem;
 }
 
 .infoText {
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   line-height: 1.6;
+  color: rgba(226, 232, 240, 0.92);
 }
 
 /* Light-Mode für Infobox */
-
 @media (prefers-color-scheme: light) {
   .infoBox {
-    background: linear-gradient(135deg, #e5edff, #f5f7ff);
+    background:
+      radial-gradient(circle at 18% 0%, rgba(74, 124, 255, 0.16), transparent 60%),
+      linear-gradient(135deg, #e5edff, #f5f7ff);
     color: #0f172a;
-    border-color: rgba(129, 140, 248, 0.9);
-    box-shadow: 0 20px 48px rgba(148, 163, 184, 0.5);
+    border-color: rgba(129, 140, 248, 0.50);
+    box-shadow:
+      0 20px 48px rgba(148, 163, 184, 0.45),
+      0 0 24px rgba(74, 124, 255, 0.10);
+  }
+
+  .infoText {
+    color: rgba(15, 23, 42, 0.78);
   }
 }
 
@@ -198,16 +284,19 @@
 
 .error,
 .success {
-  font-size: 0.75rem;
-  margin-top: 0.2rem;
+  font-size: 0.78rem;
+  margin-top: 0.25rem;
+  line-height: 1.35;
 }
 
 .error {
-  color: #ef4444;
+  color: rgba(239, 68, 68, 0.95);
+  text-shadow: 0 0 10px rgba(239, 68, 68, 0.18);
 }
 
 .success {
-  color: #22c55e;
+  color: rgba(34, 197, 94, 0.95);
+  text-shadow: 0 0 10px rgba(34, 197, 94, 0.18);
 }
 
 /* === Buttons / Actions ============================================= */
@@ -220,100 +309,134 @@
   margin-top: 1.6rem;
 }
 
-/* PRIMARY BUTTON – leuchtend blau */
+/* PRIMARY BUTTON – Neon Blau */
 
 .primaryBtn {
   min-width: 10rem;
-  padding: 0.85rem 1.8rem;
+  padding: 0.9rem 1.9rem;
   border-radius: 999px;
-  border: none;
+  border: 1px solid rgba(120, 170, 255, 0.24);
   font-size: 0.9rem;
-  font-weight: 600;
+  font-weight: 750;
   letter-spacing: 0.14em;
   text-transform: uppercase;
 
-  background: radial-gradient(circle at 20% 0, #60a5fa, #1d4ed8);
+  background:
+    radial-gradient(circle at 18% 0%, rgba(255, 255, 255, 0.18), transparent 60%),
+    radial-gradient(circle at 20% 0, #60a5fa, #1d4ed8);
   color: #f9fafb;
+
   box-shadow:
-    0 18px 46px rgba(37, 99, 235, 0.9),
-    0 0 0 1px rgba(15, 23, 42, 0.9);
+    0 18px 46px rgba(37, 99, 235, 0.75),
+    0 0 24px rgba(74, 124, 255, 0.20),
+    0 0 0 1px rgba(2, 6, 23, 0.55);
 
   cursor: pointer;
-  transition:
-    transform 0.1s ease,
-    box-shadow 0.16s ease,
-    filter 0.16s ease,
-    opacity 0.16s ease;
+  transition: transform 0.12s ease, box-shadow 0.16s ease, filter 0.16s ease, opacity 0.16s ease;
 }
 
 .primaryBtn:hover {
   transform: translateY(-1px);
-  filter: brightness(1.05);
+  filter: brightness(1.04);
   box-shadow:
-    0 22px 52px rgba(37, 99, 235, 1),
-    0 0 0 1px rgba(15, 23, 42, 1);
+    0 22px 52px rgba(37, 99, 235, 0.9),
+    0 0 30px rgba(74, 124, 255, 0.24),
+    0 0 0 1px rgba(2, 6, 23, 0.65);
+}
+
+.primaryBtn:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 3px rgba(120, 170, 255, 0.40),
+    0 22px 52px rgba(37, 99, 235, 0.9),
+    0 0 30px rgba(74, 124, 255, 0.24);
+}
+
+.primaryBtn:active {
+  transform: translateY(0);
+  filter: brightness(0.99);
 }
 
 .primaryBtn:disabled {
   opacity: 0.65;
   cursor: default;
   transform: none;
+  filter: none;
 }
 
-/* SECONDARY BUTTON – gut lesbar in Light & Dark */
+/* SECONDARY BUTTON – neutral & lesbar */
 
 .secondaryBtn {
   min-width: 9rem;
-  padding: 0.85rem 1.6rem;
+  padding: 0.9rem 1.7rem;
   border-radius: 999px;
   font-size: 0.9rem;
-  font-weight: 500;
+  font-weight: 650;
   letter-spacing: 0.14em;
   text-transform: uppercase;
 
-  background: radial-gradient(circle at 0 0, #e5e7eb, #cbd5f5);
+  background:
+    radial-gradient(circle at 0 0, rgba(255, 255, 255, 0.75), rgba(199, 210, 254, 0.92));
   color: #0f172a;
-  border: 1px solid rgba(148, 163, 184, 0.7);
+
+  border: 1px solid rgba(148, 163, 184, 0.55);
   box-shadow:
-    0 10px 26px rgba(15, 23, 42, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    0 10px 26px rgba(15, 23, 42, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
 
   cursor: pointer;
-  transition:
-    background 0.16s ease,
-    box-shadow 0.16s ease,
-    transform 0.1s ease,
-    color 0.16s ease,
-    border-color 0.16s ease;
+  transition: transform 0.12s ease, box-shadow 0.16s ease, border-color 0.16s ease, filter 0.16s ease;
 }
 
 .secondaryBtn:hover {
-  background: radial-gradient(circle at 0 0, #e0e7ff, #c7d2fe);
-  border-color: rgba(129, 140, 248, 0.95);
   transform: translateY(-1px);
+  border-color: rgba(129, 140, 248, 0.65);
   box-shadow:
-    0 14px 32px rgba(15, 23, 42, 0.35),
-    0 0 0 1px rgba(129, 140, 248, 0.65);
+    0 14px 32px rgba(15, 23, 42, 0.22),
+    0 0 18px rgba(74, 124, 255, 0.10),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
-/* DARK MODE für Abbrechen */
+.secondaryBtn:focus-visible {
+  outline: none;
+  border-color: rgba(129, 140, 248, 0.85);
+  box-shadow:
+    0 0 0 2px rgba(129, 140, 248, 0.30),
+    0 14px 32px rgba(15, 23, 42, 0.22);
+}
 
+.secondaryBtn:active {
+  transform: translateY(0);
+}
+
+.secondaryBtn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Dark Mode für Secondary */
 @media (prefers-color-scheme: dark) {
   .secondaryBtn {
-    background: radial-gradient(circle at 0 0, #020617, #020617);
-    color: #e5edf7;
-    border-color: rgba(148, 163, 184, 0.7);
+    background:
+      radial-gradient(circle at 0 0, rgba(11, 17, 32, 0.95), rgba(2, 6, 23, 0.95));
+    color: rgba(226, 232, 240, 0.95);
+    border-color: rgba(120, 150, 255, 0.22);
     box-shadow:
-      0 14px 40px rgba(15, 23, 42, 0.9),
-      inset 0 1px 0 rgba(148, 163, 184, 0.32);
+      0 14px 40px rgba(0, 0, 0, 0.55),
+      inset 0 1px 0 rgba(148, 163, 184, 0.14);
   }
 
   .secondaryBtn:hover {
-    background: radial-gradient(circle at 0 0, #020617, #020617);
-    border-color: rgba(129, 140, 248, 0.95);
+    border-color: rgba(120, 170, 255, 0.40);
     box-shadow:
-      0 18px 48px rgba(15, 23, 42, 1),
-      0 0 0 1px rgba(129, 140, 248, 0.9);
+      0 18px 48px rgba(0, 0, 0, 0.62),
+      0 0 18px rgba(120, 170, 255, 0.12);
+  }
+
+  .secondaryBtn:focus-visible {
+    box-shadow:
+      0 0 0 2px rgba(120, 170, 255, 0.22),
+      0 18px 48px rgba(0, 0, 0, 0.62);
   }
 }
 
@@ -326,24 +449,30 @@
   font-size: 0.78rem;
   text-transform: uppercase;
   letter-spacing: 0.18em;
-  font-weight: 600;
-  color: #2563eb;
+  font-weight: 700;
+  color: rgba(37, 99, 235, 0.95);
   text-decoration: none;
 }
 
 .backLink::before {
   content: "←";
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   line-height: 1;
 }
 
 .backLink:hover {
-  color: #60a5fa;
+  color: rgba(96, 165, 250, 0.95);
   text-decoration: underline;
 }
 
 .backLink:visited {
-  color: #2563eb;
+  color: rgba(37, 99, 235, 0.95);
+}
+
+.backLink:focus-visible {
+  outline: none;
+  border-radius: 10px;
+  box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.35);
 }
 
 /* === Neo-Style für Datei-Uploads =================================== */
@@ -362,27 +491,28 @@
   justify-content: center;
   gap: 0.35rem;
 
-  padding: 0.6rem 1.4rem;
+  padding: 0.65rem 1.4rem;
   border-radius: 999px;
   font-size: 0.8rem;
-  font-weight: 500;
+  font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 
-  background: radial-gradient(circle at 0 0, #fefce8, #fee2b3);
+  background:
+    radial-gradient(circle at 18% 0%, rgba(255, 255, 255, 0.35), transparent 60%),
+    radial-gradient(circle at 0 0, #fefce8, #fee2b3);
+
   color: #0f172a;
-  border: 1px solid rgba(251, 191, 36, 0.8);
+  border: 1px solid rgba(251, 191, 36, 0.60);
+
   box-shadow:
-    0 12px 30px rgba(15, 23, 42, 0.25),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    0 12px 30px rgba(15, 23, 42, 0.18),
+    0 0 18px rgba(251, 191, 36, 0.10),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
 
   cursor: pointer;
   overflow: hidden;
-  transition:
-    transform 0.1s ease,
-    box-shadow 0.16s ease,
-    background 0.16s ease,
-    border-color 0.16s ease;
+  transition: transform 0.12s ease, box-shadow 0.16s ease, filter 0.16s ease, border-color 0.16s ease;
 }
 
 /* tatsächliches <input type="file"> ausblenden */
@@ -395,11 +525,19 @@
 
 .fileButton:hover {
   transform: translateY(-1px);
-  background: radial-gradient(circle at 0 0, #fef9c3, #fed7aa);
-  border-color: rgba(245, 158, 11, 0.95);
+  border-color: rgba(245, 158, 11, 0.75);
   box-shadow:
-    0 16px 36px rgba(15, 23, 42, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 1);
+    0 16px 36px rgba(15, 23, 42, 0.24),
+    0 0 22px rgba(251, 191, 36, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92);
+}
+
+.fileButton:focus-within {
+  outline: none;
+  box-shadow:
+    0 0 0 2px rgba(251, 191, 36, 0.40),
+    0 16px 36px rgba(15, 23, 42, 0.24),
+    0 0 22px rgba(251, 191, 36, 0.16);
 }
 
 .fileName {
@@ -412,22 +550,31 @@
 }
 
 /* Dark-Mode Upload */
-
 @media (prefers-color-scheme: dark) {
   .fileButton {
-    background: radial-gradient(circle at 0 0, #020617, #020617);
-    color: #e5e7eb;
-    border-color: rgba(148, 163, 184, 0.7);
+    background:
+      radial-gradient(circle at 18% 0%, rgba(255, 255, 255, 0.08), transparent 60%),
+      radial-gradient(circle at 0 0, rgba(11, 17, 32, 0.95), rgba(2, 6, 23, 0.95));
+    color: rgba(226, 232, 240, 0.95);
+    border-color: rgba(251, 191, 36, 0.28);
     box-shadow:
-      0 14px 40px rgba(15, 23, 42, 0.9),
-      inset 0 1px 0 rgba(148, 163, 184, 0.32);
+      0 14px 40px rgba(0, 0, 0, 0.55),
+      0 0 18px rgba(251, 191, 36, 0.10),
+      inset 0 1px 0 rgba(148, 163, 184, 0.12);
   }
 
   .fileButton:hover {
-    border-color: rgba(251, 191, 36, 0.95);
+    border-color: rgba(251, 191, 36, 0.55);
     box-shadow:
-      0 18px 48px rgba(15, 23, 42, 1),
-      0 0 0 1px rgba(251, 191, 36, 0.9);
+      0 18px 48px rgba(0, 0, 0, 0.62),
+      0 0 22px rgba(251, 191, 36, 0.14);
+  }
+
+  .fileButton:focus-within {
+    box-shadow:
+      0 0 0 2px rgba(251, 191, 36, 0.28),
+      0 18px 48px rgba(0, 0, 0, 0.62),
+      0 0 22px rgba(251, 191, 36, 0.14);
   }
 
   .fileName {
@@ -435,30 +582,41 @@
   }
 }
 
-/* ===== Fix: Dropdown in Dark Mode lesbar ===== */
+/* ===== Select: Optionen lesbar (Browser-Restriktionen beachten) ===== */
+
 .select {
-  color: var(--fg, #eaf0ff);
-  background: rgba(10, 18, 40, 0.55);
-  border: 1px solid rgba(120, 150, 255, 0.22);
-  border-radius: 999px;
-  padding: 12px 16px;
-  outline: none;
   -webkit-appearance: none;
   appearance: none;
 }
 
-.select:focus {
-  border-color: rgba(120, 170, 255, 0.5);
-}
-
-/* IMPORTANT: options müssen separat gestylt werden */
+/* Options (viele Browser ignorieren teils Styles – aber das ist der beste Versuch) */
 .select option {
-  color: #0b1020;              /* Text dunkel */
-  background: #eaf0ff;         /* Hintergrund hell */
+  color: #0b1020;
+  background: #eaf0ff;
 }
 
-/* Falls du im Dark-Theme lieber dunkle Optionen willst: */
+/* Wenn du dein eigenes Theme-Attribut nutzt */
 [data-theme="dark"] .select option {
   color: #eaf0ff;
   background: #0b1020;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .input,
+  .textarea,
+  .select,
+  .primaryBtn,
+  .secondaryBtn,
+  .fileButton {
+    transition: none;
+  }
+  .primaryBtn:hover,
+  .secondaryBtn:hover,
+  .fileButton:hover,
+  .input:hover,
+  .textarea:hover,
+  .select:hover {
+    transform: none;
+  }
 }

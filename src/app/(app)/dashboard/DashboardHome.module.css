@@ -1,4 +1,4 @@
-/* src/app/dashboard/DashboardHome.module.css */
+/* src/app/dashboard/DashboardHome.module.css (DROP-IN) */
 
 /* =========================================================
    Shell
@@ -17,15 +17,24 @@
     0 0 40px rgba(37, 99, 235, 0.35);
 }
 
+@media (max-width: 768px) {
+  .dashboardShell {
+    padding: 1.4rem 1.2rem 1.7rem;
+    border-radius: 1.6rem;
+  }
+}
+
 .dashboardShell::before {
   content: "";
   position: absolute;
   inset: -40%;
+
   background:
     radial-gradient(circle at 0% 0%, rgba(59, 130, 246, 0.35), transparent 60%),
     radial-gradient(circle at 100% 0%, rgba(129, 140, 248, 0.32), transparent 55%),
     radial-gradient(circle at 20% 100%, rgba(56, 189, 248, 0.25), transparent 55%);
-  opacity: 0.75; /* weniger milchig */
+
+  opacity: 0.7;
   filter: blur(10px);
   animation: shellFlow 26s ease-in-out infinite alternate;
   pointer-events: none;
@@ -56,7 +65,7 @@
   border-radius: 999px;
 
   font-size: 0.75rem;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.18em;
   text-transform: uppercase;
 
@@ -68,11 +77,18 @@
   border: 1px solid rgba(37, 99, 235, 0.9);
 
   transition: box-shadow 0.18s ease, transform 0.14s ease, filter 0.14s ease;
-  
+
   margin-top: 1.25rem;
   margin-bottom: 2.25rem;
 }
 
+@media (max-width: 768px) {
+  .dashboardPrimaryLink {
+    width: 100%;
+    margin-top: 1rem;
+    margin-bottom: 1.6rem;
+  }
+}
 
 .dashboardPrimaryLink:hover {
   box-shadow: 0 22px 55px rgba(59, 130, 246, 0.8);
@@ -87,6 +103,13 @@
 
 .dashboardPrimaryLink:visited {
   color: #f9fafb !important;
+}
+
+.dashboardPrimaryLink:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 3px rgba(96, 165, 250, 0.55),
+    0 22px 55px rgba(59, 130, 246, 0.85);
 }
 
 /* =========================================================
@@ -122,6 +145,7 @@
   box-shadow:
     0 26px 70px rgba(0, 0, 0, 0.95),
     inset 0 0 0 1px rgba(148, 163, 184, 0.45);
+
   border: 1px solid rgba(129, 140, 248, 0.8);
   backdrop-filter: blur(18px);
 
@@ -131,6 +155,13 @@
   color: #f8fafc;
 }
 
+@media (max-width: 768px) {
+  .kpiCard {
+    padding: 1.2rem 1.25rem;
+    border-radius: 1.35rem;
+  }
+}
+
 .kpiCard::before {
   content: "";
   position: absolute;
@@ -138,7 +169,7 @@
   background:
     radial-gradient(circle at 0% 0%, rgba(96, 165, 250, 0.55), transparent 60%),
     radial-gradient(circle at 100% 100%, rgba(45, 212, 191, 0.28), transparent 55%);
-  opacity: 0.55;
+  opacity: 0.5;
   filter: blur(16px);
   animation: cardGlow 24s ease-in-out infinite alternate;
   pointer-events: none;
@@ -162,7 +193,7 @@
   margin-top: 0.1rem;
   font-size: 1.9rem;
   line-height: 1.2;
-  font-weight: 700;
+  font-weight: 750;
   color: #ffffff;
   text-shadow:
     0 2px 18px rgba(0, 0, 0, 0.75),
@@ -176,7 +207,7 @@
 }
 
 /* =========================================================
-   Stat / Chart / Table Cards (one unified block)
+   Stat / Chart / Table Cards (unified)
 ========================================================= */
 
 .statCard,
@@ -191,10 +222,24 @@
   box-shadow:
     0 30px 85px rgba(0, 0, 0, 0.96),
     inset 0 0 0 1px rgba(30, 64, 175, 0.7);
+
   border: 1px solid rgba(129, 140, 248, 0.85);
   backdrop-filter: blur(22px);
 
   color: #f8fafc;
+
+  /* ✅ extra spacing between blocks without touching JSX */
+  margin-top: 1.75rem;
+}
+
+@media (max-width: 768px) {
+  .statCard,
+  .chartCard,
+  .tableCard {
+    padding: 1.25rem 1.25rem;
+    border-radius: 1.4rem;
+    margin-top: 1.25rem;
+  }
 }
 
 .statCard::before,
@@ -207,7 +252,7 @@
     radial-gradient(circle at 0% 0%, rgba(59, 130, 246, 0.5), transparent 60%),
     radial-gradient(circle at 100% 0%, rgba(129, 140, 248, 0.42), transparent 55%),
     radial-gradient(circle at 50% 100%, rgba(56, 189, 248, 0.32), transparent 55%);
-  opacity: 0.55;
+  opacity: 0.5;
   filter: blur(18px);
   animation: cardGlow 28s ease-in-out infinite alternate;
   pointer-events: none;
@@ -254,9 +299,14 @@
 
 .productsTable th,
 .productsTable td {
-  padding: 0.7rem 1.1rem;
-  color: rgba(255, 255, 255, 0.9);
+  padding: 0.75rem 1.1rem;
+  color: rgba(255, 255, 255, 0.92);
   text-shadow: 0 1px 10px rgba(0, 0, 0, 0.55);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+}
+
+.productsTable tr:last-child td {
+  border-bottom: 0;
 }
 
 .productsTable th {
@@ -274,7 +324,6 @@
 
 /* =========================================================
    Lists (optional): recent downloads / products rows
-   -> This is where we can control pill spacing via CSS.
 ========================================================= */
 
 .recentList,
@@ -285,9 +334,9 @@
   display: grid;
 }
 
-/* Mehr Abstand zwischen Reihen (damit “Bearbeiten” nicht klebt) */
+/* ✅ mehr Abstand zwischen Reihen */
 .productsList {
-  gap: 18px; /* ✅ stärker */
+  gap: 18px;
 }
 
 .productRow {
@@ -295,7 +344,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 18px;
-  padding: 10px 0; /* ✅ mehr Luft pro Zeile */
+  padding: 10px 0;
 }
 
 .productTitle {
@@ -305,19 +354,23 @@
   white-space: nowrap;
 }
 
-/* ✅ Button-Cluster: mehr Abstand */
+/* ✅ Button-Cluster */
 .productActions {
   display: inline-flex;
-  gap: 14px; /* ✅ mehr horizontaler Abstand */
+  gap: 14px;
   align-items: center;
   justify-content: flex-end;
-  min-width: 190px; /* verhindert “gequetscht” */
+  min-width: 190px;
 }
 
-/* ✅ “Pill” Button größer + weniger eng */
+/* ✅ Pill Button */
 .productActionLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 750;
   padding: 10px 16px;
   border-radius: 999px;
   text-decoration: none;
@@ -326,189 +379,21 @@
   border: 1px solid rgba(129, 140, 248, 0.55);
   background: rgba(99, 102, 241, 0.12);
 
-  transition: filter 0.14s ease, transform 0.14s ease;
+  transition: filter 0.14s ease, transform 0.14s ease, box-shadow 0.14s ease;
 }
 
 .productActionLink:hover {
   filter: brightness(1.08);
   transform: translateY(-1px);
-}
-/* =========================
-   FIX: Mehr Abstand "Deine Produkte"
-   (Drop-in Patch – ans ENDE der Datei)
-========================= */
-
-/* 1) Falls du bereits unsere Klassen nutzt */
-.productsList {
-  display: grid;
-  gap: 22px !important; /* Abstand zwischen Zeilen */
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
 }
 
-.productRow {
-  padding: 14px 0 !important; /* mehr Luft pro Zeile */
+.productActionLink:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.45);
 }
 
-/* 2) FALLBACK (greift auch ohne Klassen):
-      In der "Deine Produkte" StatCard alle ULs/LI etwas luftiger machen,
-      aber nur dort, wo "Bearbeiten" vorkommt. */
-.statCard ul:has(a[href*="/dashboard/products/"][href$="/edit"]) {
-  display: grid !important;
-  gap: 22px !important;
-  margin-top: 10px;
-}
-
-.statCard ul:has(a[href*="/dashboard/products/"][href$="/edit"]) > li {
-  padding: 14px 0 !important;
-}
-
-/* 3) Buttons etwas "massiver" + mehr Abstand zur linken Spalte */
-.statCard a[href*="/dashboard/products/"][href$="/edit"] {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  padding: 10px 18px !important;
-  border-radius: 999px !important;
-  font-size: 13px !important;
-  font-weight: 700 !important;
-
-  margin-left: 18px !important; /* Abstand Titel -> Button */
-  min-width: 150px;
-  white-space: nowrap;
-}
-
-
-/* 1) Mehr Abstand zwischen allen großen Blöcken (Charts/Stat Cards) */
-.statCard,
-.chartCard,
-.tableCard {
-  margin-top: 1.75rem !important; /* war zu eng */
-}
-
-.statCard + .statCard,
-.statCard + .chartCard,
-.chartCard + .statCard,
-.statCard + .tableCard,
-.chartCard + .tableCard,
-.tableCard + .statCard {
-  margin-top: 2rem !important; /* Abstand zwischen den Blöcken */
-}
-
-/* 2) Mobile: Cards etwas kompakter aber mit klarer Luft */
-@media (max-width: 768px) {
-  .statCard,
-  .chartCard,
-  .tableCard {
-    padding: 1.25rem 1.25rem !important;
-    border-radius: 1.4rem !important;
-  }
-}
-
-/* 3) Chart-Header sauber responsiv:
-      Titel darf umbrechen, "Max" steht sauber rechts/unten */
-.cardHeaderRow {
-  display: flex;
-  align-items: flex-start !important;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap; /* wichtig */
-}
-
-.maxLabel {
-  position: static !important; /* auf Mobile nicht absolut */
-  margin-left: auto;
-  font-size: 12px;
-  padding: 6px 10px;
-  border-radius: 999px;
-  background: rgba(2, 6, 23, 0.25);
-  border: 1px solid rgba(129, 140, 248, 0.35);
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06);
-}
-
-/* Wenn du maxLabel NICHT nutzt (weil du es als <div className="text-[11px] ..."> hast),
-   dann greift das nicht – ist ok. */
-
-/* 4) Chartfläche auf Mobile größer, damit es nicht "leer" wirkt */
-.chartWrap {
-  padding: 18px 16px 14px 16px;
-}
-
-@media (max-width: 768px) {
-  .barsRow {
-    height: 160px !important; /* statt zu niedrig */
-    gap: 5px !important;
-  }
-
-  .bar {
-    min-width: 4px !important;
-  }
-
-  /* Top-Produkte Chart / Ranking Bereich nicht gequetscht */
-  .topProductsRow {
-    height: auto !important;
-    gap: 14px !important;
-    overflow-x: auto !important;
-    padding-bottom: 6px;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .topProductCol {
-    flex: 0 0 140px !important; /* horizontales Scrollen ist ok */
-  }
-
-  .topProductTitle {
-    font-size: 12px !important;
-  }
-
-  .topProductValue {
-    font-size: 11px !important;
-  }
-}
-
-/* 5) Wenn du "Top Produkte" als Ranking-Liste statt Balken zeigst:
-      Zeilenabstand im Ranking erhöhen */
-.statCard .rankingRow {
-  padding: 12px 0;
-  border-top: 1px solid rgba(255,255,255,0.08);
-}
-
-.statCard .rankingRow:first-child {
-  border-top: 0;
-}
-
-/* =========================================
-   "Deine Produkte" – Mobile: Button unter Titel
-   (Drop-in ans ENDE)
-========================================= */
-
-@media (max-width: 768px) {
-  /* Zeile bricht um */
-  .productRow {
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: 10px !important;
-  }
-
-  /* Titel nutzt volle Breite */
-  .productTitle {
-    width: 100% !important;
-  }
-
-  /* Actions unter dem Titel, links ausgerichtet */
-  .productActions {
-    width: 100% !important;
-    justify-content: flex-start !important;
-    gap: 10px !important;
-  }
-
-  /* Button größer + nicht gequetscht */
-  .productActionLink,
-  .productActionGhost {
-    padding: 10px 14px !important;
-    font-size: 13px !important;
-  }
-}
-
+/* Mobile: Button unter Titel */
 @media (max-width: 768px) {
   .productRow {
     flex-direction: column;
@@ -516,13 +401,43 @@
     gap: 12px;
   }
 
+  .productTitle {
+    width: 100%;
+  }
+
   .productActions {
     width: 100%;
     justify-content: flex-start;
+    gap: 10px;
+    min-width: 0;
   }
 
   .productActionLink {
     padding: 10px 14px;
     font-size: 13px;
+  }
+}
+
+/* =========================================================
+   Reduced Motion
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboardShell::before,
+  .kpiCard::before,
+  .statCard::before,
+  .chartCard::before,
+  .tableCard::before {
+    animation: none !important;
+  }
+
+  .dashboardPrimaryLink,
+  .productActionLink {
+    transition: none !important;
+  }
+
+  .dashboardPrimaryLink:hover,
+  .productActionLink:hover {
+    transform: none !important;
   }
 }

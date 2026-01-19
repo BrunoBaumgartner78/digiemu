@@ -1,4 +1,6 @@
-/* src/components/product/LikeButtonClient.module.css */
+/* src/components/product/LikeButtonClient.module.css
+   Neumorph + subtiler Accent, token-kompatibel (Light/Dark)
+*/
 
 .wrapper {
   display: flex;
@@ -6,6 +8,7 @@
   justify-content: flex-start;
   width: 100%;
   margin: 0.4rem 0 0.8rem;
+  min-width: 0;
 }
 
 /* Hauptbutton – kleiner, runder Neumorph-Chip */
@@ -16,14 +19,14 @@
 
   padding: 0.35rem 1rem;
   border-radius: 999px;
-  border: 1px solid var(--neo-card-border);
 
-  background: var(--neo-card-bg-soft);
-  box-shadow: var(--neo-card-shadow-soft);
+  border: 1px solid var(--neo-card-border, rgba(148, 163, 184, 0.55));
+  background: var(--neo-card-bg-soft, rgba(255, 255, 255, 0.55));
+  box-shadow: var(--neo-card-shadow-soft, 0 18px 40px rgba(15, 23, 42, 0.14));
 
   font-size: 0.85rem;
-  font-weight: 500;
-  color: var(--color-text-primary);
+  font-weight: 600;
+  color: var(--text-main, var(--color-text-primary, #0f172a));
 
   cursor: pointer;
   outline: none;
@@ -35,18 +38,21 @@
     transform 0.12s ease,
     border-color 0.18s ease,
     color 0.18s ease,
-    opacity 0.12s ease;
+    opacity 0.12s ease,
+    filter 0.18s ease;
 }
 
 .likeButton:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: var(--neo-card-shadow-strong);
+  box-shadow: var(--neo-card-shadow-strong, 0 24px 55px rgba(15, 23, 42, 0.18));
   border-color: rgba(129, 140, 248, 0.9);
+  filter: brightness(1.02);
 }
 
 .likeButton:active:not(:disabled) {
   transform: translateY(0);
-  box-shadow: var(--neo-card-shadow-soft);
+  box-shadow: var(--neo-card-shadow-soft, 0 18px 40px rgba(15, 23, 42, 0.14));
+  filter: brightness(0.99);
 }
 
 .likeButton:disabled {
@@ -61,7 +67,7 @@
   justify-content: center;
   font-size: 0.9rem;
   line-height: 1;
-  opacity: 0.9;
+  opacity: 0.92;
 }
 
 /* Label „Merken“ */
@@ -77,7 +83,7 @@
   margin-left: 0.1rem;
   border-left: 1px solid rgba(148, 163, 184, 0.45);
   font-variant-numeric: tabular-nums;
-  opacity: 0.9;
+  opacity: 0.92;
 }
 
 /* aktiver Zustand (gemerkt) */
@@ -85,39 +91,53 @@
   border-color: rgba(96, 165, 250, 0.95);
   background: radial-gradient(
     circle at top left,
-    rgba(129, 140, 248, 0.35),
-    var(--neo-card-bg-soft)
+    rgba(129, 140, 248, 0.28),
+    var(--neo-card-bg-soft, rgba(255, 255, 255, 0.55))
   );
   box-shadow:
-    0 0 0 1px rgba(129, 140, 248, 0.6),
-    0 14px 30px rgba(30, 64, 175, 0.5);
-  color: var(--accent-strong);
+    0 0 0 1px rgba(129, 140, 248, 0.45),
+    0 14px 30px rgba(30, 64, 175, 0.22);
+  color: var(--accent-strong, var(--accent, #2563eb));
 }
 
 .isActive .icon {
   opacity: 1;
 }
 
-/* Dark-Mode leicht anpassen */
-html[data-theme="dark"] .likeButton {
-  background: rgba(15, 23, 42, 0.94);
-  border-color: rgba(30, 64, 175, 0.7);
-  box-shadow: var(--neo-card-shadow-soft);
-  color: #e5edf7;
+/* Dark-Mode: nutze deine Theme-Tokens (html[data-theme="dark"] oder html.dark) */
+html[data-theme="dark"] .likeButton,
+html.dark .likeButton {
+  background: var(--neo-card-bg-soft, rgba(12, 18, 38, 0.72));
+  border-color: var(--neo-card-border, rgba(148, 163, 184, 0.16));
+  box-shadow: var(--neo-card-shadow-soft, 0 20px 45px rgba(0, 0, 0, 0.85));
+  color: var(--text-main, rgba(239, 246, 255, 0.92));
 }
 
-html[data-theme="dark"] .isActive {
+html[data-theme="dark"] .count,
+html.dark .count {
+  border-left-color: rgba(148, 163, 184, 0.28);
+}
+
+html[data-theme="dark"] .isActive,
+html.dark .isActive {
   background: radial-gradient(
     circle at top left,
-    rgba(96, 165, 250, 0.4),
-    rgba(15, 23, 42, 0.96)
+    rgba(96, 165, 250, 0.26),
+    var(--neo-card-bg-soft, rgba(12, 18, 38, 0.72))
   );
   border-color: rgba(96, 165, 250, 0.95);
+  box-shadow:
+    0 0 0 1px rgba(96, 165, 250, 0.35),
+    0 16px 38px rgba(0, 0, 0, 0.55);
 }
 
 /* optional: kleine Fehler-/Hinweiszeile neben/unter dem Button */
 .message {
   margin-left: 0.75rem;
   font-size: 0.78rem;
-  color: var(--color-text-muted);
+  color: var(--text-muted, var(--color-text-muted, #6b7280));
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

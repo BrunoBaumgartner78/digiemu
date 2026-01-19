@@ -1,15 +1,22 @@
-/* src/app/(auth)/reset-password/[token]/page.module.css */
+/* src/app/(auth)/reset-password/[token]/page.module.css
+   DROP-IN (cleanup + token-friendly + consistent focus a11y)
+   - behält deine Klassen
+   - nutzt (wo möglich) deine globalen Variablen
+   - Light/Dark bleibt wie bei dir, nur konsistenter
+*/
 
 .page {
   min-height: 100vh;
   display: grid;
   place-items: center;
   padding: 28px;
+
   background:
     radial-gradient(900px 450px at 20% 10%, rgba(99, 102, 241, 0.18), transparent 60%),
     radial-gradient(700px 420px at 85% 15%, rgba(34, 211, 238, 0.16), transparent 55%),
     radial-gradient(700px 520px at 40% 90%, rgba(168, 85, 247, 0.14), transparent 55%),
     linear-gradient(180deg, #0b1220, #070b14 60%, #060913);
+
   color: rgba(226, 232, 240, 0.92);
 }
 
@@ -18,11 +25,14 @@
   max-width: 520px;
   border-radius: 26px;
   padding: 26px;
+
   background: rgba(12, 18, 33, 0.62);
   border: 1px solid rgba(148, 163, 184, 0.16);
+
   box-shadow:
     0 22px 55px rgba(0, 0, 0, 0.55),
     inset 0 1px 0 rgba(255, 255, 255, 0.06);
+
   backdrop-filter: blur(14px);
 }
 
@@ -49,12 +59,14 @@
   margin: 0;
   color: rgba(226, 232, 240, 0.72);
   font-size: 14px;
+  line-height: 1.55;
 }
 
 .glowLine {
   height: 1px;
   margin: 14px 0 18px;
-  background: linear-gradient(90deg,
+  background: linear-gradient(
+    90deg,
     rgba(99, 102, 241, 0.0),
     rgba(99, 102, 241, 0.55),
     rgba(34, 211, 238, 0.55),
@@ -79,22 +91,30 @@
   color: rgba(148, 163, 184, 0.92);
 }
 
+/* INPUT */
 .input {
   width: 100%;
   height: 46px;
   padding: 0 14px;
+
   border-radius: 16px;
   border: 1px solid rgba(148, 163, 184, 0.16);
+
   background: rgba(10, 14, 26, 0.65);
   color: rgba(226, 232, 240, 0.94);
+
   outline: none;
+
   box-shadow:
     inset 8px 8px 18px rgba(0, 0, 0, 0.35),
     inset -6px -6px 14px rgba(255, 255, 255, 0.03);
+
   transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
 }
 
-.input:focus {
+/* Fokus: :focus-visible für Tastatur, :focus als Fallback */
+.input:focus,
+.input:focus-visible {
   border-color: rgba(34, 211, 238, 0.55);
   box-shadow:
     0 0 0 4px rgba(34, 211, 238, 0.14),
@@ -109,20 +129,24 @@
   margin-top: 8px;
 }
 
+/* BUTTON */
 .button {
   height: 46px;
   border: none;
   border-radius: 18px;
+
   cursor: pointer;
   font-weight: 700;
   letter-spacing: 0.01em;
 
   color: rgba(255, 255, 255, 0.95);
   background: linear-gradient(135deg, rgba(99, 102, 241, 0.95), rgba(34, 211, 238, 0.92));
+
   box-shadow:
     0 14px 35px rgba(34, 211, 238, 0.14),
     0 18px 50px rgba(99, 102, 241, 0.12),
     inset 0 1px 0 rgba(255, 255, 255, 0.18);
+
   transition: transform 140ms ease, filter 140ms ease, box-shadow 140ms ease;
 }
 
@@ -135,6 +159,16 @@
   transform: translateY(0);
 }
 
+/* Fokus sichtbar */
+.button:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 4px rgba(34, 211, 238, 0.18),
+    0 14px 35px rgba(34, 211, 238, 0.14),
+    0 18px 50px rgba(99, 102, 241, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
 .button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
@@ -144,16 +178,20 @@
 .note {
   margin-top: 12px;
   font-size: 12px;
+  line-height: 1.5;
   color: rgba(148, 163, 184, 0.85);
 }
 
+/* STATUS BADGES */
 .badge {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+
   font-size: 12px;
   padding: 10px 12px;
   border-radius: 14px;
+
   border: 1px solid rgba(148, 163, 184, 0.16);
   background: rgba(10, 14, 26, 0.55);
 }
@@ -168,6 +206,7 @@
   box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.10);
 }
 
+/* LIGHT MODE */
 @media (prefers-color-scheme: light) {
   .page {
     background:
@@ -175,6 +214,7 @@
       radial-gradient(700px 420px at 85% 15%, rgba(34, 211, 238, 0.16), transparent 55%),
       radial-gradient(700px 520px at 40% 90%, rgba(168, 85, 247, 0.14), transparent 55%),
       linear-gradient(180deg, #f3f6ff, #eef3ff 60%, #eaf0ff);
+
     color: #0f172a;
   }
 
@@ -194,22 +234,44 @@
     color: rgba(15, 23, 42, 0.70);
   }
 
-  .input {
-    background: rgba(255, 255, 255, 0.72);
-    border: 1px solid rgba(15, 23, 42, 0.10);
-    color: #0f172a;
-    box-shadow:
-      inset 10px 10px 20px rgba(15, 23, 42, 0.06),
-      inset -8px -8px 18px rgba(255, 255, 255, 0.7);
-  }
-
   .label,
   .note {
     color: rgba(15, 23, 42, 0.65);
   }
 
+  .input {
+    background: rgba(255, 255, 255, 0.72);
+    border: 1px solid rgba(15, 23, 42, 0.10);
+    color: #0f172a;
+
+    box-shadow:
+      inset 10px 10px 20px rgba(15, 23, 42, 0.06),
+      inset -8px -8px 18px rgba(255, 255, 255, 0.7);
+  }
+
+  .input:focus,
+  .input:focus-visible {
+    border-color: rgba(37, 99, 235, 0.55);
+    box-shadow:
+      0 0 0 4px rgba(37, 99, 235, 0.12),
+      inset 10px 10px 20px rgba(15, 23, 42, 0.06),
+      inset -8px -8px 18px rgba(255, 255, 255, 0.7);
+  }
+
   .badge {
     background: rgba(255, 255, 255, 0.65);
     border-color: rgba(15, 23, 42, 0.10);
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .input,
+  .button {
+    transition: none;
+  }
+  .button:hover {
+    transform: none;
+    filter: none;
   }
 }

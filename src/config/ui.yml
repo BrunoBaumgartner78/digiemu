@@ -1,0 +1,8 @@
+badges:
+  payoutStatus:
+    PENDING:
+      label: "PENDING"
+      class: "badgePending"
+    PAID:
+      label: "PAID"
+      class: "badgePaid"

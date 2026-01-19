@@ -1,7 +1,20 @@
+/* src/app/(public)/legal/LegalShell.module.css
+   Zweck:
+   - Container & Typo für lange Rechtstexte (AGB, Datenschutz, Impressum)
+   - Keine horizontalen Overflows
+   - Theme-fähig (globals.css / theme-tokens.css)
+*/
+
+/* =========================
+   Page Layout
+   ========================= */
+
 .page {
-  padding: 2rem 0 4rem 0;
-  overflow-x: hidden;
+  padding: 2rem 0 4rem;
   max-width: 100%;
+  overflow-x: hidden;
+  background: var(--page-bg);
+  color: var(--text-main, var(--txt));
 }
 
 .inner {
@@ -11,23 +24,9 @@
   overflow-x: hidden;
 }
 
-.header {
-  padding: 1.4rem;
-  border-radius: 24px;
-}
-
-.page {
-  padding: 2rem 0 4rem 0;
-  overflow-x: hidden;
-  max-width: 100%;
-}
-
-.inner {
-  width: min(1180px, calc(100% - 2rem));
-  margin: 0 auto;
-  max-width: 100%;
-  overflow-x: hidden;
-}
+/* =========================
+   Header
+   ========================= */
 
 .header {
   padding: 1.4rem;
@@ -37,39 +36,58 @@
 .eyebrow {
   margin: 0 0 0.35rem 0;
   font-size: 0.85rem;
-  opacity: 0.65;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  opacity: 0.65;
+  color: var(--text-muted, var(--txt-muted));
 }
 
 .title {
   margin: 0;
   font-size: clamp(2rem, 3.6vw, 2.8rem);
   line-height: 1.05;
+  font-weight: 800;
 }
 
 .lead {
   margin: 0.75rem 0 0 0;
-  opacity: 0.8;
   max-width: 72ch;
   line-height: 1.55;
+  opacity: 0.82;
+  color: var(--text-muted, var(--txt-muted));
 }
 
+/* =========================
+   Content Card
+   ========================= */
+
 .card {
-  /* more breathing room for legal long text */
   margin-top: 1rem;
   padding: 1.5rem;
   border-radius: 24px;
+
+  background: var(--neo-card-bg-soft, var(--card-bg));
+  border: 1px solid var(--neo-card-border, var(--card-border));
+  box-shadow: var(--neo-card-shadow-soft);
+
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
-/* Important: prevent long words/urls from causing overflow */
+/* =========================
+   Legal Content Typography
+   ========================= */
+
 .content {
-  /* legal typography */
   font-size: 1rem;
   line-height: 1.8;
+
+  /* absolut wichtig für URLs / Paragraphen */
   overflow-wrap: anywhere;
   word-break: break-word;
 }
+
+/* Headings */
 
 .content h1 {
   margin: 0 0 0.8rem 0;
@@ -90,10 +108,14 @@
   opacity: 0.95;
 }
 
+/* Text */
+
 .content p {
   margin: 0.85rem 0;
   opacity: 0.92;
 }
+
+/* Links */
 
 .content a {
   color: inherit;
@@ -101,15 +123,13 @@
   text-underline-offset: 2px;
 }
 
+/* Strong */
+
 .content strong {
   font-weight: 850;
 }
 
-.content hr {
-  border: 0;
-  border-top: 1px solid rgba(0,0,0,0.06);
-  margin: 1.2rem 0;
-}
+/* Lists */
 
 .content ul,
 .content ol {
@@ -118,21 +138,28 @@
 }
 
 .content li {
-  margin: 0.45rem 0;
-  opacity: 0.92;
-}
-
-@media (max-width: 640px) {
-  .header { padding: 1.1rem; }
-  .card { padding: 1.15rem; }
-}
-
-.content li {
   margin: 0.35rem 0;
   opacity: 0.9;
 }
 
+/* Divider */
+
+.content hr {
+  border: 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  margin: 1.2rem 0;
+}
+
+/* =========================
+   Mobile
+   ========================= */
+
 @media (max-width: 640px) {
-  .header { padding: 1.1rem; }
-  .card { padding: 1.15rem; } /* keep padding comfy on mobile */
+  .header {
+    padding: 1.1rem;
+  }
+
+  .card {
+    padding: 1.15rem;
+  }
 }

@@ -1,5 +1,8 @@
 /* =========================
-   EditProductForm.module.css
+   EditProductForm.module.css (DROP-IN)
+   - Neon/Neo-morph polish: glow, focus, error states
+   - Keyboard friendly: :focus-visible
+   - Reduced motion support
    ========================= */
 
 /* Shell */
@@ -10,6 +13,11 @@
   display: flex;
   flex-direction: column;
   gap: 2rem;
+  box-sizing: border-box;
+}
+
+.formShell * {
+  box-sizing: border-box;
 }
 
 /* Layout – 2 Spalten, mobil 1 */
@@ -72,7 +80,8 @@
   transition:
     border-color 0.16s ease,
     box-shadow 0.16s ease,
-    background 0.16s ease;
+    background 0.16s ease,
+    transform 0.16s ease;
 }
 
 .textarea {
@@ -83,13 +92,29 @@
   padding-bottom: 0.8rem;
 }
 
-.input:focus,
-.textarea:focus {
+/* Placeholder */
+.input::placeholder,
+.textarea::placeholder {
+  color: rgba(100, 116, 139, 0.7);
+}
+
+/* Fokus (tastaturfreundlich) */
+.input:focus-visible,
+.textarea:focus-visible {
   border-color: var(--accent, #4a7cff);
   box-shadow:
-    0 0 0 1px rgba(74, 124, 255, 0.3),
+    0 0 0 2px rgba(74, 124, 255, 0.28),
+    0 0 22px rgba(74, 124, 255, 0.16),
     inset 1px 1px 2px rgba(15, 23, 42, 0.15),
     inset -1px -1px 2px rgba(255, 255, 255, 0.95);
+}
+
+/* Disabled */
+.input:disabled,
+.textarea:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  filter: grayscale(0.1);
 }
 
 /* Toggle Status */
@@ -98,15 +123,16 @@
   gap: 0.5rem;
   margin-top: 0.2rem;
   margin-bottom: 0.4rem;
+  flex-wrap: wrap;
 }
 
 .toggleBtn {
   border-radius: 999px;
   padding: 0.35rem 0.95rem;
   font-size: 0.82rem;
-  border: 1px solid transparent;
+  border: 1px solid rgba(148, 163, 184, 0.22);
   background: var(--bg, #e5ecf5);
-  color: var(--color-text-muted, rgba(148, 163, 184, 1));
+  color: var(--color-text-muted, rgba(100, 116, 139, 1));
   box-shadow:
     4px 4px 10px var(--shadow-dark, rgba(163, 177, 198, 0.9)),
     -4px -4px 10px var(--shadow-light, rgba(255, 255, 255, 0.9));
@@ -114,6 +140,7 @@
   transition:
     transform 0.12s ease,
     box-shadow 0.12s ease,
+    filter 0.12s ease,
     background 0.12s ease,
     color 0.12s ease,
     border-color 0.12s ease;
@@ -121,14 +148,30 @@
 
 .toggleBtn:hover {
   transform: translateY(-1px);
+  filter: brightness(1.02);
 }
 
+.toggleBtn:active {
+  transform: translateY(0px);
+}
+
+.toggleBtn:focus-visible {
+  outline: none;
+  border-color: rgba(74, 124, 255, 0.55);
+  box-shadow:
+    0 0 0 2px rgba(74, 124, 255, 0.25),
+    4px 4px 10px var(--shadow-dark, rgba(163, 177, 198, 0.9)),
+    -4px -4px 10px var(--shadow-light, rgba(255, 255, 255, 0.9));
+}
+
+/* Active Toggle */
 .active {
   background: var(--accent, #4a7cff);
   color: #f9fafb;
   border-color: rgba(15, 23, 42, 0.15);
   box-shadow:
-    0 8px 18px rgba(37, 99, 235, 0.55),
+    0 10px 22px rgba(37, 99, 235, 0.55),
+    0 0 18px rgba(74, 124, 255, 0.22),
     -2px -2px 6px rgba(255, 255, 255, 0.9);
 }
 
@@ -143,7 +186,7 @@
   flex-wrap: wrap;
 }
 
-/* Styled "Bild auswählen" */
+/* Styled Button */
 .fileButton {
   position: relative;
   display: inline-flex;
@@ -165,12 +208,13 @@
   cursor: pointer;
   user-select: none;
 
-  transition: transform 0.08s ease, box-shadow 0.15s ease, filter 0.15s ease;
+  transition: transform 0.08s ease, box-shadow 0.15s ease, filter 0.15s ease, border-color 0.15s ease;
 }
 
 .fileButton:hover {
   transform: translateY(-1px);
   filter: brightness(1.02);
+  border-color: rgba(74, 124, 255, 0.35);
 }
 
 .fileButton:active {
@@ -180,7 +224,16 @@
     inset -6px -6px 12px rgba(255, 255, 255, 0.9);
 }
 
-/* WICHTIG: Input liegt über dem Button, aber ist unsichtbar */
+.fileButton:focus-within {
+  outline: none;
+  border-color: rgba(74, 124, 255, 0.55);
+  box-shadow:
+    0 0 0 2px rgba(74, 124, 255, 0.25),
+    6px 6px 14px var(--shadow-dark, rgba(163, 177, 198, 0.55)),
+    -6px -6px 14px var(--shadow-light, rgba(255, 255, 255, 0.9));
+}
+
+/* Input liegt über dem Button, aber ist unsichtbar */
 .fileInput {
   position: absolute;
   inset: 0;
@@ -212,11 +265,7 @@
   border-radius: 1.1rem;
   border: 1px solid rgba(148, 163, 184, 0.5);
   overflow: hidden;
-  background: radial-gradient(
-      circle at 20% 0%,
-      rgba(255, 255, 255, 0.16),
-      transparent 55%
-    ),
+  background: radial-gradient(circle at 20% 0%, rgba(255, 255, 255, 0.16), transparent 55%),
     var(--bg-soft, #eef3fb);
   box-shadow:
     6px 6px 16px var(--shadow-dark, rgba(148, 163, 184, 0.9)),
@@ -253,13 +302,23 @@
   border-radius: 999px;
   padding: 0.75rem 1.6rem;
   font-size: 0.95rem;
-  font-weight: 500;
+  font-weight: 600;
   border: none;
   cursor: pointer;
   transition:
     transform 0.12s ease,
     box-shadow 0.12s ease,
-    filter 0.12s ease;
+    filter 0.12s ease,
+    opacity 0.12s ease;
+}
+
+.primaryBtn:focus-visible,
+.secondaryBtn:focus-visible,
+.dangerBtn:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 3px rgba(74, 124, 255, 0.32),
+    0 14px 28px rgba(37, 99, 235, 0.28);
 }
 
 /* Sekundär */
@@ -271,26 +330,33 @@
     -4px -4px 10px var(--shadow-light, rgba(255, 255, 255, 0.95));
 }
 
-.secondaryBtn:hover {
+.secondaryBtn:hover:not(:disabled) {
   transform: translateY(-1px);
+}
+
+.secondaryBtn:active:not(:disabled) {
+  transform: translateY(0px);
 }
 
 /* Primär */
 .primaryBtn {
-  background: radial-gradient(
-      120% 160% at 0% 0%,
-      rgba(255, 255, 255, 0.5),
-      transparent 55%
-    ),
+  background: radial-gradient(120% 160% at 0% 0%, rgba(255, 255, 255, 0.5), transparent 55%),
     var(--accent, #4a7cff);
   color: #f9fafb;
   box-shadow:
     0 14px 28px rgba(37, 99, 235, 0.55),
+    0 0 22px rgba(74, 124, 255, 0.14),
     -4px -4px 12px rgba(255, 255, 255, 0.85);
 }
 
 .primaryBtn:hover:not(:disabled) {
   transform: translateY(-1.5px) scale(1.01);
+  filter: brightness(1.02);
+}
+
+.primaryBtn:active:not(:disabled) {
+  transform: translateY(0px);
+  filter: brightness(0.99);
 }
 
 .primaryBtn:disabled {
@@ -300,15 +366,11 @@
 
 /* Danger */
 .dangerBtn {
-  background: radial-gradient(
-      120% 160% at 0% 0%,
-      rgba(255, 255, 255, 0.35),
-      transparent 55%
-    ),
-    #ef4444;
+  background: radial-gradient(120% 160% at 0% 0%, rgba(255, 255, 255, 0.35), transparent 55%), #ef4444;
   color: #ffffff;
   box-shadow:
     0 14px 28px rgba(239, 68, 68, 0.38),
+    0 0 18px rgba(239, 68, 68, 0.14),
     -4px -4px 12px rgba(255, 255, 255, 0.65);
 }
 
@@ -317,12 +379,16 @@
   filter: brightness(1.02);
 }
 
+.dangerBtn:active:not(:disabled) {
+  transform: translateY(0px);
+}
+
 .dangerBtn:disabled {
   opacity: 0.7;
   cursor: default;
 }
 
-/* Messages */
+/* Messages (local inline) */
 .error,
 .success {
   margin-right: auto;
@@ -330,11 +396,13 @@
 }
 
 .error {
-  color: #fecaca;
+  color: #ef4444;
+  text-shadow: 0 0 8px rgba(239, 68, 68, 0.18);
 }
 
 .success {
-  color: #bbf7d0;
+  color: #22c55e;
+  text-shadow: 0 0 8px rgba(34, 197, 94, 0.18);
 }
 
 /* =========================
@@ -344,10 +412,15 @@
 @media (prefers-color-scheme: dark) {
   .card {
     background: rgba(15, 23, 42, 0.96);
-    border-color: rgba(148, 163, 184, 0.25);
+    border-color: rgba(148, 163, 184, 0.22);
     box-shadow:
       10px 10px 26px rgba(15, 23, 42, 0.95),
-      -10px -10px 26px rgba(30, 64, 175, 0.7);
+      -10px -10px 26px rgba(30, 64, 175, 0.55);
+  }
+
+  .sectionTitle,
+  .label {
+    color: rgba(148, 163, 184, 0.92);
   }
 
   .input,
@@ -357,12 +430,37 @@
     border-color: rgba(51, 65, 85, 0.9);
     box-shadow:
       inset 1px 1px 2px rgba(15, 23, 42, 0.9),
-      inset -1px -1px 2px rgba(30, 64, 175, 0.7);
+      inset -1px -1px 2px rgba(30, 64, 175, 0.55);
+  }
+
+  .input::placeholder,
+  .textarea::placeholder {
+    color: rgba(148, 163, 184, 0.75);
+  }
+
+  .input:focus-visible,
+  .textarea:focus-visible {
+    border-color: rgba(96, 165, 250, 0.85);
+    box-shadow:
+      0 0 0 2px rgba(96, 165, 250, 0.28),
+      0 0 26px rgba(96, 165, 250, 0.14),
+      inset 1px 1px 2px rgba(15, 23, 42, 0.9),
+      inset -1px -1px 2px rgba(30, 64, 175, 0.55);
   }
 
   .toggleBtn {
     background: rgba(15, 23, 42, 0.98);
-    color: rgba(148, 163, 184, 1);
+    color: rgba(148, 163, 184, 0.95);
+    border-color: rgba(148, 163, 184, 0.18);
+    box-shadow:
+      4px 4px 10px rgba(15, 23, 42, 0.95),
+      -4px -4px 10px rgba(31, 41, 55, 0.9);
+  }
+
+  .active {
+    box-shadow:
+      0 10px 22px rgba(37, 99, 235, 0.55),
+      0 0 18px rgba(96, 165, 250, 0.2);
   }
 
   .secondaryBtn {
@@ -388,14 +486,30 @@
 
   .thumbPreview {
     border-color: rgba(51, 65, 85, 0.9);
-    background: radial-gradient(
-        circle at 20% 0%,
-        rgba(59, 130, 246, 0.3),
-        transparent 55%
-      ),
+    background: radial-gradient(circle at 20% 0%, rgba(59, 130, 246, 0.3), transparent 55%),
       rgba(15, 23, 42, 0.98);
     box-shadow:
       6px 6px 16px rgba(15, 23, 42, 0.95),
       -6px -6px 16px rgba(15, 23, 42, 0.8);
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .input,
+  .textarea,
+  .toggleBtn,
+  .fileButton,
+  .primaryBtn,
+  .secondaryBtn,
+  .dangerBtn {
+    transition: none !important;
+  }
+  .toggleBtn:hover,
+  .fileButton:hover,
+  .primaryBtn:hover,
+  .secondaryBtn:hover,
+  .dangerBtn:hover {
+    transform: none !important;
   }
 }

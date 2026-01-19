@@ -11,6 +11,7 @@ function isPayoutStatus(v: unknown): v is PayoutStatus {
   return v === "PENDING" || v === "PAID" || v === "CANCELLED";
 }
 import AdminPayoutFilters from "./AdminPayoutFilters";
+import PayoutBadge from "./PayoutBadge";
 
 type SearchParams = { [key: string]: string | string[] | undefined };
 type Props = { searchParams?: Promise<SearchParams> };
@@ -161,7 +162,13 @@ export default async function AdminPayoutsPage(props: Props) {
                       <td className="py-2 px-3">{p.id}</td>
                       <td className="py-2 px-3">{p.vendor?.email ?? p.vendorId}</td>
                       <td className="py-2 px-3">{(p.amountCents/100).toFixed(2)} CHF</td>
-                      <td className="py-2 px-3">{p.status}</td>
+                      <td className="py-2 px-3">
+                        {p.status === "PENDING" || p.status === "PAID" ? (
+                          <PayoutBadge status={p.status as "PENDING" | "PAID"} />
+                        ) : (
+                          p.status
+                        )}
+                      </td>
                     </tr>
                   ))}
                 </tbody>

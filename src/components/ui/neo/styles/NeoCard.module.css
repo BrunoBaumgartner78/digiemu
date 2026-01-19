@@ -1,5 +1,11 @@
+/* styles/NeonCard.module.css
+   Subtiler Neon-Akzent für bestehende `.neo` Wrapper
+   Token-kompatibel + Dark-Mode + Reduced-Motion safe
+*/
+
+/* Accent-Farbe (kann global überschrieben werden) */
 :root {
-  --neo-accent-color: rgba(80,170,255,0.95);
+  --neo-accent-color: rgba(80, 170, 255, 0.95);
 }
 
 /* Apply to the existing `.neo` wrapper used by NeoCard */
@@ -8,6 +14,7 @@
   overflow: hidden;
 }
 
+/* Neon-Leiste oben */
 :global(.neo)::before {
   content: "";
   position: absolute;
@@ -16,25 +23,50 @@
   top: 10px;
   height: 3px;
   border-radius: 999px;
+
   background: linear-gradient(
     90deg,
     rgba(80,170,255,0),
     var(--neo-accent-color),
     rgba(80,170,255,0)
   );
+
   box-shadow:
     0 0 10px rgba(80,170,255,0.65),
     0 0 26px rgba(80,170,255,0.35);
+
   opacity: 0.6;
   pointer-events: none;
-  transition: opacity 160ms ease, box-shadow 180ms ease;
+  transition:
+    opacity 160ms ease,
+    box-shadow 180ms ease,
+    filter 180ms ease;
+
   z-index: 1;
 }
 
+/* Hover / Focus */
 :global(.neo):hover::before,
 :global(.neo):focus-within::before {
   opacity: 1;
   box-shadow:
     0 0 12px rgba(80,170,255,0.8),
     0 0 32px rgba(80,170,255,0.45);
+  filter: brightness(1.05);
+}
+
+/* Dark Mode – leicht gedämpft, weniger Blendung */
+html[data-theme="dark"] :global(.neo)::before,
+html.dark :global(.neo)::before {
+  opacity: 0.7;
+  box-shadow:
+    0 0 10px rgba(80,170,255,0.55),
+    0 0 28px rgba(80,170,255,0.35);
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  :global(.neo)::before {
+    transition: none;
+  }
 }

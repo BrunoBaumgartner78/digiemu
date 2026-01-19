@@ -1,14 +1,18 @@
-/* src/app/shop/ShopPage.module.css */
+/* src/app/shop/ShopPage.module.css
+   Shop Page – Neo / Tokenized (Light + Dark via globals.css tokens)
+*/
 
-/* === Layout ========================================================= */
+/* =========================
+   Layout
+   ========================= */
 
 .page {
   min-height: 70vh;
   display: flex;
   justify-content: center;
   padding: 3rem 1.5rem 3.5rem;
-  background: var(--bg-page, #e5edf7);
-  color: var(--color-text-primary, #0f172a);
+  background: var(--page-bg);
+  color: var(--text-main);
 }
 
 .inner {
@@ -19,7 +23,9 @@
   gap: 2.5rem;
 }
 
-/* === Header / Hero ================================================== */
+/* =========================
+   Header / Hero
+   ========================= */
 
 .header {
   display: flex;
@@ -30,18 +36,21 @@
 .title {
   font-size: 2rem;
   line-height: 1.1;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: -0.03em;
+  color: var(--text-main);
 }
 
 .subtitle {
   font-size: 0.95rem;
   line-height: 1.6;
-  color: var(--color-text-muted, #6b7280);
+  color: var(--text-muted);
   max-width: 40rem;
 }
 
-/* === Grid =========================================================== */
+/* =========================
+   Grid
+   ========================= */
 
 .grid {
   display: grid;
@@ -55,25 +64,17 @@
   grid-column: 1 / -1;
   text-align: center;
   font-size: 0.95rem;
-  color: var(--color-text-muted, #6b7280);
+  color: var(--text-muted);
   padding: 2.3rem 1.5rem;
   border-radius: 1.6rem;
-  background: var(
-    --neo-card-bg-soft,
-    radial-gradient(
-      circle at 0% 0%,
-      rgba(248, 250, 252, 0.98),
-      rgba(229, 231, 235, 0.96)
-    )
-  );
-  border: 1px solid var(--neo-card-border, rgba(148, 163, 184, 0.55));
-  box-shadow: var(
-    --neo-card-shadow-soft,
-    0 18px 40px rgba(15, 23, 42, 0.14)
-  );
+  background: var(--neo-card-bg-soft);
+  border: 1px solid var(--neo-card-border);
+  box-shadow: var(--neo-card-shadow-soft);
 }
 
-/* === Product Card =================================================== */
+/* =========================
+   Product Card
+   ========================= */
 
 .card {
   position: relative;
@@ -83,38 +84,28 @@
   padding: 1.1rem;
   border-radius: 1.6rem;
 
-  background: var(
-    --neo-card-bg-soft,
-    radial-gradient(
-      circle at 0% 0%,
-      rgba(248, 250, 252, 0.98),
-      rgba(229, 231, 235, 0.96)
-    )
-  );
-  border: 1px solid var(--neo-card-border, rgba(148, 163, 184, 0.6));
-  box-shadow: var(
-    --neo-card-shadow-soft,
-    0 18px 40px rgba(15, 23, 42, 0.13)
-  );
+  background: var(--neo-card-bg-soft);
+  border: 1px solid var(--neo-card-border);
+  box-shadow: var(--neo-card-shadow-soft);
   backdrop-filter: blur(18px);
 
   transition:
     transform 0.18s ease,
     box-shadow 0.2s ease,
     border-color 0.18s ease,
-    background-color 0.18s ease;
+    filter 0.18s ease;
 }
 
 .card:hover {
   transform: translateY(-3px);
-  box-shadow: var(
-    --neo-card-shadow-strong,
-    0 24px 55px rgba(15, 23, 42, 0.18)
-  );
-  border-color: rgba(129, 140, 248, 0.8);
+  box-shadow: var(--neo-card-shadow-strong);
+  border-color: rgba(129, 140, 248, 0.55);
+  filter: brightness(1.01);
 }
 
-/* === Thumbnail ====================================================== */
+/* =========================
+   Thumbnail
+   ========================= */
 
 .thumbWrapper {
   position: relative;
@@ -122,15 +113,13 @@
   aspect-ratio: 4 / 3;
   border-radius: 1.3rem;
   overflow: hidden;
-  background: radial-gradient(
-      circle at 0 0,
-      rgba(129, 140, 248, 0.16),
-      transparent 55%
-    ),
-    rgba(241, 245, 249, 0.96);
-  box-shadow:
-    inset 0 0 0 1px rgba(148, 163, 184, 0.45),
-    0 12px 26px rgba(15, 23, 42, 0.12);
+
+  background:
+    radial-gradient(circle at 0 0, rgba(129, 140, 248, 0.14), transparent 55%),
+    rgba(255, 255, 255, 0.55);
+
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  box-shadow: 0 12px 26px rgba(15, 23, 42, 0.10);
 }
 
 .thumbImage {
@@ -144,12 +133,14 @@
   align-items: center;
   justify-content: center;
   font-size: 0.8rem;
-  color: #64748b;
+  color: var(--text-muted);
   padding: 0.5rem;
   text-align: center;
 }
 
-/* === Card Body ====================================================== */
+/* =========================
+   Card Body
+   ========================= */
 
 .cardBody {
   display: flex;
@@ -171,36 +162,41 @@
   padding: 0.3rem 0.9rem;
   border-radius: 999px;
   font-size: 0.7rem;
-  font-weight: 600;
+  font-weight: 800;
   letter-spacing: 0.16em;
   text-transform: uppercase;
 
-  background: rgba(248, 250, 252, 0.96);
-  border: 1px solid rgba(148, 163, 184, 0.4);
-  color: #020617;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(148, 163, 184, 0.30);
+  color: var(--text-main);
 }
 
 .vendorName {
   font-size: 0.7rem;
-  color: var(--color-text-muted, #6b7280);
+  color: var(--text-muted);
 }
 
 .productTitle {
   font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--color-text-primary, #0f172a);
+  font-weight: 800;
+  color: var(--text-main);
 }
 
 .productDescription {
   font-size: 0.8rem;
   line-height: 1.5;
-  color: var(--color-text-muted, #6b7280);
-  max-height: 3.7rem;
+  color: var(--text-muted);
+
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
+  min-height: 3.7rem;
 }
 
-/* === Footer (Price + Button) ======================================= */
+/* =========================
+   Footer (Price + Button)
+   ========================= */
 
 .cardFooter {
   margin-top: auto;
@@ -215,121 +211,80 @@
   display: flex;
   flex-direction: column;
   gap: 0.1rem;
+  min-width: 0;
 }
 
 .price {
   font-size: 0.98rem;
-  font-weight: 600;
-  color: var(--color-text-primary, #0f172a);
+  font-weight: 900;
+  color: var(--text-main);
 }
 
 .priceHint {
   font-size: 0.72rem;
-  color: var(--color-text-muted, #6b7280);
+  color: var(--text-muted);
 }
 
-/* Details Button */
+/* Details Button (Neo-Primary) */
 
 .detailsBtn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border-radius: 999px;
-  padding: 0.45rem 1.4rem;
+  padding: 0.55rem 1.4rem;
   font-size: 0.78rem;
-  font-weight: 600;
+  font-weight: 900;
   text-decoration: none;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   white-space: nowrap;
 
-  background: linear-gradient(135deg, #2563eb, #4f46e5);
-  color: #f9fafb;
-  border: 1px solid rgba(37, 99, 235, 0.9);
-  box-shadow:
-    0 14px 34px rgba(37, 99, 235, 0.45),
-    0 0 0 1px rgba(191, 219, 254, 0.7);
+  background: rgba(72, 118, 255, 0.16);
+  color: var(--text-main);
+  border: 1px solid rgba(72, 118, 255, 0.28);
+  box-shadow: 0 14px 34px rgba(72, 118, 255, 0.14);
 
-  transition:
-    transform 0.14s ease,
-    box-shadow 0.16s ease,
-    filter 0.16s ease,
-    background 0.16s ease;
+  transition: transform 0.14s ease, filter 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
 }
 
 .detailsBtn:hover {
   transform: translateY(-1px);
-  filter: brightness(1.05);
-  box-shadow:
-    0 18px 40px rgba(37, 99, 235, 0.6),
-    0 0 0 1px rgba(129, 140, 248, 0.9);
+  filter: brightness(1.03);
+  box-shadow: 0 18px 40px rgba(72, 118, 255, 0.18);
+  background: rgba(72, 118, 255, 0.20);
 }
 
-/* === Dark Mode Tweaks =============================================== */
-
-@media (prefers-color-scheme: dark) {
-  .page {
-    background: radial-gradient(
-        circle at 0 0,
-        rgba(37, 99, 235, 0.16),
-        transparent 55%
-      ),
-      #020617;
-  }
-
-  .subtitle {
-    color: #9ca3af;
-  }
-
-  .card {
-    background: rgba(15, 23, 42, 0.98);
-    border-color: rgba(30, 64, 175, 0.7);
-    box-shadow:
-      0 20px 45px rgba(0, 0, 0, 0.9),
-      0 0 0 1px rgba(15, 23, 42, 0.9);
-  }
-
-  .card:hover {
-    box-shadow:
-      0 24px 55px rgba(0, 0, 0, 0.95),
-      0 0 0 1px rgba(59, 130, 246, 0.9);
-  }
-
-  .thumbWrapper {
-    background: radial-gradient(
-        circle at 0 0,
-        rgba(59, 130, 246, 0.26),
-        transparent 55%
-      ),
-      rgba(15, 23, 42, 0.98);
-    box-shadow:
-      inset 0 0 0 1px rgba(30, 64, 175, 0.7),
-      0 18px 40px rgba(0, 0, 0, 0.9);
-  }
-
-  .thumbPlaceholder {
-    color: #e5e7eb;
-  }
-
-  .productDescription {
-    color: #9ca3af;
-  }
-
-  .detailsBtn {
-    background: linear-gradient(135deg, #e5e7eb, #f9fafb);
-    color: #111827;
-    border-color: rgba(148, 163, 184, 0.95);
-    box-shadow:
-      0 16px 38px rgba(0, 0, 0, 0.95),
-      0 0 0 1px rgba(59, 130, 246, 0.8);
-  }
-
-  .detailsBtn:hover {
-    background: linear-gradient(135deg, #f9fafb, #e5e7eb);
-  }
+.detailsBtn:active {
+  transform: translateY(0);
 }
 
-/* === Responsive ===================================================== */
+/* =========================
+   Dark Mode (token style)
+   ========================= */
+
+html[data-theme="dark"] .thumbWrapper {
+  background:
+    radial-gradient(circle at 0 0, rgba(59, 130, 246, 0.20), transparent 55%),
+    rgba(15, 23, 42, 0.55);
+  border-color: rgba(30, 64, 175, 0.55);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.75);
+}
+
+html[data-theme="dark"] .categoryChip {
+  background: rgba(17, 24, 39, 0.55);
+  border-color: rgba(255, 255, 255, 0.10);
+}
+
+html[data-theme="dark"] .detailsBtn {
+  background: rgba(72, 118, 255, 0.18);
+  border-color: rgba(191, 219, 254, 0.18);
+  box-shadow: 0 16px 38px rgba(0, 0, 0, 0.60);
+}
+
+/* =========================
+   Responsive
+   ========================= */
 
 @media (max-width: 900px) {
   .page {

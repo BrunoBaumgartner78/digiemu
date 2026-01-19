@@ -1,4 +1,4 @@
-/* src/app/download/[orderId]/page.module.css */
+/* src/app/download/[orderId]/page.module.css (DROP-IN) */
 
 .root {
   min-height: 70vh;
@@ -13,10 +13,24 @@
   max-width: 56rem; /* ~ 896px */
 }
 
+/* Card Shell (dein JSX nutzt vermutlich bereits eine Card-Komponente; diese Klasse ergänzt nur spacing/glow) */
 .card {
   position: relative;
   overflow: hidden;
   padding: 2.25rem 1.75rem; /* mehr Luft */
+  border-radius: 1.75rem;
+
+  /* Light default */
+  background:
+    radial-gradient(circle at 0% 0%, rgba(59, 130, 246, 0.10), transparent 55%),
+    radial-gradient(circle at 100% 0%, rgba(99, 102, 241, 0.08), transparent 55%),
+    rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow:
+    18px 18px 45px rgba(15, 23, 42, 0.10),
+    -18px -18px 45px rgba(255, 255, 255, 0.70),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(14px);
 }
 
 @media (min-width: 768px) {
@@ -25,6 +39,18 @@
   }
 }
 
+:global(html[data-theme="dark"]) .card {
+  background:
+    radial-gradient(circle at 0% 0%, rgba(59, 130, 246, 0.22), transparent 55%),
+    radial-gradient(circle at 100% 0%, rgba(99, 102, 241, 0.18), transparent 55%),
+    rgba(2, 6, 23, 0.78);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  box-shadow:
+    0 30px 85px rgba(0, 0, 0, 0.75),
+    inset 0 0 0 1px rgba(30, 64, 175, 0.35);
+}
+
+/* Decorative glows */
 .glowA,
 .glowB {
   pointer-events: none;
@@ -58,6 +84,11 @@
   font-weight: 800;
   letter-spacing: -0.02em;
   margin: 0;
+  color: var(--color-text-primary, #0f172a);
+}
+
+:global(html[data-theme="dark"]) .h1 {
+  color: rgba(248, 250, 252, 0.98);
 }
 
 @media (min-width: 768px) {
@@ -85,10 +116,28 @@
   width: 100%;
   max-width: 30rem; /* bewusst kompakter */
   padding: 1.35rem 1.35rem;
+
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 1.25rem;
   align-items: center;
+
+  border-radius: 1.5rem;
+  background: rgba(255, 255, 255, 0.50);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow:
+    12px 12px 30px rgba(15, 23, 42, 0.08),
+    -12px -12px 30px rgba(255, 255, 255, 0.60),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(12px);
+}
+
+:global(html[data-theme="dark"]) .productCard {
+  background: rgba(2, 6, 23, 0.55);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  box-shadow:
+    0 22px 60px rgba(0, 0, 0, 0.55),
+    inset 0 0 0 1px rgba(30, 64, 175, 0.25);
 }
 
 @media (min-width: 768px) {
@@ -105,14 +154,24 @@
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.18em;
-  opacity: 0.75;
+  opacity: 0.78;
   margin: 0;
+  color: var(--color-text-muted, rgba(71, 85, 105, 1));
+}
+
+:global(html[data-theme="dark"]) .productLabel {
+  color: rgba(148, 163, 184, 0.9);
 }
 
 .productTitle {
   margin: 0.65rem 0 0;
   font-size: 1.15rem;
-  font-weight: 700;
+  font-weight: 750;
+  color: var(--color-text-primary, #0f172a);
+}
+
+:global(html[data-theme="dark"]) .productTitle {
+  color: rgba(248, 250, 252, 0.98);
 }
 
 @media (min-width: 768px) {
@@ -133,11 +192,19 @@
   padding: 0.35rem 0.75rem;
   border-radius: 9999px;
   font-size: 0.75rem;
-  background: rgba(255, 255, 255, 0.3);
+
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  color: var(--color-text-primary, #0f172a);
+
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
 }
 
-:global(.dark) .chip {
-  background: rgba(15, 23, 42, 0.3);
+:global(html[data-theme="dark"]) .chip {
+  background: rgba(15, 23, 42, 0.35);
+  border-color: rgba(148, 163, 184, 0.18);
+  color: rgba(248, 250, 252, 0.95);
+  box-shadow: inset 0 0 0 1px rgba(30, 64, 175, 0.22);
 }
 
 .iconCircle {
@@ -146,14 +213,19 @@
   border-radius: 9999px;
   display: grid;
   place-items: center;
-  background: rgba(255, 255, 255, 0.35);
-  box-shadow: inset 2px 2px 6px rgba(0, 0, 0, 0.06),
+
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow:
+    inset 2px 2px 6px rgba(0, 0, 0, 0.06),
     inset -2px -2px 6px rgba(255, 255, 255, 0.8);
 }
 
-:global(.dark) .iconCircle {
-  background: rgba(15, 23, 42, 0.35);
-  box-shadow: inset 2px 2px 10px rgba(0, 0, 0, 0.35),
+:global(html[data-theme="dark"]) .iconCircle {
+  background: rgba(15, 23, 42, 0.45);
+  border-color: rgba(148, 163, 184, 0.18);
+  box-shadow:
+    inset 2px 2px 10px rgba(0, 0, 0, 0.35),
     inset -2px -2px 10px rgba(255, 255, 255, 0.06);
 }
 
@@ -173,6 +245,12 @@
   min-height: 52px; /* tap target safe */
   padding-left: 2.5rem;
   padding-right: 2.5rem;
+}
+
+/* Optional: wenn downloadBtn ein <button> oder <a> ist -> focus ring */
+.downloadBtn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.45);
 }
 
 /* the most important part: whitespace between button areas */
@@ -202,6 +280,12 @@
   width: 100%;
 }
 
+.navBtn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.45);
+  border-radius: 999px;
+}
+
 .helpFull {
   grid-column: 1 / -1;
 }
@@ -215,4 +299,17 @@
   justify-content: center;
   font-size: 0.75rem;
   opacity: 0.78;
+  color: var(--color-text-muted, rgba(71, 85, 105, 1));
+}
+
+:global(html[data-theme="dark"]) .footerMeta {
+  color: rgba(148, 163, 184, 0.85);
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .glowA,
+  .glowB {
+    animation: none !important;
+  }
 }

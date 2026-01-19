@@ -7,12 +7,12 @@
   flex-direction: column;
   gap: 3rem;
 
-  /* Dark-Style als Basis (wie dein Lieblings-Screenshot) */
+  /* Default = LIGHT */
   background:
-    radial-gradient(circle at top left, rgba(255, 255, 255, 0.16), transparent 55%),
-    radial-gradient(circle at top right, rgba(37, 99, 235, 0.22), transparent 65%),
-    #020617;
-  color: #f9fafb;
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.9), transparent 60%),
+    radial-gradient(circle at top right, rgba(148, 163, 184, 0.25), transparent 70%),
+    var(--page-bg, #e5edf7);
+  color: var(--text-main, #0f172a);
 }
 
 .page > section,
@@ -21,15 +21,13 @@
   margin: 0 auto;
 }
 
-/* Light-Variante, wenn Browser auf hell steht */
-@media (prefers-color-scheme: light) {
-  .page {
-    background:
-      radial-gradient(circle at top left, rgba(255, 255, 255, 0.9), transparent 60%),
-      radial-gradient(circle at top right, rgba(148, 163, 184, 0.25), transparent 70%),
-      #e5edf7;
-    color: #0f172a;
-  }
+/* DARK MODE – gesteuert über App */
+html[data-theme="dark"] .page {
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.16), transparent 55%),
+    radial-gradient(circle at top right, rgba(37, 99, 235, 0.22), transparent 65%),
+    #020617;
+  color: #f9fafb;
 }
 
 /* ==== Hero ========================================================== */
@@ -69,7 +67,7 @@
   margin-bottom: 1.8rem;
 }
 
-/* Hero-Buttons – nutzen deine .neobtn aus globals.css */
+/* Hero-Buttons */
 
 .heroActions {
   display: flex;
@@ -92,22 +90,20 @@
 /* ==== Live Dashboard Card ========================================== */
 
 .heroCard {
+  min-width: 0;
   border-radius: 1.9rem;
   padding: 1.8rem 2rem 2rem;
+  background: radial-gradient(circle at top left, #e0edff, #cbd5f5);
+  box-shadow:
+    0 22px 55px rgba(148, 163, 184, 0.55),
+    0 0 0 1px rgba(148, 163, 184, 0.6);
+}
 
+html[data-theme="dark"] .heroCard {
   background: radial-gradient(circle at top left, #1e293b, #020617);
   box-shadow:
     0 26px 70px rgba(15, 23, 42, 0.9),
     0 0 0 1px rgba(30, 64, 175, 0.7);
-}
-
-@media (prefers-color-scheme: light) {
-  .heroCard {
-    background: radial-gradient(circle at top left, #e0edff, #cbd5f5);
-    box-shadow:
-      0 22px 55px rgba(148, 163, 184, 0.55),
-      0 0 0 1px rgba(148, 163, 184, 0.6);
-  }
 }
 
 .cardLabel {
@@ -118,15 +114,16 @@
   margin-bottom: 1.1rem;
 }
 
-/* KPI-Grid */
+/* KPI Grid */
 
 .kpiGrid {
+  min-width: 0;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1rem;
 }
 
-/* sanftes Fade-Up für KPIs */
+/* Fade-Up Animation */
 
 @keyframes kpiFadeUp {
   from {
@@ -140,75 +137,63 @@
 }
 
 .cardRow {
+  min-width: 0;
+  overflow: hidden;
   padding: 0.7rem 0.9rem;
   border-radius: 1.2rem;
-  background: rgba(15, 23, 42, 0.96);
-  border: 1px solid rgba(55, 65, 81, 0.9);
-  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.9);
+  background: #f9fbff;
+  border: 1px solid rgba(148, 163, 184, 0.8);
+  box-shadow: 0 18px 40px rgba(148, 163, 184, 0.45);
 
   opacity: 0;
   transform: translateY(8px);
   animation: kpiFadeUp 0.6s ease-out forwards;
 }
 
-/* Staffelung */
+html[data-theme="dark"] .cardRow {
+  background: rgba(15, 23, 42, 0.96);
+  border: 1px solid rgba(55, 65, 81, 0.9);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.9);
+}
+
+/* Stagger */
 .cardRow:nth-child(1) { animation-delay: 0.05s; }
 .cardRow:nth-child(2) { animation-delay: 0.15s; }
 .cardRow:nth-child(3) { animation-delay: 0.25s; }
-
-@media (prefers-reduced-motion: reduce) {
-  .cardRow {
-    animation: none;
-    opacity: 1;
-    transform: none;
-  }
-}
-
-/* Light-Version der KPI-Cards */
-@media (prefers-color-scheme: light) {
-  .cardRow {
-    background: #f9fbff;
-    border-color: rgba(148, 163, 184, 0.8);
-    box-shadow: 0 18px 40px rgba(148, 163, 184, 0.45);
-  }
-}
 
 .cardCaption {
   font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.14em;
-  color: rgba(148, 163, 184, 0.95);
+  color: #64748b;
   margin-bottom: 0.25rem;
 }
 
-.cardValue {
-  font-weight: 700;
-  margin-bottom: 0.1rem;
-  color: #f9fafb;
+html[data-theme="dark"] .cardCaption {
+  color: rgba(148, 163, 184, 0.95);
+}
 
+.cardValue {
+  min-width: 0;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
   font-size: clamp(1.05rem, 2.1vw, 1.45rem);
-
+  color: #0f172a;
   white-space: normal;
   overflow-wrap: anywhere;
 }
 
+html[data-theme="dark"] .cardValue {
+  color: #f9fafb;
+}
 
 .cardHint {
   font-size: 0.8rem;
-  color: rgba(209, 213, 219, 0.9);
+  color: #64748b;
 }
 
-@media (prefers-color-scheme: light) {
-  .cardCaption {
-    color: #64748b;
-  }
-  .cardValue {
-    color: #0f172a;
-  }
-  .cardHint {
-    color: #64748b;
-  }
+html[data-theme="dark"] .cardHint {
+  color: rgba(209, 213, 219, 0.9);
 }
 
 /* ==== Beliebte Produkte ============================================ */
@@ -227,34 +212,32 @@
   max-width: 30rem;
 }
 
-/* Produkt-Grid */
-
 .productGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1.4rem;
 }
 
-/* Produktkarten – wie kleine Glass-Karten */
+/* Product Cards */
 
 @keyframes cardFadeIn {
   from {
     opacity: 0;
-    transform: translateY(10px) scale(0.98);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
   }
 }
 
 .productCard {
   border-radius: 1.4rem;
   padding: 1.2rem 1.4rem;
-  background: rgba(15, 23, 42, 0.95);
+  background: #f9fbff;
   box-shadow:
-    0 24px 55px rgba(15, 23, 42, 0.9),
-    0 0 0 1px rgba(30, 64, 175, 0.7);
+    0 22px 50px rgba(148, 163, 184, 0.55),
+    0 0 0 1px rgba(148, 163, 184, 0.7);
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
@@ -262,38 +245,29 @@
   color: inherit;
 
   opacity: 0;
-  transform: translateY(10px) scale(0.98);
+  transform: translateY(10px);
   animation: cardFadeIn 0.6s ease-out forwards;
 }
 
-.productCard:nth-child(1) { animation-delay: 0.1s; }
-.productCard:nth-child(2) { animation-delay: 0.18s; }
-.productCard:nth-child(3) { animation-delay: 0.26s; }
-
-@media (prefers-color-scheme: light) {
-  .productCard {
-    background: #f9fbff;
-    box-shadow:
-      0 22px 50px rgba(148, 163, 184, 0.55),
-      0 0 0 1px rgba(148, 163, 184, 0.7);
-  }
+html[data-theme="dark"] .productCard {
+  background: rgba(15, 23, 42, 0.95);
+  box-shadow:
+    0 24px 55px rgba(15, 23, 42, 0.9),
+    0 0 0 1px rgba(30, 64, 175, 0.7);
 }
 
 .productCard:hover {
-  transform: translateY(-4px) scale(1.01);
-  box-shadow: 0 28px 70px rgba(15, 23, 42, 0.95);
-}
-
-@media (prefers-color-scheme: light) {
-  .productCard:hover {
-    box-shadow: 0 28px 70px rgba(148, 163, 184, 0.7);
-  }
+  transform: translateY(-4px);
 }
 
 .productType {
   font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.15em;
+  color: #64748b;
+}
+
+html[data-theme="dark"] .productType {
   color: rgba(148, 163, 184, 0.95);
 }
 
@@ -304,40 +278,11 @@
 
 .productMeta {
   font-size: 0.9rem;
+  color: #64748b;
+}
+
+html[data-theme="dark"] .productMeta {
   color: rgba(209, 213, 219, 0.9);
-}
-
-@media (prefers-color-scheme: light) {
-  .productType {
-    color: #64748b;
-  }
-  .productMeta {
-    color: #64748b;
-  }
-}
-
-/* ==== About / Claim ================================================= */
-
-.aboutSection {
-  padding-top: 1.5rem;
-  padding-bottom: 2rem;
-}
-
-.aboutInner {
-  max-width: 720px;
-}
-
-.bodyText {
-  font-size: 0.95rem;
-  line-height: 1.7;
-  color: rgba(209, 213, 219, 0.9);
-  margin-top: 0.9rem;
-}
-
-@media (prefers-color-scheme: light) {
-  .bodyText {
-    color: #475569;
-  }
 }
 
 /* ==== Footer ======================================================== */
@@ -378,10 +323,6 @@
     padding: 2.4rem 1.1rem 2.2rem;
   }
 
-  .hero {
-    gap: 2rem;
-  }
-
   .heroActions {
     flex-direction: column;
     align-items: stretch;
@@ -402,12 +343,4 @@
   .productCard {
     border-radius: 1.2rem;
   }
-}
-
-
-.cardRow {
-  /* ...dein bestehendes... */
-
-  min-width: 0;      /* ✅ KEY: erlaubt Shrink in Grid */
-  overflow: hidden;  /* ✅ Safety gegen Overflow */
 }

@@ -1,39 +1,51 @@
+/* src/components/cookie/CookieBanner.module.css */
+
+/* =========================
+   Wrapper (non-blocking)
+   ========================= */
+
 .wrapper {
   position: fixed;
   left: 0;
   right: 0;
   bottom: 0;
 
-  /* Wichtig: über Footer & Overlays */
+  /* Über Footer & Overlays */
   z-index: 2147483647;
 
-  /* Nicht den ganzen Screen blocken */
+  /* Screen nicht blockieren */
   pointer-events: none;
 
   padding: 12px;
   padding-bottom: calc(12px + env(safe-area-inset-bottom));
 }
 
+/* =========================
+   Card
+   ========================= */
+
 .card {
-  pointer-events: auto; /* nur die Card ist klickbar */
+  pointer-events: auto; /* nur Banner klickbar */
   max-width: 980px;
   margin: 0 auto;
 
   border-radius: 18px;
+  padding: 14px;
 
-  /* Neo / Neon look (passt zu deinen Variablen) */
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(120, 255, 220, 0.18);
+  background: var(--neo-card-bg-soft);
+  border: 1px solid var(--neo-card-border);
+
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
 
   box-shadow:
-    0 10px 30px rgba(0, 0, 0, 0.35),
-    0 0 0 1px rgba(120, 255, 220, 0.08) inset,
-    0 0 22px rgba(120, 255, 220, 0.12);
-
-  padding: 14px 14px;
+    var(--neo-card-shadow-soft),
+    0 0 0 1px rgba(99, 102, 241, 0.10) inset;
 }
+
+/* =========================
+   Layout
+   ========================= */
 
 .row {
   display: flex;
@@ -43,22 +55,31 @@
   flex-wrap: wrap;
 }
 
+/* =========================
+   Text
+   ========================= */
+
 .text {
-  color: var(--text-main);
   font-size: 13px;
-  line-height: 1.35;
+  line-height: 1.4;
+  color: var(--text-main);
+  max-width: 62ch;
 }
 
 .text strong {
-  display: inline-block;
-  font-weight: 700;
+  display: block;
+  font-weight: 800;
   letter-spacing: 0.02em;
-  margin-bottom: 2px;
+  margin-bottom: 4px;
 }
 
 .muted {
   color: var(--text-muted);
 }
+
+/* =========================
+   Actions
+   ========================= */
 
 .actions {
   display: flex;
@@ -66,41 +87,91 @@
   flex-shrink: 0;
 }
 
+/* =========================
+   Buttons
+   ========================= */
+
 .btn {
   appearance: none;
-  border: 1px solid rgba(120, 255, 220, 0.22);
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--text-main);
+  cursor: pointer;
 
   padding: 10px 14px;
   border-radius: 14px;
+
   font-size: 13px;
-  cursor: pointer;
+  font-weight: 700;
+
+  background: var(--bg-soft);
+  color: var(--text-main);
+
+  border: 1px solid var(--neo-card-border);
 
   box-shadow:
-    0 10px 22px rgba(0, 0, 0, 0.22),
-    0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+    8px 8px 18px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
 
-  transition: transform 120ms ease, opacity 120ms ease, box-shadow 120ms ease;
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease,
+    filter 120ms ease,
+    opacity 120ms ease;
 }
 
 .btn:hover {
   transform: translateY(-1px);
+  filter: brightness(1.05);
   box-shadow:
-    0 14px 28px rgba(0, 0, 0, 0.26),
-    0 0 18px rgba(120, 255, 220, 0.14);
+    10px 10px 22px rgba(0, 0, 0, 0.28),
+    0 0 16px rgba(99, 102, 241, 0.18);
 }
 
-.primary {
-  border-color: rgba(120, 255, 220, 0.35);
-  background: rgba(120, 255, 220, 0.12);
+.btn:active {
+  transform: translateY(0);
+  filter: brightness(0.98);
 }
+
+/* Primary (Accept) */
+
+.primary {
+  background: linear-gradient(
+    135deg,
+    rgba(99, 102, 241, 0.22),
+    rgba(79, 70, 229, 0.18)
+  );
+  border-color: rgba(99, 102, 241, 0.45);
+  color: var(--text-main);
+}
+
+/* =========================
+   Mobile
+   ========================= */
 
 @media (max-width: 520px) {
   .actions {
     width: 100%;
+    flex-direction: column;
   }
+
   .btn {
     width: 100%;
+    justify-content: center;
   }
+}
+
+/* =========================
+   Dark Mode Tweaks
+   ========================= */
+
+html[data-theme="dark"] .card {
+  box-shadow:
+    var(--neo-card-shadow-strong),
+    0 0 0 1px rgba(129, 140, 248, 0.22) inset;
+}
+
+html[data-theme="dark"] .primary {
+  background: linear-gradient(
+    135deg,
+    rgba(129, 140, 248, 0.26),
+    rgba(99, 102, 241, 0.22)
+  );
 }

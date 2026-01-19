@@ -1,17 +1,138 @@
-.product-shell{min-height: calc(100vh - 6rem); padding: 2rem 1rem;}
-.product-wrap{max-width:1100px;margin:0 auto;display:flex;flex-direction:column;gap:1rem}
-.product-hero{display:grid;gap:1rem}
-@media(min-width:900px){ .product-hero{grid-template-columns: 1fr 420px; align-items:start; } }
-.product-media{border-radius:1rem;overflow:hidden;}
-.product-thumb{width:100%;height:360px;object-fit:cover;display:block;background:rgba(255,255,255,.5)}
-.product-info{display:flex;flex-direction:column;gap:0.5rem}
-.vendor-strip{display:flex;align-items:center;gap:.75rem}
-.vendor-avatar{width:48px;height:48px;border-radius:999px;object-fit:cover}
-.product-title{font-size:1.6rem;font-weight:900;margin:0}
-.product-price{font-size:1.25rem;font-weight:800;margin-top:.25rem}
-.product-desc{margin-top:.5rem;color:var(--fg-muted,#374151)}
-.neo-buy{margin-top:1rem}
-.neo-card{background:rgba(255,255,255,.55);border-radius:1rem;padding:1rem;border:1px solid rgba(0,0,0,.05);box-shadow:10px 10px 24px rgba(163,177,198,.85),-10px -10px 24px rgba(255,255,255,.95)}
-[data-theme="dark"] .neo-card{background:rgba(17,24,39,.55);border:1px solid rgba(255,255,255,.06);box-shadow:10px 10px 24px rgba(0,0,0,.55),-10px -10px 24px rgba(255,255,255,.05)}
-.neo-cta{display:inline-flex;align-items:center;justify-content:center;padding:.7rem 1rem;border-radius:999px;border:1px solid rgba(0,0,0,.06);background:rgba(74,124,255,.12);font-weight:800}
-.neo-cta:disabled{opacity:.6;cursor:not-allowed}
+/* product.module.css
+   Lightweight Product Shell – Neo / Tokenized
+*/
+
+/* =========================
+   Layout
+   ========================= */
+.product-shell {
+  min-height: calc(100vh - 6rem);
+  padding: 2rem 1rem;
+  background: var(--page-bg);
+  color: var(--text-main);
+}
+
+.product-wrap {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.product-hero {
+  display: grid;
+  gap: 1rem;
+}
+
+@media (min-width: 900px) {
+  .product-hero {
+    grid-template-columns: 1fr 420px;
+    align-items: flex-start;
+  }
+}
+
+/* =========================
+   Media
+   ========================= */
+.product-media {
+  border-radius: 1rem;
+  overflow: hidden;
+  background: var(--neo-card-bg-soft);
+  border: 1px solid var(--neo-card-border);
+  box-shadow: var(--neo-card-shadow-soft);
+}
+
+.product-thumb {
+  width: 100%;
+  height: 360px;
+  object-fit: cover;
+  display: block;
+  background: rgba(255, 255, 255, 0.35);
+}
+
+/* =========================
+   Info
+   ========================= */
+.product-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.vendor-strip {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.vendor-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 1px solid var(--neo-card-border);
+  box-shadow: var(--neo-shadow-soft);
+}
+
+.product-title {
+  font-size: 1.6rem;
+  font-weight: 900;
+  margin: 0;
+  color: var(--text-main);
+}
+
+.product-price {
+  font-size: 1.25rem;
+  font-weight: 800;
+  margin-top: 0.25rem;
+  color: var(--accent);
+}
+
+.product-desc {
+  margin-top: 0.5rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* =========================
+   Cards
+   ========================= */
+.neo-card {
+  background: var(--neo-card-bg-soft);
+  border-radius: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--neo-card-border);
+  box-shadow: var(--neo-card-shadow-soft);
+}
+
+/* =========================
+   CTA
+   ========================= */
+.neo-buy {
+  margin-top: 1rem;
+}
+
+.neo-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.7rem 1rem;
+  border-radius: 999px;
+  border: 1px solid var(--neo-card-border);
+  background: var(--accent-soft);
+  color: var(--text-main);
+  font-weight: 800;
+  transition: transform 0.12s ease, box-shadow 0.15s ease, filter 0.15s ease;
+}
+
+.neo-cta:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.03);
+  box-shadow: var(--neo-shadow-soft);
+}
+
+.neo-cta:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

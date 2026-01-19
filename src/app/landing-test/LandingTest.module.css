@@ -1,96 +1,148 @@
-/* Seite allgemein */
+/* LandingTest.module.css
+   Drop-in (tokenized + focus/hover states + responsive fixes)
+*/
+
+/* =========================
+   PAGE
+   ========================= */
 .page {
   min-height: 100vh;
-  background: #e5e7eb; /* dein helles Grau / var(--page-bg) */
-  color: #020617;
+  background: var(--page-bg, #e5e7eb);
+  color: var(--txt, #020617);
 }
 
-/* Container: gleiche Breite für Hero & Dashboard */
+/* Container: gleiche Breite für Hero & Sections */
 .hero,
+.dashboardWrapper,
+.popularSection {
+  padding-inline: 1.5rem;
+}
+
+.hero {
+  padding-top: 6rem;
+}
+
 .dashboardWrapper {
-  padding: 6rem 1.5rem 0;
+  padding-top: 4rem;
+  padding-bottom: 5rem;
+}
+
+.popularSection {
+  padding-top: 4rem;
+  padding-bottom: 5rem;
 }
 
 .heroInner,
-.dashboardInner {
-  max-width: 960px;       /* HIER definieren wir die gemeinsame Breite */
-  margin: 0 auto;         /* Zentriert */
+.dashboardInner,
+.popularInner {
+  max-width: 960px;
+  margin: 0 auto;
 }
 
-/* Hero-Typo */
+/* =========================
+   HERO TYPO
+   ========================= */
 .kicker {
   font-size: 0.75rem;
   letter-spacing: 0.25em;
   text-transform: uppercase;
-  color: #6b7280;
+  color: var(--txt-muted, #6b7280);
   margin-bottom: 1.5rem;
 }
 
 .title {
   font-size: 3rem;
   line-height: 1.1;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: -0.03em;
-  margin-bottom: 1.5rem;
+  margin: 0 0 1.5rem 0;
 }
 
 .subtitle {
   max-width: 40rem;
   font-size: 0.95rem;
   line-height: 1.7;
-  color: #4b5563;
-  margin-bottom: 2.5rem;
+  color: var(--txt-muted, #4b5563);
+  margin: 0 0 2.5rem 0;
 }
 
-/* Buttons */
+/* =========================
+   BUTTONS
+   ========================= */
 .buttons {
   display: flex;
   gap: 1rem;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 .btnPrimary,
 .btnSecondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border-radius: 999px;
   padding: 0.9rem 1.8rem;
   font-size: 0.9rem;
-  font-weight: 500;
-  border: none;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  border: 1px solid transparent;
   cursor: pointer;
+  text-decoration: none;
   box-shadow: 0 20px 40px rgba(15, 23, 42, 0.18);
-  transition: transform 0.15s ease, box-shadow 0.15s ease,
-    background-color 0.15s ease, color 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    filter 0.15s ease,
+    background-color 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
 }
 
 .btnPrimary {
-  background: #020617;
-  color: #f9fafb;
+  background: var(--btn-primary-bg, #020617);
+  color: var(--btn-primary-fg, #f9fafb);
+  border-color: rgba(2, 6, 23, 0.12);
 }
 
 .btnPrimary:hover {
   transform: translateY(-1px);
+  filter: brightness(1.02);
   box-shadow: 0 24px 50px rgba(15, 23, 42, 0.24);
 }
 
 .btnSecondary {
-  background: #f9fafb;
-  color: #020617;
+  background: var(--btn-secondary-bg, #f9fafb);
+  color: var(--btn-secondary-fg, #020617);
+  border-color: rgba(148, 163, 184, 0.55);
 }
 
 .btnSecondary:hover {
   transform: translateY(-1px);
+  filter: brightness(1.02);
   box-shadow: 0 24px 50px rgba(148, 163, 184, 0.35);
 }
 
-/* Dashboard */
-.dashboardWrapper {
-  padding: 4rem 1.5rem 5rem;
+.btnPrimary:active,
+.btnSecondary:active {
+  transform: translateY(0);
+  filter: brightness(0.99);
 }
 
+.btnPrimary:focus-visible,
+.btnSecondary:focus-visible {
+  outline: 2px solid rgba(72, 118, 255, 0.55);
+  outline-offset: 4px;
+}
+
+/* =========================
+   DASHBOARD CARD
+   ========================= */
 .dashboardInner {
-  background: #f9fafb;
+  background: var(--neo-card-bg-soft, #f9fafb);
   border-radius: 24px;
   padding: 2.5rem 2rem;
+  border: 1px solid var(--neo-card-border, rgba(209, 213, 219, 0.7));
   box-shadow:
     0 24px 60px rgba(15, 23, 42, 0.16),
     inset 0 1px 0 rgba(255, 255, 255, 0.4);
@@ -100,17 +152,19 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 1rem;
   margin-bottom: 2rem;
+  flex-wrap: wrap;
 }
 
 .dashboardLabel {
   font-size: 0.75rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: #9ca3af;
+  color: var(--txt-muted, #9ca3af);
 }
 
-/* Drei Spalten für die KPIs */
+/* KPI Grid */
 .dashboardGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -122,27 +176,99 @@
   font-size: 0.7rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: #9ca3af;
+  color: var(--txt-muted, #9ca3af);
   margin-bottom: 0.75rem;
 }
 
 .metricValue {
   display: block;
   font-size: 1.8rem;
-  font-weight: 600;
+  font-weight: 800;
   margin-bottom: 0.25rem;
+  color: var(--txt, #020617);
 }
 
 .metricSmall {
   display: block;
   font-size: 0.8rem;
-  color: #6b7280;
+  color: var(--txt-muted, #6b7280);
 }
 
-/* Mobile: alles untereinander */
+/* =========================
+   POPULAR PRODUCTS
+   ========================= */
+.popularHeader {
+  margin-bottom: 2.5rem;
+}
+
+.popularTitle {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--txt, #111827);
+  max-width: 32rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.popularGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.5rem;
+}
+
+.productCard {
+  background: var(--neo-card-bg-soft, #f9fafb);
+  border-radius: 18px;
+  padding: 1.5rem 1.4rem;
+  border: 1px solid var(--neo-card-border, rgba(209, 213, 219, 0.7));
+  box-shadow:
+    0 18px 40px rgba(15, 23, 42, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 132px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+}
+
+.productCard:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.01);
+  box-shadow: 0 22px 54px rgba(15, 23, 42, 0.10);
+}
+
+.productCategory {
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--txt-muted, #9ca3af);
+  margin-bottom: 0.5rem;
+}
+
+.productTitle {
+  font-size: 0.98rem;
+  font-weight: 800;
+  color: var(--txt, #111827);
+  margin: 0 0 0.75rem 0;
+}
+
+.productRevenue {
+  font-size: 0.8rem;
+  color: var(--txt-muted, #4b5563);
+  margin: 0;
+}
+
+/* =========================
+   RESPONSIVE
+   ========================= */
+@media (max-width: 1024px) {
+  .popularGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 768px) {
-  .hero,
-  .dashboardWrapper {
+  .hero {
     padding-top: 3rem;
   }
 
@@ -161,83 +287,12 @@
 
   .buttons {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
   }
 
   .btnPrimary,
   .btnSecondary {
     width: 100%;
-    justify-content: center;
-  }
-}
-/* ---------- BELIEBTE PRODUKTE ---------- */
-
-.popularSection {
-  padding: 4rem 1.5rem 5rem;
-}
-
-.popularInner {
-  max-width: 960px;
-  margin: 0 auto;
-}
-
-.popularHeader {
-  margin-bottom: 2.5rem;
-}
-
-.popularTitle {
-  font-size: 1.4rem;
-  font-weight: 500;
-  color: #111827;
-  max-width: 32rem;
-  line-height: 1.5;
-}
-
-/* Grid mit 3 Spalten auf Desktop, 2/1 auf kleineren Screens */
-.popularGrid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1.5rem;
-}
-
-.productCard {
-  background: #f9fafb;
-  border-radius: 18px;
-  padding: 1.5rem 1.4rem;
-  box-shadow:
-    0 18px 40px rgba(15, 23, 42, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
-  border: 1px solid rgba(209, 213, 219, 0.7);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  min-height: 132px;
-}
-
-.productCategory {
-  font-size: 0.7rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: #9ca3af;
-  margin-bottom: 0.5rem;
-}
-
-.productTitle {
-  font-size: 0.98rem;
-  font-weight: 600;
-  color: #111827;
-  margin-bottom: 0.75rem;
-}
-
-.productRevenue {
-  font-size: 0.8rem;
-  color: #4b5563;
-}
-
-/* Responsive Anpassungen */
-@media (max-width: 1024px) {
-  .popularGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -249,4 +304,38 @@
   .popularSection {
     padding-top: 3rem;
   }
+}
+
+/* =========================
+   DARK THEME SUPPORT (optional)
+   Works if you use html[data-theme="dark"]
+   ========================= */
+html[data-theme="dark"] .page {
+  background: var(--page-bg, #020617);
+  color: var(--txt, #e5e7eb);
+}
+
+html[data-theme="dark"] .kicker,
+html[data-theme="dark"] .subtitle,
+html[data-theme="dark"] .dashboardLabel,
+html[data-theme="dark"] .metricLabel,
+html[data-theme="dark"] .metricSmall,
+html[data-theme="dark"] .productCategory,
+html[data-theme="dark"] .productRevenue {
+  color: var(--txt-muted, rgba(226, 232, 240, 0.68));
+}
+
+html[data-theme="dark"] .dashboardInner,
+html[data-theme="dark"] .productCard {
+  background: rgba(15, 23, 42, 0.55);
+  border-color: rgba(30, 64, 175, 0.35);
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(15, 23, 42, 0.9);
+}
+
+html[data-theme="dark"] .btnSecondary {
+  background: rgba(15, 23, 42, 0.55);
+  color: rgba(226, 232, 240, 0.92);
+  border-color: rgba(148, 163, 184, 0.22);
 }

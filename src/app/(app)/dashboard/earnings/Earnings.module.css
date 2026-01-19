@@ -1,7 +1,15 @@
+/* Earnings.module.css */
+
 .earningsShell {
   max-width: 1120px;
   margin: 0 auto;
-  padding: 2.5rem 1.5rem 3rem;
+  padding: 2.25rem 1.25rem 3rem;
+}
+
+@media (min-width: 768px) {
+  .earningsShell {
+    padding: 2.5rem 1.5rem 3rem;
+  }
 }
 
 .title {
@@ -21,12 +29,21 @@
 .kpiCard {
   background: var(--neo-card-bg-soft);
   border-radius: 1.3rem;
+  border: 1px solid var(--neo-card-border, rgba(148, 163, 184, 0.28));
   box-shadow: var(--neo-card-shadow-soft);
   padding: 1.3rem 1.1rem 1.1rem 1.1rem;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  transition: box-shadow 0.18s, transform 0.18s;
+  transition: box-shadow 0.18s ease, transform 0.18s ease, border-color 0.18s ease;
+}
+
+.kpiCard:hover {
+  transform: translateY(-1px);
+  border-color: rgba(74, 124, 255, 0.45);
+  box-shadow:
+    var(--neo-card-shadow-soft),
+    0 0 22px rgba(74, 124, 255, 0.18);
 }
 
 .kpiLabel {
@@ -43,6 +60,7 @@
 .chartCard {
   background: var(--neo-card-bg-strong);
   border-radius: 1.5rem;
+  border: 1px solid var(--neo-card-border, rgba(148, 163, 184, 0.28));
   box-shadow: var(--neo-card-shadow-strong);
   padding: 2rem 1.6rem 1.6rem 1.6rem;
   margin-bottom: 2.2rem;
@@ -58,9 +76,20 @@
 .emptyCard {
   background: var(--neo-card-bg-soft);
   border-radius: 1.3rem;
+  border: 1px solid var(--neo-card-border, rgba(148, 163, 184, 0.28));
   box-shadow: var(--neo-card-shadow-soft);
   padding: 2rem 1.6rem;
   text-align: center;
   color: var(--color-text-muted);
   font-size: 1.08rem;
+}
+
+/* Pro: respektiert Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .kpiCard {
+    transition: none;
+  }
+  .kpiCard:hover {
+    transform: none;
+  }
 }

@@ -1,18 +1,33 @@
+/* ErningsPage.module.css (EarningsPage) */
+
 .container {
   max-width: 1100px;
   margin: 0 auto;
+  padding: 2.25rem 1.25rem 3rem;
+}
+
+@media (min-width: 768px) {
+  .container {
+    padding: 2.5rem 1.5rem 3rem;
+  }
 }
 
 .title {
   font-size: 2rem;
-  font-weight: 700;
-  color: #0f172a;
+  font-weight: 750;
+  color: var(--color-text-primary);
+  letter-spacing: -0.01em;
+  line-height: 1.12;
+  margin: 0 0 0.35rem;
 }
 
 .subtitle {
-  color: #475569;
-  margin-bottom: 2rem;
+  color: var(--color-text-muted);
+  margin: 0 0 2rem;
+  line-height: 1.55;
 }
+
+/* ===== KPI Cards ===== */
 
 .cardGrid {
   display: grid;
@@ -22,34 +37,84 @@
 }
 
 .card {
-  background: #f8fbff;
+  background: var(--neo-card-bg-soft);
   border-radius: 20px;
-  padding: 1.5rem;
-  box-shadow:
-    0 10px 30px rgba(15, 23, 42, 0.1),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.7);
+  border: 1px solid var(--neo-card-border, rgba(148, 163, 184, 0.28));
+  padding: 1.4rem 1.35rem;
+  box-shadow: var(--neo-card-shadow-soft);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+/* subtiler „Glow Wash“ ohne extra DOM */
+.card::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at 20% 0%,
+    rgba(74, 124, 255, 0.16),
+    transparent 55%
+  );
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
+
+.card:hover {
+  transform: translateY(-1px);
+  border-color: rgba(74, 124, 255, 0.45);
+  box-shadow: var(--neo-card-shadow-soft), 0 0 22px rgba(74, 124, 255, 0.18);
+}
+
+.card:hover::after {
+  opacity: 1;
+}
+
+.card:active {
+  transform: translateY(0px);
 }
 
 .cardLabel {
-  color: #64748b;
-  font-size: 0.8rem;
-  margin-bottom: 0.3rem;
+  color: var(--color-text-muted);
+  font-size: 0.78rem;
+  margin-bottom: 0.35rem;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
 }
 
 .cardValue {
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: #0f172a;
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: var(--color-text-primary);
+  letter-spacing: -0.01em;
 }
 
+/* ===== Chart Box ===== */
+
 .chartBox {
-  background: #f8fbff;
+  background: var(--neo-card-bg-strong);
   padding: 2rem;
   border-radius: 22px;
-  box-shadow:
-    0 10px 30px rgba(15, 23, 42, 0.1),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.7);
+  border: 1px solid var(--neo-card-border, rgba(148, 163, 184, 0.28));
+  box-shadow: var(--neo-card-shadow-strong);
   margin-bottom: 3rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.chartBox::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at 15% 0%,
+    rgba(74, 124, 255, 0.14),
+    transparent 60%
+  );
+  opacity: 1;
 }
 
 .section {
@@ -58,9 +123,13 @@
 
 .sectionTitle {
   font-size: 1.3rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
+  font-weight: 800;
+  margin: 0 0 1rem;
+  color: var(--color-text-primary);
+  letter-spacing: -0.01em;
 }
+
+/* ===== Products ===== */
 
 .productGrid {
   display: grid;
@@ -69,31 +138,117 @@
 }
 
 .productCard {
-  background: #f8fbff;
-  padding: 1.2rem;
+  background: var(--neo-card-bg-soft);
+  padding: 1.2rem 1.2rem 1.15rem;
   border-radius: 18px;
-  box-shadow:
-    0 10px 30px rgba(15, 23, 42, 0.1),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+  border: 1px solid var(--neo-card-border, rgba(148, 163, 184, 0.28));
+  box-shadow: var(--neo-card-shadow-soft);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.productCard::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at 20% 0%,
+    rgba(74, 124, 255, 0.12),
+    transparent 58%
+  );
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
+
+.productCard:hover {
+  transform: translateY(-1px);
+  border-color: rgba(74, 124, 255, 0.45);
+  box-shadow: var(--neo-card-shadow-soft), 0 0 22px rgba(74, 124, 255, 0.14);
+}
+
+.productCard:hover::after {
+  opacity: 1;
+}
+
+.productCard:active {
+  transform: translateY(0px);
 }
 
 .productTitle {
-  font-weight: 600;
-  margin-bottom: 0.3rem;
+  font-weight: 750;
+  margin: 0 0 0.35rem;
+  color: var(--color-text-primary);
 }
 
 .productRevenue {
-  color: #0f172a;
-  font-weight: 700;
+  color: var(--color-text-primary);
+  font-weight: 850;
+  letter-spacing: -0.01em;
 }
 
 .productSales {
-  color: #64748b;
+  color: var(--color-text-muted);
   font-size: 0.85rem;
+  margin-top: 0.2rem;
 }
+
+/* ===== Loading ===== */
 
 .loading {
   padding: 2rem;
-  font-size: 1.2rem;
-  color: #475569;
+  font-size: 1.05rem;
+  color: var(--color-text-muted);
+}
+
+/* ===== Optional: Notice Pattern (page-local) ===== */
+/* Wenn du global machen willst -> in globals.css als .notice... */
+.notice {
+  border-radius: 18px;
+  padding: 0.95rem 1.05rem;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  background: var(--neo-card-bg-soft);
+  box-shadow: var(--neo-card-shadow-soft);
+}
+
+.noticeTitle {
+  margin: 0 0 0.2rem;
+  font-weight: 800;
+  color: var(--color-text-primary);
+}
+
+.noticeText {
+  margin: 0;
+  color: var(--color-text-muted);
+  line-height: 1.55;
+}
+
+.noticeSuccess {
+  border-color: rgba(34, 197, 94, 0.35);
+  box-shadow: var(--neo-card-shadow-soft), 0 0 18px rgba(34, 197, 94, 0.12);
+}
+
+.noticeError {
+  border-color: rgba(239, 68, 68, 0.35);
+  box-shadow: var(--neo-card-shadow-soft), 0 0 18px rgba(239, 68, 68, 0.12);
+}
+
+.noticeWarn {
+  border-color: rgba(245, 158, 11, 0.35);
+  box-shadow: var(--neo-card-shadow-soft), 0 0 18px rgba(245, 158, 11, 0.12);
+}
+
+/* Pro: respektiert Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .productCard,
+  .card::after,
+  .productCard::after {
+    transition: none;
+  }
+  .card:hover,
+  .productCard:hover {
+    transform: none;
+  }
 }

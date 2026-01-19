@@ -1,65 +1,162 @@
 /* src/app/theme-tokens.css */
 
+/* =========================================================
+   DigiEmu – Design Tokens
+   Theme switch via: <html data-theme="dark">
+   ========================================================= */
+
 /* =========================
-   DigiEmu Tokens (data-theme)
+   LIGHT (Default)
    ========================= */
-
 :root {
-  /* Typography */
-  --txt: #0b1220;
-  --txt-muted: rgba(11, 18, 32, 0.68);
+  /* -------------------------------------------------------
+     Text
+     ------------------------------------------------------- */
+  --text-main: #0f172a;
+  --text-muted: rgba(15, 23, 42, 0.65);
 
-  /* Page */
+  /* Legacy aliases (optional, but safe) */
+  --txt: var(--text-main);
+  --txt-muted: var(--text-muted);
+
+  /* -------------------------------------------------------
+     Page / Background
+     ------------------------------------------------------- */
   --page-bg: #e8eff9;
+  --bg: #e8eff9;
+  --bg-soft: rgba(248, 250, 252, 0.95);
 
-  /* Surfaces */
-  --card-bg: rgba(255, 255, 255, 0.86);
+  /* -------------------------------------------------------
+     Cards / Surfaces
+     ------------------------------------------------------- */
+  --card-bg: rgba(255, 255, 255, 0.88);
+  --card-bg-soft: rgba(255, 255, 255, 0.82);
+  --card-bg-strong: rgba(255, 255, 255, 0.95);
+
   --card-border: rgba(15, 23, 42, 0.10);
+  --border-soft: rgba(15, 23, 42, 0.08);
 
-  /* Neumorph shadows (light) */
-  --nm-hi: rgba(255, 255, 255, 0.95);
-  --nm-lo: rgba(15, 23, 42, 0.14);
+  /* Neo card aliases (used in many files) */
+  --neo-card-bg-soft: var(--card-bg-soft);
+  --neo-card-bg-strong: var(--card-bg-strong);
+  --neo-card-border: var(--card-border);
 
-  /* Accents */
+  /* -------------------------------------------------------
+     Neumorphism Shadows (Light)
+     ------------------------------------------------------- */
+  --shadow-light: rgba(255, 255, 255, 0.95);
+  --shadow-dark: rgba(15, 23, 42, 0.14);
+
+  --neo-card-shadow-soft:
+    18px 18px 40px rgba(15, 23, 42, 0.14),
+    -18px -18px 40px rgba(255, 255, 255, 0.85);
+
+  --neo-card-shadow-strong:
+    24px 24px 55px rgba(15, 23, 42, 0.18),
+    -24px -24px 55px rgba(255, 255, 255, 0.9);
+
+  /* -------------------------------------------------------
+     Accents
+     ------------------------------------------------------- */
   --accent: #2563eb;
-  --accent-2: #4f46e5;
+  --accent-strong: #1d4ed8;
+  --accent-soft: rgba(37, 99, 235, 0.12);
 
-  /* Radius */
-  --r-xl: 1.6rem;
-  --r-lg: 1.25rem;
-  --r-md: 0.95rem;
+  /* -------------------------------------------------------
+     Neon (very subtle)
+     ------------------------------------------------------- */
+  --neon-ring: rgba(37, 99, 235, 0.25);
+  --neon-glow-1: rgba(37, 99, 235, 0.22);
+  --neon-glow-2: rgba(99, 102, 241, 0.18);
+  --neon-glow-hover: 0.45;
 
-  /* Focus */
-  --focus: 0 0 0 3px rgba(37, 99, 235, 0.25);
+  /* -------------------------------------------------------
+     Radius
+     ------------------------------------------------------- */
+  --radius-xl: 1.6rem;
+  --radius-lg: 1.25rem;
+  --radius-md: 0.95rem;
+  --radius-sm: 0.6rem;
+
+  /* -------------------------------------------------------
+     Focus / Accessibility
+     ------------------------------------------------------- */
+  --focus-ring: 0 0 0 3px rgba(37, 99, 235, 0.25);
 }
 
-/* next-themes: <html data-theme="dark"> */
+/* =========================
+   DARK
+   ========================= */
 html[data-theme="dark"] {
-  --txt: rgba(239, 246, 255, 0.92);
-  --txt-muted: rgba(148, 163, 184, 0.88);
+  /* -------------------------------------------------------
+     Text
+     ------------------------------------------------------- */
+  --text-main: rgba(239, 246, 255, 0.92);
+  --text-muted: rgba(148, 163, 184, 0.88);
 
+  --txt: var(--text-main);
+  --txt-muted: var(--text-muted);
+
+  /* -------------------------------------------------------
+     Page / Background
+     ------------------------------------------------------- */
   --page-bg: #070b16;
+  --bg: #070b16;
+  --bg-soft: rgba(15, 23, 42, 0.85);
 
+  /* -------------------------------------------------------
+     Cards / Surfaces
+     ------------------------------------------------------- */
   --card-bg: rgba(12, 18, 38, 0.72);
+  --card-bg-soft: rgba(15, 23, 42, 0.68);
+  --card-bg-strong: rgba(15, 23, 42, 0.92);
+
   --card-border: rgba(148, 163, 184, 0.16);
+  --border-soft: rgba(148, 163, 184, 0.14);
 
-  /* Neumorph shadows (dark) */
-  --nm-hi: rgba(120, 170, 255, 0.10);
-  --nm-lo: rgba(0, 0, 0, 0.62);
+  --neo-card-bg-soft: var(--card-bg-soft);
+  --neo-card-bg-strong: var(--card-bg-strong);
+  --neo-card-border: var(--card-border);
 
+  /* -------------------------------------------------------
+     Neumorphism Shadows (Dark)
+     ------------------------------------------------------- */
+  --shadow-light: rgba(120, 170, 255, 0.10);
+  --shadow-dark: rgba(0, 0, 0, 0.62);
+
+  --neo-card-shadow-soft:
+    18px 18px 44px rgba(0, 0, 0, 0.55),
+    -18px -18px 44px rgba(255, 255, 255, 0.05);
+
+  --neo-card-shadow-strong:
+    26px 26px 70px rgba(0, 0, 0, 0.75),
+    -26px -26px 70px rgba(255, 255, 255, 0.06);
+
+  /* -------------------------------------------------------
+     Accents
+     ------------------------------------------------------- */
   --accent: #60a5fa;
-  --accent-2: #818cf8;
+  --accent-strong: #818cf8;
+  --accent-soft: rgba(96, 165, 250, 0.18);
+
+  /* -------------------------------------------------------
+     Neon (dark, controlled)
+     ------------------------------------------------------- */
+  --neon-ring: rgba(96, 165, 250, 0.28);
+  --neon-glow-1: rgba(96, 165, 250, 0.24);
+  --neon-glow-2: rgba(129, 140, 248, 0.20);
+  --neon-glow-hover: 0.55;
+
+  /* -------------------------------------------------------
+     Focus
+     ------------------------------------------------------- */
+  --focus-ring: 0 0 0 3px rgba(96, 165, 250, 0.35);
 }
 
-/* Optional fallback falls du html.dark nutzt */
+/* =========================
+   Optional fallback
+   (falls irgendwo noch html.dark benutzt wird)
+   ========================= */
 html.dark {
-  --txt: rgba(239, 246, 255, 0.92);
-  --txt-muted: rgba(148, 163, 184, 0.88);
-  --page-bg: #070b16;
-  --card-bg: rgba(12, 18, 38, 0.72);
-  --card-border: rgba(148, 163, 184, 0.16);
-  --nm-hi: rgba(120, 170, 255, 0.10);
-  --nm-lo: rgba(0, 0, 0, 0.62);
-  --accent: #60a5fa;
-  --accent-2: #818cf8;
+  color-scheme: dark;
 }

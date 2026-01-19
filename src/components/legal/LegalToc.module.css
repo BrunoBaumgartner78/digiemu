@@ -1,18 +1,26 @@
+/* src/app/(public)/legal/LegalToc.module.css
+   TOC (Inhaltsverzeichnis) – token-kompatibel, clean Neumorph/Glass
+*/
+
 .toc {
   margin-top: 1rem;
   padding: 1rem 1.1rem;
   border-radius: 22px;
-  border: 1px solid rgba(255,255,255,0.20);
-  background: rgba(255,255,255,0.18);
+
+  background: var(--neo-card-bg-soft, rgba(255, 255, 255, 0.18));
+  border: 1px solid var(--neo-card-border, rgba(148, 163, 184, 0.28));
+  box-shadow: var(--neo-card-shadow-soft, 0 18px 40px rgba(15, 23, 42, 0.12));
+
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 }
 
 .title {
+  margin: 0 0 0.6rem 0;
   font-weight: 900;
-  opacity: 0.9;
-  margin-bottom: 0.6rem;
   letter-spacing: -0.01em;
+  opacity: 0.92;
+  color: var(--text-main, var(--txt));
 }
 
 .list {
@@ -23,18 +31,47 @@
   gap: 0.35rem;
 }
 
-.item { margin: 0; padding: 0; }
+.item {
+  margin: 0;
+  padding: 0;
+}
 
 .link {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
+
   text-decoration: none;
   color: inherit;
   font-weight: 650;
-  opacity: 0.9;
+  opacity: 0.92;
+
+  padding: 0.3rem 0.35rem;
+  border-radius: 12px;
+
+  transition: background 0.15s ease, opacity 0.15s ease, transform 0.15s ease;
 }
 
 .link:hover {
-  text-decoration: underline;
+  background: rgba(255, 255, 255, 0.14);
+  opacity: 1;
+  transform: translateY(-1px);
+  text-decoration: none;
+}
+
+.link:focus-visible {
+  outline: none;
+  box-shadow: var(--focus, 0 0 0 3px rgba(37, 99, 235, 0.25));
+}
+
+/* Dark mode tweak (falls deine dark tokens sehr dunkel sind) */
+html[data-theme="dark"] .toc,
+html.dark .toc {
+  background: var(--neo-card-bg-soft, rgba(12, 18, 38, 0.55));
+  border-color: var(--neo-card-border, rgba(148, 163, 184, 0.18));
+}
+
+html[data-theme="dark"] .link:hover,
+html.dark .link:hover {
+  background: rgba(255, 255, 255, 0.06);
 }

@@ -1,12 +1,15 @@
+/* admin-page.module.css */
+
 .adminPage {
   max-width: 1120px;
   margin: 0 auto;
   padding: 1.75rem 1.25rem 2.6rem;
 }
 
+/* Desktop: gleiche horizontale Rhythmik wie der Rest */
 @media (min-width: 768px) {
   .adminPage {
-    padding: 2.25rem 1.75rem 3rem;
+    padding: 2.25rem 1.5rem 3rem;
   }
 }
 
@@ -22,6 +25,7 @@
     flex-direction: row;
     justify-content: space-between;
     align-items: flex-end;
+    gap: 1rem;
   }
 }
 
@@ -29,11 +33,15 @@
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
+  min-width: 0; /* verhindert Overflow bei langen Titeln */
 }
 
 .adminNavBlock {
   display: flex;
   justify-content: flex-start;
+  flex-wrap: wrap;         /* wichtig bei vielen Tabs */
+  gap: 0.5rem;
+  min-width: 0;
 }
 
 @media (min-width: 768px) {
@@ -46,6 +54,7 @@
   margin-top: 0.75rem;
 }
 
+/* konsistente Section-Abstände */
 .adminSection + .adminSection {
   margin-top: 1.5rem;
 }

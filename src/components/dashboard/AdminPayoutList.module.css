@@ -1,28 +1,165 @@
+/* src/app/admin/payouts/AdminPayoutList.module.css */
+
+/* =========================
+   Wrapper / Layout
+   ========================= */
+
 .wrapper {
   max-width: 1100px;
   margin: 2rem auto;
+  padding: 0 1rem;
+  color: var(--text-main);
 }
+
 .title {
   font-size: 2rem;
-  font-weight: bold;
+  font-weight: 900;
   margin-bottom: 2rem;
+  letter-spacing: -0.02em;
+  color: var(--text-main);
 }
+
+/* =========================
+   Table Card (Neumorph)
+   ========================= */
+
 .table {
   width: 100%;
-  background: rgba(255,255,255,0.65);
-  border-radius: 1.2rem;
-  backdrop-filter: blur(18px);
+  border-radius: var(--radius-xl);
   overflow: hidden;
-  box-shadow: 0 25px 55px rgba(15,23,42,0.2);
+
+  background: var(--neo-card-bg-soft);
+  border: 1px solid var(--neo-card-border);
+
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+
+  box-shadow: var(--neo-card-shadow-soft);
 }
+
+/* =========================
+   Table Head / Cells
+   ========================= */
+
+.table thead {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.table th {
+  text-align: left;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 800;
+  color: var(--text-muted);
+}
+
 .table th,
 .table td {
-  padding: 0.8rem 1rem;
-  border-bottom: 1px solid rgba(0,0,0,0.05);
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--border-soft);
 }
+
+.table td {
+  font-size: 0.88rem;
+  color: var(--text-main);
+}
+
+/* letzte Zeile ohne Border */
+.table tr:last-child td {
+  border-bottom: none;
+}
+
+/* =========================
+   Status / Actions
+   ========================= */
+
 .payBtn {
-  padding: 0.4rem 0.8rem;
-  border-radius: 0.6rem;
-  background: #10b981;
-  color: white;
+  appearance: none;
+  cursor: pointer;
+
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+
+  background: linear-gradient(
+    135deg,
+    rgba(16, 185, 129, 0.85),
+    rgba(5, 150, 105, 0.85)
+  );
+  color: #ecfdf5;
+
+  border: 1px solid rgba(16, 185, 129, 0.55);
+
+  box-shadow:
+    0 10px 24px rgba(16, 185, 129, 0.35),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.16s ease,
+    filter 0.16s ease,
+    opacity 0.16s ease;
+}
+
+.payBtn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+  box-shadow:
+    0 14px 30px rgba(16, 185, 129, 0.45),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+}
+
+.payBtn:active {
+  transform: translateY(0);
+  filter: brightness(0.98);
+}
+
+.payBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* =========================
+   Dark Mode Tweaks
+   ========================= */
+
+html[data-theme="dark"] .table thead {
+  background: rgba(15, 23, 42, 0.65);
+}
+
+html[data-theme="dark"] .table th {
+  color: var(--text-muted);
+}
+
+html[data-theme="dark"] .payBtn {
+  box-shadow:
+    0 14px 34px rgba(0, 0, 0, 0.65),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+}
+
+/* =========================
+   Responsive
+   ========================= */
+
+@media (max-width: 720px) {
+  .title {
+    font-size: 1.6rem;
+  }
+
+  .table th,
+  .table td {
+    padding: 0.7rem 0.75rem;
+    font-size: 0.82rem;
+  }
+
+  .payBtn {
+    width: 100%;
+    justify-content: center;
+  }
 }

@@ -1,9 +1,15 @@
-/* UX-Polish für Produktdetailseite – DigiEmu Neomorph Style */
+/* src/app/product/[id]/page.module.css
+   Produktdetail – DigiEmu Neomorph Style (Drop-in, tokenized)
+*/
 
+/* =========================
+   PAGE
+   ========================= */
 .page {
   min-height: calc(100vh - 90px);
   padding: 2.5rem 1rem 3.25rem;
   background: var(--page-bg);
+  color: var(--text-main, var(--txt, #0f172a));
 }
 
 .inner {
@@ -11,11 +17,12 @@
   margin: 0 auto;
 }
 
-/* Breadcrumb */
-
+/* =========================
+   BREADCRUMB
+   ========================= */
 .breadcrumb {
   font-size: 0.85rem;
-  color: var(--color-text-muted);
+  color: var(--text-muted, rgba(15, 23, 42, 0.68));
   margin-bottom: 1.4rem;
 }
 
@@ -30,17 +37,30 @@
 
 .breadcrumb a {
   text-decoration: none;
-  color: var(--accent-strong);
+  color: var(--accent, var(--accent-strong, #4a7cff));
+  font-weight: 700;
+}
+
+.breadcrumb a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.breadcrumb a:focus-visible {
+  outline: 2px solid rgba(72, 118, 255, 0.55);
+  outline-offset: 4px;
+  border-radius: 10px;
 }
 
 .breadcrumb li + li::before {
   content: "›";
   margin: 0 0.3rem 0 0.1rem;
-  color: var(--color-text-muted);
+  color: var(--text-muted, rgba(15, 23, 42, 0.68));
 }
 
-/* Hauptlayout */
-
+/* =========================
+   LAYOUT
+   ========================= */
 .layout {
   display: grid;
   grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
@@ -54,19 +74,20 @@
   }
 }
 
-/* Medienkarte (Bild links) */
-
+/* =========================
+   MEDIA CARD (LEFT)
+   ========================= */
 .mediaCard {
   position: relative;
   border-radius: 32px;
   overflow: hidden;
   background: radial-gradient(
     circle at top left,
-    rgba(148, 180, 248, 0.26),
-    rgba(15, 23, 42, 0.96)
+    rgba(72, 118, 255, 0.20),
+    rgba(2, 6, 23, 0.92)
   );
   box-shadow:
-    20px 20px 50px rgba(15, 23, 42, 0.55),
+    20px 20px 50px rgba(15, 23, 42, 0.28),
     -10px -10px 30px rgba(255, 255, 255, 0.06);
   min-height: 420px;
 }
@@ -87,7 +108,7 @@
   align-items: center;
   justify-content: center;
   gap: 0.75rem;
-  color: #e5edf7;
+  color: rgba(226, 232, 240, 0.92);
 }
 
 .mediaIcon {
@@ -99,26 +120,54 @@
   opacity: 0.9;
 }
 
-/* Buy-Karte rechts */
+/* Light theme: media card “soft” */
+html[data-theme="light"] .mediaCard,
+:global(html:not([data-theme="dark"])) .mediaCard {
+  background: radial-gradient(
+    circle at top left,
+    rgba(72, 118, 255, 0.16),
+    rgba(255, 255, 255, 0.82)
+  );
+  box-shadow:
+    var(--neo-card-shadow-soft, 18px 18px 42px rgba(15, 23, 42, 0.10)),
+    inset 0 1px 0 rgba(255, 255, 255, 0.55);
+}
 
+html[data-theme="light"] .mediaPlaceholder,
+:global(html:not([data-theme="dark"])) .mediaPlaceholder {
+  color: var(--text-main, #0f172a);
+}
+
+/* =========================
+   BUY CARD (RIGHT)
+   ========================= */
 .buyCard {
   border-radius: 26px;
   padding: 1.9rem 1.7rem 1.7rem;
   background: radial-gradient(
     circle at top left,
-    rgba(148, 163, 255, 0.24),
-    rgba(15, 23, 42, 0.94)
+    rgba(72, 118, 255, 0.18),
+    rgba(2, 6, 23, 0.92)
   );
   box-shadow:
-    18px 18px 44px rgba(15, 23, 42, 0.75),
+    18px 18px 44px rgba(15, 23, 42, 0.22),
     -10px -10px 26px rgba(255, 255, 255, 0.05);
-  color: #e5edf7;
+  color: rgba(226, 232, 240, 0.94);
 }
 
 @media (max-width: 1024px) {
   .buyCard {
     margin-top: 0.8rem;
   }
+}
+
+/* Light theme: buy card “soft” */
+html[data-theme="light"] .buyCard,
+:global(html:not([data-theme="dark"])) .buyCard {
+  background: var(--neo-card-bg-soft, rgba(255, 255, 255, 0.72));
+  color: var(--text-main, #0f172a);
+  border: 1px solid var(--neo-card-border, rgba(15, 23, 42, 0.08));
+  box-shadow: var(--neo-card-shadow-soft, 18px 18px 42px rgba(15, 23, 42, 0.10));
 }
 
 .buyHeader {
@@ -130,18 +179,24 @@
   font-size: 0.78rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--color-text-muted);
-  opacity: 0.85;
+  color: var(--text-muted, rgba(226, 232, 240, 0.68));
+  opacity: 0.9;
+}
+
+html[data-theme="light"] .eyebrow,
+:global(html:not([data-theme="dark"])) .eyebrow {
+  color: var(--text-muted, rgba(15, 23, 42, 0.62));
 }
 
 .title {
   font-size: 1.75rem;
-  font-weight: 700;
+  font-weight: 800;
   margin: 0;
 }
 
-/* Kategorie + Anbieter */
-
+/* =========================
+   META ROW
+   ========================= */
 .metaRow {
   display: flex;
   flex-wrap: wrap;
@@ -156,33 +211,36 @@
   letter-spacing: 0.12em;
   padding: 0.18rem 0.7rem;
   border-radius: 999px;
-  border: 1px solid rgba(148, 163, 255, 0.85);
-  background: radial-gradient(
-    circle at top left,
-    rgba(129, 140, 248, 0.3),
-    rgba(15, 23, 42, 0.96)
-  );
-  box-shadow:
-    0 0 0 1px rgba(15, 23, 42, 0.55),
-    0 12px 24px rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(129, 140, 248, 0.55);
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
+}
+
+html[data-theme="light"] .metaBadge,
+:global(html:not([data-theme="dark"])) .metaBadge {
+  background: rgba(72, 118, 255, 0.10);
+  border-color: rgba(72, 118, 255, 0.22);
 }
 
 .vendorBadge {
   font-size: 0.84rem;
   opacity: 0.96;
+  color: inherit;
 }
 
 .vendorName {
-  font-weight: 600;
-  color: #e5edf7;
+  font-weight: 700;
+  color: inherit;
 }
 
-/* Preiszeile */
-
+/* =========================
+   PRICE
+   ========================= */
 .priceLine {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
+  gap: 1rem;
   margin-top: 1.4rem;
   margin-bottom: 0.4rem;
 }
@@ -194,7 +252,8 @@
 
 .priceValue {
   font-size: 1.4rem;
-  font-weight: 700;
+  font-weight: 900;
+  letter-spacing: -0.01em;
 }
 
 .buyHint {
@@ -203,19 +262,22 @@
   margin-bottom: 1.3rem;
 }
 
-/* Checkout-Form */
-
+/* =========================
+   CHECKOUT FORM
+   ========================= */
 .checkoutForm {
   margin-bottom: 1.15rem;
 }
 
-.checkoutForm button.neobtn.primary {
+/* CSS Modules: neobtn ist global */
+.checkoutForm :global(button.neobtn.primary) {
   width: 100%;
   justify-content: center;
 }
 
-/* Social-Bar */
-
+/* =========================
+   SOCIAL BAR
+   ========================= */
 .socialBar {
   margin: 0.75rem 0 1.2rem;
   display: flex;
@@ -223,8 +285,9 @@
   align-items: center;
 }
 
-/* Benefits-Liste */
-
+/* =========================
+   BENEFITS
+   ========================= */
 .benefits {
   list-style: none;
   padding: 0;
@@ -242,11 +305,17 @@
 .legalText {
   font-size: 0.78rem;
   line-height: 1.5;
-  color: rgba(226, 232, 240, 0.86);
+  color: rgba(226, 232, 240, 0.84);
 }
 
-/* Untere Info-Grid */
+html[data-theme="light"] .legalText,
+:global(html:not([data-theme="dark"])) .legalText {
+  color: var(--text-muted, rgba(15, 23, 42, 0.70));
+}
 
+/* =========================
+   INFO GRID
+   ========================= */
 .infoGrid {
   margin-top: 2.7rem;
   display: grid;
@@ -260,8 +329,7 @@
   }
 }
 
-/* Info-Karten – DigiEmu Neo-Style, Theme über Tokens */
-
+/* Info cards */
 .infoCard {
   border-radius: 1.4rem;
   padding: 1.5rem 1.6rem;
@@ -275,13 +343,13 @@
 .infoCard h2 {
   margin: 0 0 0.6rem;
   font-size: 1.05rem;
-  font-weight: 600;
+  font-weight: 800;
   color: var(--text-main);
 }
 
 .infoCard p {
   margin: 0 0 0.7rem;
-  color: var(--color-text-muted);
+  color: var(--text-muted, rgba(15, 23, 42, 0.68));
 }
 
 .infoCard ul {
@@ -293,25 +361,27 @@
   margin-top: 0.2rem;
 }
 
-/* Not-Found-State */
-
+/* =========================
+   NOT FOUND
+   ========================= */
 .notFoundCard {
   margin-top: 4rem;
   border-radius: 26px;
   padding: 2rem 1.8rem;
-  background: var(--neo-card-bg-strong);
+  background: var(--neo-card-bg-strong, var(--neo-card-bg-soft));
   border: 1px solid var(--neo-card-border);
-  box-shadow: var(--neo-card-shadow-strong);
+  box-shadow: var(--neo-card-shadow-strong, var(--neo-card-shadow-soft));
 }
 
 .notFoundTitle {
   margin: 0 0 0.5rem;
   font-size: 1.4rem;
+  font-weight: 900;
 }
 
 .notFoundText {
   margin: 0 0 1.2rem;
-  color: var(--color-text-muted);
+  color: var(--text-muted, rgba(15, 23, 42, 0.68));
   max-width: 40rem;
 }
 
@@ -321,8 +391,9 @@
   gap: 0.8rem;
 }
 
-/* Mehr Produkte dieses Anbieters */
-
+/* =========================
+   RELATED
+   ========================= */
 .relatedSection {
   margin-top: 3rem;
 }
@@ -333,16 +404,18 @@
   align-items: baseline;
   gap: 0.75rem;
   margin-bottom: 1.2rem;
+  flex-wrap: wrap;
 }
 
 .relatedHeader h2 {
   font-size: 1.1rem;
-  font-weight: 600;
+  font-weight: 900;
+  margin: 0;
 }
 
 .relatedVendorName {
   font-size: 0.88rem;
-  color: var(--color-text-muted);
+  color: var(--text-muted, rgba(15, 23, 42, 0.68));
 }
 
 .relatedGrid {
@@ -357,8 +430,6 @@
   }
 }
 
-/* Related Cards – Light/Dark via Tokens */
-
 .relatedCard {
   display: flex;
   flex-direction: column;
@@ -372,13 +443,20 @@
   transition:
     transform 0.18s ease-out,
     box-shadow 0.18s ease-out,
-    border-color 0.18s ease-out;
+    border-color 0.18s ease-out,
+    filter 0.18s ease-out;
 }
 
 .relatedCard:hover {
-  transform: translateY(-3px);
+  transform: translateY(-2px);
+  filter: brightness(1.01);
   box-shadow: var(--neo-card-shadow-strong);
-  border-color: rgba(129, 140, 248, 0.9);
+  border-color: rgba(72, 118, 255, 0.28);
+}
+
+.relatedCard:focus-visible {
+  outline: 2px solid rgba(72, 118, 255, 0.55);
+  outline-offset: 4px;
 }
 
 .relatedThumbWrapper {
@@ -387,29 +465,38 @@
   overflow: hidden;
   height: 140px;
   margin-bottom: 0.75rem;
+  background: rgba(72, 118, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+:global(html[data-theme="dark"]) .relatedThumbWrapper {
   background: radial-gradient(
     circle at top left,
-    rgba(148, 163, 255, 0.38),
-    rgba(15, 23, 42, 0.98)
+    rgba(72, 118, 255, 0.22),
+    rgba(2, 6, 23, 0.92)
   );
+  border-color: rgba(255, 255, 255, 0.08);
 }
 
 .relatedThumbImage {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
 }
 
 .relatedBody {
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
+  min-width: 0;
 }
 
 .relatedTitle {
   font-size: 0.95rem;
-  font-weight: 600;
+  font-weight: 800;
   margin: 0;
+  line-height: 1.25;
 }
 
 .relatedMeta {
@@ -418,10 +505,27 @@
   align-items: baseline;
   gap: 0.5rem;
   font-size: 0.82rem;
-  color: var(--color-text-muted);
+  color: var(--text-muted, rgba(15, 23, 42, 0.68));
 }
 
 .relatedPrice {
-  font-weight: 600;
-  color: var(--accent-strong);
+  font-weight: 900;
+  color: var(--accent, var(--accent-strong, #4a7cff));
+}
+
+/* =========================
+   SMALL SAFETY
+   ========================= */
+@media (max-width: 520px) {
+  .page {
+    padding: 2.2rem 1rem 3rem;
+  }
+
+  .mediaCard {
+    min-height: 320px;
+  }
+
+  .mediaPlaceholder {
+    min-height: 320px;
+  }
 }

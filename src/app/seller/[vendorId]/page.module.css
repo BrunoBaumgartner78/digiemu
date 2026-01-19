@@ -1,19 +1,27 @@
-/* src/app/seller/[vendorId]/page.module.css */
+/* src/app/seller/[vendorId]/page.module.css
+   Vendor Public Page – Neo / Tokenized
+*/
 
+/* =========================
+   Page
+   ========================= */
 .page {
   max-width: 1100px;
   margin: 0 auto;
   padding: 28px 18px 60px;
+  background: var(--page-bg);
+  color: var(--text-main);
 }
 
-/* Banner */
+/* =========================
+   Banner
+   ========================= */
 .banner {
   border-radius: 28px;
   overflow: hidden;
-  background: var(--bg-soft, #eef3fb);
-  border: 1px solid rgba(0, 0, 0, 0.05);
-  box-shadow: 18px 18px 36px rgba(15, 23, 42, 0.16),
-    -14px -14px 32px rgba(255, 255, 255, 0.85);
+  background: var(--neo-card-bg-soft);
+  border: 1px solid var(--neo-card-border);
+  box-shadow: var(--neo-card-shadow-strong);
 }
 
 .bannerMedia {
@@ -35,12 +43,15 @@
 
 .bannerPlaceholder {
   height: 240px;
-  background: radial-gradient(circle at 20% 20%, rgba(74, 124, 255, 0.22), transparent 50%),
+  background:
+    radial-gradient(circle at 20% 20%, var(--accent-soft), transparent 50%),
     radial-gradient(circle at 80% 40%, rgba(120, 200, 255, 0.18), transparent 55%),
     linear-gradient(180deg, rgba(255, 255, 255, 0.45), rgba(0, 0, 0, 0.03));
 }
 
-/* Header */
+/* =========================
+   Header Card
+   ========================= */
 .headerCard {
   margin-top: 18px;
   display: grid;
@@ -49,10 +60,9 @@
   align-items: center;
   padding: 18px;
   border-radius: 26px;
-  background: var(--bg, #e5ecf5);
-  border: 1px solid rgba(0, 0, 0, 0.04);
-  box-shadow: 14px 14px 28px rgba(15, 23, 42, 0.12),
-    -10px -10px 24px rgba(255, 255, 255, 0.85);
+  background: var(--neo-card-bg-soft);
+  border: 1px solid var(--neo-card-border);
+  box-shadow: var(--neo-card-shadow-soft);
 }
 
 .avatarWrap {
@@ -67,8 +77,7 @@
   border-radius: 999px;
   object-fit: cover;
   border: 2px solid rgba(255, 255, 255, 0.7);
-  box-shadow: 10px 10px 18px rgba(15, 23, 42, 0.16),
-    -8px -8px 16px rgba(255, 255, 255, 0.85);
+  box-shadow: var(--neo-shadow-soft);
 }
 
 .avatarFallback {
@@ -80,13 +89,10 @@
   justify-content: center;
   font-weight: 800;
   font-size: 28px;
-  background: rgba(255, 255, 255, 0.45);
-  border: 1px solid rgba(0, 0, 0, 0.04);
-  box-shadow: 10px 10px 18px rgba(15, 23, 42, 0.14),
-    -8px -8px 16px rgba(255, 255, 255, 0.85);
+  background: var(--bg-soft);
+  border: 1px solid var(--neo-card-border);
+  box-shadow: var(--neo-shadow-soft);
 }
-
-.headerText {}
 
 .kicker {
   font-size: 12px;
@@ -114,7 +120,9 @@
   flex-wrap: wrap;
 }
 
-/* Products */
+/* =========================
+   Products
+   ========================= */
 .productsSection {
   margin-top: 22px;
 }
@@ -136,23 +144,24 @@
   gap: 14px;
 }
 
+/* =========================
+   Product Card
+   ========================= */
 .card {
   display: block;
   text-decoration: none;
   color: inherit;
   border-radius: 22px;
   overflow: hidden;
-  background: var(--bg, #e5ecf5);
-  border: 1px solid rgba(0, 0, 0, 0.04);
-  box-shadow: 12px 12px 26px rgba(15, 23, 42, 0.12),
-    -10px -10px 22px rgba(255, 255, 255, 0.85);
+  background: var(--neo-card-bg-soft);
+  border: 1px solid var(--neo-card-border);
+  box-shadow: var(--neo-card-shadow-soft);
   transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
 
 .card:hover {
   transform: translateY(-2px);
-  box-shadow: 14px 14px 30px rgba(15, 23, 42, 0.14),
-    -12px -12px 26px rgba(255, 255, 255, 0.9);
+  box-shadow: var(--neo-card-shadow-strong);
 }
 
 .thumbWrap {
@@ -207,22 +216,27 @@
 
 .price {
   font-weight: 900;
+  color: var(--accent);
 }
 
 .cat {
   opacity: 0.8;
 }
 
+/* =========================
+   Private Card
+   ========================= */
 .privateCard {
   padding: 18px;
   border-radius: 26px;
-  background: var(--bg, #e5ecf5);
-  border: 1px solid rgba(0, 0, 0, 0.04);
-  box-shadow: 14px 14px 28px rgba(15, 23, 42, 0.12),
-    -10px -10px 24px rgba(255, 255, 255, 0.85);
+  background: var(--neo-card-bg-soft);
+  border: 1px solid var(--neo-card-border);
+  box-shadow: var(--neo-card-shadow-soft);
 }
 
-/* Responsive */
+/* =========================
+   Responsive
+   ========================= */
 @media (max-width: 980px) {
   .grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -234,9 +248,11 @@
     grid-template-columns: 1fr;
     text-align: center;
   }
+
   .links {
     justify-content: center;
   }
+
   .grid {
     grid-template-columns: 1fr;
   }

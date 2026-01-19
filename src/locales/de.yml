@@ -1,0 +1,38 @@
+ui:
+  notices:
+    minimal_error:
+      variant: error
+      title: null
+      text: "Token ist abgelaufen."
+
+    success_with_title:
+      variant: success
+      title: "Erfolgreich"
+      text: "Passwort wurde geändert. Bitte einloggen."
+
+resetPasswordNotices:
+  missing_token:
+    variant: error
+    title: "Link ungültig"
+    text: "Der Token fehlt. Bitte fordere einen neuen Reset-Link an."
+  invalid_token:
+    variant: error
+    title: "Link ungültig"
+    text: "Der Reset-Link ist nicht korrekt."
+  expired:
+    variant: warn
+    title: "Link abgelaufen"
+    text: "Bitte fordere einen neuen Reset-Link an."
+  success:
+    variant: success
+    title: "Erfolgreich"
+    text: "Passwort wurde geändert. Bitte einloggen."
+
+badges:
+  payoutStatus:
+    PENDING:
+      classKeys: ["badge", "badgePending"]
+      label: "PENDING"
+    PAID:
+      classKeys: ["badge", "badgePaid"]
+      label: "PAID"

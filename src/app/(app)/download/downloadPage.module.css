@@ -1,3 +1,5 @@
+/* src/app/download/downloadPage.module.css (DROP-IN, Neo/Neon-final) */
+
 .page {
   min-height: calc(100vh - 80px);
   padding: 48px 16px 64px;
@@ -12,46 +14,85 @@
   width: 100%;
   border-radius: 28px;
   padding: 28px 24px 24px;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.98),
-    rgba(255, 255, 255, 0.9)
-  );
+  position: relative;
+  overflow: hidden;
+
+  background:
+    radial-gradient(circle at 0% 0%, rgba(59, 130, 246, 0.12), transparent 55%),
+    radial-gradient(circle at 100% 0%, rgba(99, 102, 241, 0.10), transparent 55%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.9));
+  border: 1px solid rgba(226, 232, 240, 0.95);
+
   box-shadow:
     0 26px 60px rgba(15, 23, 42, 0.15),
-    0 0 0 1px rgba(226, 232, 240, 0.9);
+    -18px -18px 45px rgba(255, 255, 255, 0.65),
+    inset 0 1px 0 rgba(255, 255, 255, 0.55);
+
+  backdrop-filter: blur(12px);
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  inset: -35%;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(56, 189, 248, 0.18), transparent 60%),
+    radial-gradient(circle at 100% 0%, rgba(129, 140, 248, 0.16), transparent 55%),
+    radial-gradient(circle at 30% 100%, rgba(59, 130, 246, 0.12), transparent 55%);
+  filter: blur(14px);
+  opacity: 0.75;
 }
 
 .title {
+  position: relative;
+  z-index: 1;
   font-size: 1.4rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
+  font-weight: 750;
+  letter-spacing: -0.01em;
   margin-bottom: 8px;
+  color: #0f172a;
 }
 
 .lead {
+  position: relative;
+  z-index: 1;
   font-size: 0.95rem;
   color: #4b5563;
   margin-bottom: 18px;
+  line-height: 1.55;
 }
 
 .text {
+  position: relative;
+  z-index: 1;
   font-size: 0.9rem;
   color: #6b7280;
+  line-height: 1.6;
 }
 
 .infoBox {
+  position: relative;
+  z-index: 1;
   margin-top: 10px;
   margin-bottom: 18px;
   padding: 12px 14px;
   border-radius: 18px;
-  background: radial-gradient(circle at top left, #dbeafe, #eff6ff);
-  box-shadow: inset 0 0 0 1px rgba(191, 219, 254, 0.8);
+
+  background:
+    radial-gradient(circle at 0% 0%, rgba(191, 219, 254, 0.85), transparent 60%),
+    radial-gradient(circle at 100% 0%, rgba(224, 231, 255, 0.7), transparent 55%),
+    rgba(255, 255, 255, 0.65);
+
+  border: 1px solid rgba(191, 219, 254, 0.9);
+  box-shadow:
+    10px 10px 24px rgba(15, 23, 42, 0.10),
+    inset 0 1px 0 rgba(255, 255, 255, 0.65);
 }
 
 .infoTitle {
   margin: 0 0 4px;
-  font-weight: 600;
+  font-weight: 650;
   font-size: 0.95rem;
   color: #1f2937;
 }
@@ -60,24 +101,35 @@
   margin: 0;
   font-size: 0.85rem;
   color: #4b5563;
+  line-height: 1.55;
 }
 
 .downloadButton {
+  position: relative;
+  z-index: 1;
+
   display: inline-flex;
   align-items: center;
   justify-content: center;
+
   padding: 10px 20px;
+  min-height: 44px;
   border-radius: 999px;
   border: 1px solid rgba(55, 48, 163, 0.7);
-  background: radial-gradient(circle at 30% 0%, #eef2ff, #4338ca);
+
+  background:
+    radial-gradient(circle at 30% 0%, rgba(238, 242, 255, 0.95), rgba(67, 56, 202, 1));
   color: #f9fafb;
   text-decoration: none;
   font-size: 0.95rem;
-  font-weight: 600;
+  font-weight: 650;
   margin-top: 4px;
+
   box-shadow:
     0 18px 40px rgba(79, 70, 229, 0.45),
+    0 0 0 1px rgba(15, 23, 42, 0.10),
     inset 0 1px 2px rgba(255, 255, 255, 0.4);
+
   transition:
     transform 0.16s ease,
     box-shadow 0.16s ease,
@@ -89,50 +141,138 @@
   filter: brightness(1.05);
   box-shadow:
     0 22px 50px rgba(79, 70, 229, 0.6),
+    0 0 22px rgba(99, 102, 241, 0.18),
     inset 0 1px 3px rgba(255, 255, 255, 0.5);
 }
 
+.downloadButton:active {
+  transform: translateY(0);
+  filter: brightness(0.99);
+  box-shadow:
+    0 14px 34px rgba(79, 70, 229, 0.5),
+    inset 0 1px 3px rgba(255, 255, 255, 0.35);
+}
+
+/* Tastatur-freundlicher Focus */
+.downloadButton:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 3px rgba(96, 165, 250, 0.55),
+    0 22px 50px rgba(79, 70, 229, 0.6);
+}
+
 .smallPrint {
+  position: relative;
+  z-index: 1;
   margin-top: 14px;
   font-size: 0.8rem;
   color: #9ca3af;
+  line-height: 1.5;
 }
 
+/* Prefer-theme support: wenn ihr html[data-theme] nutzt, ist das stabiler als prefers-color-scheme */
+:global(html[data-theme="dark"]) .page {
+  background: radial-gradient(circle at top left, #020617, #020617 40%, #020617 100%);
+}
+
+:global(html[data-theme="dark"]) .card {
+  background:
+    radial-gradient(circle at 0% 0%, rgba(59, 130, 246, 0.22), transparent 55%),
+    radial-gradient(circle at 100% 0%, rgba(99, 102, 241, 0.18), transparent 55%),
+    rgba(2, 6, 23, 0.82);
+  border: 1px solid rgba(30, 64, 175, 0.55);
+  box-shadow:
+    0 26px 60px rgba(0, 0, 0, 0.85),
+    inset 0 0 0 1px rgba(30, 64, 175, 0.32);
+}
+
+:global(html[data-theme="dark"]) .title {
+  color: rgba(248, 250, 252, 0.98);
+}
+
+:global(html[data-theme="dark"]) .lead,
+:global(html[data-theme="dark"]) .text {
+  color: rgba(148, 163, 184, 0.92);
+}
+
+:global(html[data-theme="dark"]) .infoBox {
+  background:
+    radial-gradient(circle at 0% 0%, rgba(29, 78, 216, 0.38), transparent 60%),
+    rgba(15, 23, 42, 0.62);
+  border: 1px solid rgba(59, 130, 246, 0.55);
+  box-shadow:
+    0 18px 48px rgba(0, 0, 0, 0.55),
+    inset 0 0 0 1px rgba(30, 64, 175, 0.22);
+}
+
+:global(html[data-theme="dark"]) .infoTitle {
+  color: rgba(248, 250, 252, 0.98);
+}
+
+:global(html[data-theme="dark"]) .infoText {
+  color: rgba(203, 213, 245, 0.95);
+}
+
+:global(html[data-theme="dark"]) .smallPrint {
+  color: rgba(148, 163, 184, 0.70);
+}
+
+/* Fallback: wenn ihr (noch) kein html[data-theme] habt -> respektiere System Dark Mode */
 @media (prefers-color-scheme: dark) {
   .page {
     background: radial-gradient(circle at top left, #020617, #020617 40%, #020617 100%);
   }
 
   .card {
-    background: radial-gradient(circle at top left, #020617, #020617 50%, #020617 100%);
+    background:
+      radial-gradient(circle at 0% 0%, rgba(59, 130, 246, 0.22), transparent 55%),
+      radial-gradient(circle at 100% 0%, rgba(99, 102, 241, 0.18), transparent 55%),
+      rgba(2, 6, 23, 0.82);
+    border: 1px solid rgba(30, 64, 175, 0.55);
     box-shadow:
       0 26px 60px rgba(0, 0, 0, 0.85),
-      0 0 0 1px rgba(30, 64, 175, 0.55);
+      inset 0 0 0 1px rgba(30, 64, 175, 0.32);
   }
 
   .title {
-    color: #e5e7eb;
+    color: rgba(248, 250, 252, 0.98);
   }
 
   .lead,
   .text {
-    color: #9ca3af;
+    color: rgba(148, 163, 184, 0.92);
   }
 
   .infoBox {
-    background: radial-gradient(circle at top left, #1d4ed8, #020617);
-    box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.8);
+    background:
+      radial-gradient(circle at 0% 0%, rgba(29, 78, 216, 0.38), transparent 60%),
+      rgba(15, 23, 42, 0.62);
+    border: 1px solid rgba(59, 130, 246, 0.55);
+    box-shadow:
+      0 18px 48px rgba(0, 0, 0, 0.55),
+      inset 0 0 0 1px rgba(30, 64, 175, 0.22);
   }
 
   .infoTitle {
-    color: #e5e7eb;
+    color: rgba(248, 250, 252, 0.98);
   }
 
   .infoText {
-    color: #cbd5f5;
+    color: rgba(203, 213, 245, 0.95);
   }
 
   .smallPrint {
-    color: #6b7280;
+    color: rgba(148, 163, 184, 0.70);
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .downloadButton {
+    transition: none;
+  }
+  .downloadButton:hover,
+  .downloadButton:active {
+    transform: none;
   }
 }

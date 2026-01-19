@@ -578,3 +578,102 @@
   white-space: pre-wrap;
   opacity: .82;
 }
+
+/* =========================================================
+   PROFILE CSS – CONSISTENCY PATCH (Drop-in, paste at END)
+   هدف: Duplikate entschärfen + Focus + Theme
+========================================================= */
+
+/* 1) Buttons: keyboard friendly */
+.upload-btn:focus-visible,
+.profile-actions :global(.neobtn):focus-visible {
+  outline: 2px solid rgba(72, 118, 255, 0.55);
+  outline-offset: 3px;
+}
+
+/* 2) Wenn profile-shell vorhanden ist, sollen die scoped globals gewinnen */
+.profile-shell :global(.profile-images) { gap: 14px; }
+.profile-shell :global(.image-card) { border-radius: var(--radius-xl, 1.4rem); }
+
+/* 3) Verhindert, dass doppelte Regeln "flackern":
+      Wenn scoped Bereich da ist, machen wir die unscoped Regeln neutraler */
+.profile-shell .profile-images { gap: 14px; }
+.profile-shell .image-card { border-radius: var(--radius-xl, 1.4rem); }
+
+/* 4) Preview Overlay: mobile wrap + nicer spacing */
+.preview-overlay,
+.profile-shell :global(.preview-overlay) {
+  flex-wrap: wrap;
+}
+
+.preview-meta,
+.profile-shell :global(.preview-meta) {
+  min-width: 0;
+}
+
+/* 5) Banner/Avatar preview: sichere Kontraste + border */
+.image-preview,
+.profile-shell :global(.image-preview) {
+  background: radial-gradient(circle at 0 100%, rgba(11, 17, 32, 0.92), rgba(2, 6, 23, 0.88));
+}
+
+/* 6) Light Mode (wenn du html[data-theme="light"] nutzt wie im Dashboard) */
+:global(html[data-theme="light"]) .profile-shell {
+  background: radial-gradient(circle at top, #dbeafe, #e5e7eb);
+}
+
+:global(html[data-theme="light"]) .image-card,
+:global(html[data-theme="light"]) .preview-card {
+  background: rgba(255, 255, 255, 0.65);
+  border: 1px solid rgba(15, 23, 42, 0.10);
+  box-shadow:
+    14px 14px 30px rgba(15, 23, 42, 0.10),
+    -14px -14px 30px rgba(255, 255, 255, 0.85);
+}
+
+:global(html[data-theme="light"]) .image-card h3,
+:global(html[data-theme="light"]) .upload-title,
+:global(html[data-theme="light"]) .preview-name,
+:global(html[data-theme="light"]) .profile-title {
+  color: #0f172a;
+}
+
+:global(html[data-theme="light"]) .upload-sub,
+:global(html[data-theme="light"]) .preview-sub,
+:global(html[data-theme="light"]) .profile-sub,
+:global(html[data-theme="light"]) .preview-bio {
+  color: rgba(15, 23, 42, 0.70);
+}
+
+:global(html[data-theme="light"]) .upload-btn {
+  background: linear-gradient(180deg, rgba(72,118,255,.22), rgba(72,118,255,.10));
+  border-color: rgba(72,118,255,.22);
+  color: #0f172a;
+  box-shadow:
+    12px 12px 26px rgba(15, 23, 42, 0.10),
+    inset 0 0 0 1px rgba(255,255,255,.6);
+}
+
+:global(html[data-theme="light"]) .upload-overlay {
+  background: rgba(255, 255, 255, 0.55);
+  color: rgba(15, 23, 42, 0.92);
+}
+
+/* 7) Responsive polish: Avatar frame auf kleine Screens etwas kleiner */
+@media (max-width: 480px) {
+  .avatar-frame,
+  .profile-shell :global(.avatar-frame) {
+    height: 210px;
+  }
+
+  .avatar-img,
+  .profile-shell :global(.avatar-img) {
+    width: 160px;
+    height: 160px;
+  }
+
+  .preview-name,
+  .profile-shell :global(.preview-name) {
+    font-size: 15px;
+  }
+}

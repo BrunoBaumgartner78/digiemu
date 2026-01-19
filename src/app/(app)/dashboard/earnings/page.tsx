@@ -18,11 +18,9 @@ function clamp(n: number, min: number, max: number) {
   return Math.max(min, Math.min(max, n));
 }
 
-export default async function VendorEarningsPage({
-  searchParams,
-}: {
-  searchParams?: { page?: string };
-}) {
+type PageProps = { searchParams?: Promise<{ page?: string }> };
+
+export default async function VendorEarningsPage({ searchParams }: PageProps) {
   const session = await requireVendorPage();
   if (!session?.user) redirect("/login");
   const user = session.user as { id?: string; role?: string };
@@ -41,7 +39,8 @@ export default async function VendorEarningsPage({
 
   // Pagination
   const pageSize = 25;
-  const pageRaw = Number(searchParams?.page ?? "1");
+  const sp = await searchParams;
+  const pageRaw = Number(sp?.page ?? "1");
   const page = Number.isFinite(pageRaw) ? Math.max(1, Math.floor(pageRaw)) : 1;
 
   // ======================================================================

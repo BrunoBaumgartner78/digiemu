@@ -1,3 +1,5 @@
+/* Payouts.module.css */
+
 .payoutsShell {
   max-width: 1120px;
   margin: 0 auto;
@@ -11,11 +13,14 @@
   margin-bottom: 0.7rem;
 }
 
+/* === Summary ======================================================= */
+
 .summaryCard {
   background: var(--neo-card-bg-soft);
   border-radius: 1.3rem;
+  border: 1px solid var(--neo-card-border, rgba(148, 163, 184, 0.28));
   box-shadow: var(--neo-card-shadow-soft);
-  padding: 1.3rem 1.1rem 1.1rem 1.1rem;
+  padding: 1.3rem 1.2rem 1.15rem;
   display: flex;
   gap: 2.2rem;
   margin-bottom: 2.2rem;
@@ -27,78 +32,165 @@
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
+  min-width: 160px;
 }
 
 .summaryLabel {
-  font-size: 0.98rem;
+  font-size: 0.95rem;
+  letter-spacing: 0.04em;
   color: var(--color-text-muted);
 }
 
 .summaryValue {
   font-size: 1.25rem;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--color-text-primary);
 }
+
+/* === List / Table ================================================== */
 
 .listCard {
   background: var(--neo-card-bg-strong);
   border-radius: 1.5rem;
+  border: 1px solid var(--neo-card-border, rgba(148, 163, 184, 0.28));
   box-shadow: var(--neo-card-shadow-strong);
-  padding: 2rem 1.6rem 1.6rem 1.6rem;
+  padding: 2rem 1.6rem 1.6rem;
+  overflow: hidden;
 }
 
 .table {
   width: 100%;
   border-collapse: separate;
-  border-spacing: 0 0.7rem;
+  border-spacing: 0 0.75rem; /* "Card-Rows" */
 }
 
-.th, .td {
+.th,
+.td {
   text-align: left;
-  padding: 0.7rem 0.6rem;
+  padding: 0.75rem 0.7rem;
   color: var(--color-text-primary);
   font-size: 0.98rem;
 }
 
 .th {
   color: var(--color-text-muted);
-  font-weight: 500;
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 0.78rem;
+  padding-top: 0;
 }
+
+/* Optional: Row styling, falls du <tr className={styles.row}> setzt */
+.row {
+  background: var(--neo-card-bg-soft);
+  border-radius: 1.15rem;
+  box-shadow: var(--neo-card-shadow-soft);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+/* Table "card row" rounding */
+.row .td:first-child {
+  border-top-left-radius: 1.15rem;
+  border-bottom-left-radius: 1.15rem;
+}
+.row .td:last-child {
+  border-top-right-radius: 1.15rem;
+  border-bottom-right-radius: 1.15rem;
+}
+
+/* hover/focus feel (wenn du row verwendest) */
+.row:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--neo-card-shadow-soft), 0 0 22px rgba(74, 124, 255, 0.12);
+}
+
+/* === Badge ========================================================= */
 
 .badge {
-  display: inline-block;
-  padding: 0.32em 1.1em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+
+  padding: 0.36em 1.05em;
   border-radius: 999px;
-  font-size: 0.92em;
-  font-weight: 600;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  font-size: 0.88em;
+  font-weight: 750;
+  letter-spacing: 0.04em;
+
   background: var(--badge-bg);
   color: var(--badge-text);
-  border: none;
+  border: 1px solid var(--badge-border, rgba(0, 0, 0, 0.06));
+
+  box-shadow:
+    0 10px 26px rgba(15, 23, 42, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
 }
 
-.badge-pending {
-  --badge-bg: linear-gradient(90deg, #fbbf24 60%, #f59e42 100%);
+/* Pending */
+.badgePending {
+  --badge-bg: linear-gradient(90deg, rgba(251, 191, 36, 0.95) 55%, rgba(245, 158, 11, 0.95) 100%);
   --badge-text: #78350f;
+  --badge-border: rgba(245, 158, 11, 0.25);
 }
 
-.badge-paid {
-  --badge-bg: linear-gradient(90deg, #34d399 60%, #10b981 100%);
+/* Paid */
+.badgePaid {
+  --badge-bg: linear-gradient(90deg, rgba(52, 211, 153, 0.95) 55%, rgba(16, 185, 129, 0.95) 100%);
   --badge-text: #065f46;
+  --badge-border: rgba(16, 185, 129, 0.22);
 }
+
+/* Dark mode readability */
+@media (prefers-color-scheme: dark) {
+  .summaryCard,
+  .listCard {
+    border-color: rgba(120, 150, 255, 0.18);
+  }
+
+  .badge {
+    box-shadow:
+      0 14px 40px rgba(0, 0, 0, 0.55),
+      inset 0 1px 0 rgba(148, 163, 184, 0.10);
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .badgePending {
+    --badge-text: #0b1020; /* dunkler Text auf gelb ist nachts besser */
+  }
+
+  .badgePaid {
+    --badge-text: #0b1020;
+  }
+}
+
+/* === Notes / Empty ================================================= */
 
 .note {
   font-size: 0.92em;
   color: var(--color-text-muted);
-  margin-top: 0.2em;
+  margin-top: 0.25em;
+  line-height: 1.45;
 }
 
 .emptyCard {
   background: var(--neo-card-bg-soft);
   border-radius: 1.3rem;
+  border: 1px solid var(--neo-card-border, rgba(148, 163, 184, 0.28));
   box-shadow: var(--neo-card-shadow-soft);
   padding: 2rem 1.6rem;
   text-align: center;
   color: var(--color-text-muted);
-  font-size: 1.08rem;
+  font-size: 1.05rem;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .row {
+    transition: none;
+  }
+  .row:hover {
+    transform: none;
+  }
 }
