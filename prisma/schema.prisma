@@ -231,16 +231,20 @@ model Payout {
   status      PayoutStatus @default(PENDING)
   vendor      User         @relation(fields: [vendorId], references: [id])
 }
-
 model PasswordReset {
   id        String   @id @default(cuid())
   token     String   @unique
   userId    String
   expiresAt DateTime
+  createdAt DateTime @default(now())
+
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+  @@index([expiresAt])
 }
+
+
 
 enum VendorStatus {
   PENDING
