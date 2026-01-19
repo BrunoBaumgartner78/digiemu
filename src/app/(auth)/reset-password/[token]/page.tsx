@@ -1,74 +1,93 @@
-// app/(auth)/reset-password/[token]/page.tsx
-import { prisma } from "@/lib/prisma";
+// src/app/(auth)/reset-password/[token]/page.tsx
 import crypto from "crypto";
-import Link from "next/link";
-import ResetPasswordForm from "./ResetPasswordForm";
+import { prisma } from "@/lib/prisma";
+import styles from "./page.module.css";
+import { notFound } from "next/navigation";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+function sha256(input: string) {
+  return crypto.createHash("sha256").update(input).digest("hex");
+}
+
 export default async function ResetPasswordPage({
   params,
 }: {
-  params: { token: string };
+  params: Promise<{ token?: string }>;
 }) {
-  const token = params.token;
+  const { token } = await params;
 
-  const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+  if (!token || typeof token !== "string") notFound();
+
+  const tokenHash = sha256(token);
 
   const reset = await prisma.passwordReset.findUnique({
     where: { token: tokenHash },
-    select: { id: true, token: true, expiresAt: true, userId: true },
   });
 
-  const now = new Date();
-  const isValid = !!reset && reset.expiresAt > now;
-
-  if (!isValid) {
-    return (
-      <main className="min-h-screen flex items-center justify-center p-6">
-        <div className="w-full max-w-md rounded-2xl border bg-white/70 p-6 shadow-sm">
-          <h1 className="text-xl font-semibold">Reset-Link ungültig</h1>
-          <p className="mt-2 text-sm text-gray-600">
-            Dieser Reset-Link ist abgelaufen oder nicht mehr gültig. Bitte fordere
-            einen neuen Link an.
-          </p>
-
-          <div className="mt-6 flex gap-3">
-            <Link
-              href="/forgot-password"
-              className="inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-medium border bg-white"
-            >
-              Neuer Link
-            </Link>
-            <Link
-              href="/login"
-              className="inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-medium border bg-white"
-            >
-              Zum Login
-            </Link>
-          </div>
-        </div>
-      </main>
-    );
-  }
+  if (!reset || reset.expiresAt < new Date()) notFound();
 
   return (
-    <main className="min-h-screen flex items-center justify-center p-6">
-      <div className="w-full max-w-md rounded-2xl border bg-white/70 p-6 shadow-sm">
-        <h1 className="text-xl font-semibold">Neues Passwort setzen</h1>
-        <p className="mt-2 text-sm text-gray-600">
-          Bitte wähle ein neues Passwort für dein Konto.
-        </p>
-
-        <div className="mt-6">
-          <ResetPasswordForm token={token} />
+    <div className={styles.page}>
+      <div className={styles.card}>
+        <div className={styles.header}>
+          <div className={styles.eyebrow}>KONTO</div>
+          <h1 className={styles.title}>Neues Passwort</h1>
+          <p className={styles.subtitle}>
+            Bitte vergib ein neues Passwort für dein Konto.
+          </p>
         </div>
 
-        <p className="mt-6 text-xs text-gray-500">
-          Hinweis: Der Link ist zeitlich begrenzt gültig.
-        </p>
+        <div className={styles.glowLine} />
+
+        {/* Client-Form via native POST to API route */}
+        <form className={styles.form} action="/api/auth/reset-password" method="POST">
+          <input type="hidden" name="token" value={token} />
+
+          <div className={styles.field}>
+            <label className={styles.label} htmlFor="password">
+              Neues Passwort
+            </label>
+            <input
+              className={styles.input}
+              id="password"
+              name="password"
+              type="password"
+              autoComplete="new-password"
+              required
+              minLength={8}
+              placeholder="Mindestens 8 Zeichen"
+            />
+          </div>
+
+          <div className={styles.field}>
+            <label className={styles.label} htmlFor="password2">
+              Passwort wiederholen
+            </label>
+            <input
+              className={styles.input}
+              id="password2"
+              name="password2"
+              type="password"
+              autoComplete="new-password"
+              required
+              minLength={8}
+              placeholder="Nochmal eingeben"
+            />
+          </div>
+
+          <div className={styles.row}>
+            <button className={styles.button} type="submit">
+              Passwort speichern
+            </button>
+          </div>
+
+          <p className={styles.note}>
+            Tipp: Verwende eine Passphrase (3–4 Wörter) oder mindestens 12 Zeichen.
+          </p>
+        </form>
       </div>
-    </main>
+    </div>
   );
 }
