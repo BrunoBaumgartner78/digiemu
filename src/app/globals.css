@@ -10,16 +10,23 @@ html { scroll-behavior: smooth; }
 
 /* =========================================================
    THEME TRUTH
-   - If next-themes sets html[data-theme], that wins.
-   - prefers-color-scheme is only a fallback when no data-theme.
+   - html[data-theme] (next-themes) wins always.
+   - prefers-color-scheme is ONLY fallback when no data-theme.
    ========================================================= */
 
 html[data-theme="light"] { color-scheme: light; }
-html[data-theme="dark"] { color-scheme: dark; }
+html[data-theme="dark"]  { color-scheme: dark; }
 
 @media (prefers-color-scheme: dark) {
   html:not([data-theme]) { color-scheme: dark; }
 }
+@media (prefers-color-scheme: light) {
+  html:not([data-theme]) { color-scheme: light; }
+}
+
+/* Optional legacy mapping */
+html.dark { color-scheme: dark; }
+
 
 /* =========================================================
    TOKENS (Light default)

@@ -10,9 +10,10 @@ type Props = {
 export function ThemeProvider({ children }: Props) {
   return (
     <NextThemesProvider
-      attribute="class"        // schreibt "class='light'" oder "class='dark'" auf <html>
-      defaultTheme="dark"      // Start im Dark-Mode
-      enableSystem={false}     // System-Theme ignorieren -> nur Toggle steuert
+      attribute="data-theme"        // schreibt data-theme="light" / "dark" auf <html>
+      defaultTheme="system"         // respect system preference by default
+      enableSystem
+      disableTransitionOnChange
     >
       {children}
     </NextThemesProvider>
