@@ -28,7 +28,11 @@ export default async function AccountDownloadsPage({
   searchParams: Promise<SearchParams>;
 }) {
   const session = await requireSessionPage();
-  const userId = (session?.user as any)?.id as string | undefined;
+  // derive user id from common fields (id, uid, sub)
+  const rawUser = (session?.user as any) ?? null;
+  // optional: log session.user for debugging on Vercel
+  // console.log("session.user", rawUser);
+  const userId = String(rawUser?.id ?? rawUser?.uid ?? rawUser?.sub ?? "");
 
   if (!userId) {
     redirect("/login?callbackUrl=/account/downloads");
@@ -44,7 +48,7 @@ export default async function AccountDownloadsPage({
   const total = await prisma.order.count({
     where: {
       buyerId: userId,
-      status: "PAID",
+      status: "COMPLETED",
     },
   });
 
@@ -59,7 +63,7 @@ export default async function AccountDownloadsPage({
   const orders = await prisma.order.findMany({
     where: {
       buyerId: userId,
-      status: "PAID",
+      status: "COMPLETED",
     },
     orderBy: { createdAt: "desc" },
     skip,

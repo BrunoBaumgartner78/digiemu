@@ -104,7 +104,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="de" suppressHydrationWarning>
+    <html lang="de" suppressHydrationWarning data-theme="dark">
       <body className="bg-[var(--page-bg)] text-[var(--text-main)]">
         {children}
         <CookieBanner />

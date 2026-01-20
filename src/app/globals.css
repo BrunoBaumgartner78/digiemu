@@ -28,6 +28,7 @@ html[data-theme="dark"]  { color-scheme: dark; }
 html.dark { color-scheme: dark; }
 
 
+
 /* =========================================================
    TOKENS (Light default)
    Keep your neumorph vibe + add unified UI state tokens
@@ -149,6 +150,15 @@ html.dark { color-scheme: dark; }
   --notice-error: 239 68 68;    /* red */
   --notice-warn: 245 158 11;    /* amber */
 }
+:root{
+  --neo-card-shadow-soft: 0 14px 40px rgba(15, 23, 42, 0.10);
+  --neo-card-shadow-strong: 0 22px 60px rgba(15, 23, 42, 0.16);
+}
+html[data-theme="dark"], html.dark{
+  --neo-card-shadow-soft: 18px 18px 44px rgba(0,0,0,0.55), -18px -18px 44px rgba(255,255,255,0.06);
+  --neo-card-shadow-strong: 26px 26px 70px rgba(0,0,0,0.75), -26px -26px 70px rgba(255,255,255,0.08);
+}
+
 
 /* =========================================================
    DARK MODE TOKENS

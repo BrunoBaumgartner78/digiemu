@@ -3,12 +3,21 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 
+type ApiResp =
+  | { ready: true; orderId: string; status?: string }
+  | { ready: false; reason?: string; status?: string; orderId?: string }
+  | null;
+
 export default function SuccessPoller({ sessionId }: { sessionId: string }) {
   const router = useRouter();
+
   const [tries, setTries] = React.useState(0);
-  const [msg, setMsg] = React.useState("Warte auf Bestätigung...");
-  const MAX_TRIES = 8; // ~9.6s with INTERVAL_MS
+  const [msg, setMsg] = React.useState("Warte auf Bestätigung…");
+
+  // ✅ Live realistischer
+  const MAX_TRIES = 60; // ~72s bei 1200ms
   const INTERVAL_MS = 1200;
+
   const intervalRef = React.useRef<number | null>(null);
 
   React.useEffect(() => {
@@ -16,63 +25,75 @@ export default function SuccessPoller({ sessionId }: { sessionId: string }) {
 
     async function tick() {
       try {
-        const res = await fetch(`/api/orders/by-session?session_id=${encodeURIComponent(sessionId)}`, {
-          method: "GET",
-          cache: "no-store",
-        });
-        const data = await res.json().catch(() => null);
+        const url = `/api/orders/by-session?session_id=${encodeURIComponent(sessionId)}`;
+        const res = await fetch(url, { method: "GET", cache: "no-store" });
+        const data: ApiResp = await res.json().catch(() => null);
 
         if (!alive) return;
 
-        if (res.ok && data?.ready && data?.orderId) {
-          // stop polling and navigate
+        // ✅ fertig -> weiterleiten
+        if (res.ok && data && (data as any).ready && (data as any).orderId) {
           if (intervalRef.current) {
-            clearInterval(intervalRef.current as unknown as number);
+            clearInterval(intervalRef.current);
             intervalRef.current = null;
           }
-          // COMPLETED reached (delivery ready)
-          router.replace(`/download/${data.orderId}`);
+          router.replace(`/download/${(data as any).orderId}`);
           return;
         }
-        setMsg(
-          data?.reason === "NOT_PAID_YET"
-            ? "Zahlung noch nicht bestätigt..."
-            : "Wir erstellen Bestellung & Download-Link..."
-        );
+
+        // ✅ Status-basierte UX (wenn API status liefert)
+        const status = (data as any)?.status as string | undefined;
+        const reason = (data as any)?.reason as string | undefined;
+
+        if (status === "PENDING" || reason === "NOT_PAID_YET") {
+          setMsg("Zahlung noch nicht bestätigt…");
+        } else if (status === "PAID" || reason === "PAID_NOT_DELIVERED_YET") {
+          setMsg("Lieferung wird vorbereitet (Download-Link wird erstellt)…");
+        } else {
+          setMsg("Wir erstellen Bestellung & Download-Link…");
+        }
+
+        // ✅ wenn Server kurz zickt, nicht sofort abbrechen
+        if (!res.ok && res.status >= 500) {
+          setMsg("Server beschäftigt… bitte kurz warten…");
+        }
       } catch {
         if (!alive) return;
-        setMsg("Fehler beim Prüfen. Bitte kurz warten...");
+        setMsg("Fehler beim Prüfen… bitte kurz warten…");
       } finally {
         if (!alive) return;
+
         setTries((t) => {
           const next = t + 1;
           if (next >= MAX_TRIES) {
-            // stop polling
             if (intervalRef.current) {
-              clearInterval(intervalRef.current as unknown as number);
+              clearInterval(intervalRef.current);
               intervalRef.current = null;
             }
-            setMsg("Zeitüberschreitung beim Warten. Bitte lade die Seite neu oder prüfe deine Bestellungen.");
-            return Math.min(next, MAX_TRIES);
+            setMsg(
+              "Zeitüberschreitung. Bitte lade die Seite neu oder prüfe deine Downloads."
+            );
+            return MAX_TRIES;
           }
           return next;
         });
       }
-
     }
 
-    intervalRef.current = window.setInterval(tick, INTERVAL_MS) as unknown as number;
+    intervalRef.current = window.setInterval(tick, INTERVAL_MS);
     tick();
 
     return () => {
       alive = false;
-      if (intervalRef.current) clearInterval(intervalRef.current as unknown as number);
+      if (intervalRef.current) clearInterval(intervalRef.current);
     };
   }, [router, sessionId]);
 
   return (
     <div style={{ display: "grid", gap: 10 }}>
-      <p className="neo-text" style={{ margin: 0 }}>{msg}</p>
+      <p className="neo-text" style={{ margin: 0 }}>
+        {msg}
+      </p>
 
       <p className="neo-text opacity-70" style={{ margin: 0, fontSize: 13 }}>
         Warte auf Bestätigung ({tries}/{MAX_TRIES})

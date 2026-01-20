@@ -1,26 +1,25 @@
-.statusPending {
-  background: radial-gradient(
-    circle at top,
-    #fde68a 0%,
-    #fbbf24 55%,
-    #f59e0b 100%
-  );
-  color: #1f2937;
-  box-shadow: 0 10px 24px rgba(245, 158, 11, 0.35);
+/* src/app/account/downloads/page.module.css */
+/* DROP-IN for AccountDownloadsPage (matches page.tsx exactly)
+   - theme truth: html[data-theme="dark"] + html.dark
+   - includes paginationBar/paginationControls/pageNumbers/pageActive/disabled/dots
+   - avoids hard-coded light text colors; uses your globals tokens
+*/
+
+/* ===========================
+   Shared helpers
+   =========================== */
+
+.muted {
+  color: var(--text-muted);
 }
 
-.code {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  font-size: 0.78rem;
-  padding: 0.08rem 0.4rem;
-  border-radius: 0.6rem;
-  background: rgba(148, 163, 184, 0.18);
-  border: 1px solid rgba(148, 163, 184, 0.22);
+.disabled {
+  opacity: 0.45;
+  pointer-events: none;
+  cursor: not-allowed;
+  filter: grayscale(0.2);
 }
-/* Dark mode for statusPending */
-:global(.dark) .statusPending {
-  color: #0b1020;
-}
+
 /* ===========================
    Layout
    =========================== */
@@ -30,7 +29,8 @@
   padding: 4rem 1.5rem 6rem;
   display: flex;
   justify-content: center;
-  background: var(--page-bg); /* nutzt Tokens aus globals.css */
+  background: var(--page-bg);
+  color: var(--text-main);
   transition: background 0.3s ease, color 0.3s ease;
 }
 
@@ -40,7 +40,6 @@
   margin: 0 auto;
 }
 
-
 /* ===========================
    Headline
    =========================== */
@@ -48,38 +47,108 @@
 .heading {
   font-size: clamp(2.2rem, 3vw, 2.6rem);
   font-weight: 800;
-  letter-spacing: 0.04em;
-  margin-bottom: 0.6rem;
-  color: #0b1020;
+  letter-spacing: 0.02em;
+  margin: 0 0 0.6rem;
+  color: var(--text-main);
 }
 
 .subheading {
   max-width: 640px;
   font-size: 0.98rem;
   line-height: 1.6;
-  color: #475569;
+  margin: 0;
+  color: var(--text-muted);
 }
 
 /* ===========================
-   Liste & Karten (Shop-Style)
+   Pagination
+   =========================== */
+
+.paginationBar {
+  margin-top: 2.2rem;
+  margin-bottom: 1.2rem;
+  padding: 1rem 1.1rem;
+  border-radius: var(--radius-xl);
+  background: var(--neo-card-bg-soft);
+  border: 1px solid var(--neo-card-border);
+  box-shadow: var(--neo-shadow-soft, 0 14px 40px rgba(15, 23, 42, 0.10));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.paginationMeta {
+  font-size: 0.9rem;
+  color: var(--text-main);
+}
+
+.paginationControls {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+
+.pageNumbers {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.dots {
+  opacity: 0.65;
+  padding: 0.35rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-soft);
+  background: color-mix(in srgb, var(--card-bg) 55%, transparent);
+}
+
+/* active page pill (still uses neobtn ghost base) */
+.pageActive {
+  border-color: rgba(37, 99, 235, 0.55) !important;
+  box-shadow:
+    0 0 0 3px var(--ui-focus-soft, rgba(37, 99, 235, 0.18)),
+    0 0 0 1px var(--ui-focus, rgba(37, 99, 235, 0.55)) !important;
+}
+
+.paginationBarBottom {
+  margin-top: 1.4rem;
+  padding: 1rem 1.1rem;
+  border-radius: var(--radius-xl);
+  background: var(--neo-card-bg-soft);
+  border: 1px solid var(--neo-card-border);
+  box-shadow: var(--neo-shadow-soft, 0 14px 40px rgba(15, 23, 42, 0.10));
+}
+
+/* ===========================
+   List
    =========================== */
 
 .list {
-  margin-top: 2.4rem;
+  margin-top: 1.4rem;
   display: flex;
   flex-direction: column;
-  gap: 1.8rem;
+  gap: 1.15rem;
+  padding: 0;
+  list-style: none;
 }
 
-/* Eine Card, Light-Mode ähnlich wie Marketplace-Karten */
+/* ===========================
+   Card (order row)
+   =========================== */
+
+
 .card {
   position: relative;
   display: grid;
   grid-template-columns: auto 1fr auto;
-  gap: 1.4rem;
-  padding: 1.6rem 1.8rem;
+  gap: 1.2rem;
+  padding: 1.4rem 1.4rem;
   border-radius: var(--radius-xl);
-  background: var(--neo-card-bg-soft);       /* Light/Dark kommt über Tokens */
+  background: var(--neo-card-bg-soft);
   border: 1px solid var(--neo-card-border);
   box-shadow: var(--neo-card-shadow-soft);
   align-items: center;
@@ -95,34 +164,47 @@
   box-shadow: var(--neo-card-shadow-strong);
 }
 
-
 .cardMain {
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
-}
-
-.titleRow {
-  display: flex;
-  align-items: baseline;
-  gap: 0.6rem;
+  min-width: 0;
 }
 
 .productTitle {
-  font-weight: 600;
-  font-size: 1rem;
-  color: #0f172a;
+  font-weight: 700;
+  font-size: 1.02rem;
+  margin: 0;
+  color: var(--text-main);
 }
 
 .orderMeta {
   font-size: 0.78rem;
-  color: #64748b;
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.4;
 }
 
 .description {
-  margin-top: 0.25rem;
-  font-size: 0.88rem;
-  color: #4b5563;
+  margin: 0.2rem 0 0;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: color-mix(in srgb, var(--text-main) 70%, transparent);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* inline code chip (order id) */
+.code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+  font-size: 0.78rem;
+  padding: 0.08rem 0.4rem;
+  border-radius: 0.6rem;
+  background: rgba(148, 163, 184, 0.18);
+  border: 1px solid rgba(148, 163, 184, 0.22);
 }
 
 /* ===========================
@@ -136,6 +218,7 @@
   border-radius: 1.1rem;
   overflow: hidden;
   flex-shrink: 0;
+
   background: radial-gradient(
     circle at top left,
     #e5edff 0%,
@@ -160,11 +243,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(
-    circle at top left,
-    #0f172a 0%,
-    #020617 100%
-  );
+  background: radial-gradient(circle at top left, #0f172a 0%, #020617 100%);
 }
 
 .thumbInitials {
@@ -182,45 +261,47 @@
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 0.7rem;
+  gap: 0.75rem;
 }
 
 .statusBadge {
-  padding: 0.4rem 0.9rem;
+  padding: 0.42rem 0.9rem;
   border-radius: 999px;
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: 0.74rem;
+  font-weight: 700;
   letter-spacing: 0.09em;
   text-transform: uppercase;
   border: 1px solid transparent;
 }
 
+/* Ready */
 .statusReady {
-  background: radial-gradient(
-    circle at top,
-    #22c55e 0%,
-    #16a34a 55%,
-    #15803d 100%
-  );
+  background: radial-gradient(circle at top, #22c55e 0%, #16a34a 55%, #15803d 100%);
   color: #ecfdf3;
   box-shadow: 0 10px 24px rgba(22, 163, 74, 0.4);
 }
 
+/* Pending */
+.statusPending {
+  background: radial-gradient(circle at top, #fde68a 0%, #fbbf24 55%, #f59e0b 100%);
+  color: #1f2937;
+  box-shadow: 0 10px 24px rgba(245, 158, 11, 0.35);
+}
+
+/* Expired/disabled */
 .statusExpired {
-  background: radial-gradient(
-    circle at top,
-    #fecaca 0%,
-    #fca5a5 45%,
-    #f87171 100%
-  );
+  background: radial-gradient(circle at top, #fecaca 0%, #fca5a5 45%, #f87171 100%);
   color: #7f1d1d;
 }
 
 .actions {
   display: flex;
   gap: 0.6rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
+/* keep your desired minimum button width but allow wrap */
 .actions :global(.neobtn) {
   min-width: 170px;
 }
@@ -230,10 +311,11 @@
    =========================== */
 
 .empty {
-  margin-top: 3.5rem;
+  margin-top: 3.2rem;
   padding: 2.6rem 2.2rem;
   border-radius: 1.8rem;
-  background: rgba(255, 255, 255, 0.82);
+  background: color-mix(in srgb, var(--card-bg) 82%, transparent);
+  border: 1px solid var(--border-soft);
   box-shadow:
     18px 18px 42px rgba(15, 23, 42, 0.16),
     -14px -14px 34px rgba(255, 255, 255, 0.95);
@@ -242,127 +324,37 @@
 
 .emptyTitle {
   font-size: 1.4rem;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-  color: #0f172a;
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+  color: var(--text-main);
 }
 
 .emptyText {
-  font-size: 0.9rem;
-  color: #64748b;
-  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  margin: 0 0 1.4rem;
 }
 
-/* ===========================
-   DARK MODE – via global .dark
-   =========================== */
-
-/* Hintergrund & Typo */
-:global(.dark) .page {
-  background: radial-gradient(
-    circle at top,
-    #020617 0%,
-    #020617 55%,
-    #020617 100%
-  );
-}
-
-:global(.dark) .heading {
-  color: #e5e7eb;
-}
-
-:global(.dark) .subheading {
-  color: #9ca3af;
-}
-
-/* Karten im Marketplace-Stil (dunkelblau, glowy) */
-:global(.dark) .card {
-  background: radial-gradient(
-    circle at top left,
-    #020617 0%,
-    #020617 35%,
-    #020617 100%
-  );
-  border-color: rgba(30, 64, 175, 0.6);
-  box-shadow:
-    0 18px 38px rgba(0, 0, 0, 0.9),
-    0 0 0 1px rgba(15, 23, 42, 0.9);
-}
-
-:global(.dark) .productTitle {
-  color: #e5e7eb;
-}
-
-:global(.dark) .orderMeta {
-  color: #6b7280;
-}
-
-:global(.dark) .description {
-  color: #9ca3af;
-}
-
-/* Thumbnail in dunklem Stil */
-:global(.dark) .thumbWrapper {
-  background: radial-gradient(
-    circle at top left,
-    #020617 0%,
-    #020617 70%
-  );
-  box-shadow:
-    0 14px 28px rgba(0, 0, 0, 0.9),
-    0 0 0 1px rgba(15, 23, 42, 0.9);
-}
-
-:global(.dark) .thumbPlaceholder {
-  background: radial-gradient(
-    circle at top left,
-    #020617 0%,
-    #000000 100%
-  );
-}
-
-:global(.dark) .thumbInitials {
-  color: #d1d5db;
-}
-
-/* Status / Badges */
-:global(.dark) .statusExpired {
-  color: #fee2e2;
-}
-
-/* Empty State dunkel */
-:global(.dark) .empty {
-  background: radial-gradient(
-    circle at top,
-    #020617 0%,
-    #020617 70%,
-    #020617 100%
-  );
-  box-shadow:
-    20px 20px 46px rgba(0, 0, 0, 0.95),
-    -12px -12px 32px rgba(15, 23, 42, 0.9);
-}
-
-:global(.dark) .emptyTitle {
-  color: #e5e7eb;
-}
-
-:global(.dark) .emptyText {
-  color: #9ca3af;
-}
 
 /* ===========================
    Responsive
    =========================== */
 
+@media (max-width: 900px) {
+  .paginationBar {
+    padding: 0.95rem 1rem;
+  }
+}
+
 @media (max-width: 768px) {
   .page {
-    padding: 3.4rem 1rem 4.8rem;
+    padding: 3.2rem 1rem 4.8rem;
   }
 
   .card {
     grid-template-columns: 1fr;
     align-items: flex-start;
+    padding: 1.25rem 1.15rem;
   }
 
   .thumbWrapper {
@@ -375,13 +367,23 @@
   }
 
   .actions {
-    flex-direction: column;
+    justify-content: flex-start;
     width: 100%;
   }
 
   .actions :global(.neobtn) {
     width: 100%;
     justify-content: center;
+    min-width: 0;
+  }
+
+  .paginationControls {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .pageNumbers {
+    width: 100%;
+    justify-content: center;
   }
 }
-

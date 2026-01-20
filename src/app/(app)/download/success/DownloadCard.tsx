@@ -77,8 +77,16 @@ export default function DownloadCard({ order }: { order: Order }) {
             : reachedLimit
             ? "Download-Limit erreicht."
             : order.status !== "COMPLETED"
-            ? "Noch nicht bereit – bitte kurz warten."
+            ? "Lieferung wird vorbereitet – Download-Link wird erstellt. Bitte kurz warten."
             : "Download aktuell nicht verfügbar."}
+        </p>
+
+      )}
+
+      {!canDownload && (
+        <p className="neo-subtext" style={{ fontSize: 12, opacity: 0.8 }}>
+          {/* Temporary debug: status / active / count / max */}
+          Debug: status={order.status} active={String(dl?.isActive ?? false)} count={dl?.downloadCount ?? 0}/{dl?.maxDownloads ?? 0}
         </p>
       )}
     </div>

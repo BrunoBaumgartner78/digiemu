@@ -41,10 +41,8 @@ export default async function DownloadSuccessPage({ searchParams }: Props) {
     return <ErrorState message="Bestellung nicht gefunden." />;
   }
 
-  // ✅ wenn Order da aber DownloadLink noch nicht: UI + Poller
-  // Accept both PAID and COMPLETED as "ready" states (webhook may use either).
-  const isReadyStatus = order.status === "PAID" || order.status === "COMPLETED";
-  if (!order.downloadLink || !isReadyStatus) {
+  // ✅ Delivery-ready: only show DownloadCard once order is COMPLETED and downloadLink is active
+  if (!order.downloadLink || order.status !== "COMPLETED" || order.downloadLink.isActive !== true) {
     return (
       <main className="page-center">
         <div className="neo-card max-w-md text-center space-y-4">
