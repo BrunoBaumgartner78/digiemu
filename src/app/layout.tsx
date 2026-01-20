@@ -11,8 +11,15 @@ const SITE_NAME = "DigiEmu";
 const SITE_TITLE = "DigiEmu – Digitaler Marktplatz";
 const SITE_DESCRIPTION = "Digitale Produkte kaufen & verkaufen.";
 
-// ✅ WICHTIG: exakt die Domain verwenden, die du auf FB teilst (mit oder ohne www)
+// ✅ Exakt die Domain verwenden, die du teilst (mit/ohne www)
 const SITE_URL = "https://www.bellu.ch";
+
+// ✅ OG Images (plattform-sicher)
+const OG_IMAGE_16_9 = "/og-1200x630.png";
+const OG_IMAGE_1_1 = "/og-1200x1200.png";
+
+// ✅ FB App ID (für den Debugger-Warnhinweis)
+const FB_APP_ID = process.env.NEXT_PUBLIC_FB_APP_ID;
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -23,9 +30,16 @@ export const metadata: Metadata = {
   },
   description: SITE_DESCRIPTION,
 
-  // optional, aber gut für SEO
   applicationName: SITE_NAME,
-  keywords: ["DigiEmu", "digitaler Marktplatz", "digitale Produkte", "Downloads", "Creator", "Vendor"],
+  keywords: [
+    "DigiEmu",
+    "digitaler Marktplatz",
+    "digitale Produkte",
+    "Downloads",
+    "Creator",
+    "Vendor",
+    "Schweiz",
+  ],
   authors: [{ name: "Bruno Baumgartner" }],
   creator: "Bruno Baumgartner",
   publisher: SITE_NAME,
@@ -65,12 +79,8 @@ export const metadata: Metadata = {
     description: SITE_DESCRIPTION,
     locale: "de_CH",
     images: [
-      {
-        url: "/og.png", // => https://www.bellu.ch/og.png (wegen metadataBase)
-        width: 1200,
-        height: 630,
-        alt: SITE_TITLE,
-      },
+      { url: OG_IMAGE_16_9, width: 1200, height: 630, alt: SITE_TITLE },
+      { url: OG_IMAGE_1_1, width: 1200, height: 1200, alt: SITE_TITLE },
     ],
   },
 
@@ -78,8 +88,18 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: SITE_TITLE,
     description: SITE_DESCRIPTION,
-    images: ["/og.png"],
+    images: [OG_IMAGE_16_9],
   },
+
+  // ✅ Hier kommt fb:app_id rein (damit der Warnhinweis weg ist)
+  // Next.js erlaubt "other" für Custom Meta-Tags.
+  ...(FB_APP_ID
+    ? {
+        other: {
+          "fb:app_id": FB_APP_ID,
+        },
+      }
+    : {}),
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
