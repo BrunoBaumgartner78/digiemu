@@ -30,6 +30,7 @@ export default function SuccessPoller({ sessionId }: { sessionId: string }) {
             clearInterval(intervalRef.current as unknown as number);
             intervalRef.current = null;
           }
+          // COMPLETED reached (delivery ready)
           router.replace(`/download/${data.orderId}`);
           return;
         }

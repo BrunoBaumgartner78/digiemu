@@ -19,7 +19,8 @@ export async function GET(req: NextRequest) {
   }
 
   const hasDownload = !!order.downloadLink?.id;
-  const ready = order.status === "PAID" && hasDownload;
+  // Delivery is ready once COMPLETED and a download link exists
+  const ready = order.status === "COMPLETED" && hasDownload;
 
   return NextResponse.json({ ready, orderId: order.id, status: order.status, hasDownload }, { status: 200 });
 }

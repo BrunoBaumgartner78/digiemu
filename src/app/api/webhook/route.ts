@@ -39,6 +39,7 @@ export async function POST(req: NextRequest) {
 
   // ✅ Log damit du sicher siehst, ob Webhook ankommt
   console.log("✅ Webhook received:", event.type);
+  // If /download/success hangs at 7/8, it's commonly a status mismatch (PAID vs COMPLETED).
 
   // ✅ Idempotency guard: Stripe kann das gleiche Event mehrfach senden.
   // Wir "claimen" event.id in der DB. Wenn bereits vorhanden, ist das Event dupliziert.
@@ -123,36 +124,18 @@ export async function POST(req: NextRequest) {
         orderId: order.id,
         productId: order.productId,
       });
-      // Order kann trotzdem auf PAID gesetzt werden (je nach Geschmack)
+      // keep flow consistent even if fileUrl is missing (otherwise success polling may hang)
       await prisma.order.update({
         where: { id: order.id },
-        data: { status: "PAID" },
+        // keep flow consistent even if fileUrl is missing (otherwise success polling may hang)
+        data: { status: "COMPLETED" },
       });
       return NextResponse.json({ received: true }, { status: 200 });
     }
 
     // ✅ Idempotent + atomar
     await prisma.$transaction(async (tx) => {
-      // 1) DownloadLink nur anlegen, falls nicht vorhanden
-      const existing = await tx.downloadLink.findUnique({
-        where: { orderId: order!.id },
-      });
-
-      if (!existing) {
-        const expiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000);
-
-        await tx.downloadLink.create({
-          data: {
-            orderId: order!.id,
-            fileUrl: order!.product.fileUrl,
-            expiresAt,
-            maxDownloads: 3,
-            isActive: true,
-          },
-        });
-      }
-
-      // 2) Earnings + Order PAID
+      // 0) Payment confirmed => mark PAID (payment state)
       const amount = order!.amountCents ?? 0;
       const vendorEarnings = Math.round(amount * 0.8);
       const platformEarnings = amount - vendorEarnings;
@@ -165,6 +148,33 @@ export async function POST(req: NextRequest) {
           platformEarningsCents: platformEarnings,
         },
       });
+
+      // 1) Delivery prep => ensure downloadLink exists
+      let dl = await tx.downloadLink.findUnique({
+        where: { orderId: order!.id },
+      });
+
+      if (!dl) {
+        const expiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000);
+
+        dl = await tx.downloadLink.create({
+          data: {
+            orderId: order!.id,
+            fileUrl: order!.product.fileUrl,
+            expiresAt,
+            maxDownloads: 3,
+            isActive: true,
+          },
+        });
+      }
+
+      // 2) Delivery ready => mark COMPLETED
+      if (dl?.isActive) {
+        await tx.order.update({
+          where: { id: order!.id },
+          data: { status: "COMPLETED" },
+        });
+      }
     });
 
     return NextResponse.json({ received: true }, { status: 200 });

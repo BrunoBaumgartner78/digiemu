@@ -42,7 +42,9 @@ export default async function DownloadSuccessPage({ searchParams }: Props) {
   }
 
   // ✅ wenn Order da aber DownloadLink noch nicht: UI + Poller
-  if (!order.downloadLink || order.status !== "PAID") {
+  // Accept both PAID and COMPLETED as "ready" states (webhook may use either).
+  const isReadyStatus = order.status === "PAID" || order.status === "COMPLETED";
+  if (!order.downloadLink || !isReadyStatus) {
     return (
       <main className="page-center">
         <div className="neo-card max-w-md text-center space-y-4">
