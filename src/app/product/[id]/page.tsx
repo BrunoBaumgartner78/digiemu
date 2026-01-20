@@ -203,7 +203,16 @@ export default async function ProductPage({ params }: ProductPageProps) {
         {p.description?.trim() ? (
           <section className={styles.descriptionSection}>
             <h2>Beschreibung</h2>
-            <p>{p.description}</p>
+            <p className={styles["product-desc"]}>
+              {String(p.description ?? "")
+                .split("\n")
+                .map((line, i) => (
+                  <span key={i}>
+                    {line}
+                    <br />
+                  </span>
+                ))}
+            </p>
           </section>
         ) : null}
 

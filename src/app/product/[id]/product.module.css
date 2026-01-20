@@ -95,6 +95,19 @@
   line-height: 1.5;
 }
 
+/* Preserve newlines from product descriptions (DB text) */
+.product-desc {
+  /* keep existing spacing */
+  margin-top: 0.5rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+
+  /* ✅ Newlines aus DB/Text übernehmen */
+  white-space: pre-wrap;      /* preserves newlines and sequences of spaces */
+  overflow-wrap: anywhere;    /* break long words/URLs */
+  word-break: break-word;
+}
+
 /* =========================
    Cards
    ========================= */
