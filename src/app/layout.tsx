@@ -7,9 +7,45 @@ export const viewport: Viewport = {
   themeColor: "#EAF1FF",
 };
 
+const SITE_NAME = "DigiEmu";
+const SITE_TITLE = "DigiEmu – Digitaler Marktplatz";
+const SITE_DESCRIPTION = "Digitale Produkte kaufen & verkaufen.";
+
+// ✅ WICHTIG: exakt die Domain verwenden, die du auf FB teilst (mit oder ohne www)
+const SITE_URL = "https://www.bellu.ch";
+
 export const metadata: Metadata = {
-  title: "DigiEmu – Digitaler Marktplatz",
-  description: "Digitale Produkte kaufen & verkaufen.",
+  metadataBase: new URL(SITE_URL),
+
+  title: {
+    default: SITE_TITLE,
+    template: `%s | ${SITE_NAME}`,
+  },
+  description: SITE_DESCRIPTION,
+
+  // optional, aber gut für SEO
+  applicationName: SITE_NAME,
+  keywords: ["DigiEmu", "digitaler Marktplatz", "digitale Produkte", "Downloads", "Creator", "Vendor"],
+  authors: [{ name: "Bruno Baumgartner" }],
+  creator: "Bruno Baumgartner",
+  publisher: SITE_NAME,
+
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+
+  alternates: {
+    canonical: "/",
+  },
+
   icons: {
     icon: [
       { url: "/favicon.ico" },
@@ -19,6 +55,30 @@ export const metadata: Metadata = {
     shortcut: ["/favicon.ico"],
     apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
     other: [{ rel: "mask-icon", url: "/safari-pinned-tab.svg", color: "#0ea5e9" }],
+  },
+
+  openGraph: {
+    type: "website",
+    url: "/",
+    siteName: SITE_NAME,
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    locale: "de_CH",
+    images: [
+      {
+        url: "/og.png", // => https://www.bellu.ch/og.png (wegen metadataBase)
+        width: 1200,
+        height: 630,
+        alt: SITE_TITLE,
+      },
+    ],
+  },
+
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    images: ["/og.png"],
   },
 };
 
