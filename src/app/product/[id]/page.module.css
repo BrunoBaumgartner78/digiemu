@@ -171,14 +171,12 @@ body[data-theme="light"] .buyCard {
 }
 
 /* Fallback: only if NO data-theme is set AND the OS prefers light */
-@media (prefers-color-scheme: light) {
-  html:not([data-theme]) .buyCard {
+html[data-theme="light"] html:not([data-theme]) .buyCard, html.light html:not([data-theme]) .buyCard {
     background: var(--neo-card-bg-soft, rgba(255, 255, 255, 0.72));
     color: var(--text-main, #0f172a);
     border: 1px solid var(--neo-card-border, rgba(15, 23, 42, 0.08));
     box-shadow: var(--neo-card-shadow-soft, 18px 18px 42px rgba(15, 23, 42, 0.10));
   }
-}
 
 .buyHeader {
   margin-bottom: 1.4rem;
@@ -198,11 +196,9 @@ body[data-theme="light"] .eyebrow {
   color: var(--text-muted, rgba(15, 23, 42, 0.62));
 }
 
-@media (prefers-color-scheme: light) {
-  html:not([data-theme]) .eyebrow {
+html[data-theme="light"] html:not([data-theme]) .eyebrow, html.light html:not([data-theme]) .eyebrow {
     color: var(--text-muted, rgba(15, 23, 42, 0.62));
   }
-}
 
 .title {
   font-size: 1.75rem;

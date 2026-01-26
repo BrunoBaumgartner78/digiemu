@@ -13,7 +13,7 @@ export function useTrackProductView(productId?: string) {
     if (!productId || sentRef.current) return;
     sentRef.current = true;
 
-    fetch(`/api/product/${productId}/view`, {
+    fetch(`/api/products/${productId}/view`, {
       method: "POST",
     }).catch((_err) => {
       if (process.env.NODE_ENV !== "production") {

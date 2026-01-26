@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { prisma } from "@/lib/prisma";
+import { serverLog } from "@/lib/serverLog";
 import { getErrorMessage } from "@/lib/guards";
 
 export const runtime = "nodejs";
@@ -38,7 +39,7 @@ export async function POST(req: NextRequest) {
   }
 
   // ✅ Log damit du sicher siehst, ob Webhook ankommt
-  console.log("✅ Webhook received:", event.type);
+  serverLog.log("✅ Webhook received:", event.type);
   // If /download/success hangs at 7/8, it's commonly a status mismatch (PAID vs COMPLETED).
 
   // ✅ Idempotency guard: Stripe kann das gleiche Event mehrfach senden.
@@ -56,7 +57,7 @@ export async function POST(req: NextRequest) {
     if (
       (typeof e === "object" && e !== null && "code" in e && (e as Record<string, unknown>).code === "P2002")
     ) {
-      console.log("↩️ Duplicate webhook event ignored:", event.id, event.type);
+      serverLog.log("↩️ Duplicate webhook event ignored:", event.id, event.type);
       return NextResponse.json({ received: true, duplicate: true }, { status: 200 });
     }
     // Any other DB error: return 500 so Stripe can retry
@@ -136,7 +137,9 @@ export async function POST(req: NextRequest) {
     // ✅ Idempotent + atomar
     await prisma.$transaction(async (tx) => {
       // 0) Payment confirmed => mark PAID (payment state)
-      const amount = order!.amountCents ?? 0;
+      // Prefer Stripe-reported amount_total (already in cents). Do NOT divide by 100.
+      const sessionAmount = typeof session.amount_total === "number" ? Number(session.amount_total) : undefined;
+      const amount = sessionAmount ?? order!.amountCents ?? (order!.product?.priceCents ?? 0);
       const vendorEarnings = Math.round(amount * 0.8);
       const platformEarnings = amount - vendorEarnings;
 
@@ -144,6 +147,7 @@ export async function POST(req: NextRequest) {
         where: { id: order!.id },
         data: {
           status: "PAID",
+          amountCents: amount,
           vendorEarningsCents: vendorEarnings,
           platformEarningsCents: platformEarnings,
         },

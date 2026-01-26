@@ -6,7 +6,7 @@ export type AuditLogParams = {
   action: string;
   targetType: string;
   targetId: string;
-  meta?: any;
+  meta? : unknown;
   ipAddress?: string;
   userAgent?: string;
 };

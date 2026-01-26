@@ -1,3 +1,46 @@
+/**
+ * Shared UI types.
+ * This file exists because several UI components import from "@/types/ui".
+ * Keep it tiny + stable.
+ */
+
+export type SortMode = "new" | "top";
+
+export type BadgeKind = "ADMIN" | "SELLER" | "VERIFIED_BUYER";
+
+export type ApiErrorShape = {
+  error?: string;
+  message?: string;
+};
+
+export type CommentItem = {
+  id: string;
+  text: string;
+  createdAt?: string;
+  authorName?: string | null;
+  badges?: BadgeKind[] | string[];
+  likesCount?: number;
+  viewerHasLiked?: boolean;
+};
+
+export type CommentsResponse = {
+  items: CommentItem[];
+  count?: number;
+  sort?: SortMode;
+};
+
+export type ReviewItem = {
+  id: string;
+  rating: number; // 1..5
+  text?: string | null;
+  createdAt?: string;
+  authorName?: string | null;
+};
+
+export type ReviewsResponse = {
+  items: ReviewItem[];
+  count?: number;
+};
 export type MarketplaceProduct = {
   id: string;
   title: string;

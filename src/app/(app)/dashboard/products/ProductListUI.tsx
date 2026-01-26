@@ -1,6 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
+import Image from "next/image";
 
 type Product = {
   id: string;
@@ -30,11 +31,15 @@ export default function ProductListUI({ products }: Props) {
       {products.map((p) => (
         <div key={p.id} className="product-card">
           {p.thumbnail && (
-            <img
-              src={p.thumbnail}
-              alt={p.title}
-              className="thumb"
-            />
+            <div style={{ position: "relative" }} className="thumb">
+              <Image
+                src={p.thumbnail}
+                alt={p.title || ""}
+                fill
+                sizes="(min-width:1024px) 25vw, 50vw"
+                style={{ objectFit: "cover" }}
+              />
+            </div>
           )}
           <h2>{p.title}</h2>
           <p>{(p.priceCents / 100).toFixed(2)} CHF</p>

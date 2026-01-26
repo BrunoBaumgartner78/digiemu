@@ -13,7 +13,6 @@ type Body = {
 export async function POST(_req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   const maybe = await requireAdminApi();
   if (maybe instanceof NextResponse) return NextResponse.json({ ok: false, message: "Unauthorized" }, { status: 401 });
-  const session = maybe;
 
   const { id } = await ctx.params; // userId
   if (!id) return NextResponse.json({ ok: false, message: "Missing id" }, { status: 400 });

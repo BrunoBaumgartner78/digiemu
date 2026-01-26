@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+﻿import { NextRequest, NextResponse } from "next/server";
 import { requireAdminApi } from "@/lib/guards/authz";
 import { prisma } from "@/lib/prisma";
 import { isRecord, getStringProp, getErrorMessage } from "@/lib/guards";
@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 export async function POST(_req: NextRequest) {
   const maybe = await requireAdminApi();
   if (maybe instanceof NextResponse) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  const session = maybe;
+  const _session = maybe;
 
   const bodyUnknown = await _req.json().catch(() => null);
   const userId = getStringProp(bodyUnknown, "userId") ?? "";
@@ -19,14 +19,14 @@ export async function POST(_req: NextRequest) {
 
   try {
     const updated = await prisma.$transaction(async (tx) => {
-      const user = await tx.user.findUnique({
+      const _user = await tx.user.findUnique({
         where: { id: userId },
         select: { id: true, isBlocked: true },
       });
 
-      if (!user) throw new Error("User not found");
+      if (!_user) throw new Error("User not found");
 
-      const nextBlocked = !user.isBlocked;
+      const nextBlocked = !_user.isBlocked;
 
       // 1) User sperren/entsperren
       const u = await tx.user.update({
@@ -63,3 +63,4 @@ export async function POST(_req: NextRequest) {
     return NextResponse.json({ message: getErrorMessage(e) || "Server error" }, { status: 500 });
   }
 }
+

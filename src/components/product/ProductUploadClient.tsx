@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useState } from "react";
 import { uploadProductFile } from "@/lib/firebaseUpload";
 
@@ -15,7 +15,7 @@ export function ProductUploadClient({ userId, onUpload }: { userId: string; onUp
 
   async function handleUpload() {
     if (!file) {
-      setError("Bitte wähle eine Datei aus.");
+      setError("Bitte wÃ¤hle eine Datei aus.");
       return;
     }
     setIsUploading(true);
@@ -39,3 +39,4 @@ export function ProductUploadClient({ userId, onUpload }: { userId: string; onUp
     </div>
   );
 }
+

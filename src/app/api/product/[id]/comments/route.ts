@@ -1,55 +1,6 @@
-import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth";
-import { NextResponse } from "next/server";
-import { authOptions } from "@/lib/auth";
+// Legacy compatibility stub (singular -> plural)
+// Do NOT add logic here. Keep canonical implementation under /api/products/...
+export { GET, POST } from "@/app/api/products/[id]/comments/route";
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
-type Ctx = {
-  params: Promise<{ id: string }>;
-};
-
-export async function GET(_req: Request, ctx: Ctx) {
-  const { id } = await ctx.params;
-
-  const comments = await prisma.comment.findMany({
-    where: { productId: id },
-    include: { user: true },
-    orderBy: { createdAt: "desc" },
-  });
-
-  return NextResponse.json(comments);
-}
-
-export async function POST(_req: Request, ctx: Ctx) {
-  const { id } = await ctx.params;
-
-  // require authentication
-  const { requireSessionApi } = await import("@/lib/guards/authz");
-  const sessionOrResp = await requireSessionApi();
-  if (sessionOrResp instanceof NextResponse) return sessionOrResp;
-  const session = sessionOrResp as import("next-auth").Session;
-  const userId = session?.user?.id;
-
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const { content } = await _req.json();
-
-  if (!content || typeof content !== "string") {
-    return NextResponse.json(
-      { error: "Missing or invalid content" },
-      { status: 400 }
-    );
-  }
-
-  const comment = await prisma.comment.create({
-    data: {
-      productId: id,
-      userId,
-      content,
-    },
-    include: { user: true },
-  });
-
-  return NextResponse.json(comment);
-}

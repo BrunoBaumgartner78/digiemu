@@ -64,8 +64,9 @@ export function ProductForm({
     }
     try {
       await onSubmit(values);
-    } catch (err: any) {
-      setFormError(err?.message || "Fehler beim Speichern.");
+    } catch (err: unknown) {
+      if (err instanceof Error) setFormError(err.message || "Fehler beim Speichern.");
+      else setFormError(String(err) || "Fehler beim Speichern.");
     }
   }
 

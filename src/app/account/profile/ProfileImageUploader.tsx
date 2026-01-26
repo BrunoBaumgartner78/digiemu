@@ -2,6 +2,7 @@
 
 import React, { useId, useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
+import { getErrorMessage } from "@/lib/errors";
 import { compressImageFile } from "@/lib/imageCompress";
 import styles from "./profile.module.css";
 
@@ -35,22 +36,22 @@ export default function ProfileImageUploader({
     const res = await fetch("/api/upload/image", { method: "POST", body: fd });
     const text = await res.text().catch(() => "");
 
-    let json: any = null;
+    let json : unknown = null;
     try {
       json = text ? JSON.parse(text) : null;
     } catch {}
 
     if (!res.ok) {
       const msg =
-        (json && json.message) || `Upload failed (${res.status}): ${text.slice(0, 200)}`;
+        (json && (json as any).message) || `Upload failed (${res.status}): ${text.slice(0, 200)}`;
       throw new Error(msg);
     }
-    if (!json || !json.ok) {
+    if (!json || !(json as any).ok) {
       const msg =
-        (json && json.message) || `Upload failed (invalid response): ${text.slice(0, 200)}`;
+        (json && (json as any).message) || `Upload failed (invalid response): ${text.slice(0, 200)}`;
       throw new Error(msg);
     }
-    return String(json.url);
+    return String((json as any).url);
   }
 
   const handleBannerSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -67,11 +68,11 @@ export default function ProfileImageUploader({
       const url = await uploadImage("banner", compressed);
       onBannerChange(url);
       toast({ title: "Banner hochgeladen", variant: "success" });
-    } catch (err: any) {
+    } catch (err : unknown) {
       console.error(err);
       toast({
         title: "Upload fehlgeschlagen",
-        description: err?.message ?? "Banner konnte nicht hochgeladen werden.",
+        description: getErrorMessage(err, "Banner konnte nicht hochgeladen werden."),
         variant: "destructive",
       });
     } finally {
@@ -94,11 +95,11 @@ export default function ProfileImageUploader({
       const url = await uploadImage("avatar", compressed);
       onAvatarChange(url);
       toast({ title: "Avatar hochgeladen", variant: "success" });
-    } catch (err: any) {
+    } catch (err : unknown) {
       console.error(err);
       toast({
         title: "Upload fehlgeschlagen",
-        description: err?.message ?? "Avatar konnte nicht hochgeladen werden.",
+        description: getErrorMessage(err, "Avatar konnte nicht hochgeladen werden."),
         variant: "destructive",
       });
     } finally {

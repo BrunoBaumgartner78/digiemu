@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { uploadProfileImage } from "@/lib/profileUpload";
 import { useToast } from "@/components/ui/use-toast";
 import { LoadingButton } from "@/components/ui/loading-button";
@@ -94,7 +95,9 @@ export function ProfileImageUploader({
       <div className="profile-banner-upload">
         <div className="profile-banner-preview">
           {bannerPreview ? (
-            <img src={bannerPreview} alt="Profilbanner" />
+            <div className="w-full h-full relative">
+              <Image src={bannerPreview} alt="Profilbanner" fill style={{ objectFit: "cover" }} />
+            </div>
           ) : (
             <div className="profile-banner-placeholder">
               <span>Kein Banner gesetzt</span>
@@ -116,7 +119,9 @@ export function ProfileImageUploader({
       <div className="profile-avatar-upload">
         <div className="profile-avatar-preview">
           {avatarPreview ? (
-            <img src={avatarPreview} alt="Avatar" />
+            <div className="w-24 h-24 relative rounded-full overflow-hidden">
+              <Image src={avatarPreview} alt="Avatar" fill style={{ objectFit: "cover" }} />
+            </div>
           ) : (
             <div className="profile-avatar-placeholder">
               <span>?</span>

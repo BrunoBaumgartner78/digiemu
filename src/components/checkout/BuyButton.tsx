@@ -2,6 +2,7 @@
 "use client";
 
 import { useState } from "react";
+import { getErrorMessage } from "@/lib/errors";
 
 type BuyButtonProps = {
   productId: string;
@@ -41,8 +42,8 @@ export function BuyButton({ productId }: BuyButtonProps) {
       } else {
         throw new Error("Keine Checkout-URL vom Server erhalten.");
       }
-    } catch (err: any) {
-      setError(err?.message ?? "Unbekannter Fehler beim Checkout.");
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, "Unbekannter Fehler beim Checkout."));
     } finally {
       setLoading(false);
     }

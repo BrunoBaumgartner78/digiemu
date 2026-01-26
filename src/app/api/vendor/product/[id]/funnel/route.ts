@@ -56,7 +56,7 @@ export async function GET(_req: Request) {
       viewsCount = await prisma.productView.count({
         where: { productId: { in: productIds }, createdAt: { gte: since } },
       });
-    } catch (e) {
+    } catch (_e) {
       // If the model isn't available in this Prisma client, keep viewsCount = 0
       viewsCount = 0;
     }

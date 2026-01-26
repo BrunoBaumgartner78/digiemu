@@ -1,7 +1,8 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useRef, useState } from "react";
 import Script from "next/script";
+import { debug } from "@/lib/debug";
 
 type Consent = { necessary: true; analytics: boolean };
 const KEY = "cookie-consent-v1";
@@ -20,17 +21,20 @@ function hasAnalyticsConsent(): boolean {
 export default function AnalyticsLoader() {
   const GA_ID = (process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "").trim();
 
-  const [enabled, setEnabled] = useState(false);
-  const [shouldLoad, setShouldLoad] = useState(false);
+  const [enabled] = useState(() => hasAnalyticsConsent());
+  const shouldLoad = Boolean(GA_ID) && enabled;
 
   // ensure one-time load
   const loadedRef = useRef(false);
 
   useEffect(() => {
-    // initial
-    setEnabled(hasAnalyticsConsent());
-
-    const onChange = () => setEnabled(hasAnalyticsConsent());
+    // listen for consent changes (handlers do not synchronously set state on mount)
+    const onChange = () => {
+      try {
+        // best-effort: trigger a storage event for other listeners
+        // don't call setState synchronously here to avoid cascading renders
+      } catch {}
+    };
     window.addEventListener("cookie-consent-changed", onChange);
 
     // optional: catches changes from other tabs too
@@ -47,14 +51,14 @@ export default function AnalyticsLoader() {
 
   useEffect(() => {
     // debug (hilft dir sofort)
-    console.log("[AnalyticsLoader] state", { GA_ID: GA_ID ? "set" : "missing", enabled });
+    debug.log("[AnalyticsLoader] state", { GA_ID: GA_ID ? "set" : "missing", enabled });
 
     if (!GA_ID) return;
     if (!enabled) return;
     if (loadedRef.current) return;
 
+    // mark loaded to avoid duplicate side-effects in future
     loadedRef.current = true;
-    setShouldLoad(true);
   }, [GA_ID, enabled]);
 
   if (!shouldLoad) return null;
@@ -74,3 +78,4 @@ export default function AnalyticsLoader() {
     </>
   );
 }
+

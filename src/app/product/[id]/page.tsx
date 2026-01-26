@@ -7,6 +7,8 @@ import { requireSessionPage } from "@/lib/guards/authz";
 import { getProductThumbUrl } from "@/lib/productThumb";
 import LikeButtonClient from "@/components/product/LikeButtonClient";
 import BuyButtonClient from "@/components/checkout/BuyButtonClient";
+import CommentsClient from "@/components/product/CommentsClient"; // ✅ Community
+import ReviewsClient from "@/components/product/ReviewsClient";
 import ViewPing from "./ViewPing";
 import styles from "./page.module.css";
 
@@ -23,8 +25,7 @@ const SAFE_IMAGE_HOSTS = [
 
 function canUseNextImage(url: string | null | undefined): boolean {
   if (!url) return false;
-  // allow local relative paths
-  if (url.startsWith("/")) return true;
+  if (url.startsWith("/")) return true; // allow local relative paths
   try {
     const u = new URL(url);
     return SAFE_IMAGE_HOSTS.includes(u.hostname);
@@ -40,7 +41,12 @@ export default async function ProductPage({ params }: ProductPageProps) {
   if (!pid) notFound();
 
   const session = await requireSessionPage();
-  const userId = ((session?.user as any)?.id as string | undefined) ?? null;
+  const userId = (() => {
+    const u = session?.user;
+    if (!u || typeof u !== "object") return null;
+    const id = (u as Record<string, unknown>)["id"];
+    return typeof id === "string" && id.length > 0 ? id : null;
+  })();
 
   const p = await prisma.product.findUnique({
     where: { id: pid },
@@ -71,7 +77,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
         },
       },
 
-      _count: { select: { likes: true } },
+      _count: { select: { likes: true, comments: true } },
       likes: userId ? { where: { userId }, select: { id: true } } : undefined,
     },
   });
@@ -120,6 +126,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const showNextImage = hasThumb && canUseNextImage(productThumb);
 
   const likesCount = p._count?.likes ?? 0;
+  const commentsCount = p._count?.comments ?? 0;
   const initialIsLiked = !!userId && (p.likes?.length ?? 0) > 0;
 
   const sellerName =
@@ -140,6 +147,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
         <main className={styles.layout}>
           {/* counts a view once on mount */}
           <ViewPing productId={p.id} />
+
           {/* Bild */}
           <section className={styles.mediaCard}>
             {showNextImage ? (
@@ -151,8 +159,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 className={styles.mediaImage}
               />
             ) : hasThumb ? (
-              // fallback to a regular img when Next/Image cannot be used for this host
-              // keep visual sizing consistent via CSS
               // eslint-disable-next-line @next/next/no-img-element
               <img src={productThumb} alt={p.title} className={styles.mediaImage} />
             ) : (
@@ -196,6 +202,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
               initialLikesCount={likesCount}
               initialIsLiked={initialIsLiked}
             />
+
+            <div style={{ marginLeft: 12, fontSize: 14, opacity: 0.85 }}>
+              💬 {commentsCount} Kommentar(e)
+            </div>
           </section>
         </main>
 
@@ -215,6 +225,15 @@ export default async function ProductPage({ params }: ProductPageProps) {
             </p>
           </section>
         ) : null}
+
+        {/* ✅ Community (Kommentare) */}
+        <section className={styles.descriptionSection}>
+          <ReviewsClient productId={p.id} />
+        </section>
+
+        <section className={styles.descriptionSection}>
+          <CommentsClient productId={p.id} initialCount={commentsCount} />
+        </section>
 
         {/* Weitere Produkte */}
         {relatedProducts.length > 0 && (
@@ -247,13 +266,20 @@ export async function generateMetadata({ params }: ProductPageProps) {
   const pid = String(id ?? "").trim();
   if (!pid) return {};
 
-  const p = await prisma.product.findUnique({ where: { id: pid }, select: { title: true, description: true, thumbnail: true } });
+  const p = await prisma.product.findUnique({
+    where: { id: pid },
+    select: { title: true, description: true, thumbnail: true },
+  });
   if (!p) return {};
 
   const productThumb = getProductThumbUrl({ thumbnailUrl: p.thumbnail });
 
   const title = `${p.title} · DigiEmu`;
-  const description = p.description ? (p.description.length > 160 ? p.description.slice(0, 157) + "…" : p.description) : "Digitales Produkt auf DigiEmu";
+  const description = p.description
+    ? p.description.length > 160
+      ? p.description.slice(0, 157) + "…"
+      : p.description
+    : "Digitales Produkt auf DigiEmu";
 
   return {
     title,
@@ -264,5 +290,5 @@ export async function generateMetadata({ params }: ProductPageProps) {
       images: productThumb ? [{ url: productThumb, alt: p.title }] : undefined,
     },
     alternates: { canonical: `/product/${pid}` },
-  } as any;
+  } as unknown;
 }

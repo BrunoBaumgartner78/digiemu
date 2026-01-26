@@ -1,14 +1,14 @@
 "use client";
 
 import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+// router not needed here
 
 type Props = { productId: string };
 
 export default function BuyButton({ productId }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
+  
 
   async function handleBuy() {
     try {
@@ -29,8 +29,9 @@ export default function BuyButton({ productId }: Props) {
 
       // Redirect browser to Stripe Checkout
       window.location.href = url;
-    } catch (err: any) {
-      setError(err?.message || "Unbekannter Fehler beim Checkout");
+    } catch (err: unknown) {
+      if (err instanceof Error) setError(err.message || "Unbekannter Fehler beim Checkout");
+      else setError(String(err) || "Unbekannter Fehler beim Checkout");
     } finally {
       setLoading(false);
     }

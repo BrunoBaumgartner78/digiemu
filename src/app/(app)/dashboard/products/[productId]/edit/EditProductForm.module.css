@@ -409,7 +409,8 @@
    Dark Mode (fein)
    ========================= */
 
-@media (prefers-color-scheme: dark) {
+html[data-theme="dark"],
+html.dark {
   .card {
     background: rgba(15, 23, 42, 0.96);
     border-color: rgba(148, 163, 184, 0.22);

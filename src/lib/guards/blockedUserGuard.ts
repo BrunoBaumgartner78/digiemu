@@ -1,12 +1,13 @@
 import { prisma } from "@/lib/prisma";
 
-export async function blockedUserGuard(sessionUser: any, action = "Aktion") {
-  if (!sessionUser?.email) {
+export async function blockedUserGuard(sessionUser: unknown, action = "Aktion") {
+  const email = (sessionUser as { email?: unknown })?.email;
+  if (typeof email !== "string" || !email) {
     throw new Error(`Unauthenticated`);
   }
 
   const dbUser = await prisma.user.findUnique({
-    where: { email: sessionUser.email },
+    where: { email },
     select: {
       id: true,
       email: true,

@@ -3,7 +3,7 @@ import { requireRolePage } from "@/lib/guards/authz";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import type { Prisma } from "@prisma/client";
+import type { Prisma } from "@/generated/prisma";
 import styles from "./DashboardHome.module.css";
 import { LineChart, Trophy, DownloadCloud, Package } from "lucide-react";
 import VendorProfileGateCard from "@/components/vendor/VendorProfileGateCard";
@@ -55,14 +55,14 @@ export default async function DashboardPage() {
   const rangeStart = new Date(now - rangeMs);
 
   // ✅ nur bezahlte Orders zählen (wie Earnings/Payouts)
-  const paidLikeStatuses = [
+  const paidLikeStatuses: string[] = [
     "PAID",
     "paid",
     "COMPLETED",
     "completed",
     "SUCCESS",
     "success",
-  ] as const;
+  ];
 
   /* ===================== DATA ===================== */
   const [
@@ -85,7 +85,7 @@ export default async function DashboardPage() {
       where: {
         product: { vendorId },
         createdAt: { gte: rangeStart },
-        status: { in: paidLikeStatuses as any },
+        status: { in: paidLikeStatuses },
       },
       select: { createdAt: true, amountCents: true, productId: true },
     }),
@@ -93,7 +93,7 @@ export default async function DashboardPage() {
     prisma.order.findMany({
       where: {
         product: { vendorId },
-        status: { in: paidLikeStatuses as any },
+        status: { in: paidLikeStatuses },
       },
       select: { amountCents: true, vendorEarningsCents: true, productId: true },
     }),
@@ -111,7 +111,7 @@ export default async function DashboardPage() {
       where: {
         order: {
           product: { vendorId },
-          status: { in: paidLikeStatuses as any },
+          status: { in: paidLikeStatuses },
         },
       },
     }),
@@ -121,7 +121,7 @@ export default async function DashboardPage() {
         createdAt: { gte: rangeStart },
         order: {
           product: { vendorId },
-          status: { in: paidLikeStatuses as any },
+          status: { in: paidLikeStatuses },
         },
       },
     }),
@@ -130,7 +130,7 @@ export default async function DashboardPage() {
       where: {
         order: {
           product: { vendorId },
-          status: { in: paidLikeStatuses as any },
+          status: { in: paidLikeStatuses },
         },
       },
       orderBy: { createdAt: "desc" },
@@ -143,11 +143,11 @@ export default async function DashboardPage() {
 
   /* ===================== KPIs (20/80 Split) ===================== */
   // Brutto (100%)
-  const grossAllCents = ordersAll.reduce((s, o) => s + (o.amountCents ?? 0), 0);
-  const grossRangeCents = ordersRange.reduce((s, o) => s + (o.amountCents ?? 0), 0);
+  const grossAllCents = ordersAll.reduce((s: number, o: any) => s + (o.amountCents ?? 0), 0);
+  const grossRangeCents = ordersRange.reduce((s: number, o: any) => s + (o.amountCents ?? 0), 0);
 
   // Vendor (80%) – prefer gespeichertes vendorEarningsCents, fallback 80% von gross
-  let vendorAllCents = ordersAll.reduce((s, o) => s + (o.vendorEarningsCents ?? 0), 0);
+  let vendorAllCents = ordersAll.reduce((s: number, o: any) => s + (o.vendorEarningsCents ?? 0), 0);
   if (vendorAllCents === 0 && grossAllCents > 0) {
     vendorAllCents = Math.round(grossAllCents * 0.8);
   }
@@ -192,7 +192,7 @@ export default async function DashboardPage() {
     .map(([id, sum]) => ({
       id,
       sum,
-      title: products.find((p) => p.id === id)?.title ?? "Produkt",
+      title: products.find((p: any) => p.id === id)?.title ?? "Produkt",
     }))
     .sort((a, b) => b.sum - a.sum)
     .slice(0, 5);
@@ -345,7 +345,7 @@ export default async function DashboardPage() {
             <p className="text-xs text-white/70">Noch keine Downloads</p>
           ) : (
             <ul className={styles.recentList ?? "space-y-2"}>
-              {recentDownloads.map((d) => (
+              {recentDownloads.map((d: any) => (
                 <li key={d.id} className={styles.recentItem ?? ""}>
                   <span className={styles.recentBullet ?? ""}>⬇</span>
                   <span className={styles.recentTitle ?? ""}>

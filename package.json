@@ -9,6 +9,7 @@
     "dev:community": "cross-env NEXT_PUBLIC_FEATURE_COMMUNITY=true next dev",
     "dev:allfeatures": "cross-env NEXT_PUBLIC_FEATURE_ADMIN=true NEXT_PUBLIC_FEATURE_COMMUNITY=true NEXT_PUBLIC_FEATURE_ANALYTICS=true next dev",
     "dev": "next dev --webpack",
+    "dev:trace": "node -r ./trace-repeat.js ./node_modules/next/dist/bin/next dev --webpack --hostname 127.0.0.1 --port 3200 | powershell -NoProfile -Command \"Tee-Object -FilePath .qa\\trace_repeat_run.log\"",
     "start": "next start",
     "lint": "node scripts/lint.cjs",
     "lint:eslint": "eslint . --ext .js,.jsx,.ts,.tsx --cache",
@@ -16,7 +17,8 @@
     "lint:next": "node node_modules/next/dist/bin/next lint",
     "lint:strict": "eslint . --max-warnings 0",
     "postinstall": "prisma generate",
-    "build": "prisma generate && next build",
+    "build": "prisma generate && next build --webpack",
+    "build:trace": "node -r ./trace-repeat.js ./node_modules/next/dist/bin/next build --webpack | powershell -NoProfile -Command \"Tee-Object -FilePath .qa\\trace_repeat_build.log\"",
     "build:local": "prisma generate && next build",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "check": "npm run typecheck && npm run build"

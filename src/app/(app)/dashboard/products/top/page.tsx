@@ -4,6 +4,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 import styles from "./TopLikedProducts.module.css";
+import { requireUser } from "@/lib/sessionUser";
 
 export const dynamic = "force-dynamic";
 
@@ -11,7 +12,7 @@ export default async function TopLikedProductsPage() {
   const session = await requireRolePage(["VENDOR", "ADMIN"]);
   if (!session) redirect("/login");
 
-  const user = session.user as any;
+  const user = requireUser(session.user);
   const vendorId = user.id;
 
   // Top-Produkte nach Likes (Fallback: Orders)

@@ -218,7 +218,8 @@
 }
 
 /* Fallback: wenn ihr (noch) kein html[data-theme] habt -> respektiere System Dark Mode */
-@media (prefers-color-scheme: dark) {
+html[data-theme="dark"],
+html.dark {
   .page {
     background: radial-gradient(circle at top left, #020617, #020617 40%, #020617 100%);
   }
@@ -276,4 +277,5 @@
     transform: none;
   }
 }
+
 

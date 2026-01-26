@@ -14,7 +14,7 @@ export default async function AdminPayoutPage() {
   });
 
   // Cast payouts to the expected type for AdminPayoutList
-  const mappedPayouts = payouts.map((p) => ({
+  const mappedPayouts = payouts.map((p: any) => ({
     ...p,
     status: p.status as "PENDING" | "PAID",
     vendor: { email: p.vendor.email },

@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAdminApi } from "@/lib/guards/authz";
 import { prisma } from "@/lib/prisma";
 import { isRecord, getStringProp, getErrorMessage } from "@/lib/guards";
-import { Prisma } from "@prisma/client";
-import type { VendorStatus } from "@prisma/client";
+import type { VendorStatus } from "@/generated/prisma";
+import { ok, bad, unauth, fail } from "@/lib/api/adminResponse";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -15,17 +15,15 @@ export async function POST(
   context: { params: Promise<{ id: string }> }
 ) {
   const maybe = await requireAdminApi();
-  if (maybe instanceof NextResponse) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  const session = maybe;
-  const maybeUser = session?.user;
+  if (maybe instanceof NextResponse) return unauth();
 
   const { id } = await context.params; // userId
   const raw = await _req.json().catch(() => ({} as unknown));
   const nextStatus = (isRecord(raw) ? (getStringProp(raw, "status") ?? "") : "").toUpperCase().trim();
 
-  if (!id) return NextResponse.json({ message: "Missing id" }, { status: 400 });
+  if (!id) return bad("Missing id", 400);
   if (!ALLOWED.has(nextStatus)) {
-    return NextResponse.json({ message: "Invalid status. Use PENDING | APPROVED | BLOCKED." }, { status: 400 });
+    return bad("Invalid status. Use PENDING | APPROVED | BLOCKED.", 400);
   }
 
   try {
@@ -59,9 +57,9 @@ export async function POST(
       return updatedVP;
     });
 
-    return NextResponse.json({ ok: true });
+    return ok({ ok: true, vendorProfile: result });
   } catch (e: unknown) {
     console.error("[admin/vendors/set-vendor-status]", e);
-    return NextResponse.json({ message: getErrorMessage(e) }, { status: 500 });
+    return fail(getErrorMessage(e));
   }
 }

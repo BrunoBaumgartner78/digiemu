@@ -26,7 +26,7 @@ export default function LikeButtonClient({
     setIsLiked(nextLiked);
     setLikesCount((c) => Math.max(0, c + (nextLiked ? 1 : -1)));
 
-    const res = await fetch(`/api/product/${productId}/like`, {
+    const res = await fetch(`/api/products/${productId}/like`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
     });

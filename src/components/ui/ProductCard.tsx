@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 export type ProductCardProps = {
   id: string;
@@ -33,7 +34,9 @@ export function ProductCard({
       <Link href={`/product/${id}`} className="block">
         <div className="aspect-[4/3] w-full mb-3 rounded-xl overflow-hidden bg-[var(--card-bg)] flex items-center justify-center">
           {thumbnailUrl ? (
-            <img src={thumbnailUrl} alt={title} className="object-cover w-full h-full" />
+            <div className="w-full h-full relative">
+              <Image src={thumbnailUrl} alt={title} fill sizes="(min-width:1024px) 25vw, 50vw" style={{ objectFit: "cover" }} />
+            </div>
           ) : (
             <div className="flex flex-col items-center justify-center w-full h-full text-[var(--text-muted)]">
               <span className="text-3xl mb-1">📄</span>

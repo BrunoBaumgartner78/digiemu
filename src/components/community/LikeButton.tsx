@@ -1,12 +1,12 @@
 "use client";
 import { useState } from "react";
-import type { LikeResponse } from "@/types/ui";
+import type { LikeResponse } from "@/types";
 
 export default function LikeButton({ productId, initialLiked }: { productId: string; initialLiked?: boolean }) {
   const [liked, setLiked] = useState<boolean>(Boolean(initialLiked));
 
   async function toggle() {
-    const res = await fetch(`/api/product/${productId}/like`, {
+    const res = await fetch(`/api/products/${productId}/like`, {
       method: "POST"
     });
     const json: unknown = await res.json().catch(() => null);

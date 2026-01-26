@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireVendorApi } from "@/lib/guards/authz";
+import type { Prisma } from "@/generated/prisma";
 
-export async function GET(req: Request) {
+export async function GET(_req: Request) {
   const maybe = await requireVendorApi();
   if (maybe instanceof NextResponse) return maybe;
   const session = maybe;
@@ -11,10 +12,10 @@ export async function GET(req: Request) {
   const vendor = await prisma.vendorProfile.findUnique({ where: { userId } });
   if (!vendor) return NextResponse.json({ ok: false, error: "No VendorProfile" }, { status: 403 });
 
-  const url = new URL(req.url);
+  const url = new URL(_req.url);
   const range = url.searchParams.get("range") ?? "30";
 
-  const where: any = { vendorId: userId };
+  const where: Prisma.PayoutWhereInput = { vendorId: userId };
   if (range !== "all") {
     const days = Number(range) || 30;
     const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
@@ -27,11 +28,17 @@ export async function GET(req: Request) {
   const paidLikeStatuses = ["PAID", "paid", "COMPLETED", "completed", "SUCCESS", "success"];
 
   // totalEarnings: sum vendorEarningsCents from paid orders
-  const hasOrderItemAggregate = typeof (prisma as any).orderItem?.aggregate === "function";
+  const orderItemAggregateFn = (prisma as unknown as { orderItem?: { aggregate?: unknown } }).orderItem?.aggregate;
+  const hasOrderItemAggregate = typeof orderItemAggregateFn === "function";
   let totalEarnings = 0;
 
   if (hasOrderItemAggregate) {
-    const agg = await (prisma as any).orderItem.aggregate({
+    type OrderItemAggregateFn = (args: {
+      _sum?: { vendorEarningsCents?: true };
+      where?: unknown;
+    }) => Promise<{ _sum?: { vendorEarningsCents?: number } } | null>;
+
+    const agg = await (orderItemAggregateFn as OrderItemAggregateFn)({
       _sum: { vendorEarningsCents: true },
       where: { vendorId: session.user.id, order: { status: { in: paidLikeStatuses } } },
     });
@@ -39,7 +46,7 @@ export async function GET(req: Request) {
   } else {
     const agg = await prisma.order.aggregate({
       _sum: { vendorEarningsCents: true },
-      where: { product: { vendorId: session.user.id }, status: { in: paidLikeStatuses as any } },
+      where: { product: { vendorId: session.user.id }, status: { in: paidLikeStatuses } },
     });
     totalEarnings = agg._sum.vendorEarningsCents ?? 0;
   }

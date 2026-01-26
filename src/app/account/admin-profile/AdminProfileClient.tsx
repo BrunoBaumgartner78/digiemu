@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useToast } from "@/components/ui/use-toast";
+import { getErrorMessage } from "@/lib/errors";
 
 type InitialData = {
   displayName: string;
@@ -18,7 +18,6 @@ type Props = {
 
 export default function AdminProfileClient({ userId, initialData }: Props) {
   const router = useRouter();
-  const { toast } = useToast();
 
   const normalized = useMemo(() => ({
     displayName: initialData?.displayName ?? "",
@@ -30,7 +29,7 @@ export default function AdminProfileClient({ userId, initialData }: Props) {
   const [form, setForm] = useState(normalized);
   const [saving, setSaving] = useState(false);
 
-  const handleChange = (field: keyof InitialData, value: any) => {
+  const handleChange = (field: keyof InitialData, value : unknown) => {
     setForm((p) => ({ ...p, [field]: value }));
   };
 
@@ -45,10 +44,24 @@ export default function AdminProfileClient({ userId, initialData }: Props) {
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(json?.message || json?.error || "Fehler");
-      toast({ title: "Admin-Profil gespeichert", variant: "success" });
+      if (typeof window !== "undefined") {
+        try {
+          // prefer toast when available, fallback to alert
+          // dynamic import to avoid pulling toast provider into SSR bundle
+          import("@/components/ui/use-toast").then((m) => {
+            try { m.useToast().toast({ title: "Admin-Profil gespeichert", variant: "success" }); } catch { alert("Admin-Profil gespeichert"); }
+          }).catch(() => alert("Admin-Profil gespeichert"));
+        } catch { alert("Admin-Profil gespeichert"); }
+      }
       router.refresh();
-    } catch (err: any) {
-      toast({ title: "Fehler", description: err?.message || "Unbekannt", variant: "destructive" });
+    } catch (err: unknown) {
+      if (typeof window !== "undefined") {
+        try {
+          import("@/components/ui/use-toast").then((m) => {
+            try { m.useToast().toast({ title: "Fehler", description: getErrorMessage(err, "Unbekannt"), variant: "destructive" }); } catch { alert(getErrorMessage(err, "Unbekannt")); }
+          }).catch(() => alert(getErrorMessage(err, "Unbekannt")));
+        } catch { alert(getErrorMessage(err, "Unbekannt")); }
+      }
     } finally { setSaving(false); }
   };
 

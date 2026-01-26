@@ -1,7 +1,7 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import { requireAdminApi } from "@/lib/guards/authz";
 import { prisma } from "@/lib/prisma";
-import { PayoutStatus } from "@prisma/client";
+import { PayoutStatus } from "@/generated/prisma";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -9,8 +9,8 @@ export const dynamic = "force-dynamic";
 export async function POST(_req: Request) {
   const maybe = await requireAdminApi();
   if (maybe instanceof NextResponse) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  const session = maybe;
-  const userId = session.user.id;
+  const _session = maybe;
+  const __userId = _session.user.id;
 
   const form = await _req.formData();
   const payoutId = String(form.get("payoutId") ?? "").trim();
@@ -31,3 +31,4 @@ export async function POST(_req: Request) {
 
   return NextResponse.redirect(new URL(redirectUrl, _req.url));
 }
+

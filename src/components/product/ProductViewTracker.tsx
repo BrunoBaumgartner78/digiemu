@@ -7,7 +7,7 @@ export default function ProductViewTracker({ productId }: { productId: string })
   useEffect(() => {
     if (!productId) return;
 
-    fetch("/api/product/view", {
+    fetch("/api/products/view", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ productId }),

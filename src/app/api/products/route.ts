@@ -20,9 +20,19 @@ export async function POST(_req: Request) {
   const category = String(data.category ?? "").trim();
   const fileUrl = String(data.fileUrl ?? "").trim();
   const thumbnail = data.thumbnail ? String(data.thumbnail).trim() : null;
-  const priceCents = Number(data.priceCents);
 
-  if (!title || !fileUrl || !Number.isFinite(priceCents) || priceCents < 0) {
+  // Accept either a CHF price input (e.g. priceChf: 1.5) or explicit priceCents.
+  let priceCents: number | undefined;
+  if (data && typeof (data as any).priceChf !== "undefined") {
+    const v = (data as any).priceChf;
+    const priceChf = typeof v === "number" ? v : typeof v === "string" && v.trim() !== "" ? Number(v) : NaN;
+    if (!Number.isFinite(priceChf) || priceChf < 0) priceCents = undefined;
+    else priceCents = Math.round(priceChf * 100);
+  } else if (data && typeof (data as any).priceCents !== "undefined") {
+    priceCents = Number((data as any).priceCents);
+  }
+
+  if (!title || !fileUrl || !Number.isFinite(priceCents as number) || (priceCents as number) < 0) {
     return NextResponse.json(
       { error: "Invalid payload (title, fileUrl, priceCents required)" },
       { status: 400 }
@@ -36,7 +46,7 @@ export async function POST(_req: Request) {
       category,
       fileUrl,
       thumbnail,
-      priceCents,
+      priceCents: priceCents as number,
 
       // Relation connect (weil vendorId required, aber nicht direkt setzbar)
       vendor: { connect: { id: userId } },

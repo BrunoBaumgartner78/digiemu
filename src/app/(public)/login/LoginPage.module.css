@@ -170,7 +170,8 @@
 }
 
 /* Dark mode refinement (works with your html[data-theme="dark"] too) */
-@media (prefers-color-scheme: dark) {
+html[data-theme="dark"],
+html.dark {
   .page {
     background: transparent;
   }
@@ -197,3 +198,4 @@
     transform: none;
   }
 }
+

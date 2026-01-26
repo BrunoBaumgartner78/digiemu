@@ -28,7 +28,7 @@ export default async function VendorEarningsPage({ searchParams }: PageProps) {
 
   const vendorId = String(user.id);
 
-  const paidLikeStatuses = [
+  const paidLikeStatuses: string[] = [
     "PAID",
     "paid",
     "COMPLETED",
@@ -50,7 +50,7 @@ export default async function VendorEarningsPage({ searchParams }: PageProps) {
     _sum: { amountCents: true },
     where: {
       product: { vendorId },
-      status: { in: paidLikeStatuses as any },
+      status: { in: paidLikeStatuses },
     },
   });
   const grossCents = grossAgg._sum.amountCents ?? 0;
@@ -63,22 +63,22 @@ export default async function VendorEarningsPage({ searchParams }: PageProps) {
   // ======================================================================
   let vendorEarningsCents = 0;
 
-  // 1) Try OrderItem aggregate
+  // 1) Try OrderItem aggregate (Prisma may or may not expose orderItem in this client)
   try {
-    const hasOrderItemAggregate =
-      typeof (prisma as any).orderItem?.aggregate === "function";
-
-    if (hasOrderItemAggregate) {
-      const vendorAgg = await (prisma as any).orderItem.aggregate({
+    const maybeOrderItem = (prisma as unknown as Record<string, unknown>)["orderItem"];
+    if (maybeOrderItem && typeof (maybeOrderItem as Record<string, unknown>)["aggregate"] === "function") {
+      const oi = maybeOrderItem as unknown as { aggregate: (opts: unknown) => Promise<unknown> };
+      const vendorAggRaw = await oi.aggregate({
         _sum: { vendorEarningsCents: true },
         where: {
-          // ✅ wichtig: über product.vendorId filtern (nicht orderItem.vendorId)
           product: { vendorId },
           order: { status: { in: paidLikeStatuses } },
         },
-      });
+      } as unknown);
 
-      vendorEarningsCents = vendorAgg?._sum?.vendorEarningsCents ?? 0;
+      const vendorAgg = vendorAggRaw as Record<string, unknown> | null;
+      const _sum = vendorAgg?._sum as Record<string, unknown> | undefined;
+      vendorEarningsCents = typeof _sum?.vendorEarningsCents === "number" ? (_sum!.vendorEarningsCents as number) : 0;
     }
   } catch {
     // ignore → fallback below
@@ -91,7 +91,7 @@ export default async function VendorEarningsPage({ searchParams }: PageProps) {
         _sum: { vendorEarningsCents: true },
         where: {
           product: { vendorId },
-          status: { in: paidLikeStatuses as any },
+          status: { in: paidLikeStatuses },
         },
       });
       vendorEarningsCents = vendorAgg._sum.vendorEarningsCents ?? 0;
@@ -109,7 +109,7 @@ export default async function VendorEarningsPage({ searchParams }: PageProps) {
   const salesCount = await prisma.order.count({
     where: {
       product: { vendorId },
-      status: { in: paidLikeStatuses as any },
+      status: { in: paidLikeStatuses },
     },
   });
 
@@ -126,7 +126,7 @@ export default async function VendorEarningsPage({ searchParams }: PageProps) {
   const orders = await prisma.order.findMany({
     where: {
       product: { vendorId },
-      status: { in: paidLikeStatuses as any },
+      status: { in: paidLikeStatuses },
     },
     orderBy: { createdAt: "desc" },
     take: pageSize,
@@ -226,7 +226,7 @@ export default async function VendorEarningsPage({ searchParams }: PageProps) {
                 Noch keine bezahlten Bestellungen vorhanden.
               </p>
             ) : (
-              orders.map((o) => {
+              orders.map((o: any) => {
                 const buyerLabel =
                   o.buyer?.name?.trim() || o.buyer?.email || "Unbekannt";
 

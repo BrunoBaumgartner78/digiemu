@@ -1,7 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // removed: Next.js 16 no longer supports `eslint` in next.config.ts
+  // Next.js 16: eslint config is not supported here anymore (ok)
 
+  compiler: {
+    // Remove console.* in production build (keep error + warn)
+    removeConsole:
+      process.env.NODE_ENV === "production"
+        ? { exclude: ["error", "warn"] }
+        : false,
+  },
 
   images: {
     remotePatterns: [

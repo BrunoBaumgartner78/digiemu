@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAdminApi } from "@/lib/guards/authz";
 import { prisma } from "@/lib/prisma";
 import { isRecord, getStringProp, getBooleanProp, getErrorMessage } from "@/lib/guards";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@/generated/prisma";
 
 const ALLOWED_ROLES = ["BUYER", "VENDOR", "ADMIN"] as const;
 type AllowedRole = (typeof ALLOWED_ROLES)[number];

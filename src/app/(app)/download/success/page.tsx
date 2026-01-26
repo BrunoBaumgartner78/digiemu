@@ -10,7 +10,7 @@ type Props = { searchParams: Promise<SearchParams> };
 
 export default async function DownloadSuccessPage({ searchParams }: Props) {
   const session = await requireSessionPage();
-  const userId = (session?.user as any)?.id as string | undefined;
+  const userId = (session?.user as any)?.id as string | undefined; 
   if (!userId) redirect("/login");
 
   const { session_id } = await searchParams;

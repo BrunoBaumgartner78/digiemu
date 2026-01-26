@@ -1,4 +1,5 @@
 import { requireSessionPage } from "@/lib/guards/authz";
+import type React from "react";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { auth } from "@/lib/auth";
@@ -35,9 +36,9 @@ export default async function AccountOrdersPage() {
             </tr>
           </thead>
           <tbody>
-            {orders.map(order => {
+            {orders.map((order: any) => {
               let downloadStatus = "Ausstehend";
-              let downloadLink = null;
+              let downloadLink: React.ReactNode = null;
               let badgeColor = "bg-yellow-600";
               if (order.downloadLink) {
                 const expired = new Date(order.downloadLink.expiresAt) < new Date();

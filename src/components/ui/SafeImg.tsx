@@ -1,5 +1,6 @@
-"use client";
+﻿"use client";
 import React, { ImgHTMLAttributes, useState } from "react";
+import Image from "next/image";
 
 type SafeImgProps = Omit<ImgHTMLAttributes<HTMLImageElement>, "onError" | "src"> & {
   src?: string | null;
@@ -7,7 +8,7 @@ type SafeImgProps = Omit<ImgHTMLAttributes<HTMLImageElement>, "onError" | "src">
   fallback?: React.ReactNode;
 };
 
-export default function SafeImg({ src, fallbackSrc, fallback, alt, className, style, ...rest }: SafeImgProps) {
+export default function SafeImg({ src, fallbackSrc, fallback, alt, className, style }: SafeImgProps) {
   const [currentSrc, setCurrentSrc] = useState<string | undefined>(src ?? undefined);
   const [triedFallback, setTriedFallback] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -17,7 +18,7 @@ export default function SafeImg({ src, fallbackSrc, fallback, alt, className, st
     return <>{fallback ?? <span aria-hidden="true" className={className} style={style} />}</>;
   }
 
-  const handleError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+  const handleError = () => {
     if (fallbackSrc && !triedFallback) {
       setTriedFallback(true);
       setCurrentSrc(fallbackSrc ?? undefined);
@@ -28,14 +29,18 @@ export default function SafeImg({ src, fallbackSrc, fallback, alt, className, st
 
   if (failed) return <>{fallback ?? <span aria-hidden="true" className={className} style={style} />}</>;
 
+  // Use next/image with `fill` to satisfy Next.js optimization and avoid `no-img-element` warnings
   return (
-    <img
-      src={currentSrc}
-      alt={alt}
-      className={className}
-      style={style}
-      onError={handleError}
-      {...rest}
-    />
+    <div className={className} style={{ position: "relative", display: "block", ...(style as React.CSSProperties) }}>
+      <Image
+        src={currentSrc as string}
+        alt={alt ?? ""}
+        fill
+        sizes="(min-width:1024px) 25vw, 50vw"
+        style={{ objectFit: (style as React.CSSProperties)?.objectFit ?? "cover" }}
+        onError={handleError as unknown as () => void}
+      />
+    </div>
   );
 }
+

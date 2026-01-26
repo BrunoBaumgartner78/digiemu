@@ -1,5 +1,7 @@
 generator client {
-  provider = "prisma-client-js"
+  provider   = "prisma-client-js"
+  output     = "../src/generated/prisma"
+  engineType = "node-api"
 }
 
 datasource db {
@@ -51,6 +53,7 @@ model User {
   buyerProfile   BuyerProfile?
   comments       Comment[]
   likes          Like[]
+  commentLikes   CommentLike[]
   orders         Order[]
   passwordResets PasswordReset[]
   payouts        Payout[]
@@ -173,8 +176,25 @@ model Comment {
   productId String
   content   String
   createdAt DateTime @default(now())
+  isHidden  Boolean  @default(false)
   product   Product  @relation(fields: [productId], references: [id])
   user      User     @relation(fields: [userId], references: [id])
+  likes     CommentLike[]
+}
+
+model CommentLike {
+  id        String   @id @default(cuid())
+  commentId String
+  userId    String
+  createdAt DateTime @default(now())
+
+  comment   Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([commentId, userId])
+  @@index([commentId])
+  @@index([userId])
+  @@index([createdAt])
 }
 
 model Review {

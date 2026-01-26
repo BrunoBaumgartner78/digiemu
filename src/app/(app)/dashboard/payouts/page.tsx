@@ -2,7 +2,7 @@
 import { requireVendorPage } from "@/lib/guards/authz";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
+import { nowMs, msFromDays } from "@/lib/time";
 import RequestPayoutButton from "./RequestPayoutButton";
 type SearchParams = { [key: string]: string | string[] | undefined };
 type Props = { searchParams?: Promise<SearchParams> };
@@ -58,7 +58,7 @@ export default async function VendorPayoutsPage(props: Props) {
         vendorId,
         order: { status: { in: paidLikeStatuses } },
         ...(rangeParam && rangeParam !== "all"
-          ? { createdAt: { gte: new Date(Date.now() - Number(rangeParam) * 24 * 60 * 60 * 1000) } }
+          ? { createdAt: { gte: new Date(nowMs() - msFromDays(Number(rangeParam))) } }
           : {}),
       },
     });
@@ -68,8 +68,8 @@ export default async function VendorPayoutsPage(props: Props) {
       _sum: { vendorEarningsCents: true },
       where: {
         product: { vendorId },
-        status: { in: paidLikeStatuses as any },
-        ...(rangeParam && rangeParam !== "all" ? { createdAt: { gte: new Date(Date.now() - Number(rangeParam) * 24 * 60 * 60 * 1000) } } : {}),
+        status: { in: paidLikeStatuses },
+        ...(rangeParam && rangeParam !== "all" ? { createdAt: { gte: new Date(nowMs() - msFromDays(Number(rangeParam))) } } : {}),
       },
     });
     totalEarnings = agg._sum.vendorEarningsCents ?? 0;
@@ -94,7 +94,7 @@ export default async function VendorPayoutsPage(props: Props) {
 
   // ✅ Historie
   const payouts = await prisma.payout.findMany({
-    where: rangeParam && rangeParam !== "all" ? { vendorId, createdAt: { gte: new Date(Date.now() - Number(rangeParam) * 24 * 60 * 60 * 1000) } } : { vendorId },
+    where: rangeParam && rangeParam !== "all" ? { vendorId, createdAt: { gte: new Date(nowMs() - msFromDays(Number(rangeParam))) } } : { vendorId },
     orderBy: { createdAt: "desc" },
   });
 

@@ -7,8 +7,8 @@ export function lazyClient<TModule extends Record<string, unknown>, K extends ke
 ) {
   return dynamic(async () => {
     const mod = await loader();
-    // Return the requested export as a component. Use unknown -> ComponentType cast
-    // to avoid using `any` while keeping runtime behavior.
-    return (mod[exportName] as unknown) as React.ComponentType<any>;
+    // Return the requested export as a component. Keep the runtime cast
+    // but avoid `any` in typings by using `unknown` -> `ComponentType<unknown>`.
+    return (mod[exportName] as unknown) as React.ComponentType<unknown>;
   }, { ssr: false });
 }

@@ -186,6 +186,36 @@
   display: block;
 }
 
+/* ===========================
+   Fallback 'image' divs
+   (replaces <img> to satisfy @next/next/no-img-element)
+   =========================== */
+
+.bannerImgFallback{
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.avatarImgFallback{
+  width: 84px;
+  height: 84px;
+  border-radius: 999px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.thumbImgFallback{
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
 .thumbPlaceholder {
   height: 170px;
   display: flex;

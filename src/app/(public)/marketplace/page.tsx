@@ -77,7 +77,10 @@ export default async function MarketplacePage(props: MarketplacePageProps) {
       ? params.maxPrice[0]
       : undefined;
 
-  const sort = resolvedSortParam && resolvedSortParam.length > 0 ? resolvedSortParam : "newest";
+  const allowedSorts = ["newest", "price_asc", "price_desc"] as const;
+  const sort = allowedSorts.includes((resolvedSortParam ?? "") as any)
+    ? (resolvedSortParam as "newest" | "price_asc" | "price_desc")
+    : "newest";
   const minPrice = resolvedMinPriceParam ?? undefined;
   const maxPrice = resolvedMaxPriceParam ?? undefined;
 
@@ -99,7 +102,7 @@ export default async function MarketplacePage(props: MarketplacePageProps) {
     pageSize: PAGE_SIZE,
     category,
     search,
-    sort: sort as any,
+    sort,
     minPriceCents,
     maxPriceCents,
   });
@@ -341,7 +344,6 @@ export default async function MarketplacePage(props: MarketplacePageProps) {
                       >
                         {avatarUrl ? (
                           // Use client SafeImg to handle onError safely
-                          // eslint-disable-next-line @next/next/no-img-element
                           <SafeImg
                             src={avatarUrl}
                             alt={sellerName}

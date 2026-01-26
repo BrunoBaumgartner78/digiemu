@@ -13,7 +13,8 @@
   background: radial-gradient(circle at top, #111827 0, #020617 45%, #020617 100%);
 }
 
-@media (prefers-color-scheme: dark) {
+html[data-theme="dark"],
+html.dark {
   .page {
     background: radial-gradient(circle at top, #111827 0, #020617 45%, #020617 100%);
   }
@@ -71,7 +72,8 @@
     inset 0 0 0 1px rgba(30, 64, 175, 0.22);
 }
 
-@media (prefers-color-scheme: dark) {
+html[data-theme="dark"],
+html.dark {
   .card {
     background:
       radial-gradient(circle at 0% 0%, rgba(59, 130, 246, 0.22), transparent 55%),
@@ -146,7 +148,8 @@
   color: #e5e7eb;
 }
 
-@media (prefers-color-scheme: dark) {
+html[data-theme="dark"],
+html.dark {
   .title {
     color: #e5e7eb;
   }
@@ -165,7 +168,8 @@
   color: #9ca3af;
 }
 
-@media (prefers-color-scheme: dark) {
+html[data-theme="dark"],
+html.dark {
   .subtitle {
     color: #9ca3af;
   }
@@ -182,7 +186,8 @@
   color: #e5e7eb;
 }
 
-@media (prefers-color-scheme: dark) {
+html[data-theme="dark"],
+html.dark {
   .productName {
     color: #e5e7eb;
   }
@@ -220,7 +225,8 @@
     inset 0 0 0 1px rgba(30, 64, 175, 0.22);
 }
 
-@media (prefers-color-scheme: dark) {
+html[data-theme="dark"],
+html.dark {
   .downloadBox {
     background:
       radial-gradient(circle at 0% 0%, rgba(30, 64, 175, 0.42), transparent 60%),
@@ -246,7 +252,8 @@
   color: #e5e7eb;
 }
 
-@media (prefers-color-scheme: dark) {
+html[data-theme="dark"],
+html.dark {
   .text {
     color: #e5e7eb;
   }
@@ -265,7 +272,8 @@
   color: #9ca3af;
 }
 
-@media (prefers-color-scheme: dark) {
+html[data-theme="dark"],
+html.dark {
   .textMuted {
     color: #9ca3af;
   }
@@ -297,7 +305,8 @@
   color: #9ca3af;
 }
 
-@media (prefers-color-scheme: dark) {
+html[data-theme="dark"],
+html.dark {
   .hint {
     color: #9ca3af;
   }
@@ -338,3 +347,4 @@
     scroll-behavior: auto;
   }
 }
+

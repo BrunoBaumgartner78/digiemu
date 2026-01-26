@@ -1,10 +1,10 @@
-import "server-only";
+﻿import "server-only";
 import { prisma } from "@/lib/prisma";
 
 /**
  * Top selling products in the last 30 days.
  * NOTE: This assumes Product has a relation called `orders`.
- * If your schema uses OrderItem/LineItem, we’ll adjust.
+ * If your schema uses OrderItem/LineItem, weâ€™ll adjust.
  */
 export async function getTopSellingProductsLast30Days(limit = 3) {
   const now = new Date();
@@ -33,3 +33,4 @@ export async function getTopSellingProductsLast30Days(limit = 3) {
     return [];
   }
 }
+

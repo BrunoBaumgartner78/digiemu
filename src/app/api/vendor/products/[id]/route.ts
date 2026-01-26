@@ -72,7 +72,16 @@ export async function PATCH(_req: Request, ctx: Ctx) {
   if (!title) return NextResponse.json({ message: "Titel fehlt." }, { status: 400 });
   if (!description) return NextResponse.json({ message: "Beschreibung fehlt." }, { status: 400 });
 
-  const priceCents = toInt(body.priceCents);
+  // Accept either priceCents or priceChf (CHF as float). Convert CHF -> cents.
+  let priceCents: number | null = null;
+  if (typeof (body as any).priceChf !== "undefined") {
+    const v = (body as any).priceChf;
+    const priceChf = typeof v === "number" ? v : typeof v === "string" && v.trim() !== "" ? Number(v) : NaN;
+    if (Number.isFinite(priceChf)) priceCents = Math.round(priceChf * 100);
+  } else {
+    priceCents = toInt((body as any).priceCents);
+  }
+
   if (priceCents === null || priceCents < 100) {
     return NextResponse.json({ message: "Mindestpreis ist 1.00 CHF." }, { status: 400 });
   }

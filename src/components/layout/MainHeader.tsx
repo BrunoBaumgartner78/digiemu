@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import * as React from "react";
 import { useEffect, useState } from "react";
+import { debug } from "@/lib/debug";
 import { signOut, useSession } from "next-auth/react";
 
 import FeatureGate from "@/components/FeatureGate";
@@ -33,15 +34,8 @@ export function MainHeader() {
   const isBuyer = role === "BUYER";
 
   useEffect(() => {
-    if (process.env.NODE_ENV !== "production") {
-      console.log("[MainHeader] role check", {
-        status,
-        role,
-        isAdmin,
-        user: session?.user,
-      });
-    }
-  }, [status, role, isAdmin, session?.user]);
+    debug.log("[MainHeader] role check", { status, role, isAdmin });
+  }, [status, role, isAdmin]);
 
   // ✅ Scroll lock when mobile menu open
   useEffect(() => {
@@ -52,10 +46,7 @@ export function MainHeader() {
     };
   }, [mobileOpen]);
 
-  // ✅ Close menu ONLY when route changes (no instant timeout close)
-  useEffect(() => {
-    setMobileOpen(false);
-  }, [pathname]);
+  // Closing the mobile menu on route changes is handled by closing links' onClick handlers.
 
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href) && href !== "/";

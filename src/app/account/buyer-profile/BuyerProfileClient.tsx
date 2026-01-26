@@ -4,6 +4,7 @@ import React, { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import ProfileImageUploader from "../profile/ProfileImageUploader";
 import { useToast } from "@/components/ui/use-toast";
+import { getErrorMessage } from "@/lib/errors";
 
 type InitialData = {
   displayName: string;
@@ -54,8 +55,8 @@ export default function BuyerProfileClient({ userId, initialData }: Props) {
 
       toast({ title: "Profil gespeichert", variant: "success" });
       router.refresh();
-    } catch (err: any) {
-      toast({ title: "Fehler", description: err?.message || "Unbekannt", variant: "destructive" });
+    } catch (err : unknown) {
+      toast({ title: "Fehler", description: getErrorMessage(err, "Unbekannt"), variant: "destructive" });
     } finally {
       setSaving(false);
     }

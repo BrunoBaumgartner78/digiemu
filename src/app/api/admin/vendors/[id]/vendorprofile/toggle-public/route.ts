@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdminApi } from "@/lib/guards/authz";
 import { prisma } from "@/lib/prisma";
-import { isRecord, getStringProp, getErrorMessage } from "@/lib/guards";
-import type { VendorStatus } from "@prisma/client";
+import { getErrorMessage } from "@/lib/guards";
+import type { VendorStatus } from "@/generated/prisma";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -12,7 +12,6 @@ export async function POST(_req: NextRequest, context: { params: Promise<{ id: s
   const maybe = await requireAdminApi();
   if (maybe instanceof NextResponse)
     return NextResponse.json({ message: "Unauthorized" }, { status: 401, headers: { "Cache-Control": "no-store" } });
-  const session = maybe;
 
   const userId = (params?.id ?? "").toString();
   if (!userId) return NextResponse.json({ error: "Missing id" }, { status: 400 });

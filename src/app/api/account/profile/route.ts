@@ -3,7 +3,7 @@ import type { Session } from "next-auth";
 import { requireSessionApi } from "@/lib/guards/authz";
 import { prisma } from "@/lib/prisma";
 import { isRecord, getStringProp, getBooleanProp, getErrorMessage } from "@/lib/guards";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@/generated/prisma";
 
 function sanitizeSlug(input: string) {
   return (input || "")

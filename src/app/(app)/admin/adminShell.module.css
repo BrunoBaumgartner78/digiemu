@@ -1,0 +1,146 @@
+.page{
+  padding: 28px 16px 60px;
+  max-width: 1200px;
+  margin: 0 auto;
+  display:flex;
+  flex-direction:column;
+  gap: 14px;
+}
+
+.header{
+  padding: 18px 18px 14px;
+  border-radius: 22px;
+  background: linear-gradient(180deg, var(--neo-glass), var(--neo-glass-2));
+  border: 1px solid var(--neo-stroke);
+  box-shadow: var(--neo-shadow-1), var(--neo-shadow-2);
+  backdrop-filter: blur(14px);
+}
+
+.eyebrow{
+  margin: 0 0 6px;
+  font-size: 12px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--txt-muted);
+}
+
+.title{
+  margin: 0;
+  font-size: 22px;
+  font-weight: 850;
+  color: var(--txt);
+  line-height: 1.2;
+}
+
+.sub{
+  margin: 6px 0 0;
+  color: var(--txt-muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.content{
+  display:flex;
+  flex-direction:column;
+  gap: 14px;
+}
+/* src/app/(app)/admin/adminShell.module.css */
+.page{
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 22px 18px 70px;
+}
+
+.topbar{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.titleWrap{
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.eyebrow{
+  font-size: 12px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--txt-muted);
+}
+
+.h1{
+  margin: 0;
+  font-size: 26px;
+  line-height: 1.15;
+  font-weight: 800;
+  color: var(--txt);
+}
+
+.sub{
+  margin: 0;
+  color: var(--txt-muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.card{
+  border-radius: 26px;
+  background: linear-gradient(180deg, var(--neo-glass), var(--neo-glass-2));
+  border: 1px solid var(--neo-stroke);
+  box-shadow: var(--neo-shadow-1), var(--neo-shadow-2);
+  backdrop-filter: blur(14px);
+}
+
+.content{
+  padding: 18px;
+}
+
+/* --- Legacy menu / breadcrumb fix ---
+   This catches the "DashboardOrdersUserProdukteVendorenPayouts" block
+   and makes any links inside flow with spacing and pills. */
+.legacyFix{
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--neo-glass) 78%, transparent);
+  border: 1px solid var(--border-soft);
+  overflow-x: auto;
+}
+
+.legacyFix :global(a){
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  margin: 0 8px 8px 0;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--neo-stroke) 80%, transparent);
+  background: color-mix(in srgb, var(--neo-btn-bg) 86%, transparent);
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--txt);
+  white-space: nowrap;
+}
+
+.legacyFix :global(a:hover){
+  box-shadow:
+    0 10px 24px rgba(15,23,42,.14),
+    0 0 0 1px rgba(var(--neo-accent), .10);
+}
+
+:global(html[data-theme="dark"]) .legacyFix :global(a),
+:global(html.dark) .legacyFix :global(a){
+  color: rgba(239,246,255,.92);
+  border-color: rgba(255,255,255,.08);
+  background: rgba(20, 28, 44, .44);
+}
+
+@media (max-width: 900px){
+  .page{ padding: 18px 12px 56px; }
+  .topbar{ flex-direction: column; align-items: flex-start; }
+}

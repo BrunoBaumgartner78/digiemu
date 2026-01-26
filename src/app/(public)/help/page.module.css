@@ -256,47 +256,26 @@
 /* ---------------------------
    LIGHT MODE OVERRIDES
 ---------------------------- */
-@media (prefers-color-scheme: light) {
-  .page {
-    background:
-      radial-gradient(900px 500px at 15% 10%, rgba(34, 197, 94, 0.14), transparent 55%),
-      radial-gradient(700px 420px at 85% 20%, rgba(59, 130, 246, 0.12), transparent 55%),
-      radial-gradient(900px 520px at 50% 90%, rgba(249, 115, 22, 0.10), transparent 60%),
-      radial-gradient(circle at top left, rgba(224, 242, 254, 0.85), rgba(229, 231, 235, 0.65));
+html[data-theme="light"] .quickNavLink:focus-visible, html[data-theme="light"] .faqSummary:focus-visible, html[data-theme="light"] .linkInline:focus-visible, html.light .quickNavLink:focus-visible, html.light .faqSummary:focus-visible, html.light .linkInline:focus-visible {
+    outline-color: rgba(34, 197, 94, 0.45);
   }
-
-  .header,
-  .sectionCard {
-    background: rgba(255, 255, 255, 0.78);
-    border: 1px solid rgba(15, 23, 42, 0.12);
-    box-shadow:
-      0 14px 34px rgba(15, 23, 42, 0.10),
-      inset 0 1px 0 rgba(255, 255, 255, 0.75);
+html[data-theme="light"] .linkInline:hover, html.light .linkInline:hover {
+    border-bottom-color: rgba(22, 163, 74, 0.55);
   }
-
-  .title,
-  .faqSummary,
-  .sectionTitle {
-    color: #0f172a;
+html[data-theme="light"] .linkInline, html.light .linkInline {
+    color: rgba(22, 163, 74, 0.95);
+    border-bottom-color: rgba(22, 163, 74, 0.30);
   }
-
-  .subtitle,
-  .eyebrow,
-  .sectionIntro,
-  .faqBody {
-    color: rgba(15, 23, 42, 0.78);
+html[data-theme="light"] .faqItem[open], html.light .faqItem[open] {
+    border-color: rgba(34, 197, 94, 0.22);
+    background: rgba(255, 255, 255, 0.86);
   }
-
-  .quickNavLink {
-    color: #0f172a;
-    background: rgba(255, 255, 255, 0.82);
-    border: 1px solid rgba(15, 23, 42, 0.14);
-    box-shadow:
-      0 10px 22px rgba(15, 23, 42, 0.10),
-      inset 0 1px 0 rgba(255, 255, 255, 0.75);
+html[data-theme="light"] .faqItem, html.light .faqItem {
+    background: rgba(255, 255, 255, 0.74);
+    border: 1px solid rgba(15, 23, 42, 0.10);
+    box-shadow: 0 10px 22px rgba(15, 23, 42, 0.08);
   }
-
-  .quickNavLink:hover {
+html[data-theme="light"] .quickNavLink:hover, html.light .quickNavLink:hover {
     background: rgba(255, 255, 255, 0.92);
     border-color: rgba(34, 197, 94, 0.25);
     box-shadow:
@@ -304,30 +283,31 @@
       0 0 0 1px rgba(34, 197, 94, 0.10);
     transform: translateY(-1px);
   }
-
-  .faqItem {
-    background: rgba(255, 255, 255, 0.74);
-    border: 1px solid rgba(15, 23, 42, 0.10);
-    box-shadow: 0 10px 22px rgba(15, 23, 42, 0.08);
+html[data-theme="light"] .quickNavLink, html.light .quickNavLink {
+    color: #0f172a;
+    background: rgba(255, 255, 255, 0.82);
+    border: 1px solid rgba(15, 23, 42, 0.14);
+    box-shadow:
+      0 10px 22px rgba(15, 23, 42, 0.10),
+      inset 0 1px 0 rgba(255, 255, 255, 0.75);
   }
-
-  .faqItem[open] {
-    border-color: rgba(34, 197, 94, 0.22);
-    background: rgba(255, 255, 255, 0.86);
+html[data-theme="light"] .subtitle, html[data-theme="light"] .eyebrow, html[data-theme="light"] .sectionIntro, html[data-theme="light"] .faqBody, html.light .subtitle, html.light .eyebrow, html.light .sectionIntro, html.light .faqBody {
+    color: rgba(15, 23, 42, 0.78);
   }
-
-  .linkInline {
-    color: rgba(22, 163, 74, 0.95);
-    border-bottom-color: rgba(22, 163, 74, 0.30);
+html[data-theme="light"] .title, html[data-theme="light"] .faqSummary, html[data-theme="light"] .sectionTitle, html.light .title, html.light .faqSummary, html.light .sectionTitle {
+    color: #0f172a;
   }
-
-  .linkInline:hover {
-    border-bottom-color: rgba(22, 163, 74, 0.55);
+html[data-theme="light"] .header, html[data-theme="light"] .sectionCard, html.light .header, html.light .sectionCard {
+    background: rgba(255, 255, 255, 0.78);
+    border: 1px solid rgba(15, 23, 42, 0.12);
+    box-shadow:
+      0 14px 34px rgba(15, 23, 42, 0.10),
+      inset 0 1px 0 rgba(255, 255, 255, 0.75);
   }
-
-  .quickNavLink:focus-visible,
-  .faqSummary:focus-visible,
-  .linkInline:focus-visible {
-    outline-color: rgba(34, 197, 94, 0.45);
+html[data-theme="light"] .page, html.light .page {
+    background:
+      radial-gradient(900px 500px at 15% 10%, rgba(34, 197, 94, 0.14), transparent 55%),
+      radial-gradient(700px 420px at 85% 20%, rgba(59, 130, 246, 0.12), transparent 55%),
+      radial-gradient(900px 520px at 50% 90%, rgba(249, 115, 22, 0.10), transparent 60%),
+      radial-gradient(circle at top left, rgba(224, 242, 254, 0.85), rgba(229, 231, 235, 0.65));
   }
-}

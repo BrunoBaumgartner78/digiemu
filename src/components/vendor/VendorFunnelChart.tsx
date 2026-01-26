@@ -40,7 +40,7 @@ export default function VendorFunnelChart({ funnel }: { funnel: VendorFunnel | R
   // Helper to safely extract counts and rates from either structure
   const countsSource = ((): { impressions: number; views: number; purchases: number } => {
     if (typeof funnel === "object" && funnel !== null && "counts" in funnel) {
-      const c = (funnel as any).counts;
+      const c = (funnel as { counts?: unknown }).counts;
       if (c && typeof c === "object") {
         return {
           impressions: Number((c as Record<string, unknown>).impressions ?? 0),
@@ -50,15 +50,15 @@ export default function VendorFunnelChart({ funnel }: { funnel: VendorFunnel | R
       }
     }
     return {
-      impressions: Number((funnel as any).impressions ?? 0),
-      views: Number((funnel as any).views ?? 0),
-      purchases: Number((funnel as any).purchases ?? 0),
+      impressions: Number((funnel as { impressions?: unknown }).impressions ?? 0),
+      views: Number((funnel as { views?: unknown }).views ?? 0),
+      purchases: Number((funnel as { purchases?: unknown }).purchases ?? 0),
     };
   })();
 
   const ratesSource = ((): { viewRate: number; purchaseRate: number; fullFunnelRate: number } => {
     if (typeof funnel === "object" && funnel !== null && "rates" in funnel) {
-      const r = (funnel as any).rates;
+      const r = (funnel as { rates?: unknown }).rates;
       if (r && typeof r === "object") {
         return {
           viewRate: Number((r as Record<string, unknown>).viewRate ?? 0),
@@ -68,9 +68,9 @@ export default function VendorFunnelChart({ funnel }: { funnel: VendorFunnel | R
       }
     }
     return {
-      viewRate: Number((funnel as any).viewRate ?? 0),
-      purchaseRate: Number((funnel as any).purchaseRate ?? 0),
-      fullFunnelRate: Number((funnel as any).fullFunnelRate ?? 0),
+      viewRate: Number((funnel as { viewRate?: unknown }).viewRate ?? 0),
+      purchaseRate: Number((funnel as { purchaseRate?: unknown }).purchaseRate ?? 0),
+      fullFunnelRate: Number((funnel as { fullFunnelRate?: unknown }).fullFunnelRate ?? 0),
     };
   })();
 

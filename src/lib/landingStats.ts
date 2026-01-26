@@ -1,104 +1,70 @@
 // src/lib/landingStats.ts
 import { prisma } from "@/lib/prisma";
-import { startOfToday, startOfMonth, subDays } from "date-fns";
 
 export type LandingStats = {
-  todayTotal: number;
-  monthTotal: number;
-  activeCreators: number;
-};
-
-export type TopProduct = {
-  id: string;
-  title: string;
-  type: string; // Anzeige-Label (z.B. "E-Book", "Template")
-  monthlyRevenue: number;
+  totalProducts: number;
+  totalOrders: number;
+  totalVendors: number;
+  topProducts: Array<{
+    productId: string;
+    title: string;
+    vendorId: string;
+    orderCount: number;
+    revenueCents: number;
+  }>;
 };
 
 export async function getLandingStats(): Promise<LandingStats> {
-  const now = new Date();
-  const todayStart = startOfToday();
-  const monthStart = startOfMonth(now);
-
-  const [todayAgg, monthAgg, activeOrders] = await Promise.all([
-    // HEUTE – aktuell ohne Status-Filter, damit auf jeden Fall Zahlen kommen
-    prisma.order.aggregate({
-      _sum: { amountCents: true },
-      where: {
-        createdAt: { gte: todayStart },
-      },
-    }),
-
-    // MONAT – ebenfalls ohne Status-Filter
-    prisma.order.aggregate({
-      _sum: { amountCents: true },
-      where: {
-        createdAt: { gte: monthStart },
-      },
-    }),
-
-    prisma.order.findMany({
-      where: {
-        createdAt: { gte: monthStart },
-      },
-      select: {
-        product: {
-          select: {
-            vendorId: true,
-          },
-        },
-      },
-    }),
+  // Basiszahlen
+  const [totalProducts, totalOrders, totalVendors] = await Promise.all([
+    prisma.product.count({ where: { isActive: true, status: "ACTIVE" } }),
+    prisma.order.count({ where: { status: "paid" } }),
+    prisma.vendorProfile.count({ where: { status: "APPROVED" } }),
   ]);
 
-  const vendorIdSet = new Set<string>();
-  for (const o of activeOrders) {
-    const vid = o.product?.vendorId;
-    if (vid) vendorIdSet.add(vid);
-  }
-
-  return {
-    todayTotal: (todayAgg._sum.amountCents ?? 0) / 100,
-    monthTotal: (monthAgg._sum.amountCents ?? 0) / 100,
-    activeCreators: vendorIdSet.size,
-  };
-}
-
-export async function getTopProducts(limit = 3): Promise<TopProduct[]> {
-  const since = subDays(new Date(), 30);
-
-  const grouped = await prisma.order.groupBy({
+  // Top-Produkte nach Bestellungen (Order -> Product)
+  // ✅ vendorId kommt über product.vendorId (nicht order.vendorId!)
+  const top = await prisma.order.groupBy({
     by: ["productId"],
-    where: {
-      createdAt: { gte: since },
-      // kein status-Filter, damit wir sicher Daten sehen
-    },
+    where: { status: "paid" },
+    _count: { productId: true },
     _sum: { amountCents: true },
-    orderBy: { _sum: { amountCents: "desc" } },
-    take: limit,
+    orderBy: { _count: { productId: "desc" } },
+    take: 10,
   });
 
-  const productIds = grouped.map((g) => g.productId);
-  if (productIds.length === 0) return [];
+  const productIds = top.map((x) => x.productId);
 
   const products = await prisma.product.findMany({
     where: { id: { in: productIds } },
     select: {
       id: true,
       title: true,
-      category: true, // das gibt es sicher laut Fehlermeldung
+      vendorId: true, // ✅ hier ist vendorId korrekt
     },
   });
 
-  const revenueById = new Map(
-    grouped.map((g) => [g.productId, (g._sum.amountCents ?? 0) / 100])
-  );
+  const byId = new Map(products.map((p) => [(p as any).id, p as any]));
 
-  return products.map((p) => ({
-    id: p.id,
-    title: p.title,
-    // Anzeige-Label aus category ableiten, Fallback "Produkt"
-    type: p.category ?? "Produkt",
-    monthlyRevenue: revenueById.get(p.id) ?? 0,
-  }));
+  const topProducts = top
+    .map((g) => {
+      const p = byId.get(g.productId) as any | undefined;
+      if (!p) return null;
+
+      return {
+        productId: p.id,
+        title: p.title,
+        vendorId: p.vendorId,
+        orderCount: g._count?.productId ?? 0,
+        revenueCents: g._sum?.amountCents ?? 0,
+      };
+    })
+    .filter(Boolean) as LandingStats["topProducts"];
+
+  return {
+    totalProducts,
+    totalOrders,
+    totalVendors,
+    topProducts,
+  };
 }

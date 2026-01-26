@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import crypto from "crypto";
 import nodemailer from "nodemailer";
 import { NextResponse } from "next/server";
+import { serverLog } from "@/lib/serverLog";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -15,12 +16,12 @@ function normEmail(v: unknown) {
   return typeof v === "string" ? v.trim().toLowerCase() : "";
 }
 
-export async function POST(req: Request) {
-  const form = await req.formData();
+export async function POST(_req: Request) {
+  const form = await _req.formData();
   const email = normEmail(form.get("email"));
 
   // Immer neutral antworten (kein Account-Leak)
-  const redirectUrl = new URL("/forgot-password?sent=1", req.url);
+  const redirectUrl = new URL("/forgot-password?sent=1", _req.url);
   if (!email) return NextResponse.redirect(redirectUrl);
 
   const user = await prisma.user.findUnique({ where: { email } });
@@ -57,16 +58,8 @@ export async function POST(req: Request) {
   const secure = process.env.SMTP_SECURE === "true" || port === 465;
   const from = process.env.MAIL_FROM || smtpUser;
 
-  // Debug ohne Passwort
-  console.log("SMTP DEBUG", {
-    host,
-    port,
-    secure,
-    user: smtpUser,
-    from,
-    to: user.email,
-    passLen: smtpPass.length,
-  });
+  // Debug without sensitive details
+  serverLog.log("SMTP: configured");
 
   // Wenn SMTP nicht konfiguriert: neutral redirect (kein Leak)
   if (!smtpUser || !smtpPass || !from) {
@@ -104,9 +97,13 @@ export async function POST(req: Request) {
       `,
     });
 
-    console.log("MAIL: sent reset link to", user.email);
-  } catch (err: any) {
-    console.error("MAIL: send failed", err?.message ?? err);
+    serverLog.log("MAIL: sent reset link");
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      console.error("MAIL: send failed", err.message, err);
+    } else {
+      console.error("MAIL: send failed", String(err));
+    }
     // bewusst neutral bleiben
   }
 

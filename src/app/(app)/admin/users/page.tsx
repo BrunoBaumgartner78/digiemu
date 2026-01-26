@@ -1,320 +1,140 @@
-// src/app/admin/users/page.tsx
-import { requireAdminPage } from "@/lib/guards/authz";
-import { prisma } from "@/lib/prisma";
-import { Prisma } from "@prisma/client";
-import type { Role } from "@prisma/client";
-import type { AdminUserListRow } from "@/lib/admin-types";
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import AdminUserStatusToggle from "./AdminUserStatusToggle";
+import styles from "../downloads/page.module.css";
+import { prisma } from "@/lib/prisma";
+import { requireAdminOrRedirect } from "@/lib/guards/admin";
+import AdminActionButton from "@/components/admin/AdminActionButton";
+import { parseAdminListParams, formatDateTime } from "@/lib/admin/adminList";
 
 export const dynamic = "force-dynamic";
 
-type AdminUsersSearchParams = {
-  q?: string;
-  role?: string;
-  page?: string;
-  pageSize?: string;
-};
+type SearchParams = Record<string, string | string[] | undefined>;
 
-function clampInt(v: string | undefined, fallback: number, min: number, max: number) {
-  const n = Number(v);
-  if (!Number.isFinite(n)) return fallback;
-  return Math.min(max, Math.max(min, Math.trunc(n)));
-}
+export default async function AdminUsersPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
+  await requireAdminOrRedirect();
 
-function buildQuery(params: Record<string, string | undefined>) {
-  const sp = new URLSearchParams();
-  for (const [k, v] of Object.entries(params)) {
-    if (v !== undefined && v !== "" && v !== "ALL") sp.set(k, v);
-  }
-  const s = sp.toString();
-  return s ? `?${s}` : "";
-}
+  const sp = await searchParams;
 
-function paginationWindow(current: number, total: number) {
-  const pages: (number | "…")[] = [];
-  const add = (p: number | "…") => pages.push(p);
+  const { q, status, page, pageSize, buildQueryString } = parseAdminListParams(sp, {
+    q: { key: "q", default: "" },
+    status: { key: "status", default: "all" },
+    page: { key: "page", default: 1 },
+    pageSize: { key: "pageSize", default: 25, min: 5, max: 200 },
+  });
 
-  if (total <= 7) {
-    for (let i = 1; i <= total; i++) add(i);
-    return pages;
-  }
+  const where: any = {};
 
-  add(1);
-
-  const left = Math.max(2, current - 2);
-  const right = Math.min(total - 1, current + 2);
-
-  if (left > 2) add("…");
-  for (let i = left; i <= right; i++) add(i);
-  if (right < total - 1) add("…");
-
-  add(total);
-  return pages;
-}
-
-export default async function AdminUsersPage({
-  searchParams,
-}: {
-  searchParams: Promise<AdminUsersSearchParams>;
-}) {
-  const session = await requireAdminPage();
-  if (!session) redirect("/dashboard");
-
-  const params = await searchParams;
-
-  // ✅ IMMER Strings
-  const search = String(params.q ?? "");
-  const role = String(params.role ?? "ALL");
-
-  const page = clampInt(params.page, 1, 1, 10_000);
-  const pageSize = clampInt(params.pageSize, 25, 10, 100);
-
-  const where: Prisma.UserWhereInput = {};
-  if (search.trim()) {
+  if (q) {
     where.OR = [
-      { email: { contains: search.trim(), mode: "insensitive" } },
-      { name: { contains: search.trim(), mode: "insensitive" } },
+      { id: { contains: q, mode: "insensitive" } },
+      { email: { contains: q, mode: "insensitive" } },
+      { name: { contains: q, mode: "insensitive" } },
     ];
   }
-  if (role !== "ALL") where.role = role as Role;
 
-  const [usersRaw, totalCount] = await Promise.all([
+  if (status !== "all") {
+    if (status === "blocked") where.isBlocked = true;
+    else if (status === "unblocked") where.isBlocked = false;
+    else where.role = status;
+  }
+
+  const skip = (page - 1) * pageSize;
+
+  const [total, rows] = await Promise.all([
+    prisma.user.count({ where }),
     prisma.user.findMany({
       where,
       orderBy: { createdAt: "desc" },
+      skip,
       take: pageSize,
-      skip: (page - 1) * pageSize,
-      include: { orders: { select: { id: true } }, products: { select: { id: true } } },
+      select: { id: true, email: true, name: true, role: true, isBlocked: true, createdAt: true },
     }),
-    prisma.user.count({ where }),
   ]);
 
-  const users = usersRaw as AdminUserListRow[];
-
-  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
-  const safePage = Math.min(page, totalPages);
-
-  const baseParams: Record<string, string | undefined> = {
-    q: search.trim() ? search.trim() : undefined,
-    role: role ? role : undefined,
-    pageSize: String(pageSize),
-  };
-
-  const prevHref =
-    safePage > 1 ? buildQuery({ ...baseParams, page: String(safePage - 1) }) : undefined;
-
-  const nextHref =
-    safePage < totalPages
-      ? buildQuery({ ...baseParams, page: String(safePage + 1) })
-      : undefined;
-
-  const pageItems = paginationWindow(safePage, totalPages);
-
-  const from = totalCount === 0 ? 0 : (safePage - 1) * pageSize + 1;
-  const to = Math.min(totalCount, safePage * pageSize);
+  const pageCount = Math.max(1, Math.ceil(total / pageSize));
+  const prevHref = page > 1 ? `?${buildQueryString({ page: String(page - 1) })}` : null;
+  const nextHref = page < pageCount ? `?${buildQueryString({ page: String(page + 1) })}` : null;
 
   return (
-    <div className="admin-shell">
-      <div className="admin-breadcrumb">
-        <span>Admin</span>
-        <span className="admin-breadcrumb-dot" />
-        <span>User</span>
-      </div>
+    <div className={styles.page}>
+      <div className={styles.inner}>
+        <div className={styles.header}>
+          <p className={styles.eyebrow}>ADMIN</p>
+          <h1 className={styles.title}>User</h1>
+          <p className={styles.subtitle}>User-Liste, Rollen, Sperren/Entsperren. (AuditLog als nächster Schritt.)</p>
+        </div>
 
-      <header className="admin-header">
-        <div className="admin-kicker">DigiEmu · Admin</div>
-        <h1 className="admin-title">Userverwaltung</h1>
-        <p className="admin-subtitle">Alle Nutzer, Rollen & Sperrstatus im Überblick.</p>
-      </header>
+        <div className={styles.actionsRow}>
+          <Link className={styles.pill} href="/admin/downloads">Downloads</Link>
+          <a className={styles.pill} href="/api/admin/users/export">Export CSV</a>
+        </div>
 
-      <div className="space-y-4">
-        {/* Filterzeile */}
-        <div className="flex flex-wrap gap-3 items-center justify-between">
-          {/* ✅ Controlled: value statt defaultValue */}
-          <form className="flex gap-2 flex-wrap" method="get">
-            {/* bei Filter immer Seite 1 */}
-            <input type="hidden" name="page" value="1" />
+        <form className={styles.filtersCard} method="GET">
+          <div className={styles.filtersGrid}>
+            <label className={styles.field}>
+              <span>Suche</span>
+              <input name="q" placeholder="Name, E-Mail, ID…" defaultValue={q} />
+            </label>
 
-            <input
-              type="text"
-              name="q"
-              value={search}                // ✅ controlled
-              readOnly                     // ✅ Server Component: keine onChange -> readOnly, verhindert React warning
-              placeholder="Nach Name oder E-Mail suchen…"
-              className="input-neu max-w-xs"
-            />
-
-            <select
-              name="role"
-              value={role}                 // ✅ controlled
-              disabled                     // ✅ Server Component: keine onChange -> disabled
-              className="input-neu w-40"
-            >
-              <option value="ALL">Alle Rollen</option>
-              <option value="BUYER">Buyer</option>
-              <option value="VENDOR">Vendor</option>
-              <option value="ADMIN">Admin</option>
-            </select>
-
-            <label className="flex items-center gap-2">
-              <span className="text-xs text-[var(--text-muted)]">Pro Seite</span>
-              <select
-                name="pageSize"
-                value={String(pageSize)}   // ✅ controlled
-                disabled                   // ✅ Server Component: keine onChange -> disabled
-                className="input-neu w-24"
-              >
-                <option value="10">10</option>
-                <option value="25">25</option>
-                <option value="50">50</option>
-                <option value="100">100</option>
+            <label className={styles.field}>
+              <span>Filter</span>
+              <select name="status" defaultValue={status}>
+                <option value="all">(alle)</option>
+                <option value="ADMIN">ADMIN</option>
+                <option value="VENDOR">VENDOR</option>
+                <option value="BUYER">BUYER</option>
+                <option value="blocked">blocked</option>
+                <option value="unblocked">unblocked</option>
               </select>
             </label>
 
-            {/* ✅ Damit es trotzdem änderbar ist, nutzen wir eine zweite “echte” UI via details:
-                Browser kann Werte ändern, weil es echte Inputs sind (nicht controlled).
-                Das ist der sauberste Weg ohne Client-Komponente.
-            */}
-            <details className="ml-1">
-              <summary className="neobtn-sm" style={{ listStyle: "none" }}>
-                Filter bearbeiten
-              </summary>
+            <label className={styles.field}>
+              <span>Page size</span>
+              <input name="pageSize" defaultValue={String(pageSize)} />
+            </label>
 
-              <div className="mt-2 flex flex-wrap gap-2 items-center">
-                <input
-                  type="text"
-                  name="q"
-                  defaultValue={search}
-                  placeholder="Nach Name oder E-Mail suchen…"
-                  className="input-neu max-w-xs"
-                />
+            <input type="hidden" name="page" value="1" />
+          </div>
 
-                <select name="role" defaultValue={role} className="input-neu w-40">
-                  <option value="ALL">Alle Rollen</option>
-                  <option value="BUYER">Buyer</option>
-                  <option value="VENDOR">Vendor</option>
-                  <option value="ADMIN">Admin</option>
-                </select>
+          <div className={styles.filterButtons}>
+            <button className={styles.primaryBtn} type="submit">Filter</button>
+            <Link className={styles.secondaryBtn} href="/admin/users">Reset</Link>
+          </div>
+        </form>
 
-                <select name="pageSize" defaultValue={String(pageSize)} className="input-neu w-24">
-                  <option value="10">10</option>
-                  <option value="25">25</option>
-                  <option value="50">50</option>
-                  <option value="100">100</option>
-                </select>
+        <div className={styles.tableCard}>
+          <div className={styles.tableHeader}><div>DATUM</div><div>USER</div><div>ROLE</div><div>STATUS</div><div>ACTIONS</div></div>
 
-                <button type="submit" className="neobtn-sm">
-                  Anwenden
-                </button>
+          {rows.length === 0 ? (
+            <div className={styles.emptyState}>Keine User gefunden.</div>
+          ) : (
+            rows.map((u) => (
+              <div key={u.id} className={styles.tableRow}>
+                <div className={styles.monoSmall}>{formatDateTime(u.createdAt)}</div>
+
+                <div>
+                  <div className={styles.bold}>{u.name || u.email}</div>
+                  <div className={styles.mutedSmall}>{u.email} • <span className={styles.monoSmall}>{u.id}</span></div>
+                </div>
+
+                <div><span className={styles.badge}>{u.role}</span></div>
+
+                <div><span className={u.isBlocked ? styles.badgeDanger : styles.badgeOk}>{u.isBlocked ? "BLOCKED" : "ACTIVE"}</span></div>
+
+                <div className={styles.actionsCell}>
+                  <AdminActionButton href="/api/admin/users/toggle-block" method="POST" body={{ userId: u.id }} confirmText={u.isBlocked ? null : "User wirklich sperren?"}>{u.isBlocked ? "Unblock" : "Block"}</AdminActionButton>
+                </div>
               </div>
-            </details>
+            ))
+          )}
 
-            <noscript>
-              <button type="submit" className="neobtn-sm">
-                Filtern
-              </button>
-            </noscript>
-          </form>
-
-          <span className="text-xs text-[var(--text-muted)]">
-            {totalCount === 0 ? (
-              <>0 Nutzer</>
-            ) : (
-              <>
-                Zeige <strong>{from}</strong>–<strong>{to}</strong> von{" "}
-                <strong>{totalCount}</strong>
-              </>
-            )}
-          </span>
-        </div>
-
-        {/* Tabelle */}
-        <div className="overflow-x-auto rounded-2xl border border-[var(--neo-card-border)] bg-[var(--neo-card-bg-soft)] shadow-[var(--neo-card-shadow-soft)]">
-          <table className="min-w-full text-sm admin-table">
-            <thead>
-              <tr>
-                <th className="text-left py-2 px-4">E-Mail</th>
-                <th className="text-left py-2 px-4">Name</th>
-                <th className="text-left py-2 px-4">Rolle</th>
-                <th className="text-left py-2 px-4">Status</th>
-                <th className="text-left py-2 px-4">Erstellt</th>
-                <th className="text-left py-2 px-4">Aktionen</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((user) => (
-                <tr key={user.id} className="border-b border-slate-200/40 last:border-0">
-                  <td className="text-[var(--text-main)] py-2 px-4">
-                    <Link href={`/admin/users/${user.id}`} className="underline">
-                      {user.email}
-                    </Link>
-                  </td>
-                  <td className="text-[var(--text-main)] py-2 px-4">{user.name ?? "—"}</td>
-                  <td className="text-[var(--text-main)] py-2 px-4">{user.role}</td>
-                  <td className="py-2 px-4">
-                    {user.isBlocked ? (
-                      <span className="inline-flex rounded-full bg-rose-500/10 text-rose-500 px-3 py-0.5 text-xs font-medium">
-                        Gesperrt
-                      </span>
-                    ) : (
-                      <span className="inline-flex rounded-full bg-emerald-500/10 text-emerald-500 px-3 py-0.5 text-xs font-medium">
-                        Aktiv
-                      </span>
-                    )}
-                  </td>
-                  <td className="text-[var(--text-muted)] text-xs py-2 px-4">
-                    {new Date(user.createdAt).toLocaleDateString("de-CH")}
-                  </td>
-                  <td className="py-2 px-4">
-                    <AdminUserStatusToggle userId={user.id} isBlocked={user.isBlocked} />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <nav className="flex flex-wrap items-center justify-end gap-2 mt-2" aria-label="Pagination">
-            {prevHref ? (
-              <Link className="neobtn-sm" href={prevHref}>
-                « Zurück
-              </Link>
-            ) : (
-              <span className="neobtn-sm opacity-50 cursor-not-allowed">« Zurück</span>
-            )}
-
-            <div className="flex flex-wrap items-center gap-2">
-              {pageItems.map((p, idx) =>
-                p === "…" ? (
-                  <span key={`dots-${idx}`} className="text-[var(--text-muted)] px-2">
-                    …
-                  </span>
-                ) : (
-                  <Link
-                    key={p}
-                    href={buildQuery({ ...baseParams, page: String(p) })}
-                    className={"neobtn-sm " + (p === safePage ? " !bg-[var(--accent)] !text-white" : "")}
-                    aria-current={p === safePage ? "page" : undefined}
-                  >
-                    {p}
-                  </Link>
-                )
-              )}
+          <div className={styles.pagination}>
+            <div className={styles.mutedSmall}>Total: {total} • Seite {page}/{pageCount}</div>
+            <div className={styles.paginationBtns}>
+              {prevHref ? <Link className={styles.pillSmall} href={prevHref}>← Prev</Link> : <span className={styles.pillSmallDisabled}>← Prev</span>}
+              {nextHref ? <Link className={styles.pillSmall} href={nextHref}>Next →</Link> : <span className={styles.pillSmallDisabled}>Next →</span>}
             </div>
-
-            {nextHref ? (
-              <Link className="neobtn-sm" href={nextHref}>
-                Weiter »
-              </Link>
-            ) : (
-              <span className="neobtn-sm opacity-50 cursor-not-allowed">Weiter »</span>
-            )}
-          </nav>
-        )}
+          </div>
+        </div>
       </div>
     </div>
   );

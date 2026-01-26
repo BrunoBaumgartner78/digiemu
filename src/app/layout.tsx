@@ -1,7 +1,10 @@
 import "./globals.css";
 import type { Metadata, Viewport } from "next";
+import ThemeProvider from "@/components/theme/ThemeProvider";
+import { ToastProvider } from "@/components/ui/use-toast";
 import CookieBanner from "@/components/legal/CookieBanner";
 import AnalyticsLoader from "@/components/analytics/AnalyticsLoader";
+import TraceRepeatClient from "./_traceRepeatClient";
 
 export const viewport: Viewport = {
   themeColor: "#EAF1FF",
@@ -104,9 +107,14 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="de" suppressHydrationWarning data-theme="dark">
+    <html lang="de" suppressHydrationWarning>
       <body className="bg-[var(--page-bg)] text-[var(--text-main)]">
-        {children}
+        <ThemeProvider>
+          <ToastProvider>
+            {children}
+            <TraceRepeatClient />
+          </ToastProvider>
+        </ThemeProvider>
         <CookieBanner />
         <AnalyticsLoader />
       </body>

@@ -96,11 +96,11 @@ export default async function SellerPage({ params }: Props) {
               />
             </div>
           ) : (
-            <img
-              src={bannerSrc}
-              alt={`${sellerName} Banner`}
+            <div
               className={styles.bannerImgFallback}
-              referrerPolicy="no-referrer"
+              role="img"
+              aria-label={`${sellerName} Banner`}
+              style={{ backgroundImage: `url(${JSON.stringify(bannerSrc)})` }}
             />
           )
         ) : (
@@ -121,13 +121,11 @@ export default async function SellerPage({ params }: Props) {
                 className={styles.avatarImg}
               />
             ) : (
-              <img
-                src={avatarSrc}
-                alt={`${sellerName} Avatar`}
-                width={84}
-                height={84}
-                className={styles.avatarImg}
-                referrerPolicy="no-referrer"
+              <div
+                className={styles.avatarImgFallback}
+                role="img"
+                aria-label={`${sellerName} Avatar`}
+                style={{ backgroundImage: `url(${JSON.stringify(avatarSrc)})` }}
               />
             )
           ) : (
@@ -177,11 +175,11 @@ export default async function SellerPage({ params }: Props) {
                           <Image src={thumbSrc} alt={p.title} fill className={styles.thumbImg} />
                         </div>
                       ) : (
-                        <img
-                          src={thumbSrc}
-                          alt={p.title}
+                        <div
                           className={styles.thumbImgFallback}
-                          referrerPolicy="no-referrer"
+                          role="img"
+                          aria-label={p.title}
+                          style={{ backgroundImage: `url(${JSON.stringify(thumbSrc)})` }}
                         />
                       )
                     ) : (

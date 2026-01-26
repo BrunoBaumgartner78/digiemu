@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { getErrorMessage } from "@/lib/errors";
 
 type LowPerfProduct = {
   id: string;
@@ -63,8 +64,7 @@ export default function LowPerformanceList() {
       } catch (e: unknown) {
         console.error("LowPerformanceList: fetch error", e);
         if (!cancelled) {
-          const msg = (e && typeof e === "object" && "message" in e) ? String((e as any).message) : "Unbekannter Fehler";
-          setError(msg);
+          setError(getErrorMessage(e, "Unbekannter Fehler"));
           setItems([]);
         }
       } finally {

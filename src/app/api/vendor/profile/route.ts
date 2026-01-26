@@ -19,7 +19,7 @@ export async function GET() {
   return NextResponse.json({ vendorProfile });
 }
 
-export async function PUT(req: Request) {
+export async function PUT(_req: Request) {
   try {
     const maybe = await requireRoleApi(["VENDOR", "ADMIN"]);
     if (maybe instanceof NextResponse) {
@@ -33,7 +33,7 @@ export async function PUT(req: Request) {
     const userRole = getStringProp(user, "role");
     if (!userId) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
-    const body = await req.json().catch(() => ({}));
+    const body = await _req.json().catch(() => ({}));
     const displayName = getStringProp(body, "displayName");
     const bio = getStringProp(body, "bio");
     const avatarUrl = getStringProp(body, "avatarUrl");

@@ -1,46 +1,23 @@
-// src/app/admin/layout.tsx
-import "../../globals.css";
-import Link from "next/link";
-import { requireAdminPage } from "@/lib/guards/authz";
-import { redirect } from "next/navigation";
-import AdminBreadcrumbs from "@/components/admin/AdminBredcrumbs";
+import styles from "./adminShell.module.css";
+import AdminNav from "./AdminNav";
+import { requireAdminOrRedirect } from "@/lib/guards/admin";
 
-export default async function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const session = await requireAdminPage();
-  if (!session) redirect("/dashboard");
-
-  const tabs = [
-    { href: "/admin", label: "Dashboard" },
-    { href: "/admin/orders", label: "Orders" },
-    { href: "/admin/users", label: "User" },
-    { href: "/admin/products", label: "Produkte" },
-    { href: "/admin/vendors", label: "Vendoren" },
-    { href: "/admin/payouts", label: "Payouts" },
-  ];
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  await requireAdminOrRedirect();
 
   return (
-    <div className="min-h-screen bg-[var(--page-bg)] text-[var(--text-main)] px-4 pt-6 pb-20">
-      <div className="max-w-7xl mx-auto">
-
-        {/* NAVIGATION TABS */}
-        <div className="admin-nav-shell mb-10">
-          {tabs.map((t) => (
-            <Link key={t.href} href={t.href} className="admin-nav-pill">
-              {t.label}
-            </Link>
-          ))}
+    <div className={styles.page}>
+      <div className={styles.header}>
+        <div>
+          <p className={styles.eyebrow}>Admin</p>
+          <h1 className={styles.title}>Admin Bereich</h1>
+          <p className={styles.sub}>Kuratierung, Users, Orders, Payouts, Downloads.</p>
         </div>
-
-        {/* BREADCRUMBS */}
-        <AdminBreadcrumbs />
-
-        {/* CONTENT */}
-        <div className="mt-6">{children}</div>
       </div>
+
+      <AdminNav />
+
+      <div className={styles.content}>{children}</div>
     </div>
   );
 }

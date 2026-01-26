@@ -11,7 +11,7 @@ import {
   getErrorMessage,
 } from "@/lib/guards";
 
-export async function POST(req: Request) {
+export async function POST(_req: Request) {
   try {
     const sessionOrResp = await requireSessionApi();
     if (sessionOrResp instanceof NextResponse) return sessionOrResp;
@@ -22,7 +22,7 @@ export async function POST(req: Request) {
 
     if (!userId) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
-    const body = await req.json().catch(() => ({}));
+    const body = await _req.json().catch(() => ({}));
     const productId = getStringProp(body, "id");
     if (!productId) return NextResponse.json({ message: "Missing id" }, { status: 400 });
 

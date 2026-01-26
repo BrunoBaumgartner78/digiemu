@@ -1,5 +1,6 @@
 // src/app/api/vendor/products/stats/route.ts
 import { NextResponse } from "next/server";
+import { serverLog } from "@/lib/serverLog";
 
 type Totals = {
   revenueCents: number;
@@ -45,14 +46,12 @@ function emptyStats(): StatsResponse {
 }
 
 export async function GET(request: Request) {
-  console.log(
-    "[DEV] /api/vendor/products/stats HIT",
-    new Date().toISOString()
-  );
+
+  serverLog.log("[DEV] /api/vendor/products/stats HIT", new Date().toISOString());
 
   const url = new URL(request.url);
   const rangeDays = url.searchParams.get("range_days") ?? "unknown";
-  console.log("[DEV] range_days =", rangeDays);
+  serverLog.log("[DEV] range_days =", rangeDays);
 
   // DEV: immer leere Stats zurückgeben, aber **nie** 401
   const payload = emptyStats();

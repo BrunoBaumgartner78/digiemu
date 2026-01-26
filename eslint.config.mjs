@@ -5,6 +5,16 @@ import nextTs from "eslint-config-next/typescript";
 import reactHooks from "eslint-plugin-react-hooks";
 
 export default defineConfig([
+  // Project-wide ignore patterns (migrated from .eslintignore)
+  {
+    ignores: [
+      ".qa/**",
+      "**/*.bak",
+      "**/*.log",
+      ".next/**",
+      "node_modules/**",
+    ],
+  },
   ...nextVitals,
   ...nextTs,
 

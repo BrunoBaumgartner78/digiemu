@@ -3,6 +3,7 @@ import { requireRolePage } from "@/lib/guards/authz";
 import { redirect, notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import EditProductForm from "./EditProductForm";
+import { requireUser } from "@/lib/sessionUser";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -21,7 +22,7 @@ export default async function EditProductPage({ params }: PageProps) {
   if (!pid) notFound();
 
   const session = await requireRolePage(["VENDOR", "ADMIN"]);
-  const user = session?.user as any;
+  const user = requireUser(session?.user);
 
   if (!user?.id) redirect("/login");
   if (user.role !== "VENDOR" && user.role !== "ADMIN") redirect("/login");

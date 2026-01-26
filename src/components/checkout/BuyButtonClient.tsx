@@ -103,7 +103,7 @@ export default function BuyButtonClient({ productId }: Props) {
         return;
       }
 
-      const data = await res.json().catch(() => ({} as any));
+      const data = await res.json().catch(() => ({} as unknown));
 
       if (res.ok && data?.url) {
         // redirect to Stripe
@@ -114,8 +114,14 @@ export default function BuyButtonClient({ productId }: Props) {
       // Map known errors
       const code = String(data?.error || "GENERIC");
       setError({ code, ...mapError(code) });
-    } catch (e: any) {
-      const isAbort = e?.name === "AbortError";
+    } catch (e: unknown) {
+      const getErrorName = (e: unknown): string | undefined => {
+        if (!e || typeof e !== "object") return undefined;
+        const n = (e as { name?: unknown }).name;
+        return typeof n === "string" ? n : undefined;
+      };
+
+      const isAbort = getErrorName(e) === "AbortError";
       const code = isAbort ? "TIMEOUT" : "GENERIC";
       setError({ code, ...mapError(code) });
     } finally {

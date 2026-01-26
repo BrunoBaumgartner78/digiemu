@@ -1,5 +1,5 @@
 "use client";
-import Link from "next/link";
+import Image from "next/image";
 
 export type ProductCardProps = {
   id: string;
@@ -15,7 +15,6 @@ export type ProductCardProps = {
 };
 
 export default function ProductCard({
-  id,
   title,
   description,
   priceCents,
@@ -32,11 +31,15 @@ export default function ProductCard({
     >
       {/* Thumbnail */}
       {thumbnail && (
-        <img
-          src={thumbnail}
-          alt={title}
-          className="w-full h-32 object-cover rounded-lg mb-2 border border-[var(--border-subtle)]"
-        />
+        <div style={{ position: "relative" }} className="w-full h-32 mb-2 rounded-lg overflow-hidden border border-[var(--border-subtle)]">
+          <Image
+            src={thumbnail}
+            alt={title}
+            fill
+            sizes="(min-width:1024px) 25vw, 50vw"
+            style={{ objectFit: "cover" }}
+          />
+        </div>
       )}
       <div className="flex items-center gap-2 mb-1">
         <h3 className="text-sm font-semibold text-[var(--text-main)] line-clamp-2 flex-1">{title}</h3>

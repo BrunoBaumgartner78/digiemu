@@ -27,6 +27,7 @@ export function UploadCard({ onUploaded }: Props) {
       {thumbUrl && (
         <img
           src={thumbUrl}
+          alt="Produkt Vorschaubild"
           className="rounded-xl w-32 h-32 object-cover shadow"
         />
       )}

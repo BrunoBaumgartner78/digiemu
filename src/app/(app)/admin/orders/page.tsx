@@ -1,305 +1,255 @@
-// src/app/admin/orders/page.tsx
-import { requireAdminPage } from "@/lib/guards/authz";
-import { prisma } from "@/lib/prisma";
-import { redirect } from "next/navigation";
-import { StatusBadge } from "@/components/admin/StatusBadge";
 import Link from "next/link";
-import type { Prisma } from "@prisma/client";
-import { AdminOrderRow } from "@/lib/admin-types";
+import styles from "../downloads/page.module.css";
+import { prisma } from "@/lib/prisma";
+import { requireAdminOrRedirect } from "@/lib/guards/admin";
+import AdminActionButton from "@/components/admin/AdminActionButton";
+import {
+  parseAdminListParams,
+  formatDateTime,
+  formatMoney,
+} from "@/lib/admin/adminList";
 
 export const dynamic = "force-dynamic";
 
-type SearchParams = { [key: string]: string | string[] | undefined };
+type SearchParams = Record<string, string | string[] | undefined>;
 
-type Props = {
-  // Next 15/16: searchParams kann Promise sein
-  searchParams?: Promise<SearchParams>;
-};
+export default async function AdminOrdersPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
+  await requireAdminOrRedirect();
 
-function pickFirst(v: string | string[] | undefined): string | undefined {
-  if (!v) return undefined;
-  return Array.isArray(v) ? v[0] : v;
-}
+  const sp = await searchParams;
 
-function clampInt(v: string | undefined, fallback: number, min: number, max: number) {
-  const n = Number(v);
-  if (!Number.isFinite(n)) return fallback;
-  return Math.min(max, Math.max(min, Math.trunc(n)));
-}
+  const { q, status, page, pageSize, from, to, buildQueryString } =
+    parseAdminListParams(sp, {
+      q: { key: "q", default: "" },
+      status: { key: "status", default: "all" },
+      page: { key: "page", default: 1 },
+      pageSize: { key: "pageSize", default: 25, min: 5, max: 200 },
+      from: { key: "from", default: "" },
+      to: { key: "to", default: "" },
+    });
 
-function buildQuery(params: Record<string, string | undefined>) {
-  const sp = new URLSearchParams();
-  for (const [k, v] of Object.entries(params)) {
-    if (v !== undefined && v !== "" && v !== "ALL") sp.set(k, v);
-  }
-  const s = sp.toString();
-  return s ? `?${s}` : "";
-}
+  const where: any = {};
 
-function paginationWindow(current: number, total: number) {
-  // nice window: 1 … c-2 c-1 c c+1 c+2 … total
-  const pages: (number | "…")[] = [];
-  const add = (p: number | "…") => pages.push(p);
-
-  if (total <= 7) {
-    for (let i = 1; i <= total; i++) add(i);
-    return pages;
+  if (q) {
+    where.OR = [
+      { id: { contains: q, mode: "insensitive" } },
+      { stripeSessionId: { contains: q, mode: "insensitive" } },
+      { buyer: { email: { contains: q, mode: "insensitive" } } },
+      { product: { title: { contains: q, mode: "insensitive" } } },
+      { downloadLink: { id: { contains: q, mode: "insensitive" } } },
+    ];
   }
 
-  add(1);
+  if (status !== "all") {
+    where.status = status;
+  }
 
-  const left = Math.max(2, current - 2);
-  const right = Math.min(total - 1, current + 2);
+  if (from || to) {
+    where.createdAt = {};
+    if (from) where.createdAt.gte = new Date(from);
+    if (to) where.createdAt.lte = new Date(to);
+  }
 
-  if (left > 2) add("…");
-  for (let i = left; i <= right; i++) add(i);
-  if (right < total - 1) add("…");
+  const skip = (page - 1) * pageSize;
 
-  add(total);
-  return pages;
-}
-
-export default async function AdminOrdersPage({ searchParams }: Props) {
-  const session = await requireAdminPage();
-  if (!session) redirect("/login");
-
-  const sp: SearchParams = searchParams ? await searchParams : {};
-
-  // Filters
-  const status = pickFirst(sp.status) ?? "ALL";
-  const vendor = pickFirst(sp.vendor) ?? "ALL";
-
-  // Pagination
-  const page = clampInt(pickFirst(sp.page), 1, 1, 10_000);
-  const pageSize = clampInt(pickFirst(sp.pageSize), 20, 5, 100);
-
-  const where: Prisma.OrderWhereInput = {};
-  if (status !== "ALL") where.status = status;
-  // ✅ Product.vendorId ist bei dir User-ID des Vendors
-  if (vendor !== "ALL") where.product = { vendorId: vendor } as Prisma.ProductWhereInput;
-
-  const [total, ordersRaw, vendors] = await Promise.all([
+  const [total, rows] = await Promise.all([
     prisma.order.count({ where }),
     prisma.order.findMany({
       where,
-      include: {
-        product: {
-          select: {
-            title: true,
-            vendor: {
-              select: {
-                id: true,
-                email: true,
-                vendorProfile: { select: { displayName: true } },
-              },
-            },
-          },
-        },
-        buyer: { select: { email: true } },
-      },
       orderBy: { createdAt: "desc" },
-      skip: (page - 1) * pageSize,
+      skip,
       take: pageSize,
-    }),
-    prisma.user.findMany({
-      where: { role: "VENDOR" },
-      select: {
-        id: true,
-        email: true,
-        vendorProfile: { select: { displayName: true } },
+      include: {
+        buyer: { select: { id: true, email: true, name: true } },
+
+        // ✅ Product hat priceCents (nicht price)
+        product: { select: { id: true, title: true, priceCents: true } },
+
+        // ✅ DownloadLink existiert laut Prisma
+        downloadLink: { select: { id: true, expiresAt: true, createdAt: true } },
       },
-      orderBy: { createdAt: "desc" },
     }),
   ]);
 
-  const totalPages = Math.max(1, Math.ceil(total / pageSize));
-  const safePage = Math.min(page, totalPages);
-
-  const orders = ordersRaw as AdminOrderRow[];
-
-  const baseParams = {
-    status,
-    vendor,
-    pageSize: String(pageSize),
-  };
-
-  const prevHref =
-    safePage > 1
-      ? buildQuery({ ...baseParams, page: String(safePage - 1) })
-      : undefined;
-
-  const nextHref =
-    safePage < totalPages
-      ? buildQuery({ ...baseParams, page: String(safePage + 1) })
-      : undefined;
-
-  const pageItems = paginationWindow(safePage, totalPages);
-
-  const from = total === 0 ? 0 : (safePage - 1) * pageSize + 1;
-  const to = Math.min(total, safePage * pageSize);
+  const pageCount = Math.max(1, Math.ceil(total / pageSize));
+  const prevHref = page > 1 ? buildQueryString({ page: String(page - 1) }) : null;
+  const nextHref = page < pageCount ? buildQueryString({ page: String(page + 1) }) : null;
 
   return (
-    <div className="admin-shell">
-      <div className="admin-breadcrumb">
-        <span>Admin</span>
-        <span className="admin-breadcrumb-dot" />
-        <span>Orders</span>
-      </div>
-
-      <header className="admin-header">
-        <div className="admin-kicker">DigiEmu · Admin</div>
-        <h1 className="admin-title">Bestellungen</h1>
-        <p className="admin-subtitle">Alle Bestellungen, Einnahmen-Aufteilung & Status.</p>
-      </header>
-
-      <section className="mb-6">
-        {/* ✅ Wenn Filter geändert werden: zurück auf Seite 1 */}
-        <form className="flex flex-wrap gap-2 items-center">
-          <input type="hidden" name="page" value="1" />
-          <input type="hidden" name="pageSize" value={String(pageSize)} />
-
-          <label>
-            Status:
-            <select name="status" defaultValue={status} className="input-neu ml-2">
-              <option value="ALL">Alle</option>
-              <option value="PAID">Bezahlt</option>
-              <option value="PENDING">Ausstehend</option>
-            </select>
-          </label>
-
-          <label>
-            Vendor:
-            <select name="vendor" defaultValue={vendor} className="input-neu ml-2">
-              <option value="ALL">Alle</option>
-              {vendors.map((v) => (
-                <option key={v.id} value={v.id}>
-                  {v.vendorProfile?.displayName || v.email}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label>
-            Pro Seite:
-            <select
-              name="pageSize"
-              defaultValue={String(pageSize)}
-              className="input-neu ml-2"
-            >
-              <option value="10">10</option>
-              <option value="20">20</option>
-              <option value="50">50</option>
-              <option value="100">100</option>
-            </select>
-          </label>
-
-          <button type="submit" className="neobtn-sm">
-            Filtern
-          </button>
-        </form>
-
-        <div className="mt-3 text-sm text-[var(--text-muted)]">
-          {total === 0 ? (
-            <>0 Bestellungen</>
-          ) : (
-            <>
-              Zeige <strong>{from}</strong>–<strong>{to}</strong> von{" "}
-              <strong>{total}</strong> Bestellungen
-            </>
-          )}
+    <div className={styles.page}>
+      <div className={styles.inner}>
+        <div className={styles.header}>
+          <p className={styles.eyebrow}>ADMIN</p>
+          <h1 className={styles.title}>Orders</h1>
+          <p className={styles.subtitle}>
+            Suche, Status, Zeitraum + Export. (Drilldown als nächster Schritt.)
+          </p>
         </div>
-      </section>
 
-      {orders.length === 0 ? (
-        <div className="admin-card text-[var(--text-muted)]">
-          Keine Bestellungen gefunden.
+        <div className={styles.actionsRow}>
+          <Link className={styles.pill} href="/admin/downloads">
+            Downloads
+          </Link>
+          <a className={styles.pill} href="/api/admin/orders/export">
+            Export CSV
+          </a>
         </div>
-      ) : (
-        <>
-          <div className="overflow-x-auto">
-            <table className="admin-table min-w-[900px]">
-              <thead>
-                <tr>
-                  <th>Order ID</th>
-                  <th>Produkt</th>
-                  <th>Vendor</th>
-                  <th>Käufer</th>
-                  <th>Betrag (CHF)</th>
-                  <th>Plattform (CHF)</th>
-                  <th>Vendor (CHF)</th>
-                  <th>Status</th>
-                  <th>Erstellt am</th>
-                </tr>
-              </thead>
-              <tbody>
-                {orders.map((order) => (
-                  <tr key={order.id}>
-                    <td className="font-mono text-xs">{order.id.slice(0, 8)}…</td>
-                    <td>{order.product?.title || "-"}</td>
-                    <td>
-                      {order.product?.vendor?.vendorProfile?.displayName ||
-                        order.product?.vendor?.email ||
-                        "-"}
-                    </td>
-                    <td>{order.buyer?.email || "-"}</td>
-                    <td>{(order.amountCents / 100).toFixed(2)}</td>
-                    <td>{(order.platformEarningsCents / 100).toFixed(2)}</td>
-                    <td>{(order.vendorEarningsCents / 100).toFixed(2)}</td>
-                    <td>
-                      <StatusBadge status={order.status} />
-                    </td>
-                    <td>{new Date(order.createdAt).toLocaleDateString("de-CH")}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+
+        <form className={styles.filtersCard} method="GET">
+          <div className={styles.filtersGrid}>
+            <label className={styles.field}>
+              <span>Suche</span>
+              <input
+                name="q"
+                placeholder="Order-ID, Buyer E-Mail, Produkt, Stripe Session…"
+                defaultValue={q}
+              />
+            </label>
+
+            <label className={styles.field}>
+              <span>Status</span>
+              <select name="status" defaultValue={status}>
+                <option value="all">(alle)</option>
+                <option value="PAID">PAID</option>
+                <option value="PENDING">PENDING</option>
+                <option value="CANCELED">CANCELED</option>
+              </select>
+            </label>
+
+            <label className={styles.field}>
+              <span>From</span>
+              <input type="date" name="from" defaultValue={from} />
+            </label>
+
+            <label className={styles.field}>
+              <span>To</span>
+              <input type="date" name="to" defaultValue={to} />
+            </label>
+
+            <label className={styles.field}>
+              <span>Page size</span>
+              <input name="pageSize" defaultValue={String(pageSize)} />
+            </label>
+
+            <input type="hidden" name="page" value="1" />
           </div>
 
-          {/* Pagination */}
-          <nav
-            className="mt-5 flex flex-wrap items-center gap-2"
-            aria-label="Pagination"
-          >
-            {prevHref ? (
-              <Link className="neobtn-sm" href={prevHref}>
-                ← Zurück
-              </Link>
-            ) : (
-              <span className="neobtn-sm opacity-50 cursor-not-allowed">← Zurück</span>
-            )}
+          <div className={styles.filterButtons}>
+            <button className={styles.primaryBtn} type="submit">
+              Filter
+            </button>
+            <Link className={styles.secondaryBtn} href="/admin/orders">
+              Reset
+            </Link>
+          </div>
+        </form>
 
-            <div className="flex flex-wrap items-center gap-2">
-              {pageItems.map((p, idx) =>
-                p === "…" ? (
-                  <span key={`dots-${idx}`} className="text-[var(--text-muted)] px-2">
-                    …
-                  </span>
-                ) : (
-                  <Link
-                    key={p}
-                    href={buildQuery({ ...baseParams, page: String(p) })}
-                    className={
-                      "neobtn-sm " +
-                      (p === safePage ? " !bg-[var(--accent)] !text-white" : "")
-                    }
-                    aria-current={p === safePage ? "page" : undefined}
-                  >
-                    {p}
-                  </Link>
-                )
+        <div className={styles.tableCard}>
+          <div className={styles.tableHeader}>
+            <div>DATUM</div>
+            <div>BUYER</div>
+            <div>PRODUKT</div>
+            <div>STATUS</div>
+            <div>AMOUNT</div>
+            <div>ACTIONS</div>
+          </div>
+
+          {rows.length === 0 ? (
+            <div className={styles.emptyState}>Keine Orders gefunden.</div>
+          ) : (
+            rows.map((o: any) => {
+              const orderCents = Number(o.amountCents ?? 0);
+              const productCents = Number(o.product?.priceCents ?? 0);
+
+              // Wenn Order-Betrag verdächtig klein ist (z.B. 1 Cent bei einem 1.00 CHF Produkt),
+              // fallback auf Produktpreis.
+              const amountCents = orderCents >= 50 ? orderCents : productCents;
+
+              const grossCHF = amountCents / 100;
+
+              return (
+                <div key={o.id} className={styles.tableRow}>
+                  <div className={styles.monoSmall}>
+                    {formatDateTime(o.createdAt)}
+                  </div>
+
+                  <div>
+                    <div className={styles.bold}>
+                      {o.buyer?.name || o.buyer?.email || "—"}
+                    </div>
+                    <div className={styles.mutedSmall}>
+                      {o.buyer?.email || "—"} •{" "}
+                      <span className={styles.monoSmall}>{o.id}</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className={styles.bold}>{o.product?.title || "—"}</div>
+                    <div className={styles.mutedSmall}>
+                      {o.product?.id ? (
+                        <span className={styles.monoSmall}>{o.product.id}</span>
+                      ) : (
+                        "—"
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
+                    <span className={styles.badge}>{o.status}</span>
+                    {o.stripeSessionId ? (
+                      <div className={styles.mutedSmall}>
+                        <span className={styles.monoSmall}>
+                          {o.stripeSessionId}
+                        </span>
+                      </div>
+                    ) : null}
+                  </div>
+
+                  <div className={styles.monoSmall}>
+                    {formatMoney(grossCHF, "CHF")}
+                  </div>
+
+                  <div className={styles.actionsCell}>
+                    <a className={styles.pillSmall} href={`/download/${o.id}`}>
+                      View
+                    </a>
+
+                    <a
+                      className={styles.pillSmall}
+                      href={`/api/admin/orders/export?orderId=${encodeURIComponent(o.id)}`}
+                    >
+                      CSV
+                    </a>
+                  </div>
+                </div>
+              );
+            })
+          )}
+
+          <div className={styles.pagination}>
+            <div className={styles.mutedSmall}>
+              Total: {total} • Seite {page}/{pageCount}
+            </div>
+            <div className={styles.paginationBtns}>
+              {prevHref ? (
+                <Link className={styles.pillSmall} href={prevHref}>
+                  ← Prev
+                </Link>
+              ) : (
+                <span className={styles.pillSmallDisabled}>← Prev</span>
+              )}
+
+              {nextHref ? (
+                <Link className={styles.pillSmall} href={nextHref}>
+                  Next →
+                </Link>
+              ) : (
+                <span className={styles.pillSmallDisabled}>Next →</span>
               )}
             </div>
-
-            {nextHref ? (
-              <Link className="neobtn-sm" href={nextHref}>
-                Weiter →
-              </Link>
-            ) : (
-              <span className="neobtn-sm opacity-50 cursor-not-allowed">Weiter →</span>
-            )}
-          </nav>
-        </>
-      )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

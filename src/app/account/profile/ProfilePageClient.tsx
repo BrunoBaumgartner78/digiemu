@@ -2,6 +2,8 @@
 
 import * as React from "react";
 import styles from "./profile.module.css";
+import Image from "next/image";
+import { getErrorMessage } from "@/lib/errors";
 
 type InitialProfile = {
   displayName: string;
@@ -96,9 +98,9 @@ export default function ProfilePageClient({
       const url = await uploadViaApi(file, "avatar", setAvatarProgress);
       setAvatarUrl(url);
       showToast("✅ Avatar hochgeladen");
-    } catch (e: any) {
+    } catch (e : unknown) {
       console.error(e);
-      showToast(`❌ Avatar Upload: ${e?.message ?? "fehlgeschlagen"}`);
+      showToast(`❌ Avatar Upload: ${getErrorMessage(e, "fehlgeschlagen")}`);
     } finally {
       setUploadingAvatar(false);
     }
@@ -112,9 +114,9 @@ export default function ProfilePageClient({
       const url = await uploadViaApi(file, "banner", setBannerProgress);
       setBannerUrl(url);
       showToast("✅ Banner hochgeladen");
-    } catch (e: any) {
+    } catch (e : unknown) {
       console.error(e);
-      showToast(`❌ Banner Upload: ${e?.message ?? "fehlgeschlagen"}`);
+      showToast(`❌ Banner Upload: ${getErrorMessage(e, "fehlgeschlagen")}`);
     } finally {
       setUploadingBanner(false);
     }
@@ -152,9 +154,9 @@ export default function ProfilePageClient({
       }
 
       showToast("✅ Profil gespeichert");
-    } catch (e: any) {
+    } catch (e : unknown) {
       console.error(e);
-      showToast(`❌ Speichern: ${e?.message ?? "fehlgeschlagen"}`);
+      showToast(`❌ Speichern: ${getErrorMessage(e, "fehlgeschlagen")}`);
     } finally {
       setSaving(false);
     }
@@ -261,9 +263,15 @@ export default function ProfilePageClient({
           ) : null}
 
           {bannerUrl ? (
-            <div className={styles.imageWrap}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img className={styles.bannerImg} src={bannerUrl} alt="Banner preview" />
+            <div className={styles.imageWrap} style={{ position: "relative" }}>
+              <Image
+                src={bannerUrl}
+                alt="Banner preview"
+                fill
+                sizes="(min-width:1024px) 25vw, 50vw"
+                style={{ objectFit: "cover" }}
+                className={styles.bannerImg}
+              />
             </div>
           ) : null}
         </div>
@@ -309,8 +317,16 @@ export default function ProfilePageClient({
 
           {avatarUrl ? (
             <div className={styles.avatarRow}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img className={styles.avatarImg} src={avatarUrl} alt="Avatar preview" />
+              <div style={{ position: "relative", width: 72, height: 72 }}>
+                <Image
+                  src={avatarUrl}
+                  alt="Avatar preview"
+                  fill
+                  sizes="(min-width:1024px) 25vw, 50vw"
+                  style={{ objectFit: "cover", borderRadius: "8px" }}
+                  className={styles.avatarImg}
+                />
+              </div>
               <div className={styles.smallHint}>Wird im Marketplace rund angezeigt.</div>
             </div>
           ) : null}
@@ -357,7 +373,16 @@ export default function ProfilePageClient({
               <div className={styles.previewAvatarWrap}>
                 { }
                 {avatarUrl ? (
-                  <img className={styles.previewAvatar} src={avatarUrl} alt="avatar" />
+                  <div style={{ position: "relative", width: 64, height: 64 }}>
+                    <Image
+                      src={avatarUrl}
+                      alt={displayName || "Avatar"}
+                      fill
+                      sizes="(min-width:1024px) 25vw, 50vw"
+                      style={{ objectFit: "cover", borderRadius: "50%" }}
+                      className={styles.previewAvatar}
+                    />
+                  </div>
                 ) : (
                   <div className={styles.previewAvatarFallback}>N</div>
                 )}

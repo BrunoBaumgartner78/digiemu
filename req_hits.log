@@ -1,0 +1,8 @@
+﻿src\lib\withAdminLoginAudit.ts:13:    const h = req.headers as unknown;
+src\lib\withAdminLoginAudit.ts:25:    ip = ip ?? req.socket?.remoteAddress;
+src\app\api\webhook\route.ts:14:  const sig = req.headers.get("stripe-signature");
+src\app\api\webhook\route.ts:30:    const text = await req.text();
+src\lib\guards.ts:138:    const t = await req.text();
+src\app\api\checkout\confirm\route.ts:13:  const sessionId = req.nextUrl.searchParams.get("session_id");
+src\app\api\orders\by-session\route.ts:8:  const sessionId = req.nextUrl.searchParams.get("session_id");
+src\app\api\order\by-session\route.ts:17:  const sessionId = req.nextUrl.searchParams.get("session_id") || "";

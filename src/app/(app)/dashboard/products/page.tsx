@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import styles from "./ProductsPage.module.css";
+import { requireUser } from "@/lib/sessionUser";
 
 const STATUS_FILTERS = [
   { key: "all", label: "Alle" },
@@ -24,7 +25,7 @@ export default async function ProductsOverviewPage(props: PageProps) {
   const session = await requireRolePage(["VENDOR", "ADMIN"]);
   if (!session) redirect("/login");
 
-  const user = session.user as any;
+  const user = requireUser(session.user);
   const vendorId = user.id;
 
   // VendorProfile check (for hints)
@@ -44,7 +45,7 @@ export default async function ProductsOverviewPage(props: PageProps) {
 
   const statusFilter: "all" | "active" | "draft" | "blocked" =
     resolvedStatus && ["all", "active", "draft", "blocked"].includes(resolvedStatus)
-      ? (resolvedStatus as any)
+      ? (resolvedStatus as "all" | "active" | "draft" | "blocked")
       : "all";
 
   const allProducts = await prisma.product.findMany({

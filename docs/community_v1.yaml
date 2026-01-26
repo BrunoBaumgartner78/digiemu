@@ -1,0 +1,61 @@
+community_decision:
+  status: "yes_but_minimal"
+  principle: "commerce_first_not_social"
+
+community_features_v1:
+  enabled:
+    reviews:
+      type: "product_review"
+      rating: "1-5"
+      content: "optional"
+      visibility: "public"
+      effect: "trust + conversion"
+
+    comments:
+      type: "product_comments"
+      visibility: "public"
+      effect: "engagement + feedback"
+
+    likes:
+      type: "product_like"
+      visibility: "public"
+      effect: "social_proof"
+
+  explicitly_not_in_v1:
+    - user_profiles_with_feeds
+    - followers
+    - private_messages
+    - notifications
+    - activity_stream
+    - forums
+
+moderation:
+  level: "lightweight"
+  controls:
+    admin:
+      - delete_comment
+      - delete_review
+      - block_user
+    vendor:
+      - hide_comment_on_own_product
+  audit_log: true
+
+risk_management:
+  abuse:
+    mitigation:
+      - auth_required
+      - rate_limit
+      - admin_override
+  legal:
+    gdpr: "ok"
+    content_liability: "manageable"
+
+ui_scope:
+  product_page:
+    show:
+      - reviews
+      - comments
+      - likes
+    hide:
+      - user profiles
+      - comment threads

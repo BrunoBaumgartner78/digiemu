@@ -6,7 +6,7 @@ export default function ProductViewBeacon({ productId }: { productId: string }) 
     if (!productId) return;
 
     // Fire and forget
-    fetch(`/api/product/${encodeURIComponent(productId)}/view`, {
+    fetch(`/api/products/${encodeURIComponent(productId)}/view`, {
       method: "POST",
       cache: "no-store",
       headers: { "content-type": "application/json" },

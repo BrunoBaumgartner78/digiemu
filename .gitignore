@@ -56,4 +56,14 @@ scripts/*v2.*.mjs
 cookies.txt
 /scripts/*.mjs
 
+# QA backups and local logs
+.qa/
+*.bak
+*.bak.*
+*.backup
+*.backup.*
+lint.log
+build.log
+typecheck.log
+
 

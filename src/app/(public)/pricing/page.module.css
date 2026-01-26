@@ -176,7 +176,8 @@
 }
 
 /* Dark mode (prefers-color-scheme) */
-@media (prefers-color-scheme: dark) {
+html[data-theme="dark"],
+html.dark {
   .inner {
     background: rgba(15, 23, 42, 0.55);
     border-color: rgba(51, 65, 85, 0.75);
@@ -213,3 +214,4 @@
     color: rgba(248, 250, 252, 0.92);
   }
 }
+

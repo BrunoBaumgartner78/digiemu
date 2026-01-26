@@ -100,7 +100,8 @@
 }
 
 /* Dark-Mode (prefers-color-scheme) */
-@media (prefers-color-scheme: dark) {
+html[data-theme="dark"],
+html.dark {
   .input,
   .textarea {
     background: radial-gradient(circle at 0 0, #020617, #020617);
@@ -173,19 +174,16 @@
 }
 
 /* Light-Mode: InfoBox etwas heller (besser lesbar) */
-@media (prefers-color-scheme: light) {
-  .infoBox {
+html[data-theme="light"] .infoTitle, html.light .infoTitle {
+    color: #1d4ed8;
+  }
+html[data-theme="light"] .infoBox, html.light .infoBox {
     background: radial-gradient(circle at 0 0, #eef3ff, #f8fbff);
     color: #0f172a;
     box-shadow:
       0 18px 46px rgba(15, 23, 42, 0.12),
       inset 0 0 0 1px rgba(129, 140, 248, 0.28);
   }
-
-  .infoTitle {
-    color: #1d4ed8;
-  }
-}
 
 /* Messages ------------------------------------------------------------- */
 /* (bis global .notice kommt, hier lokal gut lesbar) */
@@ -294,7 +292,8 @@
     0 14px 32px rgba(15, 23, 42, 0.28);
 }
 
-@media (prefers-color-scheme: dark) {
+html[data-theme="dark"],
+html.dark {
   .secondaryBtn {
     background: radial-gradient(circle at 0 0, #020617, #020617);
     color: #e5edf7;
@@ -393,3 +392,4 @@
     transform: none !important;
   }
 }
+

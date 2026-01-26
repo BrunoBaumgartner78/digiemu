@@ -1,0 +1,315 @@
+.badgeRow { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-left:8px; }
+.badgePill {
+  display:inline-flex; align-items:center; gap:6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.10);
+  backdrop-filter: blur(8px);
+}
+.badgeIcon { opacity: 0.9; }
+.badgeMuted { opacity: 0.85; }
+
+.toolbar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin: 10px 0 14px;
+}
+.sortButtons {
+  display: inline-flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.miniBtn {
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-weight: 900;
+  font-size: 12px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.10);
+  backdrop-filter: blur(8px);
+  cursor: pointer;
+}
+.composer { margin: 10px 0 18px; }
+.textarea {
+  width: 100%;
+  min-height: 90px;
+  resize: vertical;
+  padding: 12px 12px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.10);
+  outline: none;
+}
+.commentFooter {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+.heartBtn {
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-weight: 900;
+  font-size: 12px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.10);
+  cursor: pointer;
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.sortButtons { display: inline-flex; gap: 8px; flex-wrap: wrap; }
+.miniBtn {
+  padding: 8px 12px; border-radius: 999px; font-weight: 900; font-size: 12px;
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.10);
+  backdrop-filter: blur(8px); cursor: pointer;
+}
+.composer { margin-top: 12px; }
+.textarea {
+  width: 100%; min-height: 90px; resize: vertical; padding: 12px 12px; border-radius: 14px;
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.10);
+  outline: none; color: inherit;
+}
+.commentFooter { display: flex; justify-content: flex-end; margin-top: 10px; }
+
+/* Add these to src/components/product/comments.module.css (or wherever your file lives) */
+
+.sortRow {
+  display: flex;
+  gap: 6px;
+}
+
+.sortBtn {
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(255, 255, 255, 0.04);
+  color: inherit;
+  border-radius: 12px;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.sortBtnActive {
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.08);
+  font-weight: 700;
+}
+
+.heartBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(255, 255, 255, 0.03);
+  color: inherit;
+  border-radius: 12px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.countPill {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  background: rgba(0,0,0,0.25);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.heartBtn:hover { opacity: 0.95; transform: translateY(-1px); }
+
+/* src/components/product/comments/comments.module.css */
+
+.headerRow {
+  margin-top: 16px;
+}
+
+.titleRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.h2 {
+  margin: 0;
+}
+
+.countPill {
+  font-size: 13px;
+  opacity: 0.85;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.toolbar {
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.sortGroup {
+  display: inline-flex;
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.sortBtn {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  padding: 8px 12px;
+  font-size: 13px;
+  opacity: 0.8;
+  cursor: pointer;
+}
+
+.sortBtnActive {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.06);
+  font-weight: 800;
+}
+
+.label {
+  display: block;
+  font-size: 13px;
+  opacity: 0.75;
+  margin-bottom: 8px;
+}
+
+.textarea {
+  width: 100%;
+  resize: vertical;
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(255, 255, 255, 0.04);
+  color: inherit;
+  outline: none;
+}
+
+.error {
+  margin-top: 10px;
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.item {
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.itemTop {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.metaRight {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dateText {
+  font-size: 12px;
+  opacity: 0.65;
+  white-space: nowrap;
+}
+
+.heartBtn {
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(255, 255, 255, 0.04);
+  color: inherit;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 13px;
+  cursor: pointer;
+  opacity: 0.9;
+}
+
+.heartActive {
+  font-weight: 900;
+}
+
+.badgeRow {
+  display: inline-flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.badgePill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  padding: 5px 8px;
+  font-size: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.badgeMuted {
+  opacity: 0.9;
+}
+
+.badgeIcon {
+  opacity: 0.7;
+}
+
+/* Like button styles (added) */
+.likeBtn{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.04);
+  color: inherit;
+  cursor: pointer;
+  transition: transform 120ms ease, background 120ms ease;
+}
+
+.likeBtn:hover{
+  transform: translateY(-1px);
+  background: rgba(255,255,255,0.06);
+}
+
+.likeIcon{
+  font-size: 14px;
+  line-height: 1;
+  opacity: 0.95;
+}
+
+.likeCount{
+  font-size: 12px;
+  opacity: 0.85;
+}

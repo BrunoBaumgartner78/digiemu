@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdminApi } from "@/lib/guards/authz";
 import { prisma } from "@/lib/prisma";
-import { isRecord, getStringProp } from "@/lib/guards";
+
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -12,9 +12,6 @@ export async function POST(
 ) {
   const maybe = await requireAdminApi();
   if (maybe instanceof NextResponse) return NextResponse.json({ ok: false, message: "Unauthorized" }, { status: 401 });
-  const session = maybe;
-  const maybeUser = session?.user;
-
   const { id: userId } = await context.params;
 
   await prisma.$transaction(async (tx) => {

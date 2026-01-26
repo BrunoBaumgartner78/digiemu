@@ -12,16 +12,16 @@ function sha256(input: string) {
 }
 
 // Wenn jemand die API-Route im Browser aufruft -> kein 500
-export async function GET(req: Request) {
+export async function GET(_req: Request) {
   // Optional: auf forgot-password umleiten
-  const url = new URL("/forgot-password", req.url);
+  const url = new URL("/forgot-password", _req.url);
   return NextResponse.redirect(url);
   // alternativ: return new NextResponse("Method Not Allowed", { status: 405 });
 }
 
-export async function POST(req: Request) {
+export async function POST(_req: Request) {
   try {
-    const form = await req.formData();
+    const form = await _req.formData();
 
     const rawToken = String(form.get("token") ?? "").trim();
     const password = String(form.get("password") ?? "");
@@ -29,7 +29,7 @@ export async function POST(req: Request) {
 
     // UI-Redirects (damit du schöne UX hast)
     const fail = (code: string) => {
-      const url = new URL(`/reset-password/${encodeURIComponent(rawToken)}?error=${code}`, req.url);
+      const url = new URL(`/reset-password/${encodeURIComponent(rawToken)}?error=${code}`, _req.url);
       return NextResponse.redirect(url);
     };
 
@@ -60,12 +60,12 @@ export async function POST(req: Request) {
     });
 
     // Erfolg -> Login
-    const okUrl = new URL("/login?reset=1", req.url);
+    const okUrl = new URL("/login?reset=1", _req.url);
     return NextResponse.redirect(okUrl);
   } catch (err) {
     console.error("RESET_PASSWORD failed:", err);
     // fallback: zurück zur forgot-password Seite
-    const url = new URL("/forgot-password?error=reset_failed", req.url);
+    const url = new URL("/forgot-password?error=reset_failed", _req.url);
     return NextResponse.redirect(url);
   }
 }

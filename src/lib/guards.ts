@@ -1,4 +1,38 @@
-import { Prisma } from "@prisma/client";
+// src/lib/guards.ts
+import { redirect } from "next/navigation";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+
+type Role = "BUYER" | "VENDOR" | "ADMIN";
+
+function deny(to: string = "/login") {
+  redirect(to);
+}
+
+export async function requireUser() {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) deny("/login");
+  return session;
+}
+
+export async function requireAdmin() {
+  const session = await getServerSession(authOptions);
+  const role = (session?.user as any)?.role as Role | undefined;
+
+  if (!session?.user?.id) deny("/login");
+  if (role !== "ADMIN") deny("/"); // oder /dashboard
+  return session;
+}
+
+export async function requireVendor() {
+  const session = await getServerSession(authOptions);
+  const role = (session?.user as any)?.role as Role | undefined;
+
+  if (!session?.user?.id) deny("/login");
+  if (role !== "VENDOR" && role !== "ADMIN") deny("/");
+  return session;
+}
+import { Prisma } from "@/generated/prisma";
 
 export function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);

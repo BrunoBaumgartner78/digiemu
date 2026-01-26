@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireVendorApi } from "../../../../lib/guards/authz";
 import { prisma } from "@/lib/prisma";
+import { serverLog } from "@/lib/serverLog";
 import { getErrorMessage } from "@/lib/guards";
 
 export async function GET(_req: NextRequest) {
@@ -15,8 +16,8 @@ export async function GET(_req: NextRequest) {
     const rangeDays = Number(url.searchParams.get("range_days") ?? "30");
     const since = new Date(Date.now() - rangeDays * 24 * 60 * 60 * 1000);
 
-    console.log("[DEV] /api/vendor/products/stats HIT", new Date().toISOString());
-    console.log("[DEV] range_days =", rangeDays);
+    serverLog.log("[DEV] /api/vendor/products/stats HIT", new Date().toISOString());
+    serverLog.log("[DEV] range_days =", rangeDays);
 
     // Produkte des Vendors
     const products = await prisma.product.findMany({

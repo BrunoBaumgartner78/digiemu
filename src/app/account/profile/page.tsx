@@ -3,12 +3,14 @@ import { requireSessionPage } from "@/lib/guards/authz";
 import { prisma } from "@/lib/prisma";
 import ProfilePageClient from "./ProfilePageClient";
 import styles from "./profile.module.css";
+import { requireUser } from "@/lib/sessionUser";
 
 export const dynamic = "force-dynamic";
 
 export default async function Page() {
   const session = await requireSessionPage();
-  const userId = (session?.user as any)?.id as string | undefined;
+  const user = requireUser(session?.user);
+  const userId = user?.id as string | undefined;
 
   if (!userId) {
     return (
@@ -31,9 +33,7 @@ export default async function Page() {
   // Häufig: Product.vendorId oder Product.userId oder Product.vendorProfileId
   // Wir versuchen vendorId=userId (typisch) – wenn es bei dir anders ist, sag kurz Bescheid.
   const productCount = await prisma.product.count({
-    where: {
-      vendorId: userId as any,
-    } as any,
+    where: { vendorId: userId },
   });
 
   const initialProfile = {

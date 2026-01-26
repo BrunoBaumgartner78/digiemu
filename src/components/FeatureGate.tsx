@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { debug } from "@/lib/debug";
 import { useSession } from "next-auth/react";
 import { features } from "@/lib/features";
 
@@ -19,9 +20,7 @@ export default function FeatureGate({ feature, children, fallback = null }: Prop
 
   // Admin bypass: admins always see admin feature
   if (feature === "admin" && isAdmin) {
-    if (process.env.NODE_ENV !== "production") {
-      console.log("[FeatureGate] bypass for ADMIN", { feature, role });
-    }
+    debug.log("[FeatureGate] bypass for ADMIN", { feature, role });
     return <>{children}</>;
   }
 
@@ -32,9 +31,7 @@ export default function FeatureGate({ feature, children, fallback = null }: Prop
       : process.env["NEXT_PUBLIC_FEATURE_" + feature.toUpperCase()] === "1" ||
         process.env["NEXT_PUBLIC_FEATURE_" + feature.toUpperCase()] === "true";
 
-  if (process.env.NODE_ENV !== "production") {
-    console.log("[FeatureGate] decision", { feature, role, isEnabled });
-  }
+  debug.log("[FeatureGate] decision", { feature, role, isEnabled });
 
   return isEnabled ? <>{children}</> : <>{fallback}</>;
 }

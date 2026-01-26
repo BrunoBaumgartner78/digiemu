@@ -1,0 +1,144 @@
+.neo404{
+  min-height: 100vh;
+  width: 100%;
+  display:grid;
+  place-items:center;
+  padding: 44px 16px;
+  overflow:hidden;
+  position: relative;
+
+  /* IMPORTANT: use app tokens -> auto light/dark */
+  background: var(--page-bg);
+  color: var(--text-main);
+}
+
+.neo404::before{
+  content:"";
+  position:absolute;
+  inset:-30%;
+  background:
+    radial-gradient(circle at 20% 20%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 42%),
+    radial-gradient(circle at 80% 30%, rgba(0,0,0,.06), transparent 48%),
+    radial-gradient(circle at 45% 80%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 55%);
+  filter: blur(26px);
+  pointer-events:none;
+  opacity: 1;
+}
+
+.neoCard{
+  position:relative;
+  width:min(860px, 100%);
+  border-radius: 26px;
+  padding: 26px 22px;
+
+  background: var(--neo-surface, var(--card-bg));
+  border: 1px solid var(--neo-stroke);
+
+  box-shadow:
+    var(--neo-shadow1),
+    var(--neo-shadow2);
+
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.neoTop{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 12px;
+  flex-wrap:wrap;
+  margin-bottom: 10px;
+}
+
+.neoBadge{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding: 7px 12px;
+  border-radius: 999px;
+  font-weight: 700;
+  letter-spacing: .8px;
+  font-size: 12px;
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  border: 1px solid var(--neo-stroke);
+}
+
+.neoStatus{
+  font-size: 12px;
+  opacity: .75;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: var(--neo-chip-bg);
+  border: 1px solid var(--neo-stroke);
+}
+
+.neoTitle{
+  margin: 6px 0 10px;
+  font-size: clamp(30px, 4vw, 44px);
+  line-height: 1.08;
+  letter-spacing: -0.6px;
+}
+
+.neoAccent{ color: var(--accent); }
+
+.neoText{
+  margin: 0;
+  max-width: 62ch;
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--text-muted);
+}
+
+.neoActions{
+  display:flex;
+  flex-wrap:wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.neoBtn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding: 10px 14px;
+  border-radius: 14px;
+  text-decoration:none;
+  font-weight: 650;
+  font-size: 14px;
+  color: inherit;
+
+  background: var(--neo-btn-bg);
+  border: 1px solid var(--neo-stroke);
+  box-shadow:
+    var(--neo-btn-shadow1),
+    var(--neo-btn-shadow2);
+  transition: transform .12s ease;
+}
+
+.neoBtn:hover{ transform: translateY(-1px); }
+
+.neoPrimary{
+  background: color-mix(in srgb, var(--accent) 35%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+.neoGhost{
+  background: transparent;
+  border-style: dashed;
+  opacity: .9;
+}
+
+.neoHint{
+  margin-top: 16px;
+  font-size: 13px;
+  opacity: .72;
+  color: var(--text-muted);
+}
+
+.neoHint code{
+  padding: 2px 6px;
+  border-radius: 10px;
+  background: var(--neo-chip-bg);
+  border: 1px solid var(--neo-stroke);
+}

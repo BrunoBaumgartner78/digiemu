@@ -13,8 +13,11 @@ export default async function RegisterVendorPage() {
     redirect("/login");
   }
 
-  const user = session.user as any;
-  const userId = user.id;
+  const user = session.user;
+  const userId =
+    user && typeof user === "object" && "id" in user
+      ? String((user as Record<string, unknown>)["id"])
+      : undefined;
 
   // Prüfen, ob schon Vendor-Profil existiert
   const existingVendor = await prisma.vendorProfile.findUnique({

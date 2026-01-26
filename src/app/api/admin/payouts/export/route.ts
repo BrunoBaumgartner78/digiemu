@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { Prisma } from "@prisma/client";
-import type { PayoutStatus } from "@prisma/client";
+import { Prisma } from "@/generated/prisma";
+import type { PayoutStatus } from "@/generated/prisma";
 import { requireAdminApi } from "@/lib/guards/authz";
 
 function isPayoutStatus(v: unknown): v is PayoutStatus {
@@ -17,12 +17,12 @@ function csvEscape(v: unknown) {
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function GET(req: Request) {
+export async function GET(_req: Request) {
   const maybe = await requireAdminApi();
   if (maybe instanceof NextResponse) return maybe;
   const session = maybe;
 
-  const url = new URL(req.url);
+  const url = new URL(_req.url);
   const sp: Record<string, string | string[] | undefined> = {};
   url.searchParams.forEach((value, key) => {
     sp[key] = value;

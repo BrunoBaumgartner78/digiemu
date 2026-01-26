@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { storage } from "@/lib/firebase";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import styles from "./EditProductForm.module.css";
+import Image from "next/image";
 
 const CATEGORY_OPTIONS = [
   { value: "ebook", label: "E-Book" },
@@ -63,13 +64,13 @@ export default function EditProductForm(props: Props) {
         }
         const j = await res.json();
         if (mounted) setCanPublish((j.status ?? "PENDING").toString().toUpperCase() === "APPROVED");
-      } catch (_err) {
+      } catch {
         if (mounted) setCanPublish(false);
       }
     })();
-    return () => {
-      mounted = false;
-    };
+      return () => {
+        mounted = false;
+      };
   }, []);
 
   function parsePrice(value: string): number | null {
@@ -334,14 +335,15 @@ export default function EditProductForm(props: Props) {
           </button>
 
           <div className={styles.thumbPreview}>
-            <img
-              src={thumbnailUrl || "/fallback-thumbnail.svg"}
-              alt="Thumbnail"
-              onError={(_e) => {
-                (_e.currentTarget as HTMLImageElement).src =
-                  "/fallback-thumbnail.svg";
-              }}
-            />
+            <div style={{ position: "relative", width: "100%", height: 160 }}>
+              <Image
+                src={thumbnailUrl || "/fallback-thumbnail.svg"}
+                alt="Thumbnail"
+                fill
+                sizes="(min-width:1024px) 25vw, 50vw"
+                style={{ objectFit: "cover" }}
+              />
+            </div>
           </div>
         </section>
       </div>

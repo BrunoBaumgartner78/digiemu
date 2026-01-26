@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { getErrorMessage } from "@/lib/errors";
 
 export default function ResetPasswordForm({ token }: { token: string }) {
   const router = useRouter();
@@ -32,8 +33,8 @@ export default function ResetPasswordForm({ token }: { token: string }) {
 
       router.push("/login?reset=1");
       router.refresh();
-    } catch (e: any) {
-      setErr(e?.message ?? "Reset fehlgeschlagen.");
+    } catch (e: unknown) {
+      setErr(getErrorMessage(e, "Reset fehlgeschlagen."));
     } finally {
       setLoading(false);
     }

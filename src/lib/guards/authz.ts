@@ -21,16 +21,17 @@ function isAppRole(v: unknown): v is AppRole {
 
 /** Holt Session und normalisiert role (Fallback BUYER) */
 async function getAppSession(): Promise<AppSession | null> {
-  const session = (await getServerSession(authOptions as any)) as Session | null;
+  const session = (await getServerSession(authOptions)) as Session | null;
   if (!session?.user) return null;
 
-  const role = isAppRole((session.user as any).role) ? ((session.user as any).role as AppRole) : "BUYER";
+  const roleRaw = (session.user as { role?: unknown }).role;
+  const role = isAppRole(roleRaw) ? (roleRaw as AppRole) : "BUYER";
 
   // session object "casten" + role normalisieren
   const normalized: AppSession = {
-    ...(session as any),
+    ...(session as unknown as Session),
     user: {
-      ...(session.user as any),
+      ...(session.user as unknown as Session["user"]),
       role,
     },
   };

@@ -1,42 +1,37 @@
-import { NextRequest, NextResponse } from "next/server";
-import { requireAdminApi } from "@/lib/guards/authz";
+import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { ProductStatus } from "@prisma/client";
+import { requireAdminContext } from "@/lib/admin/adminRequestContext";
+import { adminAudit } from "@/lib/admin/adminAudit";
+import { PRODUCT_STATUSES, normalizeEnum } from "@/lib/admin/adminListUtils";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-type Body = {
-  status?: "ACTIVE" | "DRAFT" | "BLOCKED";
-  note?: string | null;
-};
+export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
+  const { actorId, ipAddress, userAgent } = await requireAdminContext();
+  const { id } = await ctx.params;
 
-export async function POST(_req: NextRequest, context: { params: Promise<{ id: string }> }) {
-  const maybe = await requireAdminApi();
-  if (maybe instanceof NextResponse) return NextResponse.json({ ok: false, message: "Unauthorized" }, { status: 401 });
-  const session = maybe;
+  let body: any = null;
+  try { body = await req.json(); } catch { body = null; }
 
-  const { id } = await context.params;
+  const status = normalizeEnum(String(body?.status ?? ""), PRODUCT_STATUSES);
+  if (!status) return NextResponse.json({ ok: false, error: "Invalid status" }, { status: 400 });
 
-  const body = (await _req.json().catch(() => ({}))) as Body;
-  const status = body.status;
-
-  if (status !== ProductStatus.ACTIVE && status !== ProductStatus.DRAFT && status !== ProductStatus.BLOCKED) {
-    return NextResponse.json({ ok: false, message: "Invalid status" }, { status: 400 });
-  }
-
-  const isActive = status === "ACTIVE";
-
-  await prisma.product.update({
+  const updated = await prisma.product.update({
     where: { id },
-    data: {
-      status: status as ProductStatus,
-      isActive,
-      ...(isActive ? { isPublic: true } : {}),
-      moderationNote: body.note === undefined ? undefined : body.note,
-    },
+    data: { status },
+    select: { id: true, status: true, title: true },
   });
 
-  // Minimal response for admin toggles
-  return NextResponse.json({ ok: true }, { status: 200, headers: { "Cache-Control": "no-store" } });
+  await adminAudit({
+    actorId,
+    action: "ADMIN_PRODUCT_SET_STATUS",
+    targetType: "Product",
+    targetId: id,
+    meta: { status },
+    ipAddress,
+    userAgent,
+  });
+
+  return NextResponse.json({ ok: true, product: updated });
 }

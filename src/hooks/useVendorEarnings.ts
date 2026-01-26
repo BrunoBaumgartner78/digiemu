@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+﻿import { useCallback, useEffect, useState } from "react";
 
 export function useVendorEarnings() {
   const [data, setData] = useState<null | {
@@ -24,7 +24,7 @@ export function useVendorEarnings() {
         orderCount: json.ordersCount,
       });
     } catch (_e) {
-      setError("Fehler beim Laden der Umsätze.");
+      setError("Fehler beim Laden der UmsÃ¤tze.");
     } finally {
       setLoading(false);
     }
@@ -36,3 +36,4 @@ export function useVendorEarnings() {
 
   return { ...data, loading, error, refetch: fetchEarnings };
 }
+

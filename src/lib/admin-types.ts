@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@/generated/prisma";
 
 // Admin-focused payloads using Prisma GetPayload helpers
 export type AdminAuditLogRow = Prisma.AuditLogGetPayload<{

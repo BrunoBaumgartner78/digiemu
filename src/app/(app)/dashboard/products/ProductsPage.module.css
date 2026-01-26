@@ -495,7 +495,8 @@
 /* ---------------------------
    Dark readability hints
 ---------------------------- */
-@media (prefers-color-scheme: dark) {
+html[data-theme="dark"],
+html.dark {
   .filterChipBadge {
     background: rgba(148, 163, 184, 0.12);
     color: var(--txt);
@@ -540,3 +541,4 @@
     transform: scale(1.01) !important;
   }
 }
+

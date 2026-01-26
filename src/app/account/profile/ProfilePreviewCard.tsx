@@ -1,6 +1,7 @@
 "use client";
 
 import styles from "./profile.module.css";
+import Image from "next/image";
 
 type PreviewProps = {
   displayName: string;
@@ -28,7 +29,9 @@ export default function ProfilePreviewCard({
     <section className={styles.previewCard}>
       <div className={styles.previewBanner}>
         {bannerUrl ? (
-          <img className={styles.previewBannerImg} src={bannerUrl} alt="Banner" />
+          <div className={styles.previewBannerImg} style={{ position: "relative" }}>
+            <Image src={bannerUrl} alt="Banner" fill style={{ objectFit: "cover" }} />
+          </div>
         ) : (
           <div className={styles.previewBannerPlaceholder}>Banner (optional)</div>
         )}
@@ -38,7 +41,9 @@ export default function ProfilePreviewCard({
         <div className={styles.previewOverlay}>
           <div className={styles.previewAvatar}>
             {avatarUrl ? (
-              <img className={styles.previewAvatarImg} src={avatarUrl} alt="Avatar" />
+              <div className={styles.previewAvatarImg} style={{ position: "relative" }}>
+                <Image src={avatarUrl} alt="Avatar" fill style={{ objectFit: "cover", borderRadius: "50%" }} />
+              </div>
             ) : (
               <div className={styles.previewAvatarFallback}>{safeName.slice(0, 1).toUpperCase()}</div>
             )}

@@ -21,9 +21,9 @@ interface ProductDrilldownModalProps {
 }
 
 export default function ProductDrilldownModal({ productId, onClose }: ProductDrilldownModalProps) {
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<unknown>(null);
   const [range, setRange] = useState("30");
-  const [funnel, setFunnel] = useState<any>(null);
+  const [funnel, setFunnel] = useState<unknown>(null);
   const [activeTab, setActiveTab] = useState<string>("stats");
 
   useEffect(() => {
@@ -50,7 +50,18 @@ export default function ProductDrilldownModal({ productId, onClose }: ProductDri
 
   if (!data) return null;
 
-  const { product, kpis, chartData } = data;
+  const d = data as Record<string, unknown>;
+  const product = (d.product && typeof d.product === "object") ? (d.product as Record<string, unknown>) : { title: "" };
+  const kpis = (d.kpis && typeof d.kpis === "object") ? (d.kpis as Record<string, unknown>) : {};
+  const chartData = Array.isArray(d.chartData) ? (d.chartData as unknown[]) : [];
+
+  const productTitle = typeof product.title === "string" ? product.title : "";
+  const kpisViews = typeof kpis.views === "number" ? kpis.views : 0;
+  const kpisSales = typeof kpis.sales === "number" ? kpis.sales : 0;
+  const kpisCtr = typeof kpis.ctr === "number" ? kpis.ctr : 0;
+  const kpisRevenueCents = typeof kpis.revenueCents === "number" ? kpis.revenueCents : 0;
+  const safeChartData = chartData as unknown as any[];
+  const safeFunnel = funnel as unknown as any;
 
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -63,7 +74,7 @@ export default function ProductDrilldownModal({ productId, onClose }: ProductDri
           ✕
         </button>
 
-        <h2 className="text-xl font-bold mb-2">{product.title}</h2>
+        <h2 className="text-xl font-bold mb-2">{productTitle}</h2>
         <p className="text-sm opacity-70 mb-4">Produkt-Analyse</p>
 
         {/* Tabs */}
@@ -106,25 +117,25 @@ export default function ProductDrilldownModal({ productId, onClose }: ProductDri
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
               <div className="neumorph-card p-3 text-center">
                 <p className="text-xs opacity-70">Views</p>
-                <p className="text-lg font-bold">{kpis.views}</p>
+                <p className="text-lg font-bold">{kpisViews}</p>
               </div>
 
               <div className="neumorph-card p-3 text-center">
                 <p className="text-xs opacity-70">Sales</p>
-                <p className="text-lg font-bold">{kpis.sales}</p>
+                <p className="text-lg font-bold">{kpisSales}</p>
               </div>
 
               <div className="neumorph-card p-3 text-center">
                 <p className="text-xs opacity-70">CTR</p>
                 <p className="text-lg font-bold">
-                  {(kpis.ctr * 100).toFixed(1)}%
+                  {(kpisCtr * 100).toFixed(1)}%
                 </p>
               </div>
 
               <div className="neumorph-card p-3 text-center">
                 <p className="text-xs opacity-70">Umsatz</p>
                 <p className="text-lg font-bold">
-                  CHF {(kpis.revenueCents / 100).toFixed(2)}
+                  CHF {(kpisRevenueCents / 100).toFixed(2)}
                 </p>
               </div>
             </div>
@@ -132,7 +143,7 @@ export default function ProductDrilldownModal({ productId, onClose }: ProductDri
             {/* Chart */}
             <div className="w-full h-64 mb-6">
               <ResponsiveContainer>
-                <LineChart data={chartData}>
+                <LineChart data={safeChartData}>
                   <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
                   <XAxis dataKey="date" />
                   <YAxis
@@ -162,7 +173,7 @@ export default function ProductDrilldownModal({ productId, onClose }: ProductDri
             <div className="mt-8">
               <h3 className="font-semibold mb-2">Conversion Funnel</h3>
               {funnel ? (
-                <FunnelChart data={funnel} />
+                <FunnelChart data={safeFunnel} />
               ) : (
                 <p className="opacity-70 text-sm">Funnel wird geladen…</p>
               )}

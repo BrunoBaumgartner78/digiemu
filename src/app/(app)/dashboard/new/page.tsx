@@ -9,6 +9,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { storage } from "@/lib/firebase";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import styles from "./NewProductForm.module.css";
+import { getErrorMessage } from "@/lib/errors";
 
 const CATEGORY_OPTIONS = [
   { value: "ebook", label: "E-Book" },
@@ -55,13 +56,13 @@ export default function NewProductPage() {
     };
   }, []);
 
-  const { vendorStatus, needsApproval, blockReason } = useMemo(() => {
+  const { needsApproval, blockReason } = useMemo(() => {
     const s = (profile?.status ?? "").toString().toUpperCase();
     const needs = s !== "APPROVED";
     const reason = needs
       ? `Dein Verkäuferprofil ist noch nicht freigeschaltet (Status: ${s || "PENDING"}). Du kannst erst Produkte anlegen, wenn ein Admin dich geprüft hat.`
       : null;
-    return { vendorStatus: s, needsApproval: needs, blockReason: reason };
+    return { needsApproval: needs, blockReason: reason };
   }, [profile]);
 
   const [title, setTitle] = useState("");
@@ -220,9 +221,9 @@ export default function NewProductPage() {
       setTimeout(() => {
         router.push("/dashboard/products");
       }, 600);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Produkt anlegen fehlgeschlagen:", err);
-      setErrorMessage(err?.message || "Upload oder Speichern ist fehlgeschlagen.");
+      setErrorMessage(getErrorMessage(err, "Upload oder Speichern ist fehlgeschlagen."));
     } finally {
       setIsSubmitting(false);
       setUploadProgress(null);
@@ -355,7 +356,6 @@ export default function NewProductPage() {
                     background: "var(--bg-soft)",
                   }}
                 >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <SafeImg
                     src={thumbnailUrl || "/fallback-thumbnail.svg"}
                     fallbackSrc="/fallback-thumbnail.svg"

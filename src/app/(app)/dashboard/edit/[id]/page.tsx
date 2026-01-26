@@ -13,7 +13,7 @@ type PageProps = {
 
 export default async function DashboardEditLegacyPage({ params }: PageProps) {
   const session = await requireSessionPage();
-  const maybeUser = session?.user as unknown;
+  const maybeUser = session?.user as any;
   let userId: string | undefined;
   if (isRecord(maybeUser)) {
     const idVal = (maybeUser as Record<string, unknown>).id;

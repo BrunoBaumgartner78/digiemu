@@ -1,8 +1,7 @@
 // proxy.ts (oder src/proxy.ts – dort wo sie bei dir liegt)
 import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
 
-export function proxy(_req: NextRequest) {
+export function proxy() {
   const res = NextResponse.next();
 
   res.headers.set("X-Content-Type-Options", "nosniff");

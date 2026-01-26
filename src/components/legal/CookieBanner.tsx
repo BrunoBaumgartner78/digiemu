@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import styles from "./CookieBanner.module.css";
 
 type Consent = { necessary: true; analytics: boolean };
@@ -30,15 +30,9 @@ function writeConsent(v: Consent) {
 }
 
 export default function CookieBanner() {
-  const [mounted, setMounted] = useState(false);
-  const [consent, setConsent] = useState<Consent | null>(null);
+  const [consent, setConsent] = useState<Consent | null>(() => readConsent());
 
-  useEffect(() => {
-    setMounted(true);
-    setConsent(readConsent());
-  }, []);
-
-  const isOpen = useMemo(() => mounted && consent === null, [mounted, consent]);
+  const isOpen = useMemo(() => typeof window !== "undefined" && consent === null, [consent]);
 
   if (!isOpen) return null;
 
