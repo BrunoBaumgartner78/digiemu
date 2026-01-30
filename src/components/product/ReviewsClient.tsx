@@ -87,16 +87,22 @@ export default function ReviewsClient({ productId }: { productId: string }) {
           <label style={{ fontSize: 13 }}>Deine Bewertung</label>
           <div style={{ display: "flex", gap: 6 }}>
             {[1, 2, 3, 4, 5].map((n) => (
-              <button
-                key={n}
-                type="button"
-                onClick={() => setRating(n)}
-                aria-label={`${n} Sterne`}
-                className={n <= rating ? "neobtn active" : "neobtn"}
-                style={{ padding: '6px 8px' }}
-              >
-                ★
-              </button>
+             <button
+  key={n}
+  type="button"
+  onClick={() => setRating(n)}
+  aria-label={`${n} Sterne`}
+  className="neobtn"
+  style={{
+    padding: "6px 8px",
+    color: n <= rating ? "#ffb400" : "rgba(0,0,0,0.35)",
+    fontWeight: n <= rating ? 800 : 600,
+    transform: n === rating ? "translateY(-1px)" : "none",
+  }}
+>
+  ★
+</button>
+
             ))}
           </div>
         </div>

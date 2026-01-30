@@ -73,4 +73,9 @@ export function formatMoney(cents: number, currency = "CHF") {
   return `${(v / 100).toFixed(2)} ${currency}`;
 }
 
+export function formatMoneyFromCents(cents: number, currency: string = "CHF") {
+  const v = Number.isFinite(cents) ? cents : Number(cents || 0);
+  return `${(v / 100).toFixed(2)} ${currency}`;
+}
+
 // no default export

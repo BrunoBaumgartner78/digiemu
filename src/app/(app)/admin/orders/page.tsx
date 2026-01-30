@@ -7,6 +7,7 @@ import {
   parseAdminListParams,
   formatDateTime,
   formatMoney,
+  formatMoneyFromCents,
 } from "@/lib/admin/adminList";
 
 export const dynamic = "force-dynamic";
@@ -165,8 +166,6 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
               // fallback auf Produktpreis.
               const amountCents = orderCents >= 50 ? orderCents : productCents;
 
-              const grossCHF = amountCents / 100;
-
               return (
                 <div key={o.id} className={styles.tableRow}>
                   <div className={styles.monoSmall}>
@@ -206,7 +205,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
                   </div>
 
                   <div className={styles.monoSmall}>
-                    {formatMoney(grossCHF, "CHF")}
+                    {formatMoneyFromCents(amountCents, "CHF")}
                   </div>
 
                   <div className={styles.actionsCell}>
