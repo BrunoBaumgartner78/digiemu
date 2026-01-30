@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState, useCallback } from "react";
-import type { CommentDTO } from "@/types";
+import type { CommentDTO } from "@/types/ui";
 
 export default function Comments({ productId }: { productId: string }) {
   const [comments, setComments] = useState<CommentDTO[]>([]);
@@ -76,7 +76,7 @@ export default function Comments({ productId }: { productId: string }) {
         value={content}
         onChange={(e) => setContent(e.target.value)}
         className="p-2 border rounded w-full mb-2"
-        placeholder="Kommentar schreiben…"
+        placeholder="Kommentar schreibenï¿½"
       />
       <button onClick={submit} className="px-3 py-2 bg-blue-600 text-white rounded">
         Abschicken

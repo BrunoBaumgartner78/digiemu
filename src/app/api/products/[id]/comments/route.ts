@@ -1,7 +1,7 @@
 // src/app/api/products/[id]/comments/route.ts
 import { NextResponse, type NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
-import type { Role } from "@/generated/prisma";
+import type { Role } from "@prisma/client";
 import { requireSessionApi } from "@/lib/guards/authz";
 import { computeBadges } from "@/lib/comments/badges";
 

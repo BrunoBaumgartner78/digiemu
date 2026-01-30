@@ -4,7 +4,7 @@ import type { Session } from "next-auth";
 import { requireSessionApi } from "@/lib/guards/authz";
 import { prisma } from "@/lib/prisma";
 import { isRecord, getString } from "@/lib/guards";
-import { ProductStatus } from "@/generated/prisma";
+import { ProductStatus } from "@prisma/client";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";

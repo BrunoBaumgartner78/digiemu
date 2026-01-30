@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { Prisma } from "@/generated/prisma";
-import type { PayoutStatus } from "@/generated/prisma";
+import { Prisma } from "@prisma/client";
+import type { PayoutStatus } from "@prisma/client";
 import { requireAdminApi } from "@/lib/guards/authz";
 
 function isPayoutStatus(v: unknown): v is PayoutStatus {

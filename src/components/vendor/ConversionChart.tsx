@@ -11,7 +11,7 @@ import {
   Legend
 } from "recharts";
 
-import type { ConversionDTO } from "@/types";
+import type { ConversionDTO } from "@/types/ui";
 
 type ConversionPoint = { date: string; views?: number; sales?: number; ctr?: number };
 

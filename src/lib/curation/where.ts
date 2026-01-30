@@ -1,4 +1,4 @@
-import { ProductStatus, VendorStatus } from "@/generated/prisma";
+import { ProductStatus, VendorStatus } from "@prisma/client";
 import type { ViewerCtx } from "./types";
 import { isAdmin, isVendor } from "./types";
 

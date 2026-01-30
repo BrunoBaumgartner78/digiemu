@@ -1,4 +1,4 @@
-import { Role, ProductStatus, VendorStatus } from "@/generated/prisma";
+import { Role, ProductStatus, VendorStatus } from "@prisma/client";
 
 export type ViewerCtx = {
   role: Role;

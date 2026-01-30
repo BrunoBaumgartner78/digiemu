@@ -3,7 +3,7 @@ import { requireRolePage } from "@/lib/guards/authz";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import type { Prisma } from "@/generated/prisma";
+import type { Prisma } from "@prisma/client";
 import styles from "./DashboardHome.module.css";
 import { LineChart, Trophy, DownloadCloud, Package } from "lucide-react";
 import VendorProfileGateCard from "@/components/vendor/VendorProfileGateCard";

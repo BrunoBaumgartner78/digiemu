@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireVendorApi } from "@/lib/guards/authz";
-import type { Prisma } from "@/generated/prisma";
+import type { Prisma } from "@prisma/client";
 
 export async function GET(_req: Request) {
   const maybe = await requireVendorApi();

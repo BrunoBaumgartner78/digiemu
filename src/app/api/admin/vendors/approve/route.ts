@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth/requireAdmin";
 import { prisma } from "@/lib/prisma";
-import { VendorStatus } from "@/generated/prisma";
+import { VendorStatus } from "@prisma/client";
 
 export const runtime = "nodejs";
 

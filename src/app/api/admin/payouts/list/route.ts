@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdminApi } from "@/lib/guards/authz";
-import type { Prisma } from "@/generated/prisma";
+import type { Prisma } from "@prisma/client";
 
 function toCsv(rows: unknown[]) {
   const header = ["id", "vendorId", "vendorEmail", "amountCents", "status", "createdAt", "paidAt", "note"];

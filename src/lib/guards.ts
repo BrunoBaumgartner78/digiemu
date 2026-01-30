@@ -32,7 +32,7 @@ export async function requireVendor() {
   if (role !== "VENDOR" && role !== "ADMIN") deny("/");
   return session;
 }
-import { Prisma } from "@/generated/prisma";
+import { Prisma } from "@prisma/client";
 
 export function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);

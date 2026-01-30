@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import type { LikeResponse } from "@/types";
+import type { LikeResponse } from "@/types/ui";
 
 export default function LikeButton({ productId, initialLiked }: { productId: string; initialLiked?: boolean }) {
   const [liked, setLiked] = useState<boolean>(Boolean(initialLiked));

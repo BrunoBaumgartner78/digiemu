@@ -22,28 +22,7 @@
                             "paths":  {
                                           "@/*":  [
                                                       "./src/*"
-                                                  ],
-                                          "@/types":  [
-                                                          "./src/types/index.ts"
-                                                      ],
-                                          "@/types/*":  [
-                                                            "./src/types/*"
-                                                        ],
-                                          "@/app/*":  [
-                                                          "./src/app/*"
-                                                      ],
-                                          "@/components/*":  [
-                                                                 "./src/components/*"
-                                                             ],
-                                          "@/lib/*":  [
-                                                          "./src/lib/*"
-                                                      ],
-                                          "@/generated/prisma": [
-                                                          "./src/generated/prisma"
-                                                      ],
-                                          "@/styles/*":  [
-                                                             "./src/styles/*"
-                                                         ]
+                                                  ]
                                       },
                             "incremental":  true,
                             "plugins":  [

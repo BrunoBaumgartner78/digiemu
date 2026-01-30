@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState, useCallback } from "react";
-import type { ReviewDTO } from "@/types";
+import type { ReviewDTO } from "@/types/ui";
 
 export default function Reviews({ productId }: { productId: string }) {
   const [reviews, setReviews] = useState<ReviewDTO[]>([]);
@@ -58,7 +58,7 @@ export default function Reviews({ productId }: { productId: string }) {
 
   return (
     <div className="mt-8">
-      <h3 className="font-semibold text-lg mb-3">Bewertungen (1–5 Sterne)</h3>
+      <h3 className="font-semibold text-lg mb-3">Bewertungen (1ï¿½5 Sterne)</h3>
 
       {reviews.length > 0 && (
         <div className="space-y-3 mb-4">
@@ -92,7 +92,7 @@ export default function Reviews({ productId }: { productId: string }) {
         value={content}
         onChange={(e) => setContent(e.target.value)}
         className="p-2 border rounded w-full mb-2"
-        placeholder="Bewertung schreiben…"
+        placeholder="Bewertung schreibenï¿½"
       />
 
       <button onClick={submit} className="px-3 py-2 bg-green-600 text-white rounded">

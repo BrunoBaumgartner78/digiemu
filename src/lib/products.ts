@@ -1,7 +1,7 @@
 // src/lib/products.ts
 import { prisma } from "@/lib/prisma";
 import { marketplaceWhereClause } from "@/lib/marketplace-visibility";
-import type { Prisma } from "@/generated/prisma";
+import type { Prisma } from "@prisma/client";
 
 // Wie viele Produkte pro Seite im Marketplace
 export const PAGE_SIZE = 9;

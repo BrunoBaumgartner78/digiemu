@@ -10,7 +10,7 @@ import {
   CartesianGrid,
 } from "recharts";
 
-import type { EarningsDTO } from "@/types";
+import type { EarningsDTO } from "@/types/ui";
 
 type EarningsPoint = { date: string; earningsCents: number };
 
