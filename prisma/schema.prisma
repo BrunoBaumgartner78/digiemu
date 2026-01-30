@@ -1,8 +1,8 @@
 generator client {
   provider   = "prisma-client-js"
-  output     = "../src/generated/prisma"
   engineType = "node-api"
 }
+
 
 datasource db {
   provider  = "postgresql"

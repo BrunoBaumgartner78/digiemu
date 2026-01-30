@@ -85,3 +85,8 @@ src/generated/prisma/
 **/libquery_engine-*
 **/schema-engine-*
 **/migration-engine-*
+
+# prisma legacy generated output (should not be committed)
+src/generated/
+src/generated/prisma/
+
