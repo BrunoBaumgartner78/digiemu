@@ -58,7 +58,7 @@ export default function HelpPage() {
                     <p>
                       Du wählst im Marketplace ein Produkt aus, klickst auf{" "}
                       <strong>„Einmal zahlen · sofort laden“</strong> und wirst zum sicheren Stripe-Checkout
-                      weitergeleitet. Nach erfolgreicher Zahlung wirst du automatisch auf die Download-Seite von DigiEmu
+                      weitergeleitet. Nach erfolgreicher Zahlung wirst du automatisch auf die Download-Seite von Bellu
                       geführt.
                     </p>
                   </div>
@@ -135,7 +135,7 @@ export default function HelpPage() {
                   <div className={styles.faqBody}>
                     <p>
                       Pro Verkauf erhältst du <strong>80&nbsp;%</strong> des Netto-Verkaufspreises. Die restlichen{" "}
-                      <strong>20&nbsp;%</strong> nutzt DigiEmu für Zahlungsabwicklung, Download-Infrastruktur, Sicherheit
+                      <strong>20&nbsp;%</strong> nutzt Bellu für Zahlungsabwicklung, Download-Infrastruktur, Sicherheit
                       und Plattformbetrieb.
                     </p>
                     <p>Auszahlungen erfolgen gebündelt in regelmäßigen Abständen auf das von dir hinterlegte Konto.</p>
@@ -157,7 +157,7 @@ export default function HelpPage() {
                   <summary className={styles.faqSummary}>Was passiert bei Streitfällen?</summary>
                   <div className={styles.faqBody}>
                     <p>
-                      Im Konfliktfall zwischen Käufer:in und Verkäufer:in kann DigiEmu vermitteln und Zahlungsflüsse
+                      Im Konfliktfall zwischen Käufer:in und Verkäufer:in kann Bellu vermitteln und Zahlungsflüsse
                       vorübergehend pausieren. Unser Ziel ist eine faire Lösung für beide Seiten.
                     </p>
                   </div>
@@ -173,7 +173,7 @@ export default function HelpPage() {
                 Technik, Sicherheit &amp; Support
               </h2>
               <p className={styles.sectionIntro}>
-                DigiEmu wurde so gebaut, dass Zahlungen, Downloads und Daten möglichst sicher und stabil laufen.
+                Bellu wurde so gebaut, dass Zahlungen, Downloads und Daten möglichst sicher und stabil laufen.
               </p>
 
               <div className={styles.faqList}>
@@ -182,7 +182,7 @@ export default function HelpPage() {
                   <div className={styles.faqBody}>
                     <p>
                       Zahlungen laufen über <strong>Stripe</strong>, einen international zertifizierten
-                      Zahlungsdienstleister. Deine Kartendaten werden nicht bei DigiEmu gespeichert.
+                      Zahlungsdienstleister. Deine Kartendaten werden nicht bei Bellu gespeichert.
                     </p>
                   </div>
                 </details>

@@ -13,7 +13,7 @@ export default function LegalPage({ title, subtitle, updatedAt, children }: Prop
     <main className={styles.wrap}>
       <header className={styles.hero}>
         <div className={styles.heroInner}>
-          <div className={styles.kicker}>DIGIEMU · RECHTLICH</div>
+          <div className={styles.kicker}>BELLU · RECHTLICH</div>
           <h1 className={styles.title}>{title}</h1>
           <p className={styles.subtitle}>
             {subtitle ?? "Transparenz, Klarheit und faire Bedingungen — im selben Neo-Look wie Preise."}

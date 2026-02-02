@@ -57,7 +57,7 @@ export default async function DownloadsPage() {
         <header className="section-header mb-6">
           <h1 className="text-2xl md:text-3xl font-bold mb-2">Meine Käufe &amp; Downloads</h1>
           <p className="text-sm text-muted">
-            Hier findest du alle digitalen Produkte, die du über DigiEmu gekauft hast.
+            Hier findest du alle digitalen Produkte, die du über Bellu gekauft hast.
           </p>
         </header>
 

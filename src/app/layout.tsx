@@ -35,6 +35,7 @@ export const metadata: Metadata = {
 
   applicationName: SITE_NAME,
   keywords: [
+    "Bellu",
     "DigiEmu",
     "digitaler Marktplatz",
     "digitale Produkte",

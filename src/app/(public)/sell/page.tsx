@@ -39,7 +39,7 @@ export default function SellPage() {
       <div className="mx-auto max-w-4xl px-6 py-12 space-y-10">
         <div className="rounded-[var(--radius-xl)] border border-[var(--border-subtle)] bg-[var(--bg-card)]/95 shadow-[var(--shadow-soft)] px-8 py-8 space-y-6 text-center">
           <h1 className="text-3xl md:text-4xl font-semibold tracking-tight mb-4">
-            Verkaufe deine digitalen Produkte auf DigiEmu
+            Verkaufe deine digitalen Produkte auf Bellu
           </h1>
           <p className="text-[var(--text-muted)] mb-6">
             Starte als Creator, lade deine Produkte hoch und verdiene an jedem Verkauf mit fairen Konditionen.

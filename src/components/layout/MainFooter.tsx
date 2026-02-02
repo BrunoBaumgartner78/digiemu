@@ -19,7 +19,7 @@ export function MainFooter() {
       <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-8 text-sm text-slate-600 sm:px-6 lg:px-8 md:flex-row md:items-center md:justify-between">
         <div>
           <div className="text-sm font-semibold text-slate-800">
-            DigiEmu – Digital Marketplace for Creators
+            Bellu – Digital Marketplace for Creators
           </div>
           <p className="mt-1 text-xs text-slate-500">
             Kuratierter Multivendor-Marktplatz für digitale Produkte mit

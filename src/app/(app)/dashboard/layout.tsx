@@ -17,7 +17,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     <div className={styles.wrapper}>
       {/* SIDEBAR (Desktop / Tablet) */}
       <aside className={styles.sidebar}>
-        <div className={styles.brand}>DigiEmu Creator</div>
+        <div className={styles.brand}>Bellu Creator</div>
 
         <nav className={styles.nav}>
           <Link href="/dashboard" className={styles.link}>
@@ -44,7 +44,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         </nav>
 
         <p className={styles.sidebarHint}>
-          Verdiene mit deinen digitalen Produkten – DigiEmu kümmert sich um Zahlung &amp; Download.
+          Verdiene mit deinen digitalen Produkten – Bellu kümmert sich um Zahlung &amp; Download.
         </p>
       </aside>
 

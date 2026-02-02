@@ -14,7 +14,7 @@ export default function ImpressumPage() {
         <h1 className="text-2xl font-semibold">Impressum</h1>
 
         <div className="space-y-3 text-sm text-[var(--text-main)]">
-          <p><strong>Betreiber:</strong> DigiEmu / Baumgartner Web Design & Development</p>
+          <p><strong>Betreiber:</strong> Bellu / Baumgartner Web Design & Development</p>
           <p><strong>Inhaber:</strong> Bruno Baumgartner</p>
           <p><strong>Adresse:</strong> Le pré-aux-Boeufs 222, 2615 Sonvilier</p>
           <p><strong>Kontakt:</strong> support@bellu.ch</p>

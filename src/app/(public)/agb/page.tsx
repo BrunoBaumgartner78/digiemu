@@ -40,12 +40,12 @@ export default function AgbPage() {
 
             <h2 id="geltungsbereich" className="text-base font-semibold">1. Geltungsbereich</h2>
             <p className="text-[var(--text-muted)]">
-              Diese Allgemeinen Geschäftsbedingungen (AGB) regeln die Nutzung der Plattform <strong>DigiEmu</strong>
+              Diese Allgemeinen Geschäftsbedingungen (AGB) regeln die Nutzung der Plattform <strong>Bellu</strong>
               (nachfolgend „Plattform“) sowie den Kauf und Verkauf digitaler Inhalte.
             </p>
             <p className="text-[var(--text-muted)]">
-              DigiEmu betreibt einen digitalen Marktplatz. Vertragspartner beim Erwerb digitaler Produkte ist grundsätzlich
-              der jeweilige Verkäufer (Vendor), nicht DigiEmu selbst. DigiEmu vermittelt die Transaktion und stellt die technische
+              Bellu betreibt einen digitalen Marktplatz. Vertragspartner beim Erwerb digitaler Produkte ist grundsätzlich
+              der jeweilige Verkäufer (Vendor), nicht Bellu selbst. Bellu vermittelt die Transaktion und stellt die technische
               Infrastruktur (insbesondere Produktdarstellung, Checkout, Downloadbereitstellung) bereit.
             </p>
 
@@ -55,7 +55,7 @@ export default function AgbPage() {
               Nutzer sind verpflichtet, bei der Registrierung richtige und vollständige Angaben zu machen und diese aktuell zu halten.
             </p>
             <p className="text-[var(--text-muted)]">
-              Nutzer sind für die Geheimhaltung ihrer Zugangsdaten verantwortlich. DigiEmu übernimmt keine Haftung für Schäden,
+              Nutzer sind für die Geheimhaltung ihrer Zugangsdaten verantwortlich. Bellu übernimmt keine Haftung für Schäden,
               die durch die missbräuchliche Nutzung von Nutzerkonten entstehen, soweit dies gesetzlich zulässig ist.
             </p>
 
@@ -82,7 +82,7 @@ export default function AgbPage() {
             <h2 id="zahlung" className="text-base font-semibold">5. Preise &amp; Zahlung</h2>
             <p className="text-[var(--text-muted)]">
               Alle Preise werden in der jeweils angegebenen Währung angezeigt. Die Zahlungsabwicklung erfolgt über externe Zahlungsdienstleister
-              (z. B. Stripe). DigiEmu speichert keine vollständigen Zahlungsdaten.
+              (z. B. Stripe). Bellu speichert keine vollständigen Zahlungsdaten.
             </p>
             <p className="text-[var(--text-muted)]">
               Es gelten ergänzend die Geschäftsbedingungen des jeweiligen Zahlungsdienstleisters. Die Verfügbarkeit bestimmter Zahlungsarten
@@ -96,17 +96,17 @@ export default function AgbPage() {
               Marken- und Nutzungsrechten.
             </p>
             <p className="text-[var(--text-muted)]">
-              DigiEmu ist nicht Partei des Vertrags zwischen Käufer und Verkäufer und übernimmt keine Gewähr für die Inhalte der Verkäufer.
+              Bellu ist nicht Partei des Vertrags zwischen Käufer und Verkäufer und übernimmt keine Gewähr für die Inhalte der Verkäufer.
               Beanstandungen im Zusammenhang mit dem Produkt sind grundsätzlich an den jeweiligen Verkäufer zu richten.
             </p>
 
             <h2 id="provision" className="text-base font-semibold">7. Provision &amp; Auszahlungen</h2>
             <p className="text-[var(--text-muted)]">
-              DigiEmu erhebt für vermittelte Verkäufe eine Plattformprovision. Die Höhe der Provision sowie allfällige weitere Gebühren werden
+              Bellu erhebt für vermittelte Verkäufe eine Plattformprovision. Die Höhe der Provision sowie allfällige weitere Gebühren werden
               im Verkäufer-Dashboard bzw. im Rahmen des Verkäufer-Onboardings ausgewiesen.
             </p>
             <p className="text-[var(--text-muted)]">
-              Auszahlungen an Verkäufer erfolgen gemäss den im Dashboard angegebenen Bedingungen und Zeiträumen. DigiEmu kann Auszahlungen
+              Auszahlungen an Verkäufer erfolgen gemäss den im Dashboard angegebenen Bedingungen und Zeiträumen. Bellu kann Auszahlungen
               vorübergehend zurückhalten, wenn dies zur Betrugsprävention, zur Klärung von Rückbelastungen (Chargebacks) oder zur Erfüllung
               gesetzlicher Pflichten erforderlich ist.
             </p>
@@ -115,14 +115,14 @@ export default function AgbPage() {
             <p className="text-[var(--text-muted)]">
               Unzulässig sind insbesondere automatisiertes Scraping, Betrug, Account-Missbrauch, Umgehung technischer Schutzmassnahmen,
               unautorisierte Weitergabe von Downloads sowie Handlungen, die die Plattform oder andere Nutzer beeinträchtigen.
-              DigiEmu kann bei Verdacht oder Nachweis von Missbrauch Inhalte entfernen, Transaktionen sperren oder Nutzerkonten vorübergehend
+              Bellu kann bei Verdacht oder Nachweis von Missbrauch Inhalte entfernen, Transaktionen sperren oder Nutzerkonten vorübergehend
               oder dauerhaft sperren.
             </p>
 
             <h2 id="haftung" className="text-base font-semibold">9. Haftung</h2>
             <p className="text-[var(--text-muted)]">
-              DigiEmu haftet ausschliesslich für Schäden, die durch vorsätzliches oder grob fahrlässiges Verhalten von DigiEmu verursacht wurden.
-              Für Inhalte, Leistungen und Rechtsverletzungen der Verkäufer übernimmt DigiEmu keine Haftung, soweit gesetzlich zulässig.
+              Bellu haftet ausschliesslich für Schäden, die durch vorsätzliches oder grob fahrlässiges Verhalten von Bellu verursacht wurden.
+              Für Inhalte, Leistungen und Rechtsverletzungen der Verkäufer übernimmt Bellu keine Haftung, soweit gesetzlich zulässig.
             </p>
             <p className="text-[var(--text-muted)]">
               Die Haftung für leichte Fahrlässigkeit sowie für indirekte Schäden, Folgeschäden, entgangenen Gewinn oder Datenverlust ist ausgeschlossen,
@@ -131,14 +131,14 @@ export default function AgbPage() {
 
             <h2 id="verfuegbarkeit" className="text-base font-semibold">10. Verfügbarkeit</h2>
             <p className="text-[var(--text-muted)]">
-              DigiEmu bemüht sich um eine möglichst hohe Verfügbarkeit der Plattform, kann jedoch keine unterbrechungsfreie oder jederzeitige Verfügbarkeit
+              Bellu bemüht sich um eine möglichst hohe Verfügbarkeit der Plattform, kann jedoch keine unterbrechungsfreie oder jederzeitige Verfügbarkeit
               garantieren. Wartungsarbeiten, Sicherheitsupdates oder Störungen bei Drittanbietern (z. B. Hosting, Zahlungsdienstleister) können zu
               vorübergehenden Einschränkungen führen.
             </p>
 
             <h2 id="aenderungen" className="text-base font-semibold">11. Änderungen der AGB</h2>
             <p className="text-[var(--text-muted)]">
-              DigiEmu behält sich vor, diese AGB jederzeit anzupassen. Änderungen werden den Nutzern in geeigneter Form mitgeteilt. Soweit rechtlich erforderlich,
+              Bellu behält sich vor, diese AGB jederzeit anzupassen. Änderungen werden den Nutzern in geeigneter Form mitgeteilt. Soweit rechtlich erforderlich,
               werden Änderungen erst nach Zustimmung der Nutzer wirksam.
             </p>
 

@@ -137,7 +137,7 @@ export default async function HomePage() {
               border: "1px solid rgba(0,0,0,0.06)",
             }}
           >
-            DigiEmu · Digital Marketplace
+            Bellu · Digital Marketplace
           </span>
 
           {isLoggedIn ? (
@@ -158,7 +158,7 @@ export default async function HomePage() {
         </h1>
 
         <p style={{ marginTop: 0, opacity: 0.82, fontSize: 16, lineHeight: 1.6, maxWidth: 860 }}>
-          DigiEmu ist ein Marktplatz für digitale Downloads: Käufer finden hochwertige Dateien,
+          Bellu ist ein Marktplatz für digitale Downloads: Käufer finden hochwertige Dateien,
           Verkäufer veröffentlichen Produkte in Minuten – inklusive Checkout, Download-Link und
           klarer Abrechnung.
         </p>
@@ -230,7 +230,7 @@ export default async function HomePage() {
       <section className="neo-card neonCard neonBorder glowSoft" style={{ padding: 22, marginTop: 16 }}>
         <SectionTitle kicker="Über DigiEmu" title="Ein Marktplatz, der sofort funktioniert" />
         <p style={{ opacity: 0.85, lineHeight: 1.75, marginTop: 0, maxWidth: 980 }}>
-          DigiEmu verbindet Käufer und Verkäufer digitaler Produkte – ohne komplizierte Setups.
+          Bellu verbindet Käufer und Verkäufer digitaler Produkte – ohne komplizierte Setups.
           Verkäufer laden Dateien hoch, definieren Preis und Beschreibung und können das Produkt
           veröffentlichen. Käufer bezahlen sicher, erhalten einen gültigen Download-Link und können
           ihre Käufe jederzeit im Account einsehen.
@@ -336,7 +336,7 @@ export default async function HomePage() {
         <SectionTitle kicker="About us" title="Warum wir DigiEmu bauen" />
         <p style={{ opacity: 0.85, lineHeight: 1.75, marginTop: 0, maxWidth: 980 }}>
           Viele digitale Produkte werden heute über zusammengewürfelte Systeme verkauft: Payment hier,
-          Datei dort, Support irgendwo dazwischen. DigiEmu bündelt die wichtigsten Bausteine in einem
+          Datei dort, Support irgendwo dazwischen. Bellu bündelt die wichtigsten Bausteine in einem
           klaren, wartbaren Setup – damit Käufer weniger Reibung haben und Verkäufer schneller
           Umsätze erzielen.
         </p>
@@ -352,7 +352,7 @@ export default async function HomePage() {
 
         <div style={{ display: "grid", gap: 12, marginTop: 10 }}>
           <div>
-            <div style={{ fontWeight: 900 }}>Kann ich DigiEmu ohne Konto nutzen?</div>
+            <div style={{ fontWeight: 900 }}>Kann ich Bellu ohne Konto nutzen?</div>
             <div style={{ opacity: 0.85, lineHeight: 1.7, marginTop: 4 }}>
               Ja – der Marketplace und Informationsseiten sind öffentlich. Für Käufe, Downloads und
               das Dashboard brauchst du ein Konto.

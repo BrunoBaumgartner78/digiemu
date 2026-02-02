@@ -53,7 +53,7 @@ export default function LoginClient() {
   return (
     <div className={styles.page}>
       <div className={styles.card}>
-        <div className={styles.brand}>DigiEmu · Login</div>
+        <div className={styles.brand}>Bellu · Login</div>
 
         <h1 className={styles.title}>Willkommen zurück 👋</h1>
         <p className={styles.subtitle}>

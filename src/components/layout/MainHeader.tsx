@@ -3,6 +3,7 @@
 import "./MainHeader.css";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import * as React from "react";
 import { useEffect, useState } from "react";
@@ -46,8 +47,6 @@ export function MainHeader() {
     };
   }, [mobileOpen]);
 
-  // Closing the mobile menu on route changes is handled by closing links' onClick handlers.
-
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href) && href !== "/";
 
@@ -63,9 +62,22 @@ export function MainHeader() {
   return (
     <header className="main-header" data-mobile-open={mobileOpen ? "true" : "false"}>
       <div className="header-inner">
-        <Link href="/" className="logo-lockup" onClick={() => setMobileOpen(false)}>
-          <span className="logo-main">DigiEmu</span>
-          <span className="logo-sub">Digital Marketplace</span>
+        {/* ✅ BRAND / LOGO */}
+        <Link href="/" className="logo-lockup" onClick={() => setMobileOpen(false)} aria-label="Bellu Startseite">
+          <span className="logo-mark" aria-hidden="true">
+            <Image
+              src="/logo-transparent.png"
+              alt="Bellu"
+              width={38}
+              height={38}
+              priority
+              className="logo-img"
+            />
+          </span>
+
+          {/* optional: Brand Text neben Logo */}
+          <span className="logo-main">Bellu</span>
+          <span className="logo-sub">Marketplace</span>
         </Link>
 
         <nav className="primary-nav" aria-label="Navigation">
@@ -147,15 +159,16 @@ export function MainHeader() {
             </>
           ) : (
             <>
+              {/* ✅ align with your existing auth routes */}
               <Link
-                href="/login"
-                className={"nav-pill nav-pill-ghost" + (isActive("/login") ? " nav-pill-active" : "")}
+                href="/auth/login"
+                className={"nav-pill nav-pill-ghost" + (isActive("/auth/login") ? " nav-pill-active" : "")}
               >
                 Login
               </Link>
               <Link
-                href="/register"
-                className={"nav-pill nav-pill-ghost" + (isActive("/register") ? " nav-pill-active" : "")}
+                href="/auth/register"
+                className={"nav-pill nav-pill-ghost" + (isActive("/auth/register") ? " nav-pill-active" : "")}
               >
                 Konto erstellen
               </Link>
@@ -186,7 +199,7 @@ export function MainHeader() {
             <div className="mobile-nav-header">
               <div className="mobile-nav-title">
                 <span className="mobile-nav-kicker">Navigation</span>
-                <span className="mobile-nav-brand">Digital Marketplace</span>
+                <span className="mobile-nav-brand">Bellu Marketplace</span>
               </div>
               <button className="mobile-nav-close" onClick={() => setMobileOpen(false)}>
                 Schließen
@@ -283,16 +296,16 @@ export function MainHeader() {
               ) : (
                 <>
                   <Link
-                    href="/login"
+                    href="/auth/login"
                     onClick={() => setMobileOpen(false)}
-                    className={"mobile-nav-pill" + (isActive("/login") ? " mobile-nav-pill-active" : "")}
+                    className={"mobile-nav-pill" + (isActive("/auth/login") ? " mobile-nav-pill-active" : "")}
                   >
                     Login
                   </Link>
                   <Link
-                    href="/register"
+                    href="/auth/register"
                     onClick={() => setMobileOpen(false)}
-                    className={"mobile-nav-pill" + (isActive("/register") ? " mobile-nav-pill-active" : "")}
+                    className={"mobile-nav-pill" + (isActive("/auth/register") ? " mobile-nav-pill-active" : "")}
                   >
                     Konto erstellen
                   </Link>

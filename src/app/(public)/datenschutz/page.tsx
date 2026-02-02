@@ -16,13 +16,13 @@ export default function DatenschutzPage() {
 
           <div className="space-y-4 text-sm text-[var(--text-main)]">
             <p className="text-[var(--text-muted)]">
-              In dieser Datenschutzerklärung informieren wir darüber, welche personenbezogenen Daten bei der Nutzung der Plattform DigiEmu
+              In dieser Datenschutzerklärung informieren wir darüber, welche personenbezogenen Daten bei der Nutzung der Plattform Bellu
               (bellu.ch) verarbeitet werden, zu welchen Zwecken und welche Rechte dir zustehen. Die Plattform wird in der Schweiz betrieben.
             </p>
 
             <h2 className="text-base font-semibold">1. Verantwortlicher</h2>
             <p className="text-[var(--text-muted)]">
-              Verantwortlich für die Datenverarbeitung im Sinne des Datenschutzrechts ist der Betreiber der Plattform DigiEmu.
+              Verantwortlich für die Datenverarbeitung im Sinne des Datenschutzrechts ist der Betreiber der Plattform Bellu.
               Kontakt:{" "}
               <a className="underline" href="mailto:support@bellu.ch">
                 support@bellu.ch

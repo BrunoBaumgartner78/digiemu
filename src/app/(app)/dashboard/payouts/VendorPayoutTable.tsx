@@ -27,7 +27,7 @@ export default function VendorPayoutTable({
       </h2>
 
       <div className="mb-3 text-xs text-[var(--color-text-muted)]">
-        Auszahlungen erfolgen aktuell manuell durch DigiEmu.
+        Auszahlungen erfolgen aktuell manuell durch Bellu.
       </div>
 
       {payouts.length === 0 ? (

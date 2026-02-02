@@ -52,7 +52,7 @@ export default function LandingTestPage() {
 
             <p className="mt-6 max-w-xl text-sm leading-relaxed text-slate-600">
               Verkaufe E-Books, Templates, Presets, Kurse und mehr – ohne
-              technischen Stress. DigiEmu kümmert sich um Zahlung,
+              technischen Stress. Bellu kümmert sich um Zahlung,
               Auslieferung und Statistik, du konzentrierst dich auf deine
               Inhalte.
             </p>
@@ -150,27 +150,27 @@ export default function LandingTestPage() {
         {/* FOOTER TEXT BLOCK */}
         <section className="mt-24 border-t border-slate-200 pt-12">
           <h2 className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
-            DigiEmu – dein Marktplatz für digitale Produkte
+            Bellu – dein Marktplatz für digitale Produkte
           </h2>
 
           <p className="mt-5 max-w-3xl text-sm leading-relaxed text-slate-600">
-            DigiEmu ist ein kuratierter Multivendor-Marktplatz für digitale
+            Bellu ist ein kuratierter Multivendor-Marktplatz für digitale
             Produkte wie E-Books, Online-Kurse, Templates, Presets, Musik und
             mehr. Creator:innen verkaufen ihre Dateien direkt an Kund:innen,
-            während DigiEmu sich um sichere Zahlungen, automatische
+            während Bellu sich um sichere Zahlungen, automatische
             Auslieferung und Reporting kümmert.
           </p>
 
           <p className="mt-4 max-w-3xl text-sm leading-relaxed text-slate-600">
             Durch eine faire 80/20-Aufteilung, klare Bedingungen und
             transparente Statistiken behalten Creator:innen jederzeit den
-            Überblick. DigiEmu reduziert technischen Stress und macht es
+            Überblick. Bellu reduziert technischen Stress und macht es
             einfach, digitale Produkte professionell zu vertreiben – vom
             ersten Upload bis zur Auszahlung.
           </p>
 
           <p className="mt-8 text-xs text-slate-400">
-            © 2025 DigiEmu – Digital Marketplace for Creators
+            © 2025 Bellu – Digital Marketplace for Creators
           </p>
         </section>
       </div>

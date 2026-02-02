@@ -44,7 +44,7 @@ export default function AppFooter() {
             <div className={styles.brandRow}>
               <span className={styles.logoDot} />
               <div className={styles.title}>
-                DigiEmu{" "}
+                Bellu{" "}
                 {emoji ? (
                   <span className={styles.emojiGlow} aria-hidden="true">
                     {emoji}

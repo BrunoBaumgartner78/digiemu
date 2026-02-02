@@ -20,7 +20,7 @@ export default function PricingPage() {
             Transparente Konditionen für digitale Produkte.
           </h1>
           <p className={styles.lead}>
-            DigiEmu ist ein Marktplatz für digitale Produkte. Du konzentrierst
+            Bellu ist ein Marktplatz für digitale Produkte. Du konzentrierst
             dich auf deine Inhalte – wir kümmern uns um Checkout, Download und
             Plattformbetrieb.
           </p>
@@ -113,14 +113,14 @@ export default function PricingPage() {
         {/* Kleiner Hinweis / Footer-Text */}
         <section className={styles.noteSection}>
           <p className={styles.noteText}>
-            Hinweis: DigiEmu ist aktuell im Aufbau. Konditionen können sich
+            Hinweis: Bellu ist aktuell im Aufbau. Konditionen können sich
             während der Beta-Phase leicht anpassen. Größere Änderungen werden
             wir frühzeitig im Dashboard kommunizieren.
           </p>
         </section>
 
         <footer className={styles.footer}>
-          © {new Date().getFullYear()} DigiEmu – Digital Marketplace for Creators
+          © {new Date().getFullYear()} Bellu – Digital Marketplace for Creators
         </footer>
       </section>
     </main>

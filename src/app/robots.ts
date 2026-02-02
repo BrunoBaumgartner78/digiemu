@@ -15,6 +15,6 @@ export default function robots(): MetadataRoute.Robots {
         ],
       },
     ],
-    sitemap: "https://digiemu.ch/sitemap.xml",
+    sitemap: "https://bellu.ch/sitemap.xml",
   };
 }

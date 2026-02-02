@@ -172,7 +172,7 @@ export default function ProfilePageClient({
       <div className={styles.hero}>
         <div className={styles.brandRow}>
           <div className={styles.brand}>
-            <div className={styles.brandTop}>DIGIEMU</div>
+            <div className={styles.brandTop}>Bellu</div>
             <div className={styles.brandSub}>DIGITAL MARKETPLACE</div>
           </div>
         </div>

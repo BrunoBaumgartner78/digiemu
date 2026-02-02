@@ -32,7 +32,7 @@ export default async function RegisterVendorPage() {
       <main className="page-shell">
         <section className="neo-surface p-6 md:p-8 space-y-6 max-w-2xl mx-auto">
           <h1 className="text-2xl md:text-3xl font-semibold text-[var(--color-text-primary)]">
-            Du bist bereits DigiEmu-Verkäufer 🎉
+            Du bist bereits Bellu-Verkäufer 🎉
           </h1>
           <p className="text-sm text-[var(--color-text-muted)]">
             Dein Verkäuferprofil ist schon angelegt. Du kannst direkt zu deinem
@@ -65,11 +65,11 @@ export default async function RegisterVendorPage() {
     <main className="page-shell">
       <section className="neo-surface p-6 md:p-8 space-y-6 max-w-2xl mx-auto">
         <h1 className="text-2xl md:text-3xl font-semibold text-[var(--color-text-primary)]">
-          Werde DigiEmu-Verkäufer
+          Werde Bellu-Verkäufer
         </h1>
         <p className="text-sm text-[var(--color-text-muted)] max-w-xl">
           Erstelle jetzt dein Verkäuferprofil und lade deine ersten digitalen
-          Produkte hoch. Du erhältst 80 % der Einnahmen, DigiEmu kümmert sich um
+          Produkte hoch. Du erhältst 80 % der Einnahmen, Bellu kümmert sich um
           Zahlung &amp; Downloads.
         </p>
 

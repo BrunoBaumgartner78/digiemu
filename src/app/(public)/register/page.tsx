@@ -79,11 +79,11 @@ export default function RegisterPage() {
   return (
     <div className={styles.page}>
       <div className={styles.card}>
-        <div className={styles.brand}>DigiEmu • Registrieren</div>
+        <div className={styles.brand}>Bellu • Registrieren</div>
 
         <h1 className={styles.title}>Konto erstellen ✨</h1>
         <p className={styles.subtitle}>
-          Erstelle dein DigiEmu-Konto, um Produkte zu verkaufen oder digitale Inhalte zu kaufen.
+          Erstelle dein Bellu-Konto, um Produkte zu verkaufen oder digitale Inhalte zu kaufen.
         </p>
 
         <form onSubmit={handleSubmit} className={styles.form}>
