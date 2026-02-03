@@ -526,3 +526,39 @@ html[data-theme="dark"] .mobile-nav-pill, html.dark .mobile-nav-pill {
   box-shadow: 0 0 0 3px var(--accent, #6366f1);
   z-index: 2;
 }
+
+/* FORCE: Logo + Text nebeneinander (override old column styles) */
+.logo-lockup {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 10px !important;
+}
+
+/* Logo box */
+.logo-mark {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+}
+
+.logo-img {
+  display: block;
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+}
+
+/* Text rechts (2 Zeilen) */
+.logo-main,
+.logo-sub {
+  display: block;
+  line-height: 1.05;
+}
+
+/* Damit nicht plötzlich alles untereinander umbricht */
+.logo-main { font-weight: 700; }
+.logo-sub  { font-size: 12px; opacity: 0.75; margin-top: 2px; }

@@ -10,8 +10,8 @@ export const viewport: Viewport = {
   themeColor: "#EAF1FF",
 };
 
-const SITE_NAME = "DigiEmu";
-const SITE_TITLE = "DigiEmu – Digitaler Marktplatz";
+const SITE_NAME = "Bellu";
+const SITE_TITLE = "Bellu – Digitaler Marktplatz";
 const SITE_DESCRIPTION = "Digitale Produkte kaufen & verkaufen.";
 
 // ✅ Exakt die Domain verwenden, die du teilst (mit/ohne www)
