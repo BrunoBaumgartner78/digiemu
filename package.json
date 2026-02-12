@@ -19,6 +19,7 @@
     "build:trace": "node -r ./trace-repeat.js ./node_modules/next/dist/bin/next build --webpack | powershell -NoProfile -Command \"Tee-Object -FilePath .qa\\trace_repeat_build.log\"",
     "build": "npx prisma generate && next build --webpack",
     "build:local": "npx prisma generate && next build",
+    "prisma:generate": "prisma generate",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "check": "npm run typecheck && npm run build"
   },

@@ -30,7 +30,7 @@ jobs:
         run: npm ci
 
       - name: Prisma Generate
-        run: npx prisma generate
+        run: npm run prisma:generate
 
       - name: Lint
         run: npm run lint
@@ -71,7 +71,7 @@ jobs:
         run: npm ci
 
       - name: Prisma Generate
-        run: npx prisma generate
+        run: npm run prisma:generate
 
       - name: Run blocked-status consistency script
         run: node scripts/guard-blocked-status.mjs

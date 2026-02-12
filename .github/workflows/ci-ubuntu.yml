@@ -25,7 +25,7 @@ jobs:
         run: npm ci
 
       - name: Prisma Generate
-        run: npx prisma generate
+        run: npm run prisma:generate
 
       - name: Build
         run: npm run build

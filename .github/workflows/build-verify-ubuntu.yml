@@ -58,7 +58,7 @@ jobs:
           fi
 
       - name: Prisma generate
-        run: npx prisma generate
+        run: npm run prisma:generate
 
       - name: Prisma migrate deploy (only if DB configured)
         if: ${{ env.DATABASE_URL != '' }}
