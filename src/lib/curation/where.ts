@@ -1,5 +1,4 @@
-import { Prisma } from "@prisma/client";
-const { ProductStatus, VendorStatus } = Prisma;
+import { ProductStatus, VendorStatus } from "@prisma/client";
 import type { ViewerCtx } from "./types";
 import { isAdmin, isVendor } from "./types";
 

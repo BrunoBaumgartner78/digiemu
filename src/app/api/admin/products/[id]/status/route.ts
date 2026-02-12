@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireAdminApi } from "@/lib/guards/authz";
 import { prisma } from "@/lib/prisma";
-import { Prisma } from "@prisma/client";
-const { ProductStatus } = Prisma;
+import { ProductStatus, VendorStatus, PayoutStatus, Role } from "@prisma/client";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -24,7 +23,7 @@ export async function POST(
   const status = String(body.status ?? "").toUpperCase();
   const isActive = !!body.isActive;
 
-  if (![ProductStatus.ACTIVE, ProductStatus.DRAFT, ProductStatus.BLOCKED].includes(status as ProductStatus)) {
+  if (![ProductStatus.ACTIVE, ProductStatus.DRAFT, ProductStatus.BLOCKED].includes(status as (typeof ProductStatus)[keyof typeof ProductStatus])) {
     return NextResponse.json({ message: "Invalid status" }, { status: 400 });
   }
 
@@ -33,7 +32,7 @@ export async function POST(
 
   const updated = await prisma.product.update({
     where: { id },
-    data: { status: status as ProductStatus, isActive: safeIsActive },
+    data: { status: status as (typeof ProductStatus)[keyof typeof ProductStatus], isActive: safeIsActive },
     select: { id: true, status: true, isActive: true, updatedAt: true },
   });
 
