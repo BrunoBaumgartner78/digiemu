@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { requireAdminApi } from "@/lib/guards/authz";
 import { prisma } from "@/lib/prisma";
-import { ProductStatus } from "@prisma/client";
+import { Prisma } from "@prisma/client";
+const { ProductStatus } = Prisma;
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";

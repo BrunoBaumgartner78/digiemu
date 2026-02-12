@@ -1,7 +1,8 @@
 // src/app/api/vendor/report/route.ts
 import PDFDocument from "pdfkit";
 import { prisma } from "@/lib/prisma";
-import { Role } from "@prisma/client";
+import { Prisma } from "@prisma/client";
+const { Role } = Prisma;
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
