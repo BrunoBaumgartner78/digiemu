@@ -68,7 +68,7 @@ jobs:
         run: npm run prisma:generate
 
       - name: Prisma migrate deploy
-        run: npx prisma migrate deploy
+        run: npx --no-install prisma migrate deploy
 
       - name: Next build
         run: npm run build

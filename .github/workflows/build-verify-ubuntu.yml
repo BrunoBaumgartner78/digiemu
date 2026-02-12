@@ -62,7 +62,7 @@ jobs:
 
       - name: Prisma migrate deploy (only if DB configured)
         if: ${{ env.DATABASE_URL != '' }}
-        run: npx prisma migrate deploy
+        run: npx --no-install prisma migrate deploy
 
       - name: Next build
         run: npx next build
