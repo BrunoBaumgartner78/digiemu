@@ -14,8 +14,8 @@ jobs:
       NODE_ENV: production
       # Prisma braucht DIRECT_URL wenn es im schema steht.
       # Wenn du es nicht als Secret gesetzt hast: fallback auf DATABASE_URL.
-      DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/postgres?schema=public"
-      DIRECT_URL: "postgresql://postgres:postgres@localhost:5432/postgres?schema=public"
+      DATABASE_URL: "postgresql://ci:ci@127.0.0.1:5432/ci?schema=public"
+      DIRECT_URL: "postgresql://ci:ci@127.0.0.1:5432/ci?schema=public"
 
       NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
       NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
@@ -65,4 +65,4 @@ jobs:
         run: npx --no-install prisma migrate deploy
 
       - name: Next build
-        run: npx next build
+        run: npm run build

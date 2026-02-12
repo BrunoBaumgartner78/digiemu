@@ -17,10 +17,10 @@
     "lint:next": "node node_modules/next/dist/bin/next lint",
     "lint:strict": "eslint . --max-warnings 0",
     "build:trace": "node -r ./trace-repeat.js ./node_modules/next/dist/bin/next build --webpack | powershell -NoProfile -Command \"Tee-Object -FilePath .qa\\trace_repeat_build.log\"",
-    "build": "npx prisma generate && next build --webpack",
+    "build": "npm run prisma:generate && next build --webpack",
     "build:local": "npx prisma generate && next build",
     "prisma:generate": "prisma generate",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "typecheck": "npm run prisma:generate && tsc -p tsconfig.json --noEmit",
     "check": "npm run typecheck && npm run build"
   },
   "dependencies": {
@@ -61,7 +61,7 @@
     "eslint-plugin-react-hooks": "^7.0.1",
     "knip": "^5.76.2",
     "markdown-link-check": "^3.14.2",
-    "prisma": "^6.19.1",
+    "prisma": "6.19.2",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   },
