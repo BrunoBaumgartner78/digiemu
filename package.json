@@ -17,10 +17,16 @@
     "lint:next": "node node_modules/next/dist/bin/next lint",
     "lint:strict": "eslint . --max-warnings 0",
     "build:trace": "node -r ./trace-repeat.js ./node_modules/next/dist/bin/next build --webpack | powershell -NoProfile -Command \"Tee-Object -FilePath .qa\\trace_repeat_build.log\"",
+<<<<<<< HEAD
     "build": "npm run prisma:generate && next build --webpack",
     "build:local": "npx prisma generate && next build",
     "prisma:generate": "prisma generate",
     "typecheck": "npm run prisma:generate && tsc -p tsconfig.json --noEmit",
+=======
+    "build": "npx prisma generate && next build --webpack",
+    "build:local": "npx prisma generate && next build",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+>>>>>>> bdfb0d4 (fix(ci): ensure prisma is available in GH actions)
     "check": "npm run typecheck && npm run build"
   },
   "dependencies": {
