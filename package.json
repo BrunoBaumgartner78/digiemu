@@ -16,10 +16,9 @@
     "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --cache --fix",
     "lint:next": "node node_modules/next/dist/bin/next lint",
     "lint:strict": "eslint . --max-warnings 0",
-    "postinstall": "prisma generate",
-    "build": "prisma generate && next build --webpack",
     "build:trace": "node -r ./trace-repeat.js ./node_modules/next/dist/bin/next build --webpack | powershell -NoProfile -Command \"Tee-Object -FilePath .qa\\trace_repeat_build.log\"",
-    "build:local": "prisma generate && next build",
+    "build": "npx prisma generate && next build --webpack",
+    "build:local": "npx prisma generate && next build",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "check": "npm run typecheck && npm run build"
   },
