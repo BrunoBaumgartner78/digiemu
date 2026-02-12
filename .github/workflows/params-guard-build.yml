@@ -11,7 +11,7 @@ jobs:
 
     env:
       NODE_ENV: production
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/postgres?schema=public"
       DIRECT_URL: ${{ secrets.DIRECT_URL }}
       NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
       NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}

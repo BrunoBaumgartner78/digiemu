@@ -9,6 +9,9 @@ on:
 jobs:
   guards:
     runs-on: ubuntu-latest
+    
+    env:
+      DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/postgres?schema=public"
 
     steps:
       - name: Checkout

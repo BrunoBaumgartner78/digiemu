@@ -14,7 +14,7 @@ jobs:
       NODE_ENV: production
       # Prisma braucht DIRECT_URL wenn es im schema steht.
       # Wenn du es nicht als Secret gesetzt hast: fallback auf DATABASE_URL.
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/postgres?schema=public"
       DIRECT_URL: ${{ secrets.DIRECT_URL != '' && secrets.DIRECT_URL || secrets.DATABASE_URL }}
 
       NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
