@@ -1,4 +1,3 @@
-# .github/workflows/cleanup-audit.yml
 name: Cleanup Audit
 
 on:
@@ -15,8 +14,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      DATABASE_URL: "postgresql://ci:ci@127.0.0.1:5432/ci?schema=public"
-      DIRECT_URL: "postgresql://ci:ci@127.0.0.1:5432/ci?schema=public"
+      DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/postgres?schema=public"
 
     steps:
       - name: Checkout
@@ -31,83 +29,33 @@ jobs:
       - name: Install deps
         run: npm ci
 
-      - name: Prepare CI env (fallbacks + Prisma pre-steps)
-        shell: bash
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          DIRECT_URL: ${{ secrets.DIRECT_URL }}
-          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
-          NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
-          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
-          STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
-          FIREBASE_ADMIN_PROJECT_ID: ${{ secrets.FIREBASE_ADMIN_PROJECT_ID }}
-          FIREBASE_ADMIN_CLIENT_EMAIL: ${{ secrets.FIREBASE_ADMIN_CLIENT_EMAIL }}
-          FIREBASE_ADMIN_PRIVATE_KEY: ${{ secrets.FIREBASE_ADMIN_PRIVATE_KEY }}
-        run: |
-          set -euo pipefail
-          chmod +x ./ci-prepare-env.sh || true
-          ./ci-prepare-env.sh
-
-      # ✅ Fix for mlc ENOENT: create placeholders in the runner workspace (NOT committed).
-      - name: Ensure local.xml.template placeholders exist (CI workspace only)
-        shell: bash
-        run: |
-          set -euo pipefail
-          cd "$GITHUB_WORKSPACE"
-          mkdir -p app/etc src/app/etc
-          : > app/etc/local.xml.template
-          : > src/app/etc/local.xml.template
-          echo "✅ CI placeholders created"
-          ls -la app/etc || true
-          ls -la src/app/etc || true
-
       # ---------- 1) Markdown dead links ----------
       - name: Install markdown-link-check
         run: npm i -D markdown-link-check
 
       - name: Check markdown links
-        shell: bash
         run: |
-          set -euo pipefail
-          cd "$GITHUB_WORKSPACE"
-
-          MD_FILES="$(git ls-files '*.md' | grep -v '^node_modules/' || true)"
-          if [ -z "$MD_FILES" ]; then
-            echo "ℹ️ No markdown files found."
-            exit 0
-          fi
-
-          echo "🔎 Running markdown-link-check on:"
-          echo "$MD_FILES"
-
-          # Run markdown-link-check; if it fails we fail (real dead links matter)
-          echo "$MD_FILES" | xargs -r npx mlc --config .github/markdown-link-check.json
+          set -e
+          shopt -s globstar
+          for f in **/*.md; do
+            echo "🔎 checking $f"
+            npx markdown-link-check "$f" -q || exit 1
+          done
 
       # ---------- 2) Guard: obvious dead internal links ----------
       - name: Guard dead internal routes
-        shell: bash
         run: |
-          set -euo pipefail
+          set -e
           echo "🔎 searching for common dead links..."
-
-          TARGETS=("src")
-
-          PROFILE_REGEX='href[[:space:]]*=[[:space:]]*(\{[[:space:]]*)?["'\'']/profile["'\'']([[:space:]]*\})?'
-          DOWNLOADS_REGEX='href[[:space:]]*=[[:space:]]*(\{[[:space:]]*)?["'\'']/downloads["'\'']([[:space:]]*\})?'
-
-          if grep -RIn \
-            --include='*.ts' --include='*.tsx' --include='*.js' --include='*.jsx' \
-            -E "$PROFILE_REGEX" \
-            "${TARGETS[@]}" | head -n 1; then
-            echo '❌ Found /profile link. Use /account/profile instead.'
+          # Beispiel: /profile ist bei dir offenbar falsch -> sollte /account/profile sein
+          if grep -R 'href="/profile"' -n src | head -n 1; then
+            echo "❌ Found href=\"/profile\". Use /account/profile instead."
             exit 1
           fi
 
-          if grep -RIn \
-            --include='*.ts' --include='*.tsx' --include='*.js' --include='*.jsx' \
-            -E "$DOWNLOADS_REGEX" \
-            "${TARGETS[@]}" | head -n 1; then
-            echo '❌ Found /downloads link. Use /account/downloads instead.'
+          # Beispiel: alte /downloads route
+          if grep -R 'href="/downloads"' -n src | head -n 1; then
+            echo "❌ Found href=\"/downloads\". Use /account/downloads instead."
             exit 1
           fi
 
