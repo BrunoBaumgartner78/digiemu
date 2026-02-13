@@ -5,8 +5,11 @@ import { prisma } from "@/lib/prisma";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
+function getStripe() {
+  const key = process.env.STRIPE_SECRET_KEY;
+  if (!key) throw new Error("STRIPE_SECRET_KEY missing");
+  return new Stripe(key, { apiVersion: "2023-10-16" });
+}
 
 
 export async function GET(req: NextRequest) {
@@ -16,7 +19,7 @@ export async function GET(req: NextRequest) {
   }
 
   // 1) Stripe Session check
-  const s = await stripe.checkout.sessions.retrieve(sessionId);
+  const s = await getStripe().checkout.sessions.retrieve(sessionId);
 
   // payment_status ist i.d.R. "paid" wenn ok
   if (s.payment_status !== "paid") {

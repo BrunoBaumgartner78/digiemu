@@ -10,7 +10,11 @@ import { rateLimitCheck, keyFromReq } from "@/lib/rateLimit";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
+function getStripe() {
+  const key = process.env.STRIPE_SECRET_KEY;
+  if (!key) throw new Error("STRIPE_SECRET_KEY missing");
+  return new Stripe(key, { apiVersion: "2023-10-16" });
+}
 
 export function GET() {
   return new NextResponse("Method Not Allowed", { status: 405 });
@@ -68,7 +72,7 @@ export async function POST(_req: NextRequest) {
   const origin = _req.nextUrl.origin;
 
   // 1) Checkout Session zuerst erstellen (ohne orderId)
-  const checkout = await stripe.checkout.sessions.create({
+  const checkout = await getStripe().checkout.sessions.create({
     mode: "payment",
     payment_method_types: ["card"],
     line_items: [
@@ -103,7 +107,7 @@ export async function POST(_req: NextRequest) {
   });
 
   // 3) Stripe Session metadata nachträglich ergänzen (Webhook braucht orderId)
-  await stripe.checkout.sessions.update(checkout.id, {
+  await getStripe().checkout.sessions.update(checkout.id, {
     metadata: {
       orderId: order.id,
       productId: product.id,

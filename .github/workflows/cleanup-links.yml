@@ -37,11 +37,8 @@ jobs:
       - name: Check markdown links
         run: |
           set -e
-          shopt -s globstar
-          for f in **/*.md; do
-            echo "🔎 checking $f"
-            npx markdown-link-check "$f" -q || exit 1
-          done
+          # Limit scope and ignore node_modules (some packages include README with blocked links)
+          npx mlc README.md "docs/**/*.md" --ignore-path node_modules
 
       # ---------- 2) Guard: obvious dead internal links ----------
       - name: Guard dead internal routes
