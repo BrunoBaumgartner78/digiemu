@@ -59,10 +59,16 @@ jobs:
           fi
 
       - name: Check markdown links
+        shell: bash
         run: |
-          set -e
+          set -euo pipefail
           # Build list of tracked markdown files (exclude node_modules)
-          git ls-files '*.md' | grep -v '^node_modules/' | xargs -r npx mlc --config .github/markdown-link-check.json || exit 1
+          MD_FILES="$(git ls-files '*.md' | grep -v '^node_modules/' || true)"
+          if [ -z "$MD_FILES" ]; then
+            echo "ℹ️ No markdown files found."
+            exit 0
+          fi
+          echo "$MD_FILES" | xargs -r npx mlc --config .github/markdown-link-check.json
 
       # ---------- 2) Guard: obvious dead internal links ----------
       - name: Guard dead internal routes
@@ -74,18 +80,27 @@ jobs:
           # scan BOTH src/ and app/ (du hast Links in src/app/... gesehen)
           TARGETS=("src" "app")
 
-          # Match common JSX/TSX patterns:
+          # Match:
           #   href="/profile"
           #   href={'/profile'}
           #   href={"/profile"}
-          #   <Link ... href="/profile" ...>
-          if grep -RIn --include='*.{ts,tsx,js,jsx}' -E 'href=\s*["'"'\'\/]\/profile["'"'\'\}]|href=\s*{\s*["'"'\\/]\/profile["'"'\\/]\s*}' "${TARGETS[@]}" | head -n 1; then
-            echo "❌ Found /profile link. Use /account/profile instead."
+          if grep -RIn \
+            --include='*.ts' --include='*.tsx' --include='*.js' --include='*.jsx' \
+            -E 'href[[:space:]]*=[[:space:]]*(\{[[:space:]]*)?["'\'']/profile["'\'']([[:space:]]*\})?' \
+            "${TARGETS[@]}" | head -n 1; then
+            echo '❌ Found /profile link. Use /account/profile instead.'
             exit 1
           fi
 
-          if grep -RIn --include='*.{ts,tsx,js,jsx}' -E 'href=\s*["'"'\'\/]\/downloads["'"'\'\}]|href=\s*{\s*["'"'\\/]\/downloads["'"'\\/]\s*}' "${TARGETS[@]}" | head -n 1; then
-            echo "❌ Found /downloads link. Use /account/downloads instead."
+          # Match:
+          #   href="/downloads"
+          #   href={'/downloads'}
+          #   href={"/downloads"}
+          if grep -RIn \
+            --include='*.ts' --include='*.tsx' --include='*.js' --include='*.jsx' \
+            -E 'href[[:space:]]*=[[:space:]]*(\{[[:space:]]*)?["'\'']/downloads["'\'']([[:space:]]*\})?' \
+            "${TARGETS[@]}" | head -n 1; then
+            echo '❌ Found /downloads link. Use /account/downloads instead.'
             exit 1
           fi
 
