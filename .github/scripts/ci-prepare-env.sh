@@ -1,6 +1,21 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# --- CI Prisma env fallback (required because postinstall runs prisma generate) ---
+if [ -z "${DATABASE_URL:-}" ]; then
+  export DATABASE_URL="postgresql://ci:ci@127.0.0.1:5432/ci?schema=public"
+  echo "DATABASE_URL=postgresql://ci:ci@127.0.0.1:5432/ci?schema=public" >> "$GITHUB_ENV"
+fi
+
+if [ -z "${DIRECT_URL:-}" ]; then
+  export DIRECT_URL="postgresql://ci:ci@127.0.0.1:5432/ci?schema=public"
+  echo "DIRECT_URL=postgresql://ci:ci@127.0.0.1:5432/ci?schema=public" >> "$GITHUB_ENV"
+fi
+
+exit 0
+#!/usr/bin/env bash
+set -euo pipefail
+
 echo "Setting CI environment fallbacks..."
 
 # DB fallback (CI-safe)

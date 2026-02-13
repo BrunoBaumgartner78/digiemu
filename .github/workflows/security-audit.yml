@@ -18,10 +18,13 @@ jobs:
           node-version: 20
           cache: npm
 
-        - run: |
-          echo "DATABASE_URL=${DATABASE_URL:-postgresql://ci:ci@127.0.0.1:5432/ci?schema=public}" >> "$GITHUB_ENV"
-          echo "DIRECT_URL=${DIRECT_URL:-postgresql://ci:ci@127.0.0.1:5432/ci?schema=public}" >> "$GITHUB_ENV"
-          npm ci --include=dev
+        - name: Prepare CI env (DATABASE_URL fallback)
+          shell: bash
+          run: |
+            chmod +x .github/scripts/ci-prepare-env.sh
+            ./.github/scripts/ci-prepare-env.sh
+
+        - run: npm ci --include=dev
 
       - name: npm audit (non-blocking)
         run: npm audit --audit-level=high || true

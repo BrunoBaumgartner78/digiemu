@@ -34,11 +34,14 @@ jobs:
           node-version: 20
           cache: npm
 
-      - name: Install
+      - name: Prepare CI env (DATABASE_URL fallback)
+        shell: bash
         run: |
-          echo "DATABASE_URL=${DATABASE_URL:-postgresql://ci:ci@127.0.0.1:5432/ci?schema=public}" >> "$GITHUB_ENV"
-          echo "DIRECT_URL=${DIRECT_URL:-postgresql://ci:ci@127.0.0.1:5432/ci?schema=public}" >> "$GITHUB_ENV"
-          npm ci --include=dev
+          chmod +x .github/scripts/ci-prepare-env.sh
+          ./.github/scripts/ci-prepare-env.sh
+
+      - name: Install
+        run: npm ci --include=dev
 
       # ---------- GUARDS: params must not be Promise ----------
       - name: Guard - forbid Promise params typing in App Router pages

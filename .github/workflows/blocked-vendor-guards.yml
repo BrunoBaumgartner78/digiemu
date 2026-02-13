@@ -27,24 +27,14 @@ jobs:
           node-version: "20"
           cache: "npm"
 
-      - name: Install deps
-        run: |
-          echo "DATABASE_URL=${DATABASE_URL:-postgresql://ci:ci@127.0.0.1:5432/ci?schema=public}" >> "$GITHUB_ENV"
-          echo "DIRECT_URL=${DIRECT_URL:-postgresql://ci:ci@127.0.0.1:5432/ci?schema=public}" >> "$GITHUB_ENV"
-          npm ci --include=dev
-
-      - name: Prepare CI env (fallbacks + Prisma pre-steps)
+      - name: Prepare CI env (DATABASE_URL fallback)
         shell: bash
-        env:
-          # secrets override the defaults above (only if set)
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          DIRECT_URL: ${{ secrets.DIRECT_URL }}
-          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
-          NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
         run: |
-          set -euo pipefail
-          chmod +x ./ci-prepare-env.sh || true
-          ./ci-prepare-env.sh
+          chmod +x .github/scripts/ci-prepare-env.sh
+          ./.github/scripts/ci-prepare-env.sh
+
+      - name: Install deps
+        run: npm ci --include=dev
 
       - name: Guard: no blocked vendors/products are visible
         shell: bash
