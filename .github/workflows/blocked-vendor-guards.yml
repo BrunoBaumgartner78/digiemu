@@ -9,6 +9,9 @@ on:
 jobs:
   guards:
     runs-on: ubuntu-latest
+    
+    env:
+      DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/postgres?schema=public"
 
     env:
       DATABASE_URL: "postgresql://ci:ci@127.0.0.1:5432/ci?schema=public"
