@@ -4,33 +4,23 @@ import { prisma } from "@/lib/prisma";
 import { requireAdminOrRedirect } from "@/lib/guards/admin";
 import AdminActionButton from "@/components/admin/AdminActionButton";
 import { parseAdminListParams, formatDateTime } from "@/lib/admin/adminList";
+import type { Prisma } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
 
 type SearchParams = Record<string, string | string[] | undefined>;
-type PageProps = { searchParams?: SearchParams };
 
-export default async function AdminUsersPage({ searchParams }: PageProps) {
+export default async function AdminUsersPage({ searchParams }: { searchParams: SearchParams }) {
   await requireAdminOrRedirect();
 
-  const sp = searchParams ?? {};
-
-  const { q, status, page, pageSize, buildQueryString } = parseAdminListParams(sp, {
+  const { q, status, page, pageSize, buildQueryString } = parseAdminListParams(searchParams, {
     q: { key: "q", default: "" },
     status: { key: "status", default: "all" },
     page: { key: "page", default: 1 },
     pageSize: { key: "pageSize", default: 25, min: 5, max: 200 },
   });
 
-  const where: {
-    OR?: Array<
-      | { id: { contains: string; mode: "insensitive" } }
-      | { email: { contains: string; mode: "insensitive" } }
-      | { name: { contains: string; mode: "insensitive" } }
-    >;
-    isBlocked?: boolean;
-    role?: "ADMIN" | "VENDOR" | "BUYER";
-  } = {};
+  const where: Prisma.UserWhereInput = {};
 
   if (q) {
     where.OR = [
@@ -43,7 +33,7 @@ export default async function AdminUsersPage({ searchParams }: PageProps) {
   if (status !== "all") {
     if (status === "blocked") where.isBlocked = true;
     else if (status === "unblocked") where.isBlocked = false;
-    else if (status === "ADMIN" || status === "VENDOR" || status === "BUYER") where.role = status;
+    else where.role = status as any; // falls role Enum ist: "ADMIN" | "VENDOR" | "BUYER"
   }
 
   const skip = (page - 1) * pageSize;
@@ -77,10 +67,12 @@ export default async function AdminUsersPage({ searchParams }: PageProps) {
             Downloads
           </Link>
 
-          {/* Next.js rule: no raw <a> for internal navigation */}
-          <Link className={styles.pill} href="/api/admin/users/export">
-            Export CSV
-          </Link>
+          {/* Lint-sicher + Download-sicher (kein <a> internal) */}
+          <form action="/api/admin/users/export" method="GET">
+            <button type="submit" className={styles.pill}>
+              Export CSV
+            </button>
+          </form>
         </div>
 
         <form className={styles.filtersCard} method="GET">
@@ -179,7 +171,6 @@ export default async function AdminUsersPage({ searchParams }: PageProps) {
               ) : (
                 <span className={styles.pillSmallDisabled}>← Prev</span>
               )}
-
               {nextHref ? (
                 <Link className={styles.pillSmall} href={nextHref}>
                   Next →
