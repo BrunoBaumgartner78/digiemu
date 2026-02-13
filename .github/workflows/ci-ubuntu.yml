@@ -24,6 +24,16 @@ jobs:
       - name: Install
         run: npm ci --include=dev
 
+      - name: CI env fallback (Stripe)
+        shell: bash
+        run: |
+          if [ -z "${STRIPE_SECRET_KEY:-}" ]; then
+            echo "STRIPE_SECRET_KEY=sk_test_dummy" >> $GITHUB_ENV
+          fi
+          if [ -z "${STRIPE_WEBHOOK_SECRET:-}" ]; then
+            echo "STRIPE_WEBHOOK_SECRET=whsec_dummy" >> $GITHUB_ENV
+          fi
+
       - name: Prisma Generate
         run: npm run prisma:generate
 
