@@ -35,7 +35,7 @@ jobs:
           cache: npm
 
       - name: Install
-        run: npm ci
+        run: npm ci --include=dev
 
       # ---------- GUARDS: params must not be Promise ----------
       - name: Guard - forbid Promise params typing in App Router pages
@@ -67,8 +67,9 @@ jobs:
       - name: Prisma generate
         run: npm run prisma:generate
 
-      - name: Prisma migrate deploy
-        run: npx --no-install prisma migrate deploy
+      # Optional: only sensible when a real DB is available in CI. Disabled by default.
+      # - name: Prisma migrate deploy
+      #   run: npx --no-install prisma migrate deploy
 
       - name: Next build
         run: npm run build

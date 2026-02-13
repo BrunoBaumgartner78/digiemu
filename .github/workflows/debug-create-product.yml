@@ -41,13 +41,13 @@ jobs:
           cache: npm
 
       - name: Install deps
-        run: npm ci
+        run: npm ci --include=dev
 
       - name: Prisma validate
         run: npx prisma validate
 
       - name: Prisma generate
-        run: npx prisma generate
+        run: npm run prisma:generate
 
       - name: Build
         run: npm run build

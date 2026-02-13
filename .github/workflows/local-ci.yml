@@ -41,7 +41,7 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci
+          run: npm ci --include=dev
 
       # ✅ Optional: harte URLs im Repo temporär umstellen (nur im CI workspace)
       - name: Replace digiemu.vercel.app -> http://localhost:3000
@@ -54,7 +54,7 @@ jobs:
         run: npx prisma validate
 
       - name: Prisma generate
-        run: npx prisma generate
+        run: npm run prisma:generate
 
       # Wenn du Migrations im Job willst: nutze UNPOOLED (direct) für migrate
       # - name: Prisma migrate deploy (direct/unpooled)
