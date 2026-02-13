@@ -4,7 +4,7 @@ import { requireAdminApi } from "@/lib/guards/authz";
 export async function requireAdminContext() {
   // Expectation: requireAdminApi() ensures access and returns something with userId,
   // but if it returns void in your project, we fall back to reading from session in there.
-  const session: any = await requireAdminApi();
+  const session: unknown = await requireAdminApi();
 
   const h = await headers();
   const ip =
@@ -13,7 +13,7 @@ export async function requireAdminContext() {
     null;
   const ua = h.get("user-agent") ?? null;
 
-  const actorId = session?.user?.id ?? session?.userId ?? session?.id;
+  const actorId = (session as any)?.user?.id ?? (session as any)?.userId ?? (session as any)?.id;
   if (!actorId) {
     // keep strict: no actor id means something is wrong with guard/session
     throw new Error("Admin session missing actor id");

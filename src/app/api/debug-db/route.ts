@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { toErrorMessage } from "@/lib/errors";
 
 function maskUrl(url?: string) {
   if (!url) return "";
@@ -53,7 +54,8 @@ export async function GET(request: Request) {
       directUrlMasked: maskUrl(directUrl),
       query: result,
     });
-  } catch (e: any) {
+  } catch (e: unknown) {
+    const code = (e as any)?.code ?? null
     return NextResponse.json(
       {
         ok: false,
@@ -62,8 +64,8 @@ export async function GET(request: Request) {
         directUrlSet: !!directUrl,
         databaseUrlMasked: maskUrl(dbUrl),
         directUrlMasked: maskUrl(directUrl),
-        error: e?.message ?? String(e),
-        code: e?.code ?? null,
+        error: toErrorMessage(e),
+        code,
       },
       { status: 500 }
     );

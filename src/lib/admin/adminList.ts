@@ -2,7 +2,7 @@ export type SearchParams = Record<string, string | string[] | undefined>;
 
 type FieldSpec = {
   key: string;
-  default?: any;
+  default?: unknown;
   min?: number;
   max?: number;
 };
@@ -21,8 +21,8 @@ import { buildQueryString as _buildQueryString } from "@/lib/buildQueryString";
 export function parseAdminListParams(
   sp: SearchParams,
   spec: SpecMap
-): { [key: string]: any; buildQueryString: (overrides: Record<string, string | undefined>) => string } {
-  const out: Record<string, any> = {};
+): Record<string, unknown> & { buildQueryString: (overrides: Record<string, string | undefined>) => string } {
+  const out: Record<string, unknown> = {};
   for (const [name, f] of Object.entries(spec)) {
     const raw = spGet(sp, f.key);
     if (f.default !== undefined && typeof f.default === "number") {
@@ -33,7 +33,7 @@ export function parseAdminListParams(
       if (typeof f.max === "number") n = Math.min(f.max, n);
       out[name] = n;
     } else {
-      out[name] = raw ?? f.default ?? "";
+      out[name] = raw ?? (f.default as any) ?? "";
     }
   }
 

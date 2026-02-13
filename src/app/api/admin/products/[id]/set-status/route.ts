@@ -11,10 +11,14 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
   const { actorId, ipAddress, userAgent } = await requireAdminContext();
   const { id } = await ctx.params;
 
-  let body: any = null;
-  try { body = await req.json(); } catch { body = null; }
+  let body: unknown = null;
+  try {
+    body = await req.json();
+  } catch {
+    body = null;
+  }
 
-  const status = normalizeEnum(String(body?.status ?? ""), PRODUCT_STATUSES);
+  const status = normalizeEnum(String((body as Record<string, unknown>)?.status ?? ""), PRODUCT_STATUSES);
   if (!status) return NextResponse.json({ ok: false, error: "Invalid status" }, { status: 400 });
 
   const updated = await prisma.product.update({

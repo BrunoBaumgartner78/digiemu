@@ -28,10 +28,10 @@ jobs:
           cache: npm
 
       - name: Install deps
-        run: npm ci
+        run: npm ci --include=dev
 
       - name: Prisma generate
-        run: npx prisma generate
+        run: npm run prisma:generate
 
       # Optional (nur wenn du willst):
       # - name: Prisma validate

@@ -2,22 +2,43 @@ import Link from "next/link";
 import styles from "../downloads/page.module.css";
 import { prisma } from "@/lib/prisma";
 import { requireAdminOrRedirect } from "@/lib/guards/admin";
-import AdminActionButton from "@/components/admin/AdminActionButton";
 import {
   parseAdminListParams,
   formatDateTime,
-  formatMoney,
   formatMoneyFromCents,
 } from "@/lib/admin/adminList";
+import { Prisma } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
-export default async function AdminOrdersPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
+type AdminListParsed = {
+  q: string;
+  status: string;
+  page: number;
+  pageSize: number;
+  from: string;
+  to: string;
+  buildQueryString: (patch?: Record<string, string | undefined>) => string;
+};
+
+type OrderRow = Prisma.OrderGetPayload<{
+  include: {
+    buyer: { select: { id: true; email: true; name: true } };
+    product: { select: { id: true; title: true; priceCents: true } };
+    downloadLink: { select: { id: true; expiresAt: true; createdAt: true } };
+  };
+}>;
+
+export default async function AdminOrdersPage({
+  searchParams,
+}: {
+  searchParams?: SearchParams;
+}) {
   await requireAdminOrRedirect();
 
-  const sp = await searchParams;
+  const sp = searchParams ?? {};
 
   const { q, status, page, pageSize, from, to, buildQueryString } =
     parseAdminListParams(sp, {
@@ -27,9 +48,9 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
       pageSize: { key: "pageSize", default: 25, min: 5, max: 200 },
       from: { key: "from", default: "" },
       to: { key: "to", default: "" },
-    });
+    }) as AdminListParsed;
 
-  const where: any = {};
+  const where: Prisma.OrderWhereInput = {};
 
   if (q) {
     where.OR = [
@@ -42,13 +63,15 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
   }
 
   if (status !== "all") {
-    where.status = status;
+    // If your enum differs, keep it as string cast to satisfy TS without `any`
+    where.status = status as unknown as Prisma.OrderWhereInput["status"];
   }
 
   if (from || to) {
-    where.createdAt = {};
-    if (from) where.createdAt.gte = new Date(from);
-    if (to) where.createdAt.lte = new Date(to);
+    where.createdAt = {
+      ...(from ? { gte: new Date(from) } : {}),
+      ...(to ? { lte: new Date(to) } : {}),
+    };
   }
 
   const skip = (page - 1) * pageSize;
@@ -62,14 +85,10 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
       take: pageSize,
       include: {
         buyer: { select: { id: true, email: true, name: true } },
-
-        // ✅ Product hat priceCents (nicht price)
         product: { select: { id: true, title: true, priceCents: true } },
-
-        // ✅ DownloadLink existiert laut Prisma
         downloadLink: { select: { id: true, expiresAt: true, createdAt: true } },
       },
-    }),
+    }) as Promise<OrderRow[]>,
   ]);
 
   const pageCount = Math.max(1, Math.ceil(total / pageSize));
@@ -158,35 +177,30 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
           {rows.length === 0 ? (
             <div className={styles.emptyState}>Keine Orders gefunden.</div>
           ) : (
-            rows.map((o: any) => {
-              const orderCents = Number(o.amountCents ?? 0);
-              const productCents = Number(o.product?.priceCents ?? 0);
-
-              // Wenn Order-Betrag verdächtig klein ist (z.B. 1 Cent bei einem 1.00 CHF Produkt),
-              // fallback auf Produktpreis.
+            rows.map((ord) => {
+              const orderCents = Number((ord.amountCents ?? 0) as unknown);
+              const productCents = Number(ord.product?.priceCents ?? 0);
               const amountCents = orderCents >= 50 ? orderCents : productCents;
 
               return (
-                <div key={o.id} className={styles.tableRow}>
-                  <div className={styles.monoSmall}>
-                    {formatDateTime(o.createdAt)}
-                  </div>
+                <div key={ord.id} className={styles.tableRow}>
+                  <div className={styles.monoSmall}>{formatDateTime(ord.createdAt)}</div>
 
                   <div>
                     <div className={styles.bold}>
-                      {o.buyer?.name || o.buyer?.email || "—"}
+                      {ord.buyer?.name || ord.buyer?.email || "—"}
                     </div>
                     <div className={styles.mutedSmall}>
-                      {o.buyer?.email || "—"} •{" "}
-                      <span className={styles.monoSmall}>{o.id}</span>
+                      {ord.buyer?.email || "—"} • {" "}
+                      <span className={styles.monoSmall}>{ord.id}</span>
                     </div>
                   </div>
 
                   <div>
-                    <div className={styles.bold}>{o.product?.title || "—"}</div>
+                    <div className={styles.bold}>{ord.product?.title || "—"}</div>
                     <div className={styles.mutedSmall}>
-                      {o.product?.id ? (
-                        <span className={styles.monoSmall}>{o.product.id}</span>
+                      {ord.product?.id ? (
+                        <span className={styles.monoSmall}>{ord.product.id}</span>
                       ) : (
                         "—"
                       )}
@@ -194,12 +208,10 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
                   </div>
 
                   <div>
-                    <span className={styles.badge}>{o.status}</span>
-                    {o.stripeSessionId ? (
+                    <span className={styles.badge}>{String(ord.status ?? "")}</span>
+                    {ord.stripeSessionId ? (
                       <div className={styles.mutedSmall}>
-                        <span className={styles.monoSmall}>
-                          {o.stripeSessionId}
-                        </span>
+                        <span className={styles.monoSmall}>{ord.stripeSessionId}</span>
                       </div>
                     ) : null}
                   </div>
@@ -209,13 +221,13 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
                   </div>
 
                   <div className={styles.actionsCell}>
-                    <a className={styles.pillSmall} href={`/download/${o.id}`}>
+                    <a className={styles.pillSmall} href={`/download/${ord.id}`}>
                       View
                     </a>
 
                     <a
                       className={styles.pillSmall}
-                      href={`/api/admin/orders/export?orderId=${encodeURIComponent(o.id)}`}
+                      href={`/api/admin/orders/export?orderId=${encodeURIComponent(ord.id)}`}
                     >
                       CSV
                     </a>

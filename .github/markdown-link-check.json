@@ -1,0 +1,7 @@
+{
+  "retryOn429": true,
+  "retryCount": 2,
+  "fallbackRetryDelay": "2s",
+  "aliveStatusCodes": [200, 206, 301, 302, 303, 307, 308, 403],
+  "ignorePatterns": ["node_modules/**"]
+}

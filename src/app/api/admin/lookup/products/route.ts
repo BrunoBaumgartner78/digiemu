@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth/requireAdmin";
 import { prisma } from "@/lib/prisma";
+import { toErrorMessage } from "@/lib/errors";
 
 export const runtime = "nodejs";
 
@@ -27,10 +28,10 @@ export async function GET(req: Request) {
         label: p.title,
       })),
     });
-  } catch (e: any) {
-    console.error("[api/admin/lookup/products] ERROR", e);
+  } catch (e: unknown) {
+    console.error("[api/admin/lookup/products] ERROR", toErrorMessage(e));
     return NextResponse.json(
-      { error: e?.message ?? "Internal error" },
+      { error: toErrorMessage(e) },
       { status: 500 }
     );
   }

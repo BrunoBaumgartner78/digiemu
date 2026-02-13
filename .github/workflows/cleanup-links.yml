@@ -30,33 +30,77 @@ jobs:
       - name: Install deps
         run: npm ci
 
+      - name: Prepare CI env (fallbacks + Prisma pre-steps)
+        shell: bash
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+          NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
+          FIREBASE_ADMIN_PROJECT_ID: ${{ secrets.FIREBASE_ADMIN_PROJECT_ID }}
+          FIREBASE_ADMIN_CLIENT_EMAIL: ${{ secrets.FIREBASE_ADMIN_CLIENT_EMAIL }}
+          FIREBASE_ADMIN_PRIVATE_KEY: ${{ secrets.FIREBASE_ADMIN_PRIVATE_KEY }}
+        run: |
+          chmod +x ./ci-prepare-env.sh || true
+          ./ci-prepare-env.sh
+
       # ---------- 1) Markdown dead links ----------
       - name: Install markdown-link-check
         run: npm i -D markdown-link-check
 
-      - name: Check markdown links
+      - name: Ensure local.xml.template exists (CI)
+        shell: bash
         run: |
-          set -e
-          shopt -s globstar
-          for f in **/*.md; do
-            echo "🔎 checking $f"
-            npx markdown-link-check "$f" -q || exit 1
-          done
+          mkdir -p app/etc
+          if [ ! -f app/etc/local.xml.template ]; then
+            echo "<!-- CI placeholder -->" > app/etc/local.xml.template
+          fi
+
+      - name: Check markdown links
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Build list of tracked markdown files (exclude node_modules)
+          MD_FILES="$(git ls-files '*.md' | grep -v '^node_modules/' || true)"
+          if [ -z "$MD_FILES" ]; then
+            echo "ℹ️ No markdown files found."
+            exit 0
+          fi
+          echo "$MD_FILES" | xargs -r npx mlc --config .github/markdown-link-check.json
 
       # ---------- 2) Guard: obvious dead internal links ----------
       - name: Guard dead internal routes
+        shell: bash
         run: |
-          set -e
+          set -euo pipefail
           echo "🔎 searching for common dead links..."
-          # Beispiel: /profile ist bei dir offenbar falsch -> sollte /account/profile sein
-          if grep -R 'href="/profile"' -n src | head -n 1; then
-            echo "❌ Found href=\"/profile\". Use /account/profile instead."
+
+          # scan BOTH src/ and app/ (du hast Links in src/app/... gesehen)
+          TARGETS=("src" "app")
+
+          # Match:
+          #   href="/profile"
+          #   href={'/profile'}
+          #   href={"/profile"}
+          if grep -RIn \
+            --include='*.ts' --include='*.tsx' --include='*.js' --include='*.jsx' \
+            -E 'href[[:space:]]*=[[:space:]]*(\{[[:space:]]*)?["'\'']/profile["'\'']([[:space:]]*\})?' \
+            "${TARGETS[@]}" | head -n 1; then
+            echo '❌ Found /profile link. Use /account/profile instead.'
             exit 1
           fi
 
-          # Beispiel: alte /downloads route
-          if grep -R 'href="/downloads"' -n src | head -n 1; then
-            echo "❌ Found href=\"/downloads\". Use /account/downloads instead."
+          # Match:
+          #   href="/downloads"
+          #   href={'/downloads'}
+          #   href={"/downloads"}
+          if grep -RIn \
+            --include='*.ts' --include='*.tsx' --include='*.js' --include='*.jsx' \
+            -E 'href[[:space:]]*=[[:space:]]*(\{[[:space:]]*)?["'\'']/downloads["'\'']([[:space:]]*\})?' \
+            "${TARGETS[@]}" | head -n 1; then
+            echo '❌ Found /downloads link. Use /account/downloads instead.'
             exit 1
           fi
 

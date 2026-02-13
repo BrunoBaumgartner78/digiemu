@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { toErrorMessage } from "@/lib/errors";
 import styles from "./comments.module.css";
 import { badgeLabel } from "@/lib/comments/badges";
 
@@ -14,29 +15,33 @@ type CommentItem = {
   viewerHasLiked?: boolean;
 };
 
-function normalize(raw: any): CommentItem | null {
+function normalize(raw: unknown): CommentItem | null {
   if (!raw || typeof raw !== "object") return null;
-  const id = String(raw.id ?? "").trim();
-  const text = String(raw.text ?? raw.content ?? raw.message ?? "").trim();
+  const r = raw as Record<string, unknown>;
+  const id = String(r.id ?? "").trim();
+  const text = String(r.text ?? r.content ?? r.message ?? "").trim();
   if (!id || !text) return null;
 
   const createdAt =
-    typeof raw.createdAt === "string"
-      ? raw.createdAt
-      : raw.createdAt instanceof Date
-        ? raw.createdAt.toISOString()
+    typeof (r.createdAt) === "string"
+      ? (r.createdAt as string)
+      : r.createdAt instanceof Date
+        ? (r.createdAt as Date).toISOString()
         : undefined;
 
+  const userValue = r.user;
+  const user = userValue && typeof userValue === "object" ? (userValue as Record<string, unknown>) : null;
   const authorName =
-    typeof raw.authorName === "string"
-      ? raw.authorName
-      : typeof raw.user?.name === "string"
-        ? raw.user.name
+    typeof r.authorName === "string"
+      ? r.authorName
+      : typeof user?.name === "string"
+        ? String(user.name)
         : null;
 
-  const badges = Array.isArray(raw.badges) ? raw.badges.filter(Boolean).map(String) : [];
-  const likesCount = typeof raw.likesCount === "number" ? raw.likesCount : 0;
-  const viewerHasLiked = !!raw.viewerHasLiked;
+  const badgesValue = r.badges;
+  const badges = Array.isArray(badgesValue) ? badgesValue.filter(Boolean).map(String) : [];
+  const likesCount = typeof r.likesCount === "number" ? r.likesCount : 0;
+  const viewerHasLiked = typeof r.viewerHasLiked === "boolean" ? r.viewerHasLiked : !!r.viewerHasLiked;
 
   return { id, text, createdAt, authorName, badges, likesCount, viewerHasLiked };
 }
@@ -91,8 +96,8 @@ export default function CommentsClient({
         setItems(normalized);
         setTotalCount(typeof data?.count === "number" ? data.count : normalized.length);
         setNextCursor(typeof data?.nextCursor === "string" ? data.nextCursor : null);
-      } catch (e: any) {
-        setError(e?.message ?? "Fehler beim Laden der Kommentare.");
+      } catch (e: unknown) {
+        setError(toErrorMessage(e) || "Fehler beim Laden der Kommentare.");
       } finally {
         setLoading(false);
       }
@@ -124,8 +129,8 @@ export default function CommentsClient({
       // count from server stays the truth
       if (typeof data?.count === "number") setTotalCount(data.count);
       setNextCursor(typeof data?.nextCursor === "string" ? data.nextCursor : null);
-    } catch (e: any) {
-      setError(e?.message ?? "Fehler beim Laden weiterer Kommentare.");
+    } catch (e: unknown) {
+      setError(toErrorMessage(e) || "Fehler beim Laden weiterer Kommentare.");
     } finally {
       setLoadingMore(false);
     }
@@ -159,8 +164,8 @@ export default function CommentsClient({
       } else {
         await load({ reset: true });
       }
-    } catch (e: any) {
-      setError(e?.message ?? "Fehler beim Senden.");
+    } catch (e: unknown) {
+      setError(toErrorMessage(e) || "Fehler beim Senden.");
     } finally {
       setPosting(false);
     }
@@ -207,7 +212,7 @@ export default function CommentsClient({
           )
         );
       }
-    } catch (e) {
+    } catch (_e: unknown) {
       // revert on error
       setItems((prev) =>
         prev.map((c) => {
@@ -301,9 +306,9 @@ export default function CommentsClient({
                     {Array.isArray(c.badges) && c.badges.length > 0 ? (
                       <div className={styles.badgeRow}>
                         {c.badges.map((b) => (
-                          <div key={b} className={`${styles.badgePill} ${styles.badgeMuted}`}>
-                            <span className={styles.badgeIcon}>•</span>
-                            <span>{badgeLabel(b as any)}</span>
+                            <div key={b} className={`${styles.badgePill} ${styles.badgeMuted}`}>
+                              <span className={styles.badgeIcon}>•</span>
+                              <span>{badgeLabel(b)}</span>
                           </div>
                         ))}
                       </div>

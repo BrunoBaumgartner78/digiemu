@@ -1,27 +1,41 @@
+// src/app/(app)/admin/users/page.tsx
 import Link from "next/link";
 import styles from "../downloads/page.module.css";
 import { prisma } from "@/lib/prisma";
 import { requireAdminOrRedirect } from "@/lib/guards/admin";
 import AdminActionButton from "@/components/admin/AdminActionButton";
 import { parseAdminListParams, formatDateTime } from "@/lib/admin/adminList";
+import type { Prisma } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
-export default async function AdminUsersPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
+type AdminListParsed = {
+  q: string;
+  status: string;
+  page: number;
+  pageSize: number;
+  buildQueryString: (patch?: Record<string, string | undefined>) => string;
+};
+
+export default async function AdminUsersPage({
+  searchParams,
+}: {
+  searchParams?: SearchParams;
+}) {
   await requireAdminOrRedirect();
 
-  const sp = await searchParams;
+  const sp = searchParams ?? {};
 
   const { q, status, page, pageSize, buildQueryString } = parseAdminListParams(sp, {
     q: { key: "q", default: "" },
     status: { key: "status", default: "all" },
     page: { key: "page", default: 1 },
     pageSize: { key: "pageSize", default: 25, min: 5, max: 200 },
-  });
+  }) as AdminListParsed;
 
-  const where: any = {};
+  const where: Prisma.UserWhereInput = {};
 
   if (q) {
     where.OR = [
@@ -34,7 +48,7 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: P
   if (status !== "all") {
     if (status === "blocked") where.isBlocked = true;
     else if (status === "unblocked") where.isBlocked = false;
-    else where.role = status;
+    else where.role = status as any; // ADMIN | VENDOR | BUYER
   }
 
   const skip = (page - 1) * pageSize;
@@ -46,7 +60,14 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: P
       orderBy: { createdAt: "desc" },
       skip,
       take: pageSize,
-      select: { id: true, email: true, name: true, role: true, isBlocked: true, createdAt: true },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        isBlocked: true,
+        createdAt: true,
+      },
     }),
   ]);
 
@@ -60,12 +81,21 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: P
         <div className={styles.header}>
           <p className={styles.eyebrow}>ADMIN</p>
           <h1 className={styles.title}>User</h1>
-          <p className={styles.subtitle}>User-Liste, Rollen, Sperren/Entsperren. (AuditLog als nächster Schritt.)</p>
+          <p className={styles.subtitle}>
+            User-Liste, Rollen, Sperren/Entsperren. (AuditLog als nächster Schritt.)
+          </p>
         </div>
 
         <div className={styles.actionsRow}>
-          <Link className={styles.pill} href="/admin/downloads">Downloads</Link>
-          <a className={styles.pill} href="/api/admin/users/export">Export CSV</a>
+          <Link className={styles.pill} href="/admin/downloads">
+            Downloads
+          </Link>
+
+          <form action="/api/admin/users/export" method="GET">
+            <button type="submit" className={styles.pill}>
+              Export CSV
+            </button>
+          </form>
         </div>
 
         <form className={styles.filtersCard} method="GET">
@@ -96,13 +126,23 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: P
           </div>
 
           <div className={styles.filterButtons}>
-            <button className={styles.primaryBtn} type="submit">Filter</button>
-            <Link className={styles.secondaryBtn} href="/admin/users">Reset</Link>
+            <button className={styles.primaryBtn} type="submit">
+              Filter
+            </button>
+            <Link className={styles.secondaryBtn} href="/admin/users">
+              Reset
+            </Link>
           </div>
         </form>
 
         <div className={styles.tableCard}>
-          <div className={styles.tableHeader}><div>DATUM</div><div>USER</div><div>ROLE</div><div>STATUS</div><div>ACTIONS</div></div>
+          <div className={styles.tableHeader}>
+            <div>DATUM</div>
+            <div>USER</div>
+            <div>ROLE</div>
+            <div>STATUS</div>
+            <div>ACTIONS</div>
+          </div>
 
           {rows.length === 0 ? (
             <div className={styles.emptyState}>Keine User gefunden.</div>
@@ -113,25 +153,54 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: P
 
                 <div>
                   <div className={styles.bold}>{u.name || u.email}</div>
-                  <div className={styles.mutedSmall}>{u.email} • <span className={styles.monoSmall}>{u.id}</span></div>
+                  <div className={styles.mutedSmall}>
+                    {u.email} • <span className={styles.monoSmall}>{u.id}</span>
+                  </div>
                 </div>
 
-                <div><span className={styles.badge}>{u.role}</span></div>
+                <div>
+                  <span className={styles.badge}>{u.role}</span>
+                </div>
 
-                <div><span className={u.isBlocked ? styles.badgeDanger : styles.badgeOk}>{u.isBlocked ? "BLOCKED" : "ACTIVE"}</span></div>
+                <div>
+                  <span className={u.isBlocked ? styles.badgeDanger : styles.badgeOk}>
+                    {u.isBlocked ? "BLOCKED" : "ACTIVE"}
+                  </span>
+                </div>
 
                 <div className={styles.actionsCell}>
-                  <AdminActionButton href="/api/admin/users/toggle-block" method="POST" body={{ userId: u.id }} confirmText={u.isBlocked ? null : "User wirklich sperren?"}>{u.isBlocked ? "Unblock" : "Block"}</AdminActionButton>
+                  <AdminActionButton
+                    href="/api/admin/users/toggle-block"
+                    method="POST"
+                    body={{ userId: u.id }}
+                    confirmText={u.isBlocked ? null : "User wirklich sperren?"}
+                  >
+                    {u.isBlocked ? "Unblock" : "Block"}
+                  </AdminActionButton>
                 </div>
               </div>
             ))
           )}
 
           <div className={styles.pagination}>
-            <div className={styles.mutedSmall}>Total: {total} • Seite {page}/{pageCount}</div>
+            <div className={styles.mutedSmall}>
+              Total: {total} • Seite {page}/{pageCount}
+            </div>
             <div className={styles.paginationBtns}>
-              {prevHref ? <Link className={styles.pillSmall} href={prevHref}>← Prev</Link> : <span className={styles.pillSmallDisabled}>← Prev</span>}
-              {nextHref ? <Link className={styles.pillSmall} href={nextHref}>Next →</Link> : <span className={styles.pillSmallDisabled}>Next →</span>}
+              {prevHref ? (
+                <Link className={styles.pillSmall} href={prevHref}>
+                  ← Prev
+                </Link>
+              ) : (
+                <span className={styles.pillSmallDisabled}>← Prev</span>
+              )}
+              {nextHref ? (
+                <Link className={styles.pillSmall} href={nextHref}>
+                  Next →
+                </Link>
+              ) : (
+                <span className={styles.pillSmallDisabled}>Next →</span>
+              )}
             </div>
           </div>
         </div>

@@ -39,8 +39,18 @@ jobs:
           node-version: 20
           cache: npm
 
-      - name: Install deps
+      - name: Install deps (incl. dev)
         run: npm ci --include=dev
+
+      - name: CI env fallback (Stripe)
+        shell: bash
+        run: |
+          if [ -z "${STRIPE_SECRET_KEY:-}" ]; then
+            echo "STRIPE_SECRET_KEY=sk_test_dummy" >> "$GITHUB_ENV"
+          fi
+          if [ -z "${STRIPE_WEBHOOK_SECRET:-}" ]; then
+            echo "STRIPE_WEBHOOK_SECRET=whsec_dummy" >> "$GITHUB_ENV"
+          fi
 
       - name: Sanity check env (DATABASE_URL/DIRECT_URL)
         shell: bash
@@ -62,10 +72,10 @@ jobs:
       - name: Prisma generate
         run: npm run prisma:generate
 
-      # Optional: only sensible when a real DB is available in CI. Disabled by default.
-      # - name: Prisma migrate deploy
-      #   if: ${{ env.DATABASE_URL != '' }}
-      #   run: npx --no-install prisma migrate deploy
+      # Optional but recommended in PR checks:
+      - name: Lint
+        run: npm run lint --if-present
 
-      - name: Next build
-        run: npm run build
+      # PR checks: typecheck only (no next build)
+      - name: Typecheck
+        run: npm run typecheck

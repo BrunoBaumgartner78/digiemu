@@ -1,6 +1,9 @@
+// src/lib/admin/adminAudit.ts
 import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@prisma/client";
+import type { UnknownRecord } from "@/lib/types/json";
 
-type Meta = Record<string, any>;
+type Meta = UnknownRecord;
 
 export async function adminAudit(params: {
   actorId: string;
@@ -18,7 +21,7 @@ export async function adminAudit(params: {
         action: params.action,
         targetType: params.targetType,
         targetId: params.targetId ?? null,
-        meta: params.meta ?? undefined,
+        meta: (params.meta ?? undefined) as unknown as Prisma.InputJsonValue | undefined,
         ipAddress: params.ipAddress ?? null,
         userAgent: params.userAgent ?? null,
       },
