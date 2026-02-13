@@ -50,14 +50,7 @@ jobs:
       - name: Install markdown-link-check
         run: npm i -D markdown-link-check
 
-      - name: Ensure local.xml.template exists (CI)
-        shell: bash
-        run: |
-          mkdir -p app/etc
-          if [ ! -f app/etc/local.xml.template ]; then
-            echo "<!-- CI placeholder -->" > app/etc/local.xml.template
-          fi
-
+      
       - name: Check markdown links
         shell: bash
         run: |
