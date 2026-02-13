@@ -8,37 +8,27 @@ import { getErrorMessage } from "@/lib/guards";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// IMPORTANT:
-// Do not instantiate Stripe at module scope.
-// Next.js evaluates route modules during build ("Collecting page data..."),
-// and CI may not have secrets => build crash.
-const getStripe = () => {
+const isCi = () => process.env.CI === "true" || process.env.GITHUB_ACTIONS === "true";
+
+function getStripe(): Stripe | null {
   const key = (process.env.STRIPE_SECRET_KEY ?? "").trim();
   if (!key) return null;
   return new Stripe(key);
-};
+}
 
 export async function POST(req: NextRequest) {
-  // CI safety: during GitHub Actions build, secrets are often not present.
-  // Avoid crashing build by short-circuiting.
-  const isCi = process.env.CI === "true" || process.env.GITHUB_ACTIONS === "true";
-  const stripe = getStripe();
-
-  if (isCi && !stripe) {
-    // We skip webhook processing in CI build context.
-    return NextResponse.json({ received: true, ci: true, skipped: true }, { status: 200 });
-  }
-
-  if (!stripe) {
-    console.error("❌ STRIPE_SECRET_KEY missing or empty - failing closed");
-    return NextResponse.json({ message: "Server misconfiguration" }, { status: 500 });
-  }
   const sig = req.headers.get("stripe-signature");
   const webhookSecret = (process.env.STRIPE_WEBHOOK_SECRET ?? "").trim();
 
-  // Fail-closed: missing secret is a server misconfiguration
-  if (!webhookSecret) {
-    console.error("❌ STRIPE_WEBHOOK_SECRET missing or empty - failing closed");
+  // In CI/build: do not crash build on import / route evaluation
+  const stripe = getStripe();
+  if (!stripe || !webhookSecret) {
+    if (isCi()) {
+      return NextResponse.json({ received: true, ciSkipped: true }, { status: 200 });
+    }
+    console.error(
+      "❌ Stripe webhook misconfigured (missing STRIPE_SECRET_KEY or STRIPE_WEBHOOK_SECRET)"
+    );
     return NextResponse.json({ message: "Server misconfiguration" }, { status: 500 });
   }
 
