@@ -53,16 +53,21 @@ jobs:
 
       - name: Check markdown links
         shell: bash
-        working-directory: ${{ github.workspace }}
         run: |
           set -euo pipefail
 
-          # ✅ IMPORTANT: avoid creating repo-root "app/" (can confuse Next / Vercel)
-          # We ONLY ensure src/app/etc/local.xml.template exists.
-          mkdir -p "src/app/etc"
-          if [ ! -f "src/app/etc/local.xml.template" ]; then
-            echo "<!-- CI placeholder -->" > "src/app/etc/local.xml.template"
-          fi
+          # ALWAYS run from repo root
+          cd "$GITHUB_WORKSPACE"
+          echo "📍 workspace: $PWD"
+          ls -la
+
+          # ✅ Fix ENOENT: create placeholders RIGHT HERE before mlc runs
+          mkdir -p app/etc src/app/etc
+          : > app/etc/local.xml.template
+          : > src/app/etc/local.xml.template
+          echo "✅ placeholders present:"
+          ls -la app/etc || true
+          ls -la src/app/etc || true
 
           # Build list of tracked markdown files (exclude node_modules)
           MD_FILES="$(git ls-files '*.md' | grep -v '^node_modules/' || true)"
@@ -74,15 +79,19 @@ jobs:
           echo "🔎 Running markdown-link-check on:"
           echo "$MD_FILES"
 
-          # Run markdown-link-check (fail job on link errors)
-          echo "$MD_FILES" | xargs -r npx mlc --config .github/markdown-link-check.json
+          # Run mlc file-by-file (more stable than xargs in some repos)
+          # If a single file fails -> job fails (as intended)
+          while IFS= read -r f; do
+            [ -n "$f" ] || continue
+            npx mlc --config .github/markdown-link-check.json "$f"
+          done <<< "$MD_FILES"
 
       # ---------- 2) Guard: obvious dead internal links ----------
       - name: Guard dead internal routes
         shell: bash
-        working-directory: ${{ github.workspace }}
         run: |
           set -euo pipefail
+          cd "$GITHUB_WORKSPACE"
           echo "🔎 searching for common dead links..."
 
           TARGETS=("src")
