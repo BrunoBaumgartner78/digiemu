@@ -15,7 +15,7 @@ type ProfileImageUploaderProps = {
 };
 
 export default function ProfileImageUploader({
-  userId,
+  userId: _userId,
   avatarUrl,
   bannerUrl,
   onAvatarChange,
@@ -36,22 +36,22 @@ export default function ProfileImageUploader({
     const res = await fetch("/api/upload/image", { method: "POST", body: fd });
     const text = await res.text().catch(() => "");
 
-    let json : unknown = null;
+    let json: unknown = null;
     try {
       json = text ? JSON.parse(text) : null;
     } catch {}
 
+    const j = (json as unknown) as { message?: string; ok?: boolean; url?: unknown } | null;
+
     if (!res.ok) {
-      const msg =
-        (json && (json as any).message) || `Upload failed (${res.status}): ${text.slice(0, 200)}`;
+      const msg = (j && j.message) || `Upload failed (${res.status}): ${text.slice(0, 200)}`;
       throw new Error(msg);
     }
-    if (!json || !(json as any).ok) {
-      const msg =
-        (json && (json as any).message) || `Upload failed (invalid response): ${text.slice(0, 200)}`;
+    if (!j || !j.ok) {
+      const msg = (j && j.message) || `Upload failed (invalid response): ${text.slice(0, 200)}`;
       throw new Error(msg);
     }
-    return String((json as any).url);
+    return String(j.url);
   }
 
   const handleBannerSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {

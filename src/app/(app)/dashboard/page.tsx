@@ -143,11 +143,11 @@ export default async function DashboardPage() {
 
   /* ===================== KPIs (20/80 Split) ===================== */
   // Brutto (100%)
-  const grossAllCents = ordersAll.reduce((s: number, o: any) => s + (o.amountCents ?? 0), 0);
-  const grossRangeCents = ordersRange.reduce((s: number, o: any) => s + (o.amountCents ?? 0), 0);
+  const grossAllCents = ordersAll.reduce((s: number, o: unknown) => s + ((o as { amountCents?: number }).amountCents ?? 0), 0);
+  const grossRangeCents = ordersRange.reduce((s: number, o: unknown) => s + ((o as { amountCents?: number }).amountCents ?? 0), 0);
 
   // Vendor (80%) – prefer gespeichertes vendorEarningsCents, fallback 80% von gross
-  let vendorAllCents = ordersAll.reduce((s: number, o: any) => s + (o.vendorEarningsCents ?? 0), 0);
+  let vendorAllCents = ordersAll.reduce((s: number, o: unknown) => s + ((o as { vendorEarningsCents?: number }).vendorEarningsCents ?? 0), 0);
   if (vendorAllCents === 0 && grossAllCents > 0) {
     vendorAllCents = Math.round(grossAllCents * 0.8);
   }
@@ -183,7 +183,7 @@ export default async function DashboardPage() {
   /* ===================== TOP PRODUCTS (ALL TIME) ===================== */
   const productMap: Record<string, number> = {};
   for (const o of ordersAll) {
-    const pid = o.productId;
+    const pid = (o as { productId?: string }).productId;
     if (!pid) continue;
     productMap[pid] = (productMap[pid] ?? 0) + (o.amountCents ?? 0);
   }
@@ -192,7 +192,7 @@ export default async function DashboardPage() {
     .map(([id, sum]) => ({
       id,
       sum,
-      title: products.find((p: any) => p.id === id)?.title ?? "Produkt",
+      title: products.find((p) => p.id === id)?.title ?? "Produkt",
     }))
     .sort((a, b) => b.sum - a.sum)
     .slice(0, 5);
@@ -345,14 +345,18 @@ export default async function DashboardPage() {
             <p className="text-xs text-white/70">Noch keine Downloads</p>
           ) : (
             <ul className={styles.recentList ?? "space-y-2"}>
-              {recentDownloads.map((d: any) => (
-                <li key={d.id} className={styles.recentItem ?? ""}>
-                  <span className={styles.recentBullet ?? ""}>⬇</span>
-                  <span className={styles.recentTitle ?? ""}>
-                    {d.order?.product?.title ?? "Unbekannt"}
-                  </span>
-                </li>
-              ))}
+              {recentDownloads.map((d: unknown) => {
+                const dd = d as any;
+                return (
+                  <li key={dd.id} className={styles.recentItem ?? ""}>
+                    <span className={styles.recentBullet ?? ""}>⬇</span>
+                    <span className={styles.recentTitle ?? ""}>
+                      {dd.order?.product?.title ?? "Unbekannt"}
+                    </span>
+                    <span className={styles.monoSmall}>{new Date(dd.createdAt).toLocaleString()}</span>
+                  </li>
+                );
+              })}
             </ul>
           )}
         </section>

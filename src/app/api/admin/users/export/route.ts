@@ -1,17 +1,20 @@
+// src/app/api/admin/users/export/route.ts
 import { prisma } from "@/lib/prisma";
 import { requireAdminApi } from "@/lib/auth/requireAdminApi";
+import { NextResponse, type NextRequest } from "next/server";
 
-export const runtime = "nodejs"; // sicher für CSV / Buffer / etc.
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 function csvEscape(v: unknown) {
   const s = String(v ?? "");
-  // RFC4180-ish
   if (/[",\n\r;]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
   return s;
 }
 
-export async function GET() {
-  await requireAdminApi();
+export async function GET(req: NextRequest) {
+  const maybe = await requireAdminApi(req);
+  if (maybe instanceof NextResponse) return maybe;
 
   const users = await prisma.user.findMany({
     orderBy: { createdAt: "desc" },

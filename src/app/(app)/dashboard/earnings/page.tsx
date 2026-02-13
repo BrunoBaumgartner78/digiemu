@@ -1,8 +1,9 @@
-// src/app/dashboard/earnings/page.tsx
+// src/app/(app)/dashboard/earnings/page.tsx
 import Link from "next/link";
 import { requireVendorPage } from "@/lib/guards/authz";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@prisma/client";
 
 export const metadata = {
   title: "Einnahmen – Vendor Dashboard",
@@ -19,6 +20,14 @@ function clamp(n: number, min: number, max: number) {
 }
 
 type PageProps = { searchParams?: Promise<{ page?: string }> };
+
+// ✅ Typed Order row for this page
+type OrderRow = Prisma.OrderGetPayload<{
+  include: {
+    product: { select: { id: true; title: true } };
+    buyer: { select: { email: true; name: true } };
+  };
+}>;
 
 export default async function VendorEarningsPage({ searchParams }: PageProps) {
   const session = await requireVendorPage();
@@ -57,17 +66,19 @@ export default async function VendorEarningsPage({ searchParams }: PageProps) {
 
   // ======================================================================
   // ✅ Vendor-Earnings (robust)
-  // 1) Prefer: OrderItem.vendorEarningsCents (über product.vendorId)
-  // 2) Fallback: Order.vendorEarningsCents
-  // 3) Final fallback: 80% von gross
   // ======================================================================
   let vendorEarningsCents = 0;
 
-  // 1) Try OrderItem aggregate (Prisma may or may not expose orderItem in this client)
+  // 1) Try OrderItem aggregate (optional)
   try {
     const maybeOrderItem = (prisma as unknown as Record<string, unknown>)["orderItem"];
-    if (maybeOrderItem && typeof (maybeOrderItem as Record<string, unknown>)["aggregate"] === "function") {
-      const oi = maybeOrderItem as unknown as { aggregate: (opts: unknown) => Promise<unknown> };
+    if (
+      maybeOrderItem &&
+      typeof (maybeOrderItem as Record<string, unknown>)["aggregate"] === "function"
+    ) {
+      const oi = maybeOrderItem as unknown as {
+        aggregate: (opts: unknown) => Promise<unknown>;
+      };
       const vendorAggRaw = await oi.aggregate({
         _sum: { vendorEarningsCents: true },
         where: {
@@ -78,10 +89,13 @@ export default async function VendorEarningsPage({ searchParams }: PageProps) {
 
       const vendorAgg = vendorAggRaw as Record<string, unknown> | null;
       const _sum = vendorAgg?._sum as Record<string, unknown> | undefined;
-      vendorEarningsCents = typeof _sum?.vendorEarningsCents === "number" ? (_sum!.vendorEarningsCents as number) : 0;
+      vendorEarningsCents =
+        typeof _sum?.vendorEarningsCents === "number"
+          ? (_sum!.vendorEarningsCents as number)
+          : 0;
     }
   } catch {
-    // ignore → fallback below
+    // ignore
   }
 
   // 2) Fallback: Order.vendorEarningsCents
@@ -96,7 +110,7 @@ export default async function VendorEarningsPage({ searchParams }: PageProps) {
       });
       vendorEarningsCents = vendorAgg._sum.vendorEarningsCents ?? 0;
     } catch {
-      // ignore → fallback below
+      // ignore
     }
   }
 
@@ -113,17 +127,13 @@ export default async function VendorEarningsPage({ searchParams }: PageProps) {
     },
   });
 
-  // Total für Pagination
+  // Pagination totals
   const totalCount = salesCount;
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
   const safePage = clamp(page, 1, totalPages);
   const safeSkip = (safePage - 1) * pageSize;
 
-  /**
-   * ✅ Historie:
-   * In deinem Schema heißt die Relation nicht `user`, sondern `buyer`.
-   */
-  const orders = await prisma.order.findMany({
+  const orders: OrderRow[] = await prisma.order.findMany({
     where: {
       product: { vendorId },
       status: { in: paidLikeStatuses },
@@ -145,7 +155,6 @@ export default async function VendorEarningsPage({ searchParams }: PageProps) {
     return `/dashboard/earnings?page=${p}`;
   }
 
-  // Simple page number window
   const windowSize = 5;
   const start = Math.max(1, safePage - Math.floor(windowSize / 2));
   const end = Math.min(totalPages, start + windowSize - 1);
@@ -164,7 +173,6 @@ export default async function VendorEarningsPage({ searchParams }: PageProps) {
           </p>
         </header>
 
-        {/* Summary (wie Auszahlungen) */}
         <section className="grid gap-6 md:grid-cols-3">
           <div className="neo-card p-6 md:p-7">
             <div className="text-xs uppercase tracking-[0.18em] text-white/70">
@@ -203,7 +211,6 @@ export default async function VendorEarningsPage({ searchParams }: PageProps) {
           </div>
         </section>
 
-        {/* History */}
         <section className="neo-card p-6 md:p-7">
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <h2 className="text-lg md:text-xl font-semibold text-white">
@@ -226,14 +233,12 @@ export default async function VendorEarningsPage({ searchParams }: PageProps) {
                 Noch keine bezahlten Bestellungen vorhanden.
               </p>
             ) : (
-              orders.map((o: any) => {
+              orders.map((o) => {
                 const buyerLabel =
                   o.buyer?.name?.trim() || o.buyer?.email || "Unbekannt";
 
                 const gross = o.amountCents ?? 0;
-
-                // ✅ Robust: wenn vendorEarningsCents am Order nicht gesetzt ist → 80% fallback
-                const vendorPartRaw = o.vendorEarningsCents ?? 0;
+                const vendorPartRaw = (o as any).vendorEarningsCents ?? 0;
                 const vendorPart =
                   vendorPartRaw > 0 ? vendorPartRaw : Math.round(gross * 0.8);
 
@@ -262,7 +267,6 @@ export default async function VendorEarningsPage({ searchParams }: PageProps) {
                       </div>
                     </div>
 
-                    {/* Status Bar (wie Payouts, aber clean) */}
                     <div
                       className={[
                         "w-full rounded-full",
@@ -283,7 +287,6 @@ export default async function VendorEarningsPage({ searchParams }: PageProps) {
             )}
           </div>
 
-          {/* Pagination */}
           {totalPages > 1 ? (
             <div className="mt-7 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div className="flex items-center gap-2">
@@ -322,21 +325,20 @@ export default async function VendorEarningsPage({ searchParams }: PageProps) {
                   </>
                 ) : null}
 
-                {Array.from(
-                  { length: end - start2 + 1 },
-                  (_, i) => start2 + i
-                ).map((p) => (
-                  <Link
-                    key={p}
-                    href={pageHref(p)}
-                    className={[
-                      "neo-chip",
-                      p === safePage ? "neo-chip--active" : "",
-                    ].join(" ")}
-                  >
-                    {p}
-                  </Link>
-                ))}
+                {Array.from({ length: end - start2 + 1 }, (_, i) => start2 + i).map(
+                  (p) => (
+                    <Link
+                      key={p}
+                      href={pageHref(p)}
+                      className={[
+                        "neo-chip",
+                        p === safePage ? "neo-chip--active" : "",
+                      ].join(" ")}
+                    >
+                      {p}
+                    </Link>
+                  )
+                )}
 
                 {end < totalPages ? (
                   <>

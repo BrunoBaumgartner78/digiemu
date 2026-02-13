@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toErrorMessage } from "@/lib/errors";
 import { useRouter } from "next/navigation";
 
 type Props = {
@@ -71,8 +72,8 @@ export default function AdminActionButton({
           window.location.reload();
         }
       }
-    } catch (e: any) {
-      const msg = e?.message ?? "Fehler";
+    } catch (e: unknown) {
+      const msg = toErrorMessage(e) || "Fehler";
       if (showError) setErr(msg);
       else alert(msg);
     } finally {

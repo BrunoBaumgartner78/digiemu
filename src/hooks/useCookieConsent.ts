@@ -42,14 +42,19 @@ function writeToStorage(next: ConsentState) {
 }
 
 export function useCookieConsent() {
-  const [consent, setConsent] = useState<ConsentState>(DEFAULT_STATE);
-  const [ready, setReady] = useState(false);
+  // initial synchron aus storage laden (kein setState im effect nötig)
+  const [consent, setConsent] = useState<ConsentState>(() => readFromStorage());
+  // ready ist sofort true, weil initial state bereits geladen ist
+  const [ready] = useState(true);
 
+  // optional: wenn du willst, dass externe Änderungen (z.B. localStorage im selben Tab)
+  // reingesynct werden, könnte man hier einen storage-event listener ergänzen.
+  // Aktuell nicht nötig → wir vermeiden setState-in-effect.
+
+  // Persistiere, wenn consent sich ändert (Effect = sync mit externem System)
   useEffect(() => {
-    const initial = readFromStorage();
-    setConsent(initial);
-    setReady(true);
-  }, []);
+    writeToStorage(consent);
+  }, [consent]);
 
   const api = useMemo(() => {
     return {
@@ -63,7 +68,6 @@ export function useCookieConsent() {
           ts: Date.now(),
         };
         setConsent(next);
-        writeToStorage(next);
       },
       rejectAll() {
         const next: ConsentState = {
@@ -73,7 +77,6 @@ export function useCookieConsent() {
           ts: Date.now(),
         };
         setConsent(next);
-        writeToStorage(next);
       },
       setPartial(partial: Partial<ConsentState>) {
         const next: ConsentState = {
@@ -83,7 +86,6 @@ export function useCookieConsent() {
           ts: Date.now(),
         };
         setConsent(next);
-        writeToStorage(next);
       },
     };
   }, [ready, consent]);

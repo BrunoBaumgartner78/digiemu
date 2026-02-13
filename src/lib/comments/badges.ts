@@ -12,13 +12,15 @@ export function computeBadges(params: {
   return out;
 }
 
-export function badgeLabel(b: CommentBadge) {
-  switch (b) {
+export function badgeLabel(badge: string) {
+  switch (badge) {
     case "ADMIN":
       return "Admin";
     case "SELLER":
       return "Verkäufer";
     case "VERIFIED_BUYER":
       return "Verifizierter Käufer";
+    default:
+      return String(badge ?? "");
   }
 }

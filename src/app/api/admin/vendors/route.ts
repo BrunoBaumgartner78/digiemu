@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
       ? (statusRaw as VendorStatus)
       : undefined;
 
-  const where: any = {};
+  const where: Record<string, unknown> = {};
   if (q) {
     where.OR = [
       { displayName: { contains: q, mode: "insensitive" } },

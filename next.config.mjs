@@ -1,11 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Optional: if EPERM persists, reducing FS cache churn can help
-  // (Keep this ON only if needed; remove if everything is stable)
-  webpack: (config) => {
-    config.cache = false;
-    return config;
+  compiler: {
+    removeConsole:
+      process.env.NODE_ENV === "production"
+        ? { exclude: ["error", "warn"] }
+        : false,
   },
+
   images: {
     remotePatterns: [
       {
@@ -20,10 +21,21 @@ const nextConfig = {
       },
       {
         protocol: "https",
-        hostname: "**.appspot.com",
+        hostname: "*.appspot.com",
         pathname: "/**",
       },
     ],
+  },
+
+  async redirects() {
+    return [
+      { source: "/preise", destination: "/pricing", permanent: true },
+      { source: "/preise/", destination: "/pricing", permanent: true },
+      { source: "/terms", destination: "/agb", permanent: true },
+      { source: "/privacy", destination: "/datenschutz", permanent: true },
+      { source: "/legal", destination: "/agb", permanent: false },
+      { source: "/agb-old", destination: "/agb", permanent: true },
+    ];
   },
 };
 

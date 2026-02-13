@@ -1,3 +1,4 @@
+// src/app/(app)/admin/users/page.tsx
 import Link from "next/link";
 import styles from "../downloads/page.module.css";
 import { prisma } from "@/lib/prisma";
@@ -10,15 +11,29 @@ export const dynamic = "force-dynamic";
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
-export default async function AdminUsersPage({ searchParams }: { searchParams: SearchParams }) {
+type AdminListParsed = {
+  q: string;
+  status: string;
+  page: number;
+  pageSize: number;
+  buildQueryString: (patch?: Record<string, string | undefined>) => string;
+};
+
+export default async function AdminUsersPage({
+  searchParams,
+}: {
+  searchParams?: SearchParams;
+}) {
   await requireAdminOrRedirect();
 
-  const { q, status, page, pageSize, buildQueryString } = parseAdminListParams(searchParams, {
+  const sp = searchParams ?? {};
+
+  const { q, status, page, pageSize, buildQueryString } = parseAdminListParams(sp, {
     q: { key: "q", default: "" },
     status: { key: "status", default: "all" },
     page: { key: "page", default: 1 },
     pageSize: { key: "pageSize", default: 25, min: 5, max: 200 },
-  });
+  }) as AdminListParsed;
 
   const where: Prisma.UserWhereInput = {};
 
@@ -33,7 +48,7 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: S
   if (status !== "all") {
     if (status === "blocked") where.isBlocked = true;
     else if (status === "unblocked") where.isBlocked = false;
-    else where.role = status as any; // falls role Enum ist: "ADMIN" | "VENDOR" | "BUYER"
+    else where.role = status as any; // ADMIN | VENDOR | BUYER
   }
 
   const skip = (page - 1) * pageSize;
@@ -45,7 +60,14 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: S
       orderBy: { createdAt: "desc" },
       skip,
       take: pageSize,
-      select: { id: true, email: true, name: true, role: true, isBlocked: true, createdAt: true },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        isBlocked: true,
+        createdAt: true,
+      },
     }),
   ]);
 
@@ -59,7 +81,9 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: S
         <div className={styles.header}>
           <p className={styles.eyebrow}>ADMIN</p>
           <h1 className={styles.title}>User</h1>
-          <p className={styles.subtitle}>User-Liste, Rollen, Sperren/Entsperren. (AuditLog als nächster Schritt.)</p>
+          <p className={styles.subtitle}>
+            User-Liste, Rollen, Sperren/Entsperren. (AuditLog als nächster Schritt.)
+          </p>
         </div>
 
         <div className={styles.actionsRow}>
@@ -67,7 +91,6 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: S
             Downloads
           </Link>
 
-          {/* Lint-sicher + Download-sicher (kein <a> internal) */}
           <form action="/api/admin/users/export" method="GET">
             <button type="submit" className={styles.pill}>
               Export CSV

@@ -1,25 +1,25 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth/options";
 
-/**
- * For App Router API routes: enforce ADMIN access.
- * Throws a Response with 401/403 so route handlers can just call it.
- */
-export async function requireAdminApi() {
+// src/lib/auth/requireAdminApi.ts
+import { NextRequest } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth"; // ggf. Pfad anpassen falls bei dir anders
+
+type AdminApiResult =
+  | { ok: true; userId: string }
+  | { ok: false; res: Response };
+
+export async function requireAdminApi(_req: NextRequest): Promise<AdminApiResult> {
   const session = await getServerSession(authOptions);
 
-  const role = (session as any)?.user?.role;
-  const isBlocked = (session as any)?.user?.isBlocked;
+  const role = (session?.user as any)?.role as string | undefined;
+  const userId = (session?.user as any)?.id as string | undefined;
 
-  if (!session?.user) {
-    throw new Response("Unauthorized", { status: 401 });
-  }
-  if (isBlocked) {
-    throw new Response("Blocked", { status: 403 });
-  }
-  if (role !== "ADMIN") {
-    throw new Response("Forbidden", { status: 403 });
+  if (!session || role !== "ADMIN" || !userId) {
+    return {
+      ok: false,
+      res: Response.json({ error: "Unauthorized" }, { status: 401 }),
+    };
   }
 
-  return session;
+  return { ok: true, userId };
 }

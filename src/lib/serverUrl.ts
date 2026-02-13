@@ -5,12 +5,13 @@ import { headers } from "next/headers";
  * Supports Headers-like and plain-object returns from next/headers().
  */
 export function getBaseUrl() {
-  const h: any = headers();
+  const h = headers() as unknown;
 
   const get = (key: string): string | null => {
     if (!h) return null;
-    if (typeof h.get === "function") return h.get(key);
-    return h[key] ?? h[key.toLowerCase()] ?? null;
+    if (typeof (h as any).get === "function") return (h as any).get(key);
+    const obj = h as Record<string, unknown>;
+    return (obj[key] as string) ?? (obj[key.toLowerCase()] as string) ?? null;
   };
 
   const proto =

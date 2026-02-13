@@ -37,11 +37,11 @@ export default async function AdminVendorsPage({ searchParams }: { searchParams?
   const q = (spGet(sp, "q") ?? "").trim();
   const status = normalizeEnum(spGet(sp, "status") ?? "", VENDOR_STATUSES);
 
-  const where: any = {};
-  if (status) where.status = status;
+  const where: Record<string, unknown> = {};
+  if (status) (where as any).status = status;
 
   if (q) {
-    where.OR = [
+    (where as any).OR = [
       { displayName: { contains: q, mode: "insensitive" } },
       { user: { email: { contains: q, mode: "insensitive" } } },
     ];

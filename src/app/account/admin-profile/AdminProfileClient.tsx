@@ -16,7 +16,7 @@ type Props = {
   initialData: InitialData | null;
 };
 
-export default function AdminProfileClient({ userId, initialData }: Props) {
+export default function AdminProfileClient({ userId: _userId, initialData }: Props) {
   const router = useRouter();
 
   const normalized = useMemo(() => ({

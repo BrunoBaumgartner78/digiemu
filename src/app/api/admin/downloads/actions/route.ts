@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 type ActionBody = {
   action: "revoke" | "extendExpiry" | "resetCounter";
   downloadLinkId: string;
-  payload?: any;
+  payload?: unknown;
 };
 
 export async function POST(req: Request) {
@@ -29,7 +29,7 @@ export async function POST(req: Request) {
     }
 
     if (action === "extendExpiry") {
-      const days = Number(payload?.days ?? 0);
+      const days = Number((payload as Record<string, unknown>)?.days ?? 0);
       if (!Number.isFinite(days) || days <= 0) return NextResponse.json({ error: "invalid days" }, { status: 400 });
       const dl = await prisma.downloadLink.findUnique({ where: { id: downloadLinkId }, select: { expiresAt: true } });
       const base = dl?.expiresAt ?? new Date();
