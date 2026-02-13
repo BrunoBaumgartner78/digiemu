@@ -1,6 +1,17 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# --- CI placeholders for markdown-link-check ---
+# markdown-link-check can try to open relative file links; ensure these exist.
+mkdir -p app/etc src/app/etc
+: > app/etc/local.xml.template
+: > src/app/etc/local.xml.template
+# ----------------------------------------------
+
+
+#!/usr/bin/env bash
+set -euo pipefail
+
 echo "Setting CI environment fallbacks..."
 
 # Basic DB / app env fallbacks for CI (safe defaults)
