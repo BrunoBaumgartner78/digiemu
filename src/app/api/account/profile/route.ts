@@ -4,6 +4,7 @@ import { requireSessionApi } from "@/lib/guards/authz";
 import { prisma } from "@/lib/prisma";
 import { isRecord, getStringProp, getBooleanProp, getErrorMessage } from "@/lib/guards";
 import { Prisma } from "@prisma/client";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 
 function sanitizeSlug(input: string) {
   return (input || "")
@@ -79,7 +80,7 @@ async function handleUpsert(_req: Request) {
     return NextResponse.json({ ok: true, profile: { id: saved.id, slug: saved.slug, isPublic: saved.isPublic } });
   } catch (err: unknown) {
     // ✅ Unique constraint: slug already taken
-    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
+    if (err instanceof PrismaClientKnownRequestError && err.code === "P2002") {
       const meta = (err as unknown as { meta?: unknown }).meta;
       // meta may be an object with `target` array
       if (isRecord(meta)) {

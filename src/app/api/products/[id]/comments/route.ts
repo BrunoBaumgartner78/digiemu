@@ -2,6 +2,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import type { Role } from "@prisma/client";
+export type { Role };
 import { requireSessionApi } from "@/lib/guards/authz";
 import { computeBadges } from "@/lib/comments/badges";
 

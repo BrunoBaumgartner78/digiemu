@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdminApi } from "@/lib/guards/authz";
 import { prisma } from "@/lib/prisma";
-import { ProductStatus } from "@prisma/client";
+import { ProductStatus, VendorStatus, PayoutStatus, Role } from "@prisma/client";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -55,7 +55,7 @@ export async function PATCH(
     );
   }
 
-  if (![ProductStatus.ACTIVE, ProductStatus.DRAFT, ProductStatus.BLOCKED].includes(status as ProductStatus)) {
+  if (![ProductStatus.ACTIVE, ProductStatus.DRAFT, ProductStatus.BLOCKED].includes(status as (typeof ProductStatus)[keyof typeof ProductStatus])) {
     return NextResponse.json(
       { message: "Ungültiger Status." },
       { status: 400 }
@@ -73,7 +73,7 @@ export async function PATCH(
       category,
       priceCents: Math.round(priceCents),
       thumbnail,
-      status: status as ProductStatus,
+      status: status as (typeof ProductStatus)[keyof typeof ProductStatus],
       isActive: finalIsActive,
       moderationNote,
     },

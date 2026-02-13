@@ -8,6 +8,10 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    
+    env:
+      DATABASE_URL: "postgresql://ci:ci@127.0.0.1:5432/ci?schema=public"
+      DIRECT_URL: "postgresql://ci:ci@127.0.0.1:5432/ci?schema=public"
 
     steps:
       - uses: actions/checkout@v4
@@ -18,10 +22,10 @@ jobs:
           cache: npm
 
       - name: Install
-        run: npm ci
+        run: npm ci --include=dev
 
       - name: Prisma Generate
-        run: npx prisma generate
+        run: npm run prisma:generate
 
       - name: Build
         run: npm run build
