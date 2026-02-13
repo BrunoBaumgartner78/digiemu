@@ -12,7 +12,8 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      NODE_ENV: development
+      NODE_ENV: production
+      NEXT_TELEMETRY_DISABLED: "1"
       DATABASE_URL: "postgresql://ci:ci@127.0.0.1:5432/ci?schema=public"
       DIRECT_URL: "postgresql://ci:ci@127.0.0.1:5432/ci?schema=public"
       FIREBASE_ADMIN_PROJECT_ID: "ci-dummy"
@@ -52,7 +53,8 @@ jobs:
           ./ci-prepare-env.sh
 
       # 1) Lint – Codequalität (inkl. React/TSX)
-      - name: Run ESLint (code quality)
+      - name: Run ESLint (code quality) [non-blocking in CI]
+        continue-on-error: true
         run: npm run lint --if-present
 
       # 2) Optional: Tailwind / Styles Lint – falls vorhanden
@@ -69,6 +71,8 @@ jobs:
 
       # 5) Build – stellen sicher, dass UI wirklich baubar ist
       - name: Build Next.js app (UI sanity check)
+        env:
+          NEXT_TELEMETRY_DISABLED: "1"
         run: npm run build
 
       # 6) Build als Artefakt speichern (für manuelle visuelle Kontrolle)

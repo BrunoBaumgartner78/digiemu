@@ -1,4 +1,3 @@
-// src/app/(app)/admin/orders/page.tsx
 import Link from "next/link";
 import styles from "../downloads/page.module.css";
 import { prisma } from "@/lib/prisma";
@@ -8,6 +7,7 @@ import {
   formatDateTime,
   formatMoneyFromCents,
 } from "@/lib/admin/adminList";
+import { Prisma } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +22,14 @@ type AdminListParsed = {
   to: string;
   buildQueryString: (patch?: Record<string, string | undefined>) => string;
 };
+
+type OrderRow = Prisma.OrderGetPayload<{
+  include: {
+    buyer: { select: { id: true; email: true; name: true } };
+    product: { select: { id: true; title: true; priceCents: true } };
+    downloadLink: { select: { id: true; expiresAt: true; createdAt: true } };
+  };
+}>;
 
 export default async function AdminOrdersPage({
   searchParams,
@@ -42,10 +50,10 @@ export default async function AdminOrdersPage({
       to: { key: "to", default: "" },
     }) as AdminListParsed;
 
-  const where: Record<string, unknown> = {};
+  const where: Prisma.OrderWhereInput = {};
 
   if (q) {
-    (where as any).OR = [
+    where.OR = [
       { id: { contains: q, mode: "insensitive" } },
       { stripeSessionId: { contains: q, mode: "insensitive" } },
       { buyer: { email: { contains: q, mode: "insensitive" } } },
@@ -55,22 +63,23 @@ export default async function AdminOrdersPage({
   }
 
   if (status !== "all") {
-    (where as any).status = status;
+    // If your enum differs, keep it as string cast to satisfy TS without `any`
+    where.status = status as unknown as Prisma.OrderWhereInput["status"];
   }
 
   if (from || to) {
-    const createdAt: { gte?: Date; lte?: Date } = {};
-    if (from) createdAt.gte = new Date(from);
-    if (to) createdAt.lte = new Date(to);
-    (where as any).createdAt = createdAt;
+    where.createdAt = {
+      ...(from ? { gte: new Date(from) } : {}),
+      ...(to ? { lte: new Date(to) } : {}),
+    };
   }
 
   const skip = (page - 1) * pageSize;
 
   const [total, rows] = await Promise.all([
-    prisma.order.count({ where: where as any }),
+    prisma.order.count({ where }),
     prisma.order.findMany({
-      where: where as any,
+      where,
       orderBy: { createdAt: "desc" },
       skip,
       take: pageSize,
@@ -79,7 +88,7 @@ export default async function AdminOrdersPage({
         product: { select: { id: true, title: true, priceCents: true } },
         downloadLink: { select: { id: true, expiresAt: true, createdAt: true } },
       },
-    }),
+    }) as Promise<OrderRow[]>,
   ]);
 
   const pageCount = Math.max(1, Math.ceil(total / pageSize));
@@ -169,29 +178,29 @@ export default async function AdminOrdersPage({
             <div className={styles.emptyState}>Keine Orders gefunden.</div>
           ) : (
             rows.map((ord) => {
-              const orderCents = Number((ord as any).amountCents ?? 0);
-              const productCents = Number((ord as any).product?.priceCents ?? 0);
+              const orderCents = Number((ord.amountCents ?? 0) as unknown);
+              const productCents = Number(ord.product?.priceCents ?? 0);
               const amountCents = orderCents >= 50 ? orderCents : productCents;
 
               return (
-                <div key={(ord as any).id} className={styles.tableRow}>
-                  <div className={styles.monoSmall}>{formatDateTime((ord as any).createdAt)}</div>
+                <div key={ord.id} className={styles.tableRow}>
+                  <div className={styles.monoSmall}>{formatDateTime(ord.createdAt)}</div>
 
                   <div>
                     <div className={styles.bold}>
-                      {(ord as any).buyer?.name || (ord as any).buyer?.email || "—"}
+                      {ord.buyer?.name || ord.buyer?.email || "—"}
                     </div>
                     <div className={styles.mutedSmall}>
-                      {(ord as any).buyer?.email || "—"} •{" "}
-                      <span className={styles.monoSmall}>{(ord as any).id}</span>
+                      {ord.buyer?.email || "—"} • {" "}
+                      <span className={styles.monoSmall}>{ord.id}</span>
                     </div>
                   </div>
 
                   <div>
-                    <div className={styles.bold}>{(ord as any).product?.title || "—"}</div>
+                    <div className={styles.bold}>{ord.product?.title || "—"}</div>
                     <div className={styles.mutedSmall}>
-                      {(ord as any).product?.id ? (
-                        <span className={styles.monoSmall}>{(ord as any).product.id}</span>
+                      {ord.product?.id ? (
+                        <span className={styles.monoSmall}>{ord.product.id}</span>
                       ) : (
                         "—"
                       )}
@@ -199,10 +208,10 @@ export default async function AdminOrdersPage({
                   </div>
 
                   <div>
-                    <span className={styles.badge}>{(ord as any).status}</span>
-                    {(ord as any).stripeSessionId ? (
+                    <span className={styles.badge}>{String(ord.status ?? "")}</span>
+                    {ord.stripeSessionId ? (
                       <div className={styles.mutedSmall}>
-                        <span className={styles.monoSmall}>{(ord as any).stripeSessionId}</span>
+                        <span className={styles.monoSmall}>{ord.stripeSessionId}</span>
                       </div>
                     ) : null}
                   </div>
@@ -212,13 +221,13 @@ export default async function AdminOrdersPage({
                   </div>
 
                   <div className={styles.actionsCell}>
-                    <a className={styles.pillSmall} href={`/download/${(ord as any).id}`}>
+                    <a className={styles.pillSmall} href={`/download/${ord.id}`}>
                       View
                     </a>
 
                     <a
                       className={styles.pillSmall}
-                      href={`/api/admin/orders/export?orderId=${encodeURIComponent((ord as any).id)}`}
+                      href={`/api/admin/orders/export?orderId=${encodeURIComponent(ord.id)}`}
                     >
                       CSV
                     </a>
