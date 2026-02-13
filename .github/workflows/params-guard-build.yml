@@ -2,12 +2,28 @@ name: Params Guard + Build (Ubuntu)
 
 on:
   push:
-    branches: [ main, develop, staging ]
+    branches: [main, develop, staging]
   pull_request:
+    branches: [main, develop, staging]
 
 jobs:
   guard_and_build:
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U ci -d ci"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
 
     env:
       NODE_ENV: production
@@ -38,6 +54,16 @@ jobs:
       # IMPORTANT: prisma CLI is a devDependency -> include dev deps in CI
       - name: Install deps (incl. dev)
         run: npm ci --include=dev
+
+      - name: Normalize multiline secrets (Firebase private key)
+        shell: bash
+        run: |
+          if [ -n "${FIREBASE_ADMIN_PRIVATE_KEY:-}" ]; then
+            # convert "\n" sequences to real newlines for Node/Firebase Admin
+            echo "FIREBASE_ADMIN_PRIVATE_KEY<<'EOF'" >> "$GITHUB_ENV"
+            printf '%b\n' "$FIREBASE_ADMIN_PRIVATE_KEY" >> "$GITHUB_ENV"
+            echo "EOF" >> "$GITHUB_ENV"
+          fi
 
       - name: CI env fallback (Stripe)
         shell: bash
