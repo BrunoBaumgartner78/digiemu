@@ -147,8 +147,8 @@ export function MainHeader() {
               ) : null}
 
               <Link
-                href="/profile"
-                className={"nav-pill nav-pill-ghost" + (isActive("/profile") ? " nav-pill-active" : "")}
+                href="/account/profile"
+                className={"nav-pill nav-pill-ghost" + (isActive("/account/profile") ? " nav-pill-active" : "")}
               >
                 Profil
               </Link>
@@ -275,9 +275,9 @@ export function MainHeader() {
                   ) : null}
 
                   <Link
-                    href="/profile"
+                    href="/account/profile"
                     onClick={() => setMobileOpen(false)}
-                    className={"mobile-nav-pill" + (isActive("/profile") ? " mobile-nav-pill-active" : "")}
+                    className={"mobile-nav-pill" + (isActive("/account/profile") ? " mobile-nav-pill-active" : "")}
                   >
                     Profil
                   </Link>
