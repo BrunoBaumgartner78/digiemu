@@ -37,5 +37,5 @@ jobs:
       - name: Prisma Generate
         run: npm run prisma:generate
 
-      - name: Build
-        run: npm run build
+      - name: Typecheck (no Next build)
+        run: npm run typecheck

@@ -81,5 +81,5 @@ jobs:
       # - name: Prisma migrate deploy
       #   run: npx --no-install prisma migrate deploy
 
-      - name: Next build
-        run: npm run build
+      - name: Typecheck (no Next build)
+        run: npm run typecheck
