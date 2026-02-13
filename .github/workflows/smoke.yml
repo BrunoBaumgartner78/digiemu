@@ -13,7 +13,11 @@ jobs:
     env:
       NODE_ENV: test
       NEXT_TELEMETRY_DISABLED: 1
+
+      # Prisma needs DATABASE_URL and (because schema has it) DIRECT_URL.
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DIRECT_URL: ${{ secrets.DIRECT_URL != '' && secrets.DIRECT_URL || secrets.DATABASE_URL }}
+
       NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
       NEXTAUTH_URL: http://127.0.0.1:3000
 
@@ -28,10 +32,25 @@ jobs:
           cache: npm
 
       - name: Install
-        run: npm ci
+        run: npm ci --include=dev
+
+      - name: Sanity check env (DATABASE_URL/DIRECT_URL)
+        shell: bash
+        run: |
+          if [ -z "${DATABASE_URL}" ]; then
+            echo "DATABASE_URL missing (secrets.DATABASE_URL). Prisma generate may fail."
+            exit 1
+          fi
+
+          if [ -z "${DIRECT_URL}" ]; then
+            echo "DIRECT_URL missing. Set secrets.DIRECT_URL or ensure fallback works."
+            exit 1
+          fi
+
+          echo "DATABASE_URL and DIRECT_URL are set."
 
       - name: Prisma generate
-        run: npx prisma generate
+        run: npm run prisma:generate
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
@@ -41,7 +60,7 @@ jobs:
 
       - name: Start app
         run: npm run start -- --port 3000 &
-      
+
       - name: Wait for app
         run: npx wait-on http://127.0.0.1:3000
 

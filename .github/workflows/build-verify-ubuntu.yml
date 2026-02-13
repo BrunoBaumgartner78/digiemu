@@ -40,7 +40,7 @@ jobs:
           cache: npm
 
       - name: Install deps
-        run: npm ci
+        run: npm ci --include=dev
 
       - name: Sanity check env (DATABASE_URL/DIRECT_URL)
         shell: bash

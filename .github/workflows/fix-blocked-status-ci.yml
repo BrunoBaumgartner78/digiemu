@@ -27,7 +27,7 @@ jobs:
           cache: npm
 
       - name: Install
-        run: npm ci
+        run: npm ci --include=dev
 
       - name: Prisma Generate
         run: npm run prisma:generate
@@ -68,7 +68,7 @@ jobs:
           cache: npm
 
       - name: Install
-        run: npm ci
+        run: npm ci --include=dev
 
       - name: Prisma Generate
         run: npm run prisma:generate
