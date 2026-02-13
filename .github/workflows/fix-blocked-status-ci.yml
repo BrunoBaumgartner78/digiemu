@@ -26,7 +26,10 @@ jobs:
           cache: npm
 
       - name: Install
-        run: npm ci
+        run: |
+          echo "DATABASE_URL=${DATABASE_URL:-postgresql://ci:ci@127.0.0.1:5432/ci?schema=public}" >> "$GITHUB_ENV"
+          echo "DIRECT_URL=${DIRECT_URL:-postgresql://ci:ci@127.0.0.1:5432/ci?schema=public}" >> "$GITHUB_ENV"
+          npm ci --include=dev
 
       - name: Prisma Generate
         run: npx prisma generate
@@ -66,7 +69,10 @@ jobs:
           cache: npm
 
       - name: Install
-        run: npm ci
+        run: |
+          echo "DATABASE_URL=${DATABASE_URL:-postgresql://ci:ci@127.0.0.1:5432/ci?schema=public}" >> "$GITHUB_ENV"
+          echo "DIRECT_URL=${DIRECT_URL:-postgresql://ci:ci@127.0.0.1:5432/ci?schema=public}" >> "$GITHUB_ENV"
+          npm ci --include=dev
 
       - name: Prisma Generate
         run: npx prisma generate
