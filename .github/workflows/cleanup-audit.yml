@@ -56,25 +56,12 @@ jobs:
         run: |
           set -euo pipefail
 
-          # ALWAYS run from repo root (fixes mlc ENOENT issues)
-          cd "${GITHUB_WORKSPACE}"
+          # Fail-safe: ensure placeholders exist RIGHT BEFORE running the checker.
+          mkdir -p app/etc src/app/etc
+          : > app/etc/local.xml.template
+          : > src/app/etc/local.xml.template
 
-          # HARD ensure placeholder exists in repo root (absolute paths)
-          mkdir -p "${GITHUB_WORKSPACE}/app/etc" "${GITHUB_WORKSPACE}/src/app/etc"
-          printf "%s\n" "<!-- CI placeholder -->" > "${GITHUB_WORKSPACE}/app/etc/local.xml.template"
-          printf "%s\n" "<!-- CI placeholder -->" > "${GITHUB_WORKSPACE}/src/app/etc/local.xml.template"
-
-          echo "✅ Debug: pwd"
-          pwd
-
-          echo "✅ Debug: list placeholders"
-          ls -la "${GITHUB_WORKSPACE}/app/etc" || true
-          ls -la "${GITHUB_WORKSPACE}/src/app/etc" || true
-
-          test -f "${GITHUB_WORKSPACE}/app/etc/local.xml.template"
-          test -f "${GITHUB_WORKSPACE}/src/app/etc/local.xml.template"
-
-          # Build list of tracked markdown files
+          # Collect markdown files tracked by git
           MD_FILES="$(git ls-files '*.md' | grep -v '^node_modules/' || true)"
           if [ -z "$MD_FILES" ]; then
             echo "ℹ️ No markdown files found."
@@ -84,10 +71,13 @@ jobs:
           echo "🔎 Running markdown-link-check on:"
           echo "$MD_FILES"
 
-          # Run mlc per file (more stable than xargs batch)
+          # IMPORTANT:
+          # Use the correct CLI for the installed package: `markdown-link-check`
+          # (NOT `mlc`, which is a different tool and ignores this config format).
           while IFS= read -r f; do
             [ -n "$f" ] || continue
-            npx mlc --config .github/markdown-link-check.json "$f"
+            echo "— checking: $f"
+            npx markdown-link-check -c .github/markdown-link-check.json "$f"
           done <<< "$MD_FILES"
 
       # ---------- 2) Guard: obvious dead internal links ----------
