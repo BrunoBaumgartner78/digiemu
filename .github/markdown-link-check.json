@@ -4,14 +4,8 @@
   "fallbackRetryDelay": "2s",
   "aliveStatusCodes": [200, 206, 301, 302, 303, 307, 308, 403],
   "ignorePatterns": [
-    {
-      "pattern": "app/etc/local\\.xml\\.template"
-    },
-    {
-      "pattern": "src/app/etc/local\\.xml\\.template"
-    },
-    {
-      "pattern": "^node_modules/"
-    }
+    { "pattern": "app/etc/local\\.xml\\.template" },
+    { "pattern": "src/app/etc/local\\.xml\\.template" },
+    { "pattern": "^node_modules/" }
   ]
 }
