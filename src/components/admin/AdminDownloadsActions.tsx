@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import React from "react";
+import { toErrorMessage } from "@/lib/errors";
 
 function formatDateYYYYMMDD(d: Date) {
   const yyyy = d.getFullYear();
@@ -39,8 +40,8 @@ export default function AdminDownloadsActions() {
         ? "downloads_mock.csv"
         : `downloads_${formatDateYYYYMMDD(new Date())}.csv`;
       await downloadCsv(url, name);
-    } catch (e: any) {
-      setError(e?.message ?? "Export failed");
+    } catch (e: unknown) {
+      setError(toErrorMessage(e) || "Export failed");
     } finally {
       setLoading(false);
     }

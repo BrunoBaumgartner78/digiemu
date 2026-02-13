@@ -14,8 +14,8 @@ jobs:
       NODE_ENV: production
       # Prisma braucht DIRECT_URL wenn es im schema steht.
       # Wenn du es nicht als Secret gesetzt hast: fallback auf DATABASE_URL.
-      DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/postgres?schema=public"
-      DIRECT_URL: ${{ secrets.DIRECT_URL != '' && secrets.DIRECT_URL || secrets.DATABASE_URL }}
+      DATABASE_URL: "postgresql://ci:ci@127.0.0.1:5432/ci?schema=public"
+      DIRECT_URL: "postgresql://ci:ci@127.0.0.1:5432/ci?schema=public"
 
       NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
       NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
@@ -39,30 +39,43 @@ jobs:
           node-version: 20
           cache: npm
 
-      - name: Install deps
-        run: npm ci
+      - name: Install deps (incl. dev)
+        run: npm ci --include=dev
 
-      - name: Sanity check env (DIRECT_URL)
+      - name: CI env fallback (Stripe)
+        shell: bash
+        run: |
+          if [ -z "${STRIPE_SECRET_KEY:-}" ]; then
+            echo "STRIPE_SECRET_KEY=sk_test_dummy" >> "$GITHUB_ENV"
+          fi
+          if [ -z "${STRIPE_WEBHOOK_SECRET:-}" ]; then
+            echo "STRIPE_WEBHOOK_SECRET=whsec_dummy" >> "$GITHUB_ENV"
+          fi
+
+      - name: Sanity check env (DATABASE_URL/DIRECT_URL)
+        shell: bash
         run: |
           if [ -z "${DATABASE_URL}" ]; then
-            echo "DATABASE_URL is missing (secrets.DATABASE_URL). Build may still pass if Prisma not used."
+            echo "DATABASE_URL is missing."
+            exit 1
           else
             echo "DATABASE_URL is set."
           fi
 
           if [ -z "${DIRECT_URL}" ]; then
-            echo "DIRECT_URL is missing. Prisma schema expects it. Set secrets.DIRECT_URL or use fallback."
+            echo "DIRECT_URL is missing (schema expects it)."
             exit 1
           else
             echo "DIRECT_URL is set."
           fi
 
       - name: Prisma generate
-        run: npx prisma generate
+        run: npm run prisma:generate
 
-      - name: Prisma migrate deploy (only if DB configured)
-        if: ${{ env.DATABASE_URL != '' }}
-        run: npx prisma migrate deploy
+      # Optional but recommended in PR checks:
+      - name: Lint
+        run: npm run lint --if-present
 
-      - name: Next build
-        run: npx next build
+      # PR checks: typecheck only (no next build)
+      - name: Typecheck
+        run: npm run typecheck

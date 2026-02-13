@@ -4,7 +4,7 @@ import ThemeProvider from "@/components/theme/ThemeProvider";
 import { ToastProvider } from "@/components/ui/use-toast";
 import CookieBanner from "@/components/legal/CookieBanner";
 import AnalyticsLoader from "@/components/analytics/AnalyticsLoader";
-import TraceRepeatClient from "./_traceRepeatClient";
+import TraceRepeatClient from "@/components/TraceRepeatClient";
 
 export const viewport: Viewport = {
   themeColor: "#EAF1FF",

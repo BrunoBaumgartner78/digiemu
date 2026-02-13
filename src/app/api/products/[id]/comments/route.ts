@@ -1,7 +1,7 @@
 // src/app/api/products/[id]/comments/route.ts
 import { NextResponse, type NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
-import type { Role } from "@prisma/client";
+import type { Role, Prisma } from "@prisma/client";
 import { requireSessionApi } from "@/lib/guards/authz";
 import { computeBadges } from "@/lib/comments/badges";
 
@@ -13,6 +13,7 @@ type Ctx = { params: Promise<{ id: string }> };
 function jsonError(status: number, message: string) {
   return NextResponse.json({ message }, { status });
 }
+
 function isNextResponse(x: unknown): x is NextResponse {
   return x instanceof NextResponse;
 }
@@ -29,18 +30,36 @@ function parseSort(req: NextRequest): "new" | "top" {
   return s === "top" ? "top" : "new";
 }
 
+function isRole(x: unknown): x is Role {
+  return x === "ADMIN" || x === "VENDOR" || x === "BUYER";
+}
+
+function getSessionUser(session: unknown): { id?: string; role?: Role } {
+  const s = session as { user?: { id?: unknown; role?: unknown } } | null;
+  const id = typeof s?.user?.id === "string" ? s.user.id : undefined;
+
+  const rawRole = s?.user?.role;
+  const role = isRole(rawRole) ? rawRole : undefined;
+
+  return { id, role };
+}
+
 type UiItem = {
   id: string;
   content: string;
   createdAt: string;
   userId: string;
-  user: { id: string; name: string | null; role: string | null };
+  user: { id: string; name: string | null; role: Role | null };
   badges: string[];
   likesCount: number;
   viewerHasLiked: boolean;
 };
 
 type UserMini = { id: string; name: string | null; role: Role | null };
+
+type CommentRow = Prisma.CommentGetPayload<{
+  select: { id: true; content: true; createdAt: true; userId: true };
+}>;
 
 export async function GET(req: NextRequest, ctx: Ctx) {
   const { id: productId } = await ctx.params;
@@ -49,13 +68,14 @@ export async function GET(req: NextRequest, ctx: Ctx) {
 
   // viewer optional
   let viewerUserId: string | null = null;
-  let viewerRole: string | null = null;
+  let viewerRole: Role | null = null;
+
   try {
     const s = await requireSessionApi();
     if (s && !isNextResponse(s)) {
-      const u = (s as any)?.user;
-      if (u?.id && typeof u.id === "string") viewerUserId = u.id;
-      if (u?.role && typeof u.role === "string") viewerRole = u.role;
+      const u = getSessionUser(s);
+      if (u.id) viewerUserId = u.id;
+      if (u.role) viewerRole = u.role;
     }
   } catch {
     // ignore
@@ -78,44 +98,50 @@ export async function GET(req: NextRequest, ctx: Ctx) {
     select: { buyerId: true },
     distinct: ["buyerId"],
   });
-  const verifiedBuyerSet = new Set(buyers.map((b) => b.buyerId).filter(Boolean));
+  const verifiedBuyerSet = new Set(
+    buyers
+      .map((b) => b.buyerId)
+      .filter((x): x is string => typeof x === "string" && x.length > 0)
+  );
 
-  // load comments (simple fields only)
-  // We fetch up to 50, then sort in JS for "top".
-  const whereBase: any = { productId };
+  // load comments
+  const whereBase: Prisma.CommentWhereInput = { productId };
   if (viewerRole !== "ADMIN") whereBase.isHidden = false;
 
-  const rawComments = await prisma.comment.findMany({
+  const rawComments: CommentRow[] = await prisma.comment.findMany({
     where: whereBase,
-    take: Math.max(take, 50), // enough for top-sorting; capped by parseTake anyway
-    select: {
-      id: true,
-      content: true,
-      createdAt: true,
-      userId: true,
-    },
+    take: Math.max(take, 50),
+    select: { id: true, content: true, createdAt: true, userId: true },
     orderBy: [{ createdAt: "desc" }, { id: "desc" }],
   });
 
   const commentIds = rawComments.map((c) => c.id);
-  const userIds = Array.from(new Set(rawComments.map((c) => c.userId).filter(Boolean)));
+  const userIds = Array.from(
+    new Set(
+      rawComments
+        .map((c) => c.userId)
+        .filter((x): x is string => typeof x === "string" && x.length > 0)
+    )
+  );
 
   // load users (no Comment->User relation required)
   const users = await prisma.user.findMany({
     where: { id: { in: userIds } },
     select: { id: true, name: true, role: true },
   });
-  const userById = new Map<string, UserMini>();
-  for (const u of users) userById.set(u.id, { id: u.id, name: u.name ?? null, role: u.role ?? null });
 
-  // likes counts + viewer likes via CommentLike (robust, avoids _count typing issues)
-  const commentLikeClient = (prisma as any).commentLike;
+  const userById = new Map<string, UserMini>();
+  for (const u of users) {
+    userById.set(u.id, { id: u.id, name: u.name ?? null, role: u.role ?? null });
+  }
+
+  // likes counts + viewer likes via CommentLike (optional model)
+  const commentLikeClient = (prisma as unknown as { commentLike?: any }).commentLike;
 
   const likesCountByCommentId = new Map<string, number>();
   const viewerLikedSet = new Set<string>();
 
   if (commentLikeClient && commentIds.length > 0) {
-    // groupBy commentId => count
     const grouped: Array<{ commentId: string; _count: { _all: number } }> =
       await commentLikeClient.groupBy({
         by: ["commentId"],
@@ -171,7 +197,6 @@ export async function GET(req: NextRequest, ctx: Ctx) {
       })
       .slice(0, take);
   } else {
-    // already ordered by createdAt desc, id desc from DB; just clamp
     items = items.slice(0, take);
   }
 
@@ -185,14 +210,13 @@ export async function POST(req: NextRequest, ctx: Ctx) {
 
   const s = await requireSessionApi();
   if (isNextResponse(s)) return s;
-  const session = s as any;
 
-  const userId = session?.user?.id as string | undefined;
-  const role = session?.user?.role as string | undefined;
+  const { id: userId, role: sessionRole } = getSessionUser(s);
   if (!userId) return jsonError(401, "Not authenticated");
 
-  const body = await req.json().catch(() => ({} as any));
-  const text = String(body?.text ?? body?.content ?? "").trim();
+  const body = (await req.json().catch(() => ({}))) as unknown;
+  const b = body as Record<string, unknown>;
+  const text = String(b?.text ?? b?.content ?? "").trim();
   if (!text) return jsonError(400, "Missing text");
 
   // seller user id (for badge)
@@ -212,7 +236,11 @@ export async function POST(req: NextRequest, ctx: Ctx) {
     select: { buyerId: true },
     distinct: ["buyerId"],
   });
-  const verifiedBuyerSet = new Set(buyers.map((b) => b.buyerId).filter(Boolean));
+  const verifiedBuyerSet = new Set(
+    buyers
+      .map((b) => b.buyerId)
+      .filter((x): x is string => typeof x === "string" && x.length > 0)
+  );
 
   // create comment
   const created = await prisma.comment.create({
@@ -225,7 +253,9 @@ export async function POST(req: NextRequest, ctx: Ctx) {
     select: { id: true, name: true, role: true },
   });
 
-  const isAdmin = (user?.role ?? role) === "ADMIN";
+  const effectiveRole: Role | null = user?.role ?? sessionRole ?? null;
+
+  const isAdmin = effectiveRole === "ADMIN";
   const isSeller = !!sellerUserId && created.userId === sellerUserId;
   const isVerifiedBuyer = verifiedBuyerSet.has(created.userId);
 

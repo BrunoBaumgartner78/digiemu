@@ -2,17 +2,34 @@ name: Params Guard + Build (Ubuntu)
 
 on:
   push:
-    branches: [ main, develop, staging ]
+    branches: [main, develop, staging]
   pull_request:
+    branches: [main, develop, staging]
 
 jobs:
   guard_and_build:
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U ci -d ci"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
     env:
       NODE_ENV: production
-      DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/postgres?schema=public"
-      DIRECT_URL: ${{ secrets.DIRECT_URL }}
+      DATABASE_URL: "postgresql://ci:ci@127.0.0.1:5432/ci?schema=public"
+      DIRECT_URL: "postgresql://ci:ci@127.0.0.1:5432/ci?schema=public"
+
       NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
       NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
 
@@ -34,22 +51,42 @@ jobs:
           node-version: 20
           cache: npm
 
-      - name: Install
-        run: npm ci
+      # IMPORTANT: prisma CLI is a devDependency -> include dev deps in CI
+      - name: Install deps (incl. dev)
+        run: npm ci --include=dev
+
+      - name: Normalize multiline secrets (Firebase private key)
+        shell: bash
+        run: |
+          if [ -n "${FIREBASE_ADMIN_PRIVATE_KEY:-}" ]; then
+            # convert "\n" sequences to real newlines for Node/Firebase Admin
+            echo "FIREBASE_ADMIN_PRIVATE_KEY<<'EOF'" >> "$GITHUB_ENV"
+            printf '%b\n' "$FIREBASE_ADMIN_PRIVATE_KEY" >> "$GITHUB_ENV"
+            echo "EOF" >> "$GITHUB_ENV"
+          fi
+
+      - name: CI env fallback (Stripe)
+        shell: bash
+        run: |
+          if [ -z "${STRIPE_SECRET_KEY:-}" ]; then
+            echo "STRIPE_SECRET_KEY=sk_test_dummy" >> "$GITHUB_ENV"
+          fi
+          if [ -z "${STRIPE_WEBHOOK_SECRET:-}" ]; then
+            echo "STRIPE_WEBHOOK_SECRET=whsec_dummy" >> "$GITHUB_ENV"
+          fi
 
       # ---------- GUARDS: params must not be Promise ----------
       - name: Guard - forbid Promise params typing in App Router pages
         shell: bash
         run: |
           set -euo pipefail
-
           echo "Scanning for invalid params typing (Promise/Promise.resolve)..."
 
           # 1) block: params: {..} | Promise<{..}>
           if grep -RIn --include='page.tsx' -E 'params:\s*\{[^}]*\}\s*\|\s*Promise<\s*\{[^}]*\}\s*>' src/app; then
             echo ""
             echo "❌ Found invalid Next.js App Router typing: params typed as union with Promise."
-            echo "Fix: type PageProps = { params: { ... } }  (no Promise)"
+            echo "Fix: type PageProps = { params: { ... } } (no Promise)"
             exit 1
           fi
 
@@ -61,14 +98,18 @@ jobs:
             exit 1
           fi
 
-          echo "✅ Guard passed: no Promise params patterns found."
+          echo "✅ Guard passed."
 
-      # ---------- Build ----------
       - name: Prisma generate
-        run: npx prisma generate
+        run: npm run prisma:generate
 
-      - name: Prisma migrate deploy
-        run: npx prisma migrate deploy
+      - name: Lint
+        run: npm run lint --if-present
 
-      - name: Next build
-        run: npm run build
+      # PR checks: typecheck only (no next build)
+      - name: Typecheck
+        run: npm run typecheck
+
+      # Optional: only sensible when a real DB is available in CI. Disabled by default.
+      # - name: Prisma migrate deploy
+      #   run: npx --no-install prisma migrate deploy

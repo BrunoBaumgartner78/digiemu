@@ -1,7 +1,9 @@
-﻿import { NextResponse } from "next/server";
+﻿// src/app/api/admin/downloads/export/route.ts
+import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdminApi } from "@/lib/auth/requireAdminApi";
-
+import type { NextRequest } from "next/server";
+import type { Prisma } from "@prisma/client";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -25,7 +27,8 @@ function endOfDay(d: Date): Date {
 }
 
 export async function GET(req: Request) {
-  await requireAdminApi();
+  const maybe = await requireAdminApi(req as NextRequest);
+  if (maybe instanceof NextResponse) return maybe;
 
   const url = new URL(req.url);
 
@@ -35,19 +38,22 @@ export async function GET(req: Request) {
   const vendorId = url.searchParams.get("vendorId") ?? undefined;
   const buyerId = url.searchParams.get("buyerId") ?? undefined;
 
-  const pageSize = Math.min(5000, Math.max(1, Number(url.searchParams.get("pageSize") ?? "500")));
+  const pageSize = Math.min(
+    5000,
+    Math.max(1, Number(url.searchParams.get("pageSize") ?? "500"))
+  );
   const page = Math.max(1, Number(url.searchParams.get("page") ?? "1"));
 
   const fromD = parseDateMaybe(from);
   const toRaw = parseDateMaybe(to);
   const toD = toRaw ? endOfDay(toRaw) : undefined;
 
-  const where: any = {};
+  const where: Prisma.DownloadLinkWhereInput = {};
 
   if (fromD || toD) {
     where.createdAt = {};
-    if (fromD) where.createdAt.gte = fromD;
-    if (toD) where.createdAt.lte = toD;
+    if (fromD) (where.createdAt as Prisma.DateTimeFilter).gte = fromD;
+    if (toD) (where.createdAt as Prisma.DateTimeFilter).lte = toD;
   }
 
   if (buyerId || productId || vendorId) {

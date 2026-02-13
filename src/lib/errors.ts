@@ -1,8 +1,13 @@
-export function getErrorMessage(err: unknown, fallback = "Unbekannter Fehler") {
-  if (typeof err === "string") return err;
-  if (err && typeof err === "object" && "message" in err) {
-    const m = (err as { message?: unknown }).message;
-    if (typeof m === "string" && m.trim()) return m;
+// src/lib/errors.ts
+export function getErrorMessage(e: unknown, fallback = "Unbekannter Fehler"): string {
+  if (e instanceof Error) return e.message;
+  if (typeof e === "string") return e;
+  try {
+    return JSON.stringify(e);
+  } catch {
+    return fallback;
   }
-  return fallback;
 }
+
+// Alias, falls du bereits toErrorMessage importierst
+export const toErrorMessage = getErrorMessage;

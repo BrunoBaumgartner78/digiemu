@@ -60,7 +60,7 @@ export default function ProductDrilldownModal({ productId, onClose }: ProductDri
   const kpisSales = typeof kpis.sales === "number" ? kpis.sales : 0;
   const kpisCtr = typeof kpis.ctr === "number" ? kpis.ctr : 0;
   const kpisRevenueCents = typeof kpis.revenueCents === "number" ? kpis.revenueCents : 0;
-  const safeChartData = chartData as unknown as any[];
+  const safeChartData = chartData as unknown as unknown[];
   const safeFunnel = funnel as unknown as any;
 
   return (

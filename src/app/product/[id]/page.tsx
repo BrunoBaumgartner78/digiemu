@@ -48,8 +48,13 @@ export default async function ProductPage({ params }: ProductPageProps) {
     return typeof id === "string" && id.length > 0 ? id : null;
   })();
 
-  const p = await prisma.product.findUnique({
-    where: { id: pid },
+  const p = await prisma.product.findFirst({
+    where: {
+      id: pid,
+      isActive: true,
+      status: "ACTIVE",
+      vendor: { isBlocked: false },
+    },
     select: {
       id: true,
       title: true,
@@ -82,10 +87,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
     },
   });
 
-  // ✅ harte Guards
+  // ✅ harte Guards (defensive fallback – query already enforces ACTIVE + not blocked)
   if (!p) notFound();
-  if (!p.isActive || p.status !== "ACTIVE") notFound();
-  if (p.vendor?.isBlocked) notFound();
 
   // ✅ Fallback: wenn product.vendorProfile null ist → via userId nachladen
   const vendorProfile =

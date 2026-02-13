@@ -1,32 +1,32 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import styles from "./DownloadsFilters.module.css";
+import { toErrorMessage } from "@/lib/errors";
 
 type Item = { id: string; label: string };
 
 const MIN_LEN = 2;
+const DEBOUNCE_MS = 200;
 
 async function fetchJSON<T>(url: string, signal?: AbortSignal): Promise<T> {
   const r = await fetch(url, { cache: "no-store", signal });
   const txt = await r.text();
+
   if (!r.ok) {
     let msg = txt;
     try {
-      const j = JSON.parse(txt);
-      msg = (j?.error || j?.message || txt) as string;
+      const j = JSON.parse(txt) as { error?: string; message?: string };
+      msg = j?.error || j?.message || txt;
     } catch {}
     throw new Error(`${r.status} ${r.statusText}: ${msg}`);
   }
+
   return JSON.parse(txt) as T;
 }
 
-function debounce<T extends (...args: any[]) => void>(fn: T, ms: number) {
-  let t: any;
-  return (...args: Parameters<T>) => {
-    clearTimeout(t);
-    t = setTimeout(() => fn(...args), ms);
-  };
+function isAbortError(e: unknown) {
+  return typeof e === "object" && e !== null && (e as any).name === "AbortError";
 }
 
 export default function DownloadsFilters(props: {
@@ -54,89 +54,94 @@ export default function DownloadsFilters(props: {
   const [to, setTo] = useState(props.to ?? "");
   const [pageSize, setPageSize] = useState(String(props.pageSize));
 
-  const loadProducts = useMemo(
-    () =>
-      debounce(async (q: string) => {
-        if (q.trim().length < MIN_LEN) {
-          setProductItems([]);
-          return;
-        }
-        const ac = new AbortController();
-        try {
-          setError(null);
-          const data = await fetchJSON<{ items: Item[] }>(
-            `/api/admin/lookup/products?q=${encodeURIComponent(q)}&take=20`,
-            ac.signal
-          );
-          setProductItems(data.items);
-        } catch (e: any) {
-          if (e?.name === "AbortError") return;
-          setError(e?.message ?? "Lookup products failed");
-          setProductItems([]);
-        }
-      }, 200),
-    []
-  );
+  // --- Products lookup (debounced + abortable, lint-safe)
+  useEffect(() => {
+    const q = productQ.trim();
+    if (q.length < MIN_LEN) return;
 
-  const loadVendors = useMemo(
-    () =>
-      debounce(async (q: string) => {
-        if (q.trim().length < MIN_LEN) {
-          setVendorItems([]);
-          return;
-        }
-        const ac = new AbortController();
-        try {
-          setError(null);
-          const data = await fetchJSON<{ items: Item[] }>(
-            `/api/admin/lookup/users?role=VENDOR&q=${encodeURIComponent(q)}&take=20`,
-            ac.signal
-          );
-          setVendorItems(data.items);
-        } catch (e: any) {
-          if (e?.name === "AbortError") return;
-          setError(e?.message ?? "Lookup vendors failed");
-          setVendorItems([]);
-        }
-      }, 200),
-    []
-  );
+    const ac = new AbortController();
+    const t = setTimeout(async () => {
+      try {
+        setError(null);
+        const data = await fetchJSON<{ items: Item[] }>(
+          `/api/admin/lookup/products?q=${encodeURIComponent(q)}&take=20`,
+          ac.signal
+        );
+        if (!ac.signal.aborted) setProductItems(data.items);
+      } catch (e: unknown) {
+        if (isAbortError(e)) return;
+        setError(toErrorMessage(e) || "Lookup products failed");
+        setProductItems([]);
+      }
+    }, DEBOUNCE_MS);
 
-  const loadBuyers = useMemo(
-    () =>
-      debounce(async (q: string) => {
-        if (q.trim().length < MIN_LEN) {
-          setBuyerItems([]);
-          return;
-        }
-        const ac = new AbortController();
-        try {
-          setError(null);
-          const data = await fetchJSON<{ items: Item[] }>(
-            `/api/admin/lookup/users?role=BUYER&q=${encodeURIComponent(q)}&take=20`,
-            ac.signal
-          );
-          setBuyerItems(data.items);
-        } catch (e: any) {
-          if (e?.name === "AbortError") return;
-          setError(e?.message ?? "Lookup buyers failed");
-          setBuyerItems([]);
-        }
-      }, 200),
-    []
-  );
+    return () => {
+      clearTimeout(t);
+      ac.abort();
+    };
+  }, [productQ]);
 
-  useEffect(() => void loadProducts(productQ), [productQ, loadProducts]);
-  useEffect(() => void loadVendors(vendorQ), [vendorQ, loadVendors]);
-  useEffect(() => void loadBuyers(buyerQ), [buyerQ, loadBuyers]);
+  // --- Vendors lookup
+  useEffect(() => {
+    const q = vendorQ.trim();
+    if (q.length < MIN_LEN) return;
+
+    const ac = new AbortController();
+    const t = setTimeout(async () => {
+      try {
+        setError(null);
+        const data = await fetchJSON<{ items: Item[] }>(
+          `/api/admin/lookup/users?role=VENDOR&q=${encodeURIComponent(q)}&take=20`,
+          ac.signal
+        );
+        if (!ac.signal.aborted) setVendorItems(data.items);
+      } catch (e: unknown) {
+        if (isAbortError(e)) return;
+        setError(toErrorMessage(e) || "Lookup vendors failed");
+        setVendorItems([]);
+      }
+    }, DEBOUNCE_MS);
+
+    return () => {
+      clearTimeout(t);
+      ac.abort();
+    };
+  }, [vendorQ]);
+
+  // --- Buyers lookup
+  useEffect(() => {
+    const q = buyerQ.trim();
+    if (q.length < MIN_LEN) return;
+
+    const ac = new AbortController();
+    const t = setTimeout(async () => {
+      try {
+        setError(null);
+        const data = await fetchJSON<{ items: Item[] }>(
+          `/api/admin/lookup/users?role=BUYER&q=${encodeURIComponent(q)}&take=20`,
+          ac.signal
+        );
+        if (!ac.signal.aborted) setBuyerItems(data.items);
+      } catch (e: unknown) {
+        if (isAbortError(e)) return;
+        setError(toErrorMessage(e) || "Lookup buyers failed");
+        setBuyerItems([]);
+      }
+    }, DEBOUNCE_MS);
+
+    return () => {
+      clearTimeout(t);
+      ac.abort();
+    };
+  }, [buyerQ]);
 
   return (
     <form className={styles.fForm} action="/admin/downloads" method="get">
-      {/* Hidden IDs */}
       <input type="hidden" name="productId" value={productId} />
       <input type="hidden" name="vendorId" value={vendorId} />
       <input type="hidden" name="buyerId" value={buyerId} />
-      {/* ✅ Text-Fallback Filter (wenn keine ID gewählt wurde) */}
+
+      {/* Text-Fallback */}
       <input type="hidden" name="productQ" value={productQ} />
       <input type="hidden" name="vendorQ" value={vendorQ} />
       <input type="hidden" name="buyerQ" value={buyerQ} />
@@ -144,17 +149,34 @@ export default function DownloadsFilters(props: {
       <div className={styles.fGrid}>
         <label className={styles.fField}>
           <span className={styles.fLabel}>From</span>
-          <input className={styles.fInput} name="from" value={from} onChange={(e) => setFrom(e.target.value)} placeholder="YYYY-MM-DD" />
+          <input
+            className={styles.fInput}
+            name="from"
+            value={from}
+            onChange={(e) => setFrom(e.target.value)}
+            placeholder="YYYY-MM-DD"
+          />
         </label>
 
         <label className={styles.fField}>
           <span className={styles.fLabel}>To</span>
-          <input className={styles.fInput} name="to" value={to} onChange={(e) => setTo(e.target.value)} placeholder="YYYY-MM-DD" />
+          <input
+            className={styles.fInput}
+            name="to"
+            value={to}
+            onChange={(e) => setTo(e.target.value)}
+            placeholder="YYYY-MM-DD"
+          />
         </label>
 
         <label className={styles.fField}>
           <span className={styles.fLabel}>Page size</span>
-          <input className={styles.fInput} name="pageSize" value={pageSize} onChange={(e) => setPageSize(e.target.value)} />
+          <input
+            className={styles.fInput}
+            name="pageSize"
+            value={pageSize}
+            onChange={(e) => setPageSize(e.target.value)}
+          />
         </label>
       </div>
 
@@ -162,17 +184,27 @@ export default function DownloadsFilters(props: {
       <div className={styles.fField}>
         <span className={styles.fLabel}>Produkt suchen</span>
         <div className={styles.fRow}>
-            <input
+          <input
             name="productQ"
             className={styles.fInput}
             value={productQ}
             onChange={(e) => {
-              setProductQ(e.target.value);
+              const v = e.target.value;
+              setProductQ(v);
               setProductId("");
+              if (v.trim().length < MIN_LEN) setProductItems([]);
             }}
             placeholder="Titel tippen…"
           />
-          <button className={`${styles.fBtn} ${styles.fBtnGhost}`} type="button" onClick={() => { setProductQ(""); setProductId(""); setProductItems([]); }}>
+          <button
+            className={`${styles.fBtn} ${styles.fBtnGhost}`}
+            type="button"
+            onClick={() => {
+              setProductQ("");
+              setProductId("");
+              setProductItems([]);
+            }}
+          >
             Clear
           </button>
         </div>
@@ -196,7 +228,11 @@ export default function DownloadsFilters(props: {
           </div>
         )}
 
-        {productId && <div className={styles.fHint}>Selected: <span className={styles.fPill}>{productId}</span></div>}
+        {productId && (
+          <div className={styles.fHint}>
+            Selected: <span className={styles.fPill}>{productId}</span>
+          </div>
+        )}
       </div>
 
       {/* Vendor */}
@@ -208,12 +244,22 @@ export default function DownloadsFilters(props: {
             className={styles.fInput}
             value={vendorQ}
             onChange={(e) => {
-              setVendorQ(e.target.value);
+              const v = e.target.value;
+              setVendorQ(v);
               setVendorId("");
+              if (v.trim().length < MIN_LEN) setVendorItems([]);
             }}
             placeholder="E-Mail oder Name…"
           />
-          <button className={`${styles.fBtn} ${styles.fBtnGhost}`} type="button" onClick={() => { setVendorQ(""); setVendorId(""); setVendorItems([]); }}>
+          <button
+            className={`${styles.fBtn} ${styles.fBtnGhost}`}
+            type="button"
+            onClick={() => {
+              setVendorQ("");
+              setVendorId("");
+              setVendorItems([]);
+            }}
+          >
             Clear
           </button>
         </div>
@@ -237,7 +283,11 @@ export default function DownloadsFilters(props: {
           </div>
         )}
 
-        {vendorId && <div className={styles.fHint}>Selected: <span className={styles.fPill}>{vendorId}</span></div>}
+        {vendorId && (
+          <div className={styles.fHint}>
+            Selected: <span className={styles.fPill}>{vendorId}</span>
+          </div>
+        )}
       </div>
 
       {/* Buyer */}
@@ -249,12 +299,22 @@ export default function DownloadsFilters(props: {
             className={styles.fInput}
             value={buyerQ}
             onChange={(e) => {
-              setBuyerQ(e.target.value);
+              const v = e.target.value;
+              setBuyerQ(v);
               setBuyerId("");
+              if (v.trim().length < MIN_LEN) setBuyerItems([]);
             }}
             placeholder="E-Mail oder Name…"
           />
-          <button className={`${styles.fBtn} ${styles.fBtnGhost}`} type="button" onClick={() => { setBuyerQ(""); setBuyerId(""); setBuyerItems([]); }}>
+          <button
+            className={`${styles.fBtn} ${styles.fBtnGhost}`}
+            type="button"
+            onClick={() => {
+              setBuyerQ("");
+              setBuyerId("");
+              setBuyerItems([]);
+            }}
+          >
             Clear
           </button>
         </div>
@@ -278,7 +338,11 @@ export default function DownloadsFilters(props: {
           </div>
         )}
 
-        {buyerId && <div className={styles.fHint}>Selected: <span className={styles.fPill}>{buyerId}</span></div>}
+        {buyerId && (
+          <div className={styles.fHint}>
+            Selected: <span className={styles.fPill}>{buyerId}</span>
+          </div>
+        )}
       </div>
 
       <div className={styles.fActions}>
@@ -289,11 +353,8 @@ export default function DownloadsFilters(props: {
           Reset
         </a>
       </div>
-      {error && (
-        <div className={styles.fHint}>
-          ⚠ {error}
-        </div>
-      )}
+
+      {error && <div className={styles.fHint}>⚠ {error}</div>}
     </form>
   );
 }

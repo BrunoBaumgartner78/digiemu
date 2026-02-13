@@ -13,7 +13,8 @@ jobs:
     timeout-minutes: 15
 
     env:
-      DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/postgres?schema=public"
+      DATABASE_URL: "postgresql://ci:ci@127.0.0.1:5432/ci?schema=public"
+      DIRECT_URL: "postgresql://ci:ci@127.0.0.1:5432/ci?schema=public"
 
     steps:
       - name: Checkout
@@ -26,10 +27,10 @@ jobs:
           cache: npm
 
       - name: Install
-        run: npm ci
+        run: npm ci --include=dev
 
       - name: Prisma Generate
-        run: npx prisma generate
+        run: npm run prisma:generate
 
       - name: Lint
         run: npm run lint
@@ -53,7 +54,8 @@ jobs:
     needs: [verify]
     if: ${{ false }} # set to true when ready
     env:
-      DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/postgres?schema=public"
+      DATABASE_URL: "postgresql://ci:ci@127.0.0.1:5432/ci?schema=public"
+      DIRECT_URL: "postgresql://ci:ci@127.0.0.1:5432/ci?schema=public"
 
     steps:
       - name: Checkout
@@ -66,10 +68,10 @@ jobs:
           cache: npm
 
       - name: Install
-        run: npm ci
+        run: npm ci --include=dev
 
       - name: Prisma Generate
-        run: npx prisma generate
+        run: npm run prisma:generate
 
       - name: Run blocked-status consistency script
         run: node scripts/guard-blocked-status.mjs

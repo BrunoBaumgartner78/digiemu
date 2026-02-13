@@ -1,3 +1,4 @@
+// src/app/api/admin/downloads/stats/route.ts
 import { NextResponse } from "next/server";
 import { requireAdminApi } from "@/lib/auth/requireAdminApi";
 import { getAdminDownloads } from "@/lib/admin/downloads";
@@ -6,7 +7,9 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: Request) {
-  const maybe = await requireAdminApi();
+  // requireAdminApi erwartet bei dir NextRequest – wir geben ihm trotzdem req,
+  // aber "Request" reicht TS nicht. Daher casten wir sauber.
+  const maybe = await requireAdminApi(req as any);
   if (maybe instanceof NextResponse) return maybe;
 
   const url = new URL(req.url);
@@ -17,7 +20,7 @@ export async function GET(req: Request) {
   const vendorId = url.searchParams.get("vendorId") ?? undefined;
   const buyerId = url.searchParams.get("buyerId") ?? undefined;
 
-  // Für Stats holen wir "genug" Rows, damit pie sinnvoll ist (Limit bleibt in getAdminDownloads bei max 200)
+  // Für Stats holen wir "genug" Rows, damit pie sinnvoll ist
   const result = await getAdminDownloads({
     page: 1,
     pageSize: 200,

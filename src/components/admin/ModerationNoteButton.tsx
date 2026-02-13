@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toErrorMessage } from "@/lib/errors";
 import { useRouter } from "next/navigation";
 
 type Props = {
@@ -59,8 +60,8 @@ export default function ModerationNoteButton({
       } catch {
         window.location.reload();
       }
-    } catch (e: any) {
-      setErr(e?.message ?? "Fehler");
+    } catch (e: unknown) {
+      setErr(toErrorMessage(e) || "Fehler");
     } finally {
       setLoading(false);
     }

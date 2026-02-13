@@ -13,7 +13,8 @@ jobs:
     timeout-minutes: 10
 
     env:
-      DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/postgres?schema=public"
+      DATABASE_URL: "postgresql://ci:ci@127.0.0.1:5432/ci?schema=public"
+      DIRECT_URL: "postgresql://ci:ci@127.0.0.1:5432/ci?schema=public"
 
     steps:
       - name: Checkout

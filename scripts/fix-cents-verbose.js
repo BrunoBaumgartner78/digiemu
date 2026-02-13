@@ -1,21 +1,12 @@
-// scripts/fix-cents-verbose.js
-// Repairs suspicious cents values (like 1 instead of 100) with verbose logging.
-// Strategy:
-// - Products: if priceCents > 0 && priceCents < THRESHOLD => multiply by 100
-// - Orders:   if amountCents > 0 && amountCents < THRESHOLD => multiply by 100
+import dotenv from "dotenv";
+import { PrismaClient } from "@prisma/client";
 
-try {
-  require("dotenv").config({ path: ".env.local" });
-} catch (e) {
-  console.warn("dotenv not available (ok if env already set).", e?.message);
-}
+dotenv.config({ path: ".env.local" });
 
-const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
-
 const THRESHOLD = 50; // cents
 
-(async () => {
+async function main() {
   console.log("DATABASE_URL set?", !!process.env.DATABASE_URL);
 
   // ---- Products
@@ -45,11 +36,13 @@ const THRESHOLD = 50; // cents
   }
 
   console.log("DONE.");
-})()
+}
+
+main()
   .catch((e) => {
     console.error("FIX ERROR:", e);
-    process.exitCode = 1;
+    process.exit(1);
   })
   .finally(async () => {
-    await prisma.$disconnect().catch(() => {});
+    await prisma.$disconnect();
   });

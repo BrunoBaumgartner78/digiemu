@@ -4,13 +4,12 @@ import type { Session } from "next-auth";
 import { requireSessionApi } from "@/lib/guards/authz";
 import { prisma } from "@/lib/prisma";
 import { isRecord, getString, getErrorMessage } from "@/lib/guards";
-import Stripe from "stripe";
+import { getStripe } from "@/lib/stripe";
 import { rateLimitCheck, keyFromReq } from "@/lib/rateLimit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
 
 export function GET() {
   return new NextResponse("Method Not Allowed", { status: 405 });
@@ -68,7 +67,8 @@ export async function POST(_req: NextRequest) {
   const origin = _req.nextUrl.origin;
 
   // 1) Checkout Session zuerst erstellen (ohne orderId)
-  const checkout = await stripe.checkout.sessions.create({
+  const sClient = getStripe();
+  const checkout = await sClient.checkout.sessions.create({
     mode: "payment",
     payment_method_types: ["card"],
     line_items: [
@@ -103,7 +103,7 @@ export async function POST(_req: NextRequest) {
   });
 
   // 3) Stripe Session metadata nachträglich ergänzen (Webhook braucht orderId)
-  await stripe.checkout.sessions.update(checkout.id, {
+  await sClient.checkout.sessions.update(checkout.id, {
     metadata: {
       orderId: order.id,
       productId: product.id,

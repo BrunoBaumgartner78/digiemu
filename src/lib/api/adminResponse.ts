@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
-export function ok(data: any = { ok: true }, init?: ResponseInit) {
-  return NextResponse.json(data, {
+export function ok<T = unknown>(data: T, init?: ResponseInit) {
+  return NextResponse.json({ ok: true, data }, {
     status: 200,
     headers: { "Cache-Control": "no-store", ...(init?.headers ?? {}) },
     ...init,
@@ -19,6 +19,6 @@ export function unauth() {
   return bad("Unauthorized", 401);
 }
 
-export function fail(message: string) {
-  return bad(message, 500);
+export function fail(message: unknown, status = 500) {
+  return bad(String(message ?? "Error"), status);
 }

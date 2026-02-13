@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdminApi } from "@/lib/guards/authz";
 import { prisma } from "@/lib/prisma";
-import { VendorStatus } from "@prisma/client";
+import { ProductStatus, VendorStatus, PayoutStatus, Role } from "@prisma/client";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
       ? (statusRaw as VendorStatus)
       : undefined;
 
-  const where: any = {};
+  const where: Record<string, unknown> = {};
   if (q) {
     where.OR = [
       { displayName: { contains: q, mode: "insensitive" } },

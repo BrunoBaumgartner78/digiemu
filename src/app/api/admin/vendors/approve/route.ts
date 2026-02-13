@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth/requireAdmin";
 import { prisma } from "@/lib/prisma";
-import { VendorStatus } from "@prisma/client";
+import { ProductStatus, VendorStatus, PayoutStatus, Role } from "@prisma/client";
+import { toErrorMessage } from "@/lib/errors";
 
 export const runtime = "nodejs";
 
@@ -31,8 +32,8 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ ok: true });
-  } catch (e: any) {
-    console.error("[admin/vendors/approve] ERROR", e);
-    return NextResponse.json({ error: e?.message ?? "Internal error" }, { status: 500 });
+  } catch (e: unknown) {
+    console.error("[admin/vendors/approve] ERROR", toErrorMessage(e));
+    return NextResponse.json({ error: toErrorMessage(e) ?? "Internal error" }, { status: 500 });
   }
 }

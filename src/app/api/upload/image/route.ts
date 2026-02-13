@@ -3,6 +3,21 @@ import type { Session } from "next-auth";
 import { requireSessionApi } from "@/lib/guards/authz";
 import { getErrorMessage } from "@/lib/guards";
 import { adminBucket } from "@/lib/firebaseAdmin";
+const isCiBuild = () =>
+  process.env.CI === "true" || process.env.GITHUB_ACTIONS === "true";
+
+function requireFirebaseAdminEnv() {
+  if (isCiBuild() && process.env.NODE_ENV !== "production") return;
+  const missing = [
+    "FIREBASE_ADMIN_PROJECT_ID",
+    "FIREBASE_ADMIN_CLIENT_EMAIL",
+    "FIREBASE_ADMIN_PRIVATE_KEY",
+  ].filter((k) => !process.env[k]);
+
+  if (missing.length) {
+    throw new Error(`Missing Firebase Admin env vars (${missing.join(", ")})`);
+  }
+}
 import { randomUUID } from "crypto";
 
 export const runtime = "nodejs";
@@ -21,6 +36,9 @@ export async function POST(_req: Request) {
     if (sessionOrResp instanceof NextResponse) return sessionOrResp;
     const session = sessionOrResp as Session;
     if (!session?.user?.id) return jsonError("Unauthorized", 401);
+
+    // Ensure Firebase Admin env is present at runtime; avoid throwing during CI build
+    requireFirebaseAdminEnv();
 
     const form = await _req.formData();
     const file = form.get("file");
@@ -52,7 +70,7 @@ export async function POST(_req: Request) {
     const token = randomUUID();
 
     // ✅ adminBucket ist ein Objekt -> NICHT adminBucket()
-   const storageFile = adminBucket.file(objectPath);
+  const storageFile = adminBucket.file(objectPath);
 
     await storageFile.save(buffer, {
       resumable: false,

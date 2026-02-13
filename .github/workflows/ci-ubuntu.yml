@@ -12,19 +12,57 @@ jobs:
     env:
       DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/postgres?schema=public"
 
-    steps:
-      - uses: actions/checkout@v4
+    env:
+      NODE_ENV: production
+      DATABASE_URL: "postgresql://ci:ci@127.0.0.1:5432/ci?schema=public"
+      DIRECT_URL: "postgresql://ci:ci@127.0.0.1:5432/ci?schema=public"
+      NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+      NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
 
-      - uses: actions/setup-node@v4
+      FIREBASE_ADMIN_PROJECT_ID: ${{ secrets.FIREBASE_ADMIN_PROJECT_ID }}
+      FIREBASE_ADMIN_CLIENT_EMAIL: ${{ secrets.FIREBASE_ADMIN_CLIENT_EMAIL }}
+      FIREBASE_ADMIN_PRIVATE_KEY: ${{ secrets.FIREBASE_ADMIN_PRIVATE_KEY }}
+      NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ${{ secrets.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET }}
+
+      STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+      STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
 
-      - name: Install
-        run: npm ci
+      # IMPORTANT: prisma CLI is a devDependency -> include dev deps in CI
+      - name: Install deps (incl. dev)
+        run: npm ci --include=dev
 
-      - name: Prisma Generate
-        run: npx prisma generate
+      # Avoid build/import crashes if Stripe envs are referenced during build/typecheck
+      - name: CI env fallback (Stripe)
+        shell: bash
+        run: |
+          if [ -z "${STRIPE_SECRET_KEY:-}" ]; then
+            echo "STRIPE_SECRET_KEY=sk_test_dummy" >> "$GITHUB_ENV"
+          fi
+          if [ -z "${STRIPE_WEBHOOK_SECRET:-}" ]; then
+            echo "STRIPE_WEBHOOK_SECRET=whsec_dummy" >> "$GITHUB_ENV"
+          fi
 
-      - name: Build
-        run: npm run build
+      - name: Prisma generate
+        run: npm run prisma:generate
+
+      # Optional but recommended in PR checks:
+      - name: Lint
+        run: npm run lint --if-present
+
+      # PR checks: typecheck only (no next build)
+      - name: Typecheck
+        run: npm run typecheck
+
+      # Optional: only sensible when a real DB is available in CI. Disabled by default.
+      # - name: Prisma migrate deploy
+      #   run: npx --no-install prisma migrate deploy

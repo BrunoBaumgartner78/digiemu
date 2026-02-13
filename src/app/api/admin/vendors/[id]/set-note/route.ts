@@ -10,10 +10,14 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
   const { actorId, ipAddress, userAgent } = await requireAdminContext();
   const { id: userId } = await ctx.params;
 
-  let body: any = null;
-  try { body = await req.json(); } catch { body = null; }
+  let body: unknown = null;
+  try {
+    body = await req.json();
+  } catch {
+    body = null;
+  }
 
-  const noteRaw = body?.note;
+  const noteRaw = (body as Record<string, unknown>)?.note;
   const note =
     noteRaw === null ? null : typeof noteRaw === "string" ? noteRaw.trim().slice(0, 500) || null : null;
 
