@@ -256,7 +256,7 @@ export default function NewProductPage() {
               <Link className="neobtn-sm ghost" href="/dashboard/products">
                 Zur Produktübersicht
               </Link>
-              <Link className="neobtn-sm ghost" href="/profile">
+              <Link className="neobtn-sm ghost" href="/account/profile">
                 Profil ansehen
               </Link>
             </div>
