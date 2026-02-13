@@ -20,7 +20,7 @@
     "build": "npm run prisma:generate && next build --webpack",
     "build:local": "npx prisma generate && next build",
     "prisma:generate": "prisma generate",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "typecheck": "npm run prisma:generate && tsc -p tsconfig.json --noEmit",
     "check": "npm run typecheck && npm run build"
   },
   "dependencies": {
