@@ -47,46 +47,32 @@ jobs:
           chmod +x ./ci-prepare-env.sh || true
           ./ci-prepare-env.sh
 
-      # Fix: some docs/checks reference this file; ensure it exists during CI.
-      - name: Ensure app/etc/local.xml.template exists (CI only)
+      # Fix: markdown-link-check tries to open these local paths if they appear in docs.
+      - name: Ensure local.xml.template placeholders exist
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p app/etc
-          if [ ! -f app/etc/local.xml.template ]; then
-            echo "<!-- CI placeholder -->" > app/etc/local.xml.template
-          fi
+          mkdir -p app/etc src/app/etc
+          : > app/etc/local.xml.template
+          : > src/app/etc/local.xml.template
 
       # ---------- 1) Markdown dead links ----------
       - name: Install markdown-link-check
         run: npm i -D markdown-link-check
-
-      - name: Ensure src/app/etc/local.xml.template exists (CI-safe)
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p src/app/etc
-          if [ ! -f src/app/etc/local.xml.template ]; then
-            echo "<!-- CI placeholder -->" > src/app/etc/local.xml.template
-          fi
 
       - name: Check markdown links
         shell: bash
         run: |
           set -euo pipefail
 
-          # Build list of tracked markdown files (exclude node_modules)
           MD_FILES="$(git ls-files '*.md' | grep -v '^node_modules/' || true)"
           if [ -z "$MD_FILES" ]; then
             echo "ℹ️ No markdown files found."
             exit 0
           fi
 
-          # Run markdown-link-check; avoid hard-failing on tool runtime errors (ENOENT, network flakiness).
-          echo "$MD_FILES" | xargs -r npx mlc --config .github/markdown-link-check.json || {
-            echo "⚠️ markdown-link-check had runtime errors. Check logs before merging.";
-            exit 1;
-          }
+          # Run markdown-link-check
+          echo "$MD_FILES" | xargs -r npx markdown-link-check --config .github/markdown-link-check.json
 
       # ---------- 2) Guard: obvious dead internal links ----------
       - name: Guard dead internal routes
@@ -104,13 +90,13 @@ jobs:
           #   href="/profile"
           #   href={'/profile'}
           #   href={"/profile"}
-          PROFILE_REGEX='href[[:space:]]*=[[:space:]]*(\{[[:space:]]*)?["'\'']/profile["'\'']([[:space:]]*\})?'
+          PROFILE_REGEX='href[[:space:]]*=[[:space:]]*(\{[[:space:]]*)?["'"'"']/profile["'"'"']([[:space:]]*\})?'
 
           # Match:
           #   href="/downloads"
           #   href={'/downloads'}
           #   href={"/downloads"}
-          DOWNLOADS_REGEX='href[[:space:]]*=[[:space:]]*(\{[[:space:]]*)?["'\'']/downloads["'\'']([[:space:]]*\})?'
+          DOWNLOADS_REGEX='href[[:space:]]*=[[:space:]]*(\{[[:space:]]*)?["'"'"']/downloads["'"'"']([[:space:]]*\})?'
 
           if grep -RIn \
             --include='*.ts' --include='*.tsx' --include='*.js' --include='*.jsx' \

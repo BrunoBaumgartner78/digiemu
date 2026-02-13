@@ -6,6 +6,6 @@
   "ignorePatterns": [
     { "pattern": "app/etc/local\\.xml\\.template" },
     { "pattern": "src/app/etc/local\\.xml\\.template" },
-    "node_modules/**"
+    { "pattern": "^node_modules/" }
   ]
 }
