@@ -1,15 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import Stripe from "stripe";
+import { getStripe } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-function getStripe() {
-  const key = process.env.STRIPE_SECRET_KEY;
-  if (!key) throw new Error("STRIPE_SECRET_KEY missing");
-  return new Stripe(key, { apiVersion: "2023-10-16" });
-}
 
 
 export async function GET(req: NextRequest) {
@@ -19,7 +14,8 @@ export async function GET(req: NextRequest) {
   }
 
   // 1) Stripe Session check
-  const s = await getStripe().checkout.sessions.retrieve(sessionId);
+  const sClient = getStripe();
+  const s = await sClient.checkout.sessions.retrieve(sessionId);
 
   // payment_status ist i.d.R. "paid" wenn ok
   if (s.payment_status !== "paid") {

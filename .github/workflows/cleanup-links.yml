@@ -37,8 +37,8 @@ jobs:
       - name: Check markdown links
         run: |
           set -e
-          # Limit scope and ignore node_modules (some packages include README with blocked links)
-          npx mlc README.md "docs/**/*.md" --ignore-path node_modules
+          # Build list of tracked markdown files (exclude node_modules)
+          git ls-files '*.md' | grep -v '^node_modules/' | xargs -r npx mlc --config .github/markdown-link-check.json || exit 1
 
       # ---------- 2) Guard: obvious dead internal links ----------
       - name: Guard dead internal routes
