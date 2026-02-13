@@ -30,9 +30,33 @@ jobs:
       - name: Install deps
         run: npm ci
 
+      - name: Prepare CI env (fallbacks + Prisma pre-steps)
+        shell: bash
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+          NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
+          FIREBASE_ADMIN_PROJECT_ID: ${{ secrets.FIREBASE_ADMIN_PROJECT_ID }}
+          FIREBASE_ADMIN_CLIENT_EMAIL: ${{ secrets.FIREBASE_ADMIN_CLIENT_EMAIL }}
+          FIREBASE_ADMIN_PRIVATE_KEY: ${{ secrets.FIREBASE_ADMIN_PRIVATE_KEY }}
+        run: |
+          chmod +x ./ci-prepare-env.sh || true
+          ./ci-prepare-env.sh
+
       # ---------- 1) Markdown dead links ----------
       - name: Install markdown-link-check
         run: npm i -D markdown-link-check
+
+      - name: Ensure local.xml.template exists (CI)
+        shell: bash
+        run: |
+          mkdir -p app/etc
+          if [ ! -f app/etc/local.xml.template ]; then
+            echo "<!-- CI placeholder -->" > app/etc/local.xml.template
+          fi
 
       - name: Check markdown links
         run: |

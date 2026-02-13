@@ -3,6 +3,22 @@ import type { Session } from "next-auth";
 import { requireSessionApi } from "@/lib/guards/authz";
 import { adminBucket } from "@/lib/firebaseAdmin";
 
+const isCiBuild = () =>
+  process.env.CI === "true" || process.env.GITHUB_ACTIONS === "true";
+
+function requireFirebaseAdminEnv() {
+  if (isCiBuild() && process.env.NODE_ENV !== "production") return;
+  const missing = [
+    "FIREBASE_ADMIN_PROJECT_ID",
+    "FIREBASE_ADMIN_CLIENT_EMAIL",
+    "FIREBASE_ADMIN_PRIVATE_KEY",
+  ].filter((k) => !process.env[k]);
+
+  if (missing.length) {
+    throw new Error(`Missing Firebase Admin env vars (${missing.join(", ")})`);
+  }
+}
+
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
@@ -11,6 +27,9 @@ export async function POST(_req: Request) {
   if (sessionOrResp instanceof NextResponse) return sessionOrResp;
   const session = sessionOrResp as Session;
   const userId = session?.user?.id as string | undefined;
+
+  // Ensure Firebase Admin env is present at runtime; avoid throwing during CI build
+  requireFirebaseAdminEnv();
 
   if (!userId) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
