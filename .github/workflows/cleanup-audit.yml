@@ -47,29 +47,21 @@ jobs:
           chmod +x ./ci-prepare-env.sh || true
           ./ci-prepare-env.sh
 
-      # Ensure placeholders exist BEFORE markdown-link-check runs.
-      # We create BOTH locations because some historical docs/tools might reference either.
+      # Fix: some markdown references point to app/etc/local.xml.template and/or src/app/etc/local.xml.template.
+      # markdown-link-check sometimes tries to open relative file paths; ensure both exist.
       - name: Ensure local.xml.template placeholders exist
         shell: bash
         run: |
           set -euo pipefail
 
-          mkdir -p app/etc
-          mkdir -p src/app/etc
+          mkdir -p app/etc src/app/etc
 
-          if [ ! -f app/etc/local.xml.template ]; then
-            echo "<!-- CI placeholder: app/etc/local.xml.template -->" > app/etc/local.xml.template
-          fi
+          : > app/etc/local.xml.template
+          : > src/app/etc/local.xml.template
 
-          if [ ! -f src/app/etc/local.xml.template ]; then
-            echo "<!-- CI placeholder: src/app/etc/local.xml.template -->" > src/app/etc/local.xml.template
-          fi
-
-          echo "🔎 Debug: verify placeholders"
-          ls -la app/etc || true
-          ls -la src/app/etc || true
-          test -f app/etc/local.xml.template && echo "✅ app/etc/local.xml.template exists"
-          test -f src/app/etc/local.xml.template && echo "✅ src/app/etc/local.xml.template exists"
+          echo "✅ placeholders ensured:"
+          ls -la app/etc
+          ls -la src/app/etc
 
       # ---------- 1) Markdown dead links ----------
       - name: Install markdown-link-check
@@ -80,6 +72,9 @@ jobs:
         run: |
           set -euo pipefail
 
+          # Ensure we run from repo root (actions/checkout checks out there, but be explicit)
+          cd "$GITHUB_WORKSPACE"
+
           MD_FILES="$(git ls-files '*.md' | grep -v '^node_modules/' || true)"
           if [ -z "$MD_FILES" ]; then
             echo "ℹ️ No markdown files found."
@@ -89,11 +84,14 @@ jobs:
           echo "🔎 Markdown files:"
           echo "$MD_FILES"
 
-          # Extra debug: show if any md contains the string (should be none, but helps if CI differs)
-          echo "🔎 Debug: search local.xml.template in markdown files (CI)"
-          echo "$MD_FILES" | xargs -r grep -n "local\.xml\.template" || true
+          # Debug: show occurrences of local.xml.template inside markdown (doesn't fail if none)
+          echo "🔎 Debug: search local.xml.template occurrences in markdown"
+          while IFS= read -r f; do
+            [ -n "$f" ] || continue
+            grep -n "local\.xml\.template" "$f" || true
+          done <<< "$MD_FILES"
 
-          # Run markdown-link-check. If it fails, we WANT to fail the job.
+          # Run markdown-link-check (fail job if it fails)
           echo "$MD_FILES" | xargs -r npx mlc --config .github/markdown-link-check.json
 
       # ---------- 2) Guard: obvious dead internal links ----------
