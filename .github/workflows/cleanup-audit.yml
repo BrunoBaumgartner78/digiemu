@@ -47,14 +47,29 @@ jobs:
           chmod +x ./ci-prepare-env.sh || true
           ./ci-prepare-env.sh
 
-      # Fix: markdown-link-check tries to open these local paths if they appear in docs.
+      # Ensure placeholders exist BEFORE markdown-link-check runs.
+      # We create BOTH locations because some historical docs/tools might reference either.
       - name: Ensure local.xml.template placeholders exist
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p app/etc src/app/etc
-          : > app/etc/local.xml.template
-          : > src/app/etc/local.xml.template
+
+          mkdir -p app/etc
+          mkdir -p src/app/etc
+
+          if [ ! -f app/etc/local.xml.template ]; then
+            echo "<!-- CI placeholder: app/etc/local.xml.template -->" > app/etc/local.xml.template
+          fi
+
+          if [ ! -f src/app/etc/local.xml.template ]; then
+            echo "<!-- CI placeholder: src/app/etc/local.xml.template -->" > src/app/etc/local.xml.template
+          fi
+
+          echo "🔎 Debug: verify placeholders"
+          ls -la app/etc || true
+          ls -la src/app/etc || true
+          test -f app/etc/local.xml.template && echo "✅ app/etc/local.xml.template exists"
+          test -f src/app/etc/local.xml.template && echo "✅ src/app/etc/local.xml.template exists"
 
       # ---------- 1) Markdown dead links ----------
       - name: Install markdown-link-check
@@ -71,8 +86,15 @@ jobs:
             exit 0
           fi
 
-          # Run markdown-link-check
-          echo "$MD_FILES" | xargs -r npx markdown-link-check --config .github/markdown-link-check.json
+          echo "🔎 Markdown files:"
+          echo "$MD_FILES"
+
+          # Extra debug: show if any md contains the string (should be none, but helps if CI differs)
+          echo "🔎 Debug: search local.xml.template in markdown files (CI)"
+          echo "$MD_FILES" | xargs -r grep -n "local\.xml\.template" || true
+
+          # Run markdown-link-check. If it fails, we WANT to fail the job.
+          echo "$MD_FILES" | xargs -r npx mlc --config .github/markdown-link-check.json
 
       # ---------- 2) Guard: obvious dead internal links ----------
       - name: Guard dead internal routes
@@ -81,22 +103,10 @@ jobs:
           set -euo pipefail
           echo "🔎 searching for common dead links..."
 
-          # IMPORTANT:
-          # Do NOT scan a repo-root "app/" because Next.js might treat it as App Router root.
-          # Our real app lives in src/app.
           TARGETS=("src")
 
-          # Match:
-          #   href="/profile"
-          #   href={'/profile'}
-          #   href={"/profile"}
-          PROFILE_REGEX='href[[:space:]]*=[[:space:]]*(\{[[:space:]]*)?["'"'"']/profile["'"'"']([[:space:]]*\})?'
-
-          # Match:
-          #   href="/downloads"
-          #   href={'/downloads'}
-          #   href={"/downloads"}
-          DOWNLOADS_REGEX='href[[:space:]]*=[[:space:]]*(\{[[:space:]]*)?["'"'"']/downloads["'"'"']([[:space:]]*\})?'
+          PROFILE_REGEX='href[[:space:]]*=[[:space:]]*(\{[[:space:]]*)?["'\'']/profile["'\'']([[:space:]]*\})?'
+          DOWNLOADS_REGEX='href[[:space:]]*=[[:space:]]*(\{[[:space:]]*)?["'\'']/downloads["'\'']([[:space:]]*\})?'
 
           if grep -RIn \
             --include='*.ts' --include='*.tsx' --include='*.js' --include='*.jsx' \
