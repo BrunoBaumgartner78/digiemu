@@ -32,54 +32,79 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: npm
 
-      - name: Install
-        run: npm ci --include=dev
+            env:
+              NODE_ENV: production
+              DATABASE_URL: "postgresql://ci:ci@127.0.0.1:5432/ci?schema=public"
+              DIRECT_URL: "postgresql://ci:ci@127.0.0.1:5432/ci?schema=public"
+              NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+              NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
 
-      - name: CI env fallback (Stripe)
-        shell: bash
-        run: |
-          if [ -z "${STRIPE_SECRET_KEY:-}" ]; then
-            echo "STRIPE_SECRET_KEY=sk_test_dummy" >> $GITHUB_ENV
-          fi
-          if [ -z "${STRIPE_WEBHOOK_SECRET:-}" ]; then
-            echo "STRIPE_WEBHOOK_SECRET=whsec_dummy" >> $GITHUB_ENV
-          fi
+              FIREBASE_ADMIN_PROJECT_ID: ${{ secrets.FIREBASE_ADMIN_PROJECT_ID }}
+              FIREBASE_ADMIN_CLIENT_EMAIL: ${{ secrets.FIREBASE_ADMIN_CLIENT_EMAIL }}
+              FIREBASE_ADMIN_PRIVATE_KEY: ${{ secrets.FIREBASE_ADMIN_PRIVATE_KEY }}
+              NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ${{ secrets.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET }}
 
-      # ---------- GUARDS: params must not be Promise ----------
-      - name: Guard - forbid Promise params typing in App Router pages
-        shell: bash
-        run: |
-          set -euo pipefail
+              STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+              STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
 
-          echo "Scanning for invalid params typing (Promise/Promise.resolve)..."
+            steps:
+              - name: Checkout
+                uses: actions/checkout@v4
 
-          # 1) block: params: {..} | Promise<{..}>
-          if grep -RIn --include='page.tsx' -E 'params:\s*\{[^}]*\}\s*\|\s*Promise<\s*\{[^}]*\}\s*>' src/app; then
-            echo ""
-            echo "❌ Found invalid Next.js App Router typing: params typed as union with Promise."
-            echo "Fix: type PageProps = { params: { ... } }  (no Promise)"
-            exit 1
-          fi
+              - name: Setup Node
+                uses: actions/setup-node@v4
+                with:
+                  node-version: 20
+                  cache: npm
 
-          # 2) block: Promise.resolve(params)
-          if grep -RIn --include='page.tsx' -F 'Promise.resolve(params)' src/app; then
-            echo ""
-            echo "❌ Found Promise.resolve(params) in page.tsx."
-            echo "Fix: use params.id directly (params are not a Promise)."
-            exit 1
-          fi
+              # IMPORTANT: prisma CLI is a devDependency -> include dev deps in CI
+              - name: Install deps (incl. dev)
+                run: npm ci --include=dev
 
-          echo "✅ Guard passed: no Promise params patterns found."
+              - name: CI env fallback (Stripe)
+                shell: bash
+                run: |
+                  if [ -z "${STRIPE_SECRET_KEY:-}" ]; then
+                    echo "STRIPE_SECRET_KEY=sk_test_dummy" >> "$GITHUB_ENV"
+                  fi
+                  if [ -z "${STRIPE_WEBHOOK_SECRET:-}" ]; then
+                    echo "STRIPE_WEBHOOK_SECRET=whsec_dummy" >> "$GITHUB_ENV"
+                  fi
 
-      # ---------- Build ----------
-      - name: Prisma generate
-        run: npm run prisma:generate
+              # ---------- GUARDS: params must not be Promise ----------
+              - name: Guard - forbid Promise params typing in App Router pages
+                shell: bash
+                run: |
+                  set -euo pipefail
+                  echo "Scanning for invalid params typing (Promise/Promise.resolve)..."
 
-      # Optional: only sensible when a real DB is available in CI. Disabled by default.
-      # - name: Prisma migrate deploy
-      #   run: npx --no-install prisma migrate deploy
+                  if grep -RIn --include='page.tsx' -E 'params:\s*\{[^}]*\}\s*\|\s*Promise<\s*\{[^}]*\}\s*>' src/app; then
+                    echo ""
+                    echo "❌ Found invalid Next.js App Router typing: params typed as union with Promise."
+                    echo "Fix: type PageProps = { params: { ... } }  (no Promise)"
+                    exit 1
+                  fi
 
-      - name: Typecheck (no Next build)
-        run: npm run typecheck
+                  if grep -RIn --include='page.tsx' -F 'Promise.resolve(params)' src/app; then
+                    echo ""
+                    echo "❌ Found Promise.resolve(params) in page.tsx."
+                    exit 1
+                  fi
+
+                  echo "✅ Guard passed."
+
+              - name: Prisma generate
+                run: npm run prisma:generate
+
+              # Optional but recommended in PR checks:
+              - name: Lint
+                run: npm run lint --if-present
+
+              # PR checks: typecheck only (no next build)
+              - name: Typecheck
+                run: npm run typecheck
+
+              # Optional: only sensible when a real DB is available in CI. Disabled by default.
+              # - name: Prisma migrate deploy
+              #   run: npx --no-install prisma migrate deploy
