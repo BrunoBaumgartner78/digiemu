@@ -1,7 +1,7 @@
-// src/app/dashboard/new/page.tsx
+// src/app/(app)/dashboard/new/page.tsx
 "use client";
 
-import { useState, FormEvent, ChangeEvent, useEffect, useMemo } from "react";
+import { useState, type FormEvent, type ChangeEvent, useEffect, useMemo } from "react";
 import SafeImg from "@/components/ui/SafeImg";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -36,6 +36,7 @@ export default function NewProductPage() {
 
   useEffect(() => {
     let alive = true;
+
     (async () => {
       try {
         const res = await fetch("/api/vendor/profile-status", { cache: "no-store" });
@@ -69,31 +70,24 @@ export default function NewProductPage() {
   const [description, setDescription] = useState("");
   const [priceChf, setPriceChf] = useState("9.90");
 
-  // Kategorie
   const [category, setCategory] = useState<string>("ebook");
 
-  // Standard-Thumbnail = Fallback aus /public
   const [thumbnailUrl, setThumbnailUrl] = useState("/fallback-thumbnail.svg");
 
-  // Dateien
-  const [file, setFile] = useState<File | null>(null); // Produktdatei
-  const [thumbFile, setThumbFile] = useState<File | null>(null); // Thumbnail-Bild
+  const [file, setFile] = useState<File | null>(null);
+  const [thumbFile, setThumbFile] = useState<File | null>(null);
 
-  // UI-Status
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Datei-Handler
-  function handleFileChange(_e: ChangeEvent<HTMLInputElement>) {
-    setFile(_e.target.files?.[0] || null);
+  function handleFileChange(e: ChangeEvent<HTMLInputElement>) {
+    setFile(e.target.files?.[0] || null);
   }
 
-  // Note: don't fully block rendering here — show a hint card in the page and disable submit instead.
-
-  function handleThumbFileChange(_e: ChangeEvent<HTMLInputElement>) {
-    setThumbFile(_e.target.files?.[0] || null);
+  function handleThumbFileChange(e: ChangeEvent<HTMLInputElement>) {
+    setThumbFile(e.target.files?.[0] || null);
   }
 
   async function uploadToStorage(pathPrefix: string, f: File) {
@@ -106,12 +100,10 @@ export default function NewProductPage() {
       uploadTask.on(
         "state_changed",
         (snapshot) => {
-          const pct = Math.round(
-            (snapshot.bytesTransferred / snapshot.totalBytes) * 100
-          );
+          const pct = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
           setUploadProgress(pct);
         },
-        (_err) => reject(_err),
+        (err) => reject(err),
         async () => {
           const url = await getDownloadURL(uploadTask.snapshot.ref);
           resolve(url);
@@ -125,7 +117,6 @@ export default function NewProductPage() {
     setErrorMessage(null);
     setStatusMessage(null);
 
-    // Client-side gate: if vendor not approved, show toast and block submit
     if (!loadingProfile && needsApproval) {
       toast({
         title: "Freischaltung ausstehend",
@@ -135,55 +126,38 @@ export default function NewProductPage() {
       return;
     }
 
-    if (!title.trim()) {
-      setErrorMessage("Bitte gib einen Titel ein.");
-      return;
-    }
-    if (!description.trim()) {
-      setErrorMessage("Bitte gib eine kurze Beschreibung ein.");
-      return;
-    }
+    if (!title.trim()) return setErrorMessage("Bitte gib einen Titel ein.");
+    if (!description.trim()) return setErrorMessage("Bitte gib eine kurze Beschreibung ein.");
 
-    // ✅ Preis-Validierung (Komma & Punkt) + Mindestpreis 1 CHF
     const normalizedPrice = priceChf.replace(",", ".").trim();
     const priceNumber = Number(normalizedPrice);
 
     if (!Number.isFinite(priceNumber)) {
-      setErrorMessage("Bitte gib einen gültigen Preis in CHF ein.");
-      return;
+      return setErrorMessage("Bitte gib einen gültigen Preis in CHF ein.");
     }
     if (priceNumber < 1) {
-      setErrorMessage("Der Mindestpreis beträgt 1.00 CHF.");
-      return;
+      return setErrorMessage("Der Mindestpreis beträgt 1.00 CHF.");
     }
 
-    if (!file) {
-      setErrorMessage("Bitte wähle eine Datei für dein Produkt aus.");
-      return;
-    }
+    if (!file) return setErrorMessage("Bitte wähle eine Datei für dein Produkt aus.");
 
     setIsSubmitting(true);
     setUploadProgress(null);
 
     try {
-      // 1) Optional: Thumbnail hochladen (wenn leer -> Fallback)
       let finalThumbnailUrl = thumbnailUrl.trim() || "/fallback-thumbnail.svg";
 
       if (thumbFile) {
         setStatusMessage("Lade Thumbnail-Bild hoch …");
         const thumbUrl = await uploadToStorage("thumbnails", thumbFile);
         finalThumbnailUrl = thumbUrl;
-        // optional: UI sofort anpassen
         setThumbnailUrl(thumbUrl);
       }
 
-      // 2) Produktdatei hochladen
       setStatusMessage("Lade Produktdatei hoch …");
       const downloadUrl = await uploadToStorage("products", file);
 
-      // 3) Produkt in der DB anlegen
       setStatusMessage("Speichere Produkt …");
-
       const res = await fetch("/api/products/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -196,31 +170,29 @@ export default function NewProductPage() {
           category,
         }),
       });
+
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
 
-        // Vendor not approved -> show toast and stay on page (403 with machine-readable status)
-          if (res.status === 403) {
-            toast({
-              title: "Freischaltung ausstehend",
-              description: data?.message || `Dein Verkäuferprofil ist noch nicht freigeschaltet (Status: ${data?.status ?? "PENDING"}).`,
-              variant: "destructive",
-            });
-            return;
-          }
+        if (res.status === 403) {
+          toast({
+            title: "Freischaltung ausstehend",
+            description:
+              data?.message ||
+              `Dein Verkäuferprofil ist noch nicht freigeschaltet (Status: ${data?.status ?? "PENDING"}).`,
+            variant: "destructive",
+          });
+          return;
+        }
 
         const msg =
           (typeof data?.message === "string" && data.message.trim()) ||
-          (res.status === 403
-            ? "Du hast keine Berechtigung oder dein Verkäuferprofil ist noch nicht freigeschaltet."
-            : "Produkt konnte nicht angelegt werden.");
+          "Produkt konnte nicht angelegt werden.";
         throw new Error(msg);
       }
 
       setStatusMessage("Produkt erfolgreich angelegt.");
-      setTimeout(() => {
-        router.push("/dashboard/products");
-      }, 600);
+      setTimeout(() => router.push("/dashboard/products"), 600);
     } catch (err: unknown) {
       console.error("Produkt anlegen fehlgeschlagen:", err);
       setErrorMessage(getErrorMessage(err, "Upload oder Speichern ist fehlgeschlagen."));
@@ -242,9 +214,8 @@ export default function NewProductPage() {
             Neues Produkt anlegen
           </h1>
           <p className="text-sm text-[var(--color-text-muted)] max-w-2xl mt-1.5">
-            Trage Titel, Beschreibung und Preis ein. Lade anschließend deine Datei
-            (z. B. PDF, ZIP oder Bild) hoch. Nach dem Speichern erscheint dein Produkt
-            im Marketplace.
+            Trage Titel, Beschreibung und Preis ein. Lade anschließend deine Datei (z. B. PDF,
+            ZIP oder Bild) hoch. Nach dem Speichern erscheint dein Produkt im Marketplace.
           </p>
         </header>
 
@@ -264,7 +235,6 @@ export default function NewProductPage() {
         )}
 
         <form className={styles.form} onSubmit={handleSubmit}>
-          {/* Linke Spalte: Eingaben */}
           <div className={styles.colMain}>
             <div className={styles.fieldGroup}>
               <label className={styles.label}>Titel</label>
@@ -273,7 +243,7 @@ export default function NewProductPage() {
                 type="text"
                 placeholder="z.B. Workbook, Leitfaden, Kursunterlagen …"
                 value={title}
-                onChange={(_e) => setTitle(_e.target.value)}
+                onChange={(e) => setTitle(e.target.value)}
               />
             </div>
 
@@ -283,17 +253,16 @@ export default function NewProductPage() {
                 className={styles.textarea}
                 placeholder="Beschreibe kurz, was Käufer nach dem Download erhalten."
                 value={description}
-                onChange={(_e) => setDescription(_e.target.value)}
+                onChange={(e) => setDescription(e.target.value)}
               />
             </div>
 
-            {/* Kategorie-Auswahl */}
             <div className={styles.fieldGroup}>
               <label className={styles.label}>Kategorie</label>
               <select
                 className={`${styles.input} ${styles.select}`}
                 value={category}
-                onChange={(_e) => setCategory(_e.target.value)}
+                onChange={(e) => setCategory(e.target.value)}
               >
                 {CATEGORY_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
@@ -302,12 +271,11 @@ export default function NewProductPage() {
                 ))}
               </select>
               <p className={styles.priceHint}>
-                Die Kategorie wird für Filter im Marketplace verwendet (z.B. E-Books,
-                Kurse, Audio, Templates …).
+                Die Kategorie wird für Filter im Marketplace verwendet (z.B. E-Books, Kurse,
+                Audio, Templates …).
               </p>
             </div>
 
-            {/* Preis */}
             <div className={styles.fieldGroup}>
               <label className={styles.label}>Preis (CHF)</label>
               <div className={styles.priceRow}>
@@ -318,7 +286,7 @@ export default function NewProductPage() {
                   min="1"
                   placeholder="z.B. 9.90"
                   value={priceChf}
-                  onChange={(_e) => setPriceChf(_e.target.value)}
+                  onChange={(e) => setPriceChf(e.target.value)}
                 />
                 <p className={styles.priceHint}>
                   Mindestpreis: <strong>1.00 CHF</strong> · inkl. MwSt. / digitale Leistung
@@ -327,7 +295,6 @@ export default function NewProductPage() {
               </div>
             </div>
 
-            {/* Thumbnail-URL + Live-Vorschau */}
             <div className={styles.fieldGroup}>
               <label className={styles.label}>Thumbnail-URL (optional)</label>
               <input
@@ -335,14 +302,13 @@ export default function NewProductPage() {
                 type="text"
                 placeholder="https://example.com/dein-bild.jpg oder /fallback-thumbnail.svg"
                 value={thumbnailUrl}
-                onChange={(_e) => setThumbnailUrl(_e.target.value)}
+                onChange={(e) => setThumbnailUrl(e.target.value)}
               />
               <p className={styles.priceHint}>
                 Lässt du dieses Feld leer, verwenden wir automatisch{" "}
                 <code>/fallback-thumbnail.svg</code> aus deinem <code>public/</code>-Ordner.
               </p>
 
-              {/* Vorschau */}
               <div style={{ marginTop: "0.75rem", display: "flex", gap: "1rem" }}>
                 <div
                   style={{
@@ -370,11 +336,8 @@ export default function NewProductPage() {
               </div>
             </div>
 
-            {/* Produktdatei-Upload */}
             <div className={styles.fieldGroup}>
-              <label className={styles.label}>
-                DATEI / BILD HOCHLADEN (PRODUKTDATEI)
-              </label>
+              <label className={styles.label}>DATEI / BILD HOCHLADEN (PRODUKTDATEI)</label>
               <div className={styles.fileRow}>
                 <label className={styles.fileButton}>
                   📁 Datei auswählen
@@ -385,16 +348,13 @@ export default function NewProductPage() {
                     className={styles.fileInput}
                   />
                 </label>
-                <span className={styles.fileName}>
-                  {file ? file.name : "Noch keine Datei gewählt"}
-                </span>
+                <span className={styles.fileName}>{file ? file.name : "Noch keine Datei gewählt"}</span>
               </div>
               <p className={styles.priceHint}>
                 Diese Datei wird als Download-Link für Käufer:innen verwendet.
               </p>
             </div>
 
-            {/* Thumbnail-Upload */}
             <div className={styles.fieldGroup}>
               <label className={styles.label}>THUMBNAIL-BILD HOCHLADEN (OPTIONAL)</label>
               <div className={styles.fileRow}>
@@ -412,19 +372,14 @@ export default function NewProductPage() {
                 </span>
               </div>
               <p className={styles.priceHint}>
-                Optionales Vorschaubild für dein Produkt. Wenn du hier ein Bild hochlädst,
-                wird die Thumbnail-URL automatisch gesetzt.
+                Optionales Vorschaubild für dein Produkt. Wenn du hier ein Bild hochlädst, wird
+                die Thumbnail-URL automatisch gesetzt.
               </p>
             </div>
 
-            {uploadProgress !== null && (
-              <p className={styles.priceHint}>Upload: {uploadProgress}% …</p>
-            )}
-
+            {uploadProgress !== null && <p className={styles.priceHint}>Upload: {uploadProgress}% …</p>}
             {errorMessage && <p className={styles.error}>{errorMessage}</p>}
-            {statusMessage && !errorMessage && (
-              <p className={styles.success}>{statusMessage}</p>
-            )}
+            {statusMessage && !errorMessage && <p className={styles.success}>{statusMessage}</p>}
 
             <div className={styles.actionsRow}>
               <button
@@ -446,7 +401,6 @@ export default function NewProductPage() {
             </div>
           </div>
 
-          {/* Rechte Spalte: Info-Box */}
           <aside className={styles.colSide}>
             <div className={styles.infoBox}>
               <h2 className={styles.infoTitle}>Veröffentlichung</h2>

@@ -1,111 +1,27 @@
-﻿name: Cleanup Audit
+﻿name: cleanup-audit
 
 on:
-  workflow_dispatch:
   pull_request:
-    branches: [main]
-  push:
-    branches: [main]
-  schedule:
-    - cron: "0 3 * * 1" # Mo 03:00 UTC
+    paths:
+      - "**/*.md"
+      - "src/**/*.ts"
+      - "src/**/*.tsx"
+      - "src/**/*.js"
+      - "src/**/*.jsx"
+      - ".github/workflows/cleanup-audit.yml"
+      - ".github/scripts/check-dead-links.sh"
+  workflow_dispatch:
 
 jobs:
-  links-and-routes:
+  cleanup-audit:
     runs-on: ubuntu-latest
-
-    env:
-      DATABASE_URL: "postgresql://ci:ci@127.0.0.1:5432/ci?schema=public"
-      DIRECT_URL: "postgresql://ci:ci@127.0.0.1:5432/ci?schema=public"
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: "npm"
-
-      - name: Install deps
-        run: npm ci
-
-      - name: Prepare CI env (fallbacks + Prisma pre-steps)
-        shell: bash
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          DIRECT_URL: ${{ secrets.DIRECT_URL }}
-          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
-          NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
-          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
-          STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
-          FIREBASE_ADMIN_PROJECT_ID: ${{ secrets.FIREBASE_ADMIN_PROJECT_ID }}
-          FIREBASE_ADMIN_CLIENT_EMAIL: ${{ secrets.FIREBASE_ADMIN_CLIENT_EMAIL }}
-          FIREBASE_ADMIN_PRIVATE_KEY: ${{ secrets.FIREBASE_ADMIN_PRIVATE_KEY }}
-        run: |
-          set -euo pipefail
-          chmod +x ./ci-prepare-env.sh || true
-          ./ci-prepare-env.sh
-
-      # ---------- 1) Markdown dead links ----------
-      - name: Install markdown-link-check
-        run: npm i -D markdown-link-check
-
-      - name: Check markdown links
+      - name: Run link audit
         shell: bash
         run: |
           set -euo pipefail
-
-          # Fail-safe: ensure placeholders exist RIGHT BEFORE running the checker.
-          mkdir -p app/etc src/app/etc
-          : > app/etc/local.xml.template
-          : > src/app/etc/local.xml.template
-
-          # Collect markdown files tracked by git
-          MD_FILES="$(git ls-files '*.md' | grep -v '^node_modules/' || true)"
-          if [ -z "$MD_FILES" ]; then
-            echo "ℹ️ No markdown files found."
-            exit 0
-          fi
-
-          echo "🔎 Running markdown-link-check on:"
-          echo "$MD_FILES"
-
-          # IMPORTANT:
-          # Use the correct CLI for the installed package: `markdown-link-check`
-          # (NOT `mlc`, which is a different tool and ignores this config format).
-          while IFS= read -r f; do
-            [ -n "$f" ] || continue
-            echo "— checking: $f"
-            npx markdown-link-check -c .github/markdown-link-check.json "$f"
-          done <<< "$MD_FILES"
-
-      # ---------- 2) Guard: obvious dead internal links ----------
-      - name: Guard dead internal routes
-        shell: bash
-        run: |
-          set -euo pipefail
-          echo "🔎 searching for common dead links..."
-
-          TARGETS=("src")
-
-          PROFILE_REGEX='href[[:space:]]*=[[:space:]]*(\{[[:space:]]*)?["'\'']/profile["'\'']([[:space:]]*\})?'
-          DOWNLOADS_REGEX='href[[:space:]]*=[[:space:]]*(\{[[:space:]]*)?["'\'']/downloads["'\'']([[:space:]]*\})?'
-
-          if grep -RIn \
-            --include='*.ts' --include='*.tsx' --include='*.js' --include='*.jsx' \
-            -E "$PROFILE_REGEX" \
-            "${TARGETS[@]}" | head -n 1; then
-            echo '❌ Found /profile link. Use /account/profile instead.'
-            exit 1
-          fi
-
-          if grep -RIn \
-            --include='*.ts' --include='*.tsx' --include='*.js' --include='*.jsx' \
-            -E "$DOWNLOADS_REGEX" \
-            "${TARGETS[@]}" | head -n 1; then
-            echo '❌ Found /downloads link. Use /account/downloads instead.'
-            exit 1
-          fi
-
-          echo "✅ no obvious dead internal routes found."
+          chmod +x .github/scripts/check-dead-links.sh
+          .github/scripts/check-dead-links.sh

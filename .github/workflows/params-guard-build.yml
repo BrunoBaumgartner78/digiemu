@@ -9,10 +9,25 @@ jobs:
   guard_and_build:
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U ci -d ci"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
     env:
       NODE_ENV: production
-      DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/postgres?schema=public"
-      DIRECT_URL: ${{ secrets.DIRECT_URL }}
+      CI_DATABASE_URL: postgresql://ci:ci@127.0.0.1:5432/ci?schema=public
+
       NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
       NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
 
@@ -35,40 +50,55 @@ jobs:
           cache: npm
 
       - name: Install
-        run: npm ci
+        run: npm ci --include=dev
 
       # ---------- GUARDS: params must not be Promise ----------
       - name: Guard - forbid Promise params typing in App Router pages
         shell: bash
         run: |
           set -euo pipefail
-
           echo "Scanning for invalid params typing (Promise/Promise.resolve)..."
 
-          # 1) block: params: {..} | Promise<{..}>
           if grep -RIn --include='page.tsx' -E 'params:\s*\{[^}]*\}\s*\|\s*Promise<\s*\{[^}]*\}\s*>' src/app; then
-            echo ""
-            echo "❌ Found invalid Next.js App Router typing: params typed as union with Promise."
-            echo "Fix: type PageProps = { params: { ... } }  (no Promise)"
+            echo "❌ Found invalid Next.js App Router typing: params union with Promise."
             exit 1
           fi
 
-          # 2) block: Promise.resolve(params)
           if grep -RIn --include='page.tsx' -F 'Promise.resolve(params)' src/app; then
-            echo ""
             echo "❌ Found Promise.resolve(params) in page.tsx."
-            echo "Fix: use params.id directly (params are not a Promise)."
             exit 1
           fi
 
           echo "✅ Guard passed: no Promise params patterns found."
 
-      # ---------- Build ----------
+      - name: Set Prisma URLs (secrets fallback -> CI DB)
+        shell: bash
+        run: |
+          set -euo pipefail
+          DB_URL="${{ secrets.DATABASE_URL }}"
+          DIRECT="${{ secrets.DIRECT_URL }}"
+
+          if [ -z "${DB_URL:-}" ]; then DB_URL="${CI_DATABASE_URL}"; fi
+          if [ -z "${DIRECT:-}" ]; then DIRECT="${DB_URL}"; fi
+
+          echo "DATABASE_URL=$DB_URL" >> "$GITHUB_ENV"
+          echo "DIRECT_URL=$DIRECT" >> "$GITHUB_ENV"
+
+      - name: Wait for Postgres
+        shell: bash
+        run: |
+          set -euo pipefail
+          for i in {1..20}; do
+            pg_isready -h 127.0.0.1 -p 5432 -U ci -d ci && exit 0
+            sleep 1
+          done
+          echo "Postgres not ready" && exit 1
+
       - name: Prisma generate
         run: npx prisma generate
 
       - name: Prisma migrate deploy
-        run: npx prisma migrate deploy
+        run: npx --no-install prisma migrate deploy
 
       - name: Next build
         run: npm run build

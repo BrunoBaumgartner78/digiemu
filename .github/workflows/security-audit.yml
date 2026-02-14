@@ -11,14 +11,21 @@ jobs:
     timeout-minutes: 10
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: npm
+          node-version: "20"
+          cache: "npm"
 
-      - run: npm ci
+      - name: Prepare CI env (DATABASE_URL fallback)
+        shell: bash
+        run: |
+          set -euo pipefail
+          chmod +x .github/scripts/ci-prepare-env.sh
+          ./.github/scripts/ci-prepare-env.sh
 
-      - name: npm audit (non-blocking)
-        run: npm audit --audit-level=high || true
+      - name: Install deps
+        run: npm ci --include=dev
