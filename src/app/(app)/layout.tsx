@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Providers } from "@/app/providers";
+import Providers from "@/app/providers";
 import { ToastProvider } from "@/components/ui/toast/ToastProvider";
 import { MainHeader } from "@/components/layout/MainHeader";
 
