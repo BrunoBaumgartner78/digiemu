@@ -112,6 +112,12 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   const likesCount = p._count?.likes ?? 0;
   const commentsCount = p._count?.comments ?? 0;
+<<<<<<< HEAD
+=======
+
+  // ✅ Without server session we can't know initial "liked" reliably:
+  const initialIsLiked = false;
+>>>>>>> origin/main
 
   const sellerName =
     vendorProfile?.displayName ||
@@ -169,8 +175,14 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
             <p className={styles.priceLine}>CHF {price.toFixed(2)}</p>
 
+            {/* ✅ Login happens at checkout (401 => redirect in BuyButtonClient) */}
             <BuyButtonClient productId={p.id} />
+<<<<<<< HEAD
             <LikeButtonClient productId={p.id} initialLikesCount={likesCount} initialIsLiked={false} />
+=======
+
+            <LikeButtonClient productId={p.id} initialLikesCount={likesCount} initialIsLiked={initialIsLiked} />
+>>>>>>> origin/main
 
             <div style={{ marginLeft: 12, fontSize: 14, opacity: 0.85 }}>
               💬 {commentsCount} Kommentar(e)
