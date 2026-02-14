@@ -9,40 +9,36 @@ const nextConfig = {
 
   images: {
     remotePatterns: [
-      // Firebase Storage (download URLs)
+      // Firebase Storage (download tokens etc.)
       {
         protocol: "https",
         hostname: "firebasestorage.googleapis.com",
         pathname: "/v0/b/**",
       },
-
-      // Firebase / Google Cloud Storage direct bucket URLs
+      // Google Cloud Storage
       {
         protocol: "https",
         hostname: "storage.googleapis.com",
         pathname: "/**",
       },
-
-      // Google user content (Avatare etc.)
+      // Google user content (avatars etc.)
       {
         protocol: "https",
         hostname: "lh3.googleusercontent.com",
         pathname: "/**",
       },
-
-      // Unsplash / Pexels
-      {
-        protocol: "https",
-        hostname: "images.unsplash.com",
-        pathname: "/**",
-      },
+      // Pexels / Unsplash
       {
         protocol: "https",
         hostname: "images.pexels.com",
         pathname: "/**",
       },
-
-      // Optional: falls du irgendwo appspot-bucket URLs hast
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+        pathname: "/**",
+      },
+      // Firebase appspot buckets
       {
         protocol: "https",
         hostname: "*.appspot.com",
