@@ -13,9 +13,7 @@ import styles from "./page.module.css";
 
 export const dynamic = "force-dynamic";
 
-type ProductPageProps = {
-  params: Promise<{ id: string }>;
-};
+type ProductPageProps = { params: { id: string } };
 
 const SAFE_IMAGE_HOSTS = [
   "firebasestorage.googleapis.com",
@@ -35,10 +33,8 @@ function canUseNextImage(url: string | null | undefined): boolean {
   }
 }
 
-export default async function ProductPage(props: ProductPageProps) {
-  const { id } = await props.params;
-
-  const pid = String(id ?? "").trim();
+export default async function ProductPage({ params }: ProductPageProps) {
+  const pid = String(params?.id ?? "").trim();
   if (!pid) notFound();
 
   const session = await requireSessionPage();
@@ -85,7 +81,7 @@ export default async function ProductPage(props: ProductPageProps) {
     },
   });
 
-  // CI expects these exact strings (grep):
+  // ✅ REQUIRED by CI guard workflow (exact strings expected)
   if (!p || !p.isActive || p.status !== "ACTIVE") notFound();
   if (p.vendor?.isBlocked) notFound();
 
@@ -110,7 +106,7 @@ export default async function ProductPage(props: ProductPageProps) {
       id: { not: p.id },
       isActive: true,
       status: "ACTIVE",
-      vendor: { isBlocked: false },
+      vendor: { isBlocked: false }, // ✅ REQUIRED by CI guard workflow
       OR: [
         ...(p.vendorProfileId ? [{ vendorProfileId: p.vendorProfileId }] : []),
         { vendorId: p.vendorId },
@@ -248,9 +244,8 @@ export default async function ProductPage(props: ProductPageProps) {
   );
 }
 
-export async function generateMetadata(props: ProductPageProps) {
-  const { id } = await props.params;
-  const pid = String(id ?? "").trim();
+export async function generateMetadata({ params }: ProductPageProps) {
+  const pid = String(params?.id ?? "").trim();
   if (!pid) return {};
 
   const p = await prisma.product.findUnique({
@@ -279,3 +274,4 @@ export async function generateMetadata(props: ProductPageProps) {
     alternates: { canonical: `/product/${pid}` },
   } as unknown;
 }
+
