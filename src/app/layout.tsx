@@ -5,64 +5,34 @@ import CookieBanner from "@/components/legal/CookieBanner";
 import AnalyticsLoader from "@/components/analytics/AnalyticsLoader";
 import TraceRepeatClient from "@/components/TraceRepeatClient";
 
-export const viewport: Viewport = {
-  themeColor: "#EAF1FF",
-};
+import { MainHeader } from "@/components/layout/MainHeader";
+import AppFooter from "@/components/layout/AppFooter";
+
+export const viewport: Viewport = { themeColor: "#EAF1FF" };
 
 const SITE_NAME = "Bellu";
 const SITE_TITLE = "Bellu – Digitaler Marktplatz";
 const SITE_DESCRIPTION = "Digitale Produkte kaufen & verkaufen.";
-
-// ✅ Exakt die Domain verwenden, die du teilst (mit/ohne www)
 const SITE_URL = "https://www.bellu.ch";
-
-// ✅ OG Images (plattform-sicher)
 const OG_IMAGE_16_9 = "/og-1200x630.png";
 const OG_IMAGE_1_1 = "/og-1200x1200.png";
-
-// ✅ FB App ID (für den Debugger-Warnhinweis)
 const FB_APP_ID = process.env.NEXT_PUBLIC_FB_APP_ID;
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-
-  title: {
-    default: SITE_TITLE,
-    template: `%s | ${SITE_NAME}`,
-  },
+  title: { default: SITE_TITLE, template: `%s | ${SITE_NAME}` },
   description: SITE_DESCRIPTION,
-
   applicationName: SITE_NAME,
-  keywords: [
-    "Bellu",
-    "DigiEmu",
-    "digitaler Marktplatz",
-    "digitale Produkte",
-    "Downloads",
-    "Creator",
-    "Vendor",
-    "Schweiz",
-  ],
+  keywords: ["Bellu", "DigiEmu", "digitaler Marktplatz", "digitale Produkte", "Downloads", "Creator", "Vendor", "Schweiz"],
   authors: [{ name: "Bruno Baumgartner" }],
   creator: "Bruno Baumgartner",
   publisher: SITE_NAME,
-
   robots: {
     index: true,
     follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      "max-image-preview": "large",
-      "max-snippet": -1,
-      "max-video-preview": -1,
-    },
+    googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1, "max-video-preview": -1 },
   },
-
-  alternates: {
-    canonical: "/",
-  },
-
+  alternates: { canonical: "/" },
   icons: {
     icon: [
       { url: "/favicon.ico" },
@@ -73,7 +43,6 @@ export const metadata: Metadata = {
     apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
     other: [{ rel: "mask-icon", url: "/safari-pinned-tab.svg", color: "#0ea5e9" }],
   },
-
   openGraph: {
     type: "website",
     url: "/",
@@ -86,33 +55,21 @@ export const metadata: Metadata = {
       { url: OG_IMAGE_1_1, width: 1200, height: 1200, alt: SITE_TITLE },
     ],
   },
-
-  twitter: {
-    card: "summary_large_image",
-    title: SITE_TITLE,
-    description: SITE_DESCRIPTION,
-    images: [OG_IMAGE_16_9],
-  },
-
-  // ✅ Hier kommt fb:app_id rein (damit der Warnhinweis weg ist)
-  // Next.js erlaubt "other" für Custom Meta-Tags.
-  ...(FB_APP_ID
-    ? {
-        other: {
-          "fb:app_id": FB_APP_ID,
-        },
-      }
-    : {}),
+  twitter: { card: "summary_large_image", title: SITE_TITLE, description: SITE_DESCRIPTION, images: [OG_IMAGE_16_9] },
+  ...(FB_APP_ID ? { other: { "fb:app_id": FB_APP_ID } } : {}),
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="de" suppressHydrationWarning>
       <body className="bg-[var(--page-bg)] text-[var(--text-main)]">
-                <Providers>
-                  {children}
-                  <TraceRepeatClient />
-                </Providers>
+        <Providers>
+          <MainHeader />
+          <div className="min-h-screen">{children}</div>
+          <AppFooter />
+          <TraceRepeatClient />
+        </Providers>
+
         <CookieBanner />
         <AnalyticsLoader />
       </body>
