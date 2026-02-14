@@ -1,8 +1,8 @@
+// src/app/product/[id]/page.tsx
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { requireSessionPage } from "@/lib/guards/authz";
 import { getProductThumbUrl } from "@/lib/productThumb";
 import LikeButtonClient from "@/components/product/LikeButtonClient";
 import BuyButtonClient from "@/components/checkout/BuyButtonClient";
@@ -37,21 +37,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const pid = String(params?.id ?? "").trim();
   if (!pid) notFound();
 
-  const session = await requireSessionPage();
-  const userId = (() => {
-    const u = session?.user;
-    if (!u || typeof u !== "object") return null;
-    const uid = (u as Record<string, unknown>)["id"];
-    return typeof uid === "string" && uid.length > 0 ? uid : null;
-  })();
+  // ✅ PUBLIC PAGE: no authOptions import, no hard session guard.
+  // If user is not logged in, BuyButton will redirect on 401.
 
   const p = await prisma.product.findFirst({
-    where: {
-      id: pid,
-      isActive: true,
-      status: "ACTIVE",
-      vendor: { isBlocked: false },
-    },
+    where: { id: pid },
     select: {
       id: true,
       title: true,
@@ -77,7 +67,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
         },
       },
       _count: { select: { likes: true, comments: true } },
-      likes: userId ? { where: { userId }, select: { id: true } } : undefined,
     },
   });
 
@@ -124,7 +113,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   const likesCount = p._count?.likes ?? 0;
   const commentsCount = p._count?.comments ?? 0;
-  const initialIsLiked = !!userId && (p.likes?.length ?? 0) > 0;
+
+  // ✅ Without server session we can't know initial "liked" reliably:
+  const initialIsLiked = false;
 
   const sellerName =
     vendorProfile?.displayName ||
@@ -182,13 +173,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
             <p className={styles.priceLine}>CHF {price.toFixed(2)}</p>
 
+            {/* ✅ Login happens at checkout (401 => redirect in BuyButtonClient) */}
             <BuyButtonClient productId={p.id} />
 
-            <LikeButtonClient
-              productId={p.id}
-              initialLikesCount={likesCount}
-              initialIsLiked={initialIsLiked}
-            />
+            <LikeButtonClient productId={p.id} initialLikesCount={likesCount} initialIsLiked={initialIsLiked} />
 
             <div style={{ marginLeft: 12, fontSize: 14, opacity: 0.85 }}>
               💬 {commentsCount} Kommentar(e)
@@ -256,12 +244,12 @@ export async function generateMetadata({ params }: ProductPageProps) {
 
   const productThumb = getProductThumbUrl({ thumbnailUrl: p.thumbnail });
 
-  const title = `${p.title} · DigiEmu`;
+  const title = `${p.title} · Bellu`;
   const description = p.description
     ? p.description.length > 160
       ? p.description.slice(0, 157) + "…"
       : p.description
-    : "Digitales Produkt auf DigiEmu";
+    : "Digitales Produkt auf Bellu";
 
   return {
     title,
@@ -274,4 +262,3 @@ export async function generateMetadata({ params }: ProductPageProps) {
     alternates: { canonical: `/product/${pid}` },
   } as unknown;
 }
-

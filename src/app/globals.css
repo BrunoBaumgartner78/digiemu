@@ -445,11 +445,11 @@ img { max-width: 100%; height: auto; display: block; }
   font-size: 0.95rem;
 }
 .input-neu::placeholder { color: rgba(0, 0, 0, 0.35); }
-html[data-theme="dark"],
-html.dark {
-  html[data-theme="dark"] .input-neu::placeholder,
-  html:not([data-theme]) .input-neu::placeholder { color: rgba(255, 255, 255, 0.35); }
+html[data-theme="dark"] .input-neu::placeholder,
+html.dark .input-neu::placeholder {
+  color: rgba(255, 255, 255, 0.35);
 }
+
 textarea.input-neu { resize: vertical; min-height: 120px; }
 
 /* Buttons */
