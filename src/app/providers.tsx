@@ -3,7 +3,8 @@
 
 import type { ReactNode } from "react";
 import { SessionProvider } from "next-auth/react";
-import { ToastProvider } from "@/components/ui/toast/ToastProvider";
+import { ToastProvider } from "@/components/ui/use-toast";
+
 
 export default function Providers({ children }: { children: ReactNode }) {
   return (

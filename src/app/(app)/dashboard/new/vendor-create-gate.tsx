@@ -1,14 +1,19 @@
+// src/app/(app)/dashboard/new/vendor-create-gate.tsx
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useToast } from "@/components/ui/toast/ToastProvider";
+import { useToast } from "@/components/ui/use-toast";
 
 type GateState =
   | { ok: true }
-  | { ok: false; code: "VENDOR_NOT_APPROVED" | "VENDOR_PROFILE_MISSING"; status?: string };
+  | {
+      ok: false;
+      code: "VENDOR_NOT_APPROVED" | "VENDOR_PROFILE_MISSING";
+      status?: string;
+    };
 
 export default function VendorCreateGate() {
-  const { push } = useToast();
+  const { toast } = useToast();
   const [gate, setGate] = useState<GateState>({ ok: true });
 
   useEffect(() => {
@@ -20,15 +25,31 @@ export default function VendorCreateGate() {
         if (!alive) return;
         if (!res.ok) return;
 
-        const data = await res.json().catch(() => null);
+        const data = (await res.json().catch(() => null)) as any;
+
+        // Robust gegen unterschiedliche Response-Keys:
         const role = (data?.role ?? "").toString().toUpperCase();
-        const st = (data?.vendorProfileStatus ?? "").toString().toUpperCase();
-        const has = Boolean(data?.hasVendorProfile);
+
+        // alt/neu: status | vendorProfileStatus
+        const stRaw = data?.status ?? data?.vendorProfileStatus ?? "";
+        const st = stRaw ? stRaw.toString().toUpperCase() : "";
+
+        // alt/neu: hasVendorProfile | vendorProfile?.id | vendorProfileId | vendorProfile
+        const has =
+          Boolean(data?.hasVendorProfile) ||
+          Boolean(data?.vendorProfileId) ||
+          Boolean(data?.vendorProfile?.id) ||
+          Boolean(data?.vendorProfile);
 
         if (role === "VENDOR") {
           if (!has) setGate({ ok: false, code: "VENDOR_PROFILE_MISSING" });
-          else if (st !== "APPROVED") setGate({ ok: false, code: "VENDOR_NOT_APPROVED", status: st });
-          else setGate({ ok: true });
+          else if (st && st !== "APPROVED") setGate({ ok: false, code: "VENDOR_NOT_APPROVED", status: st });
+          else if (!st) {
+            // Wenn API kein status liefert: lieber NICHT blocken
+            setGate({ ok: true });
+          } else {
+            setGate({ ok: true });
+          }
         } else {
           setGate({ ok: true });
         }
@@ -46,7 +67,7 @@ export default function VendorCreateGate() {
   const message = useMemo(() => {
     if (gate.ok) return null;
     if (gate.code === "VENDOR_PROFILE_MISSING") {
-      return "Du bist als Verkäufer registriert, aber dein Verkäuferprofil fehlt noch. Bitte zuerst Onboarding abschliessen.";
+      return "Du bist als Verkäufer registriert, aber dein Verkäuferprofil fehlt noch. Bitte zuerst das Onboarding abschliessen.";
     }
     return `Dein Verkäuferprofil ist noch nicht freigeschaltet (Status: ${gate.status ?? "PENDING"}).`;
   }, [gate]);
@@ -59,7 +80,7 @@ export default function VendorCreateGate() {
 
     if (!gate.ok) {
       btn.disabled = true;
-      btn.classList.add("opacity-50", "pointer-events-auto");
+      btn.classList.add("opacity-50");
       btn.title = "Warten auf Admin-Freigabe";
     } else {
       btn.disabled = false;
@@ -70,20 +91,19 @@ export default function VendorCreateGate() {
       if (gate.ok) return;
       e.preventDefault();
       e.stopPropagation();
-      push({
-        kind: "info",
+
+      toast({
         title: "Noch nicht freigeschaltet",
-        message: message || "",
-        ttlMs: 4500,
+        description: message || "",
+        variant: "destructive",
       });
     };
 
     btn.addEventListener("click", onClick, true);
-
     return () => {
       btn.removeEventListener("click", onClick, true);
     };
-  }, [gate, message, push]);
+  }, [gate, message, toast]);
 
   if (gate.ok) return null;
 

@@ -1,6 +1,7 @@
 // src/app/error/page.tsx
-
 import Link from "next/link";
+
+export const dynamic = "force-dynamic";
 
 type SearchParams = {
   canceled?: string | string[];
@@ -8,26 +9,22 @@ type SearchParams = {
   [key: string]: string | string[] | undefined;
 };
 
-export default async function ErrorPage({
+export default function ErrorPage({
   searchParams,
 }: {
-  searchParams: Promise<SearchParams>;
+  searchParams: SearchParams;
 }) {
-  const resolved = await searchParams;
-
   const canceled =
-    typeof resolved.canceled === "string"
-      ? resolved.canceled
-      : Array.isArray(resolved.canceled)
-      ? resolved.canceled[0]
+    typeof searchParams?.canceled === "string"
+      ? searchParams.canceled
+      : Array.isArray(searchParams?.canceled)
+      ? searchParams.canceled[0]
       : undefined;
 
   return (
     <main className="page-shell">
       <section className="neumorph-card max-w-xl mx-auto p-8 md:p-10 rounded-3xl text-center space-y-4">
-        <h1 className="text-2xl md:text-3xl font-semibold">
-          Zahlung abgebrochen
-        </h1>
+        <h1 className="text-2xl md:text-3xl font-semibold">Zahlung abgebrochen</h1>
 
         <p className="text-sm text-muted">
           {canceled === "1"

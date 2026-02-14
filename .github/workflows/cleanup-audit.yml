@@ -13,10 +13,6 @@ jobs:
   links-and-routes:
     runs-on: ubuntu-latest
 
-    env:
-      DATABASE_URL: "postgresql://ci:ci@127.0.0.1:5432/ci?schema=public"
-      DIRECT_URL: "postgresql://ci:ci@127.0.0.1:5432/ci?schema=public"
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -27,76 +23,33 @@ jobs:
           node-version: "20"
           cache: "npm"
 
-      - name: CI env fallback (DATABASE_URL)
-        shell: bash
-        run: |
-          if [ -z "${DATABASE_URL:-}" ]; then
-            echo "DATABASE_URL=postgresql://ci:ci@127.0.0.1:5432/ci?schema=public" >> "$GITHUB_ENV"
-          fi
-          if [ -z "${DIRECT_URL:-}" ]; then
-            echo "DIRECT_URL=postgresql://ci:ci@127.0.0.1:5432/ci?schema=public" >> "$GITHUB_ENV"
-          fi
-
-      - name: Prepare CI env (DATABASE_URL fallback)
-        shell: bash
-        run: |
-          chmod +x .github/scripts/ci-prepare-env.sh
-          ./.github/scripts/ci-prepare-env.sh
-
       - name: Install deps
         run: npm ci --include=dev
 
-      - name: Prepare CI env (fallbacks + Prisma pre-steps)
-        shell: bash
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          DIRECT_URL: ${{ secrets.DIRECT_URL }}
-          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
-          NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
-          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
-          STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
-          FIREBASE_ADMIN_PROJECT_ID: ${{ secrets.FIREBASE_ADMIN_PROJECT_ID }}
-          FIREBASE_ADMIN_CLIENT_EMAIL: ${{ secrets.FIREBASE_ADMIN_CLIENT_EMAIL }}
-          FIREBASE_ADMIN_PRIVATE_KEY: ${{ secrets.FIREBASE_ADMIN_PRIVATE_KEY }}
-        run: |
-          set -euo pipefail
-          chmod +x ./ci-prepare-env.sh || true
-          ./ci-prepare-env.sh
-
-      # ---------- 1) Markdown dead links ----------
       - name: Install markdown-link-check
         run: npm i -D markdown-link-check
 
-      - name: Check markdown links
+      - name: Check markdown links (git tracked only)
         shell: bash
         run: |
           set -euo pipefail
 
-          # Fail-safe: ensure placeholders exist RIGHT BEFORE running the checker.
-          mkdir -p app/etc src/app/etc
-          : > app/etc/local.xml.template
-          : > src/app/etc/local.xml.template
-
-          # Collect markdown files tracked by git
-          MD_FILES="$(git ls-files '*.md' | grep -v '^node_modules/' || true)"
+          # Only markdown files tracked by git (so NEVER node_modules)
+          MD_FILES="$(git ls-files '*.md' || true)"
           if [ -z "$MD_FILES" ]; then
             echo "ℹ️ No markdown files found."
             exit 0
           fi
 
-          echo "🔎 Running markdown-link-check on:"
+          echo "🔎 Running markdown-link-check on tracked files:"
           echo "$MD_FILES"
 
-          # IMPORTANT:
-          # Use the correct CLI for the installed package: `markdown-link-check`
-          # (NOT `mlc`, which is a different tool and ignores this config format).
           while IFS= read -r f; do
             [ -n "$f" ] || continue
             echo "— checking: $f"
             npx markdown-link-check -c .github/markdown-link-check.json "$f"
           done <<< "$MD_FILES"
 
-      # ---------- 2) Guard: obvious dead internal links ----------
       - name: Guard dead internal routes
         shell: bash
         run: |
@@ -117,11 +70,4 @@ jobs:
           fi
 
           if grep -RIn \
-            --include='*.ts' --include='*.tsx' --include='*.js' --include='*.jsx' \
-            -E "$DOWNLOADS_REGEX" \
-            "${TARGETS[@]}" | head -n 1; then
-            echo '❌ Found /downloads link. Use /account/downloads instead.'
-            exit 1
-          fi
-
-          echo "✅ no obvious dead internal routes found."
+            --include='*.ts' --include='*.tsx' --include='*.*
