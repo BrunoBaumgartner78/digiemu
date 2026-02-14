@@ -39,8 +39,8 @@ jobs:
       - name: Install deps
         run: npm ci --include=dev
 
-      - name: Guard: no blocked vendors/products are visible
+      - name: "Guard: no blocked vendors/products are visible"
         shell: bash
         run: |
-          set -euo pipefail
-          echo "✅ blocked vendor guards placeholder (implement checks here)"
+         set -euo pipefail
+         echo "✅ blocked vendor guards placeholder (implement checks here)"
