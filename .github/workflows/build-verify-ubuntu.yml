@@ -40,29 +40,20 @@ jobs:
           cache: npm
 
       - name: Install deps
-        run: npm ci
+        run: npm ci --include=dev
 
-      - name: Sanity check env (DIRECT_URL)
+      - name: Ensure Prisma env (DIRECT_URL fallback)
+        shell: bash
         run: |
-          if [ -z "${DATABASE_URL}" ]; then
-            echo "DATABASE_URL is missing (secrets.DATABASE_URL). Build may still pass if Prisma not used."
-          else
-            echo "DATABASE_URL is set."
-          fi
-
-          if [ -z "${DIRECT_URL}" ]; then
-            echo "DIRECT_URL is missing. Prisma schema expects it. Set secrets.DIRECT_URL or use fallback."
-            exit 1
-          else
-            echo "DIRECT_URL is set."
-          fi
+          chmod +x .github/scripts/ci-ensure-prisma-env.sh
+          .github/scripts/ci-ensure-prisma-env.sh
 
       - name: Prisma generate
-        run: npx prisma generate
+        run: npm run prisma:generate
 
       - name: Prisma migrate deploy (only if DB configured)
         if: ${{ env.DATABASE_URL != '' }}
-        run: npx prisma migrate deploy
+        run: npx --no-install prisma migrate deploy
 
       - name: Next build
         run: npx next build

@@ -6,6 +6,8 @@ import DownloadsFilters from "@/components/admin/DownloadsFilters";
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 function spGet(sp: SearchParams, key: string): string | undefined {
   const v = sp[key];
   if (typeof v === "string") return v;
@@ -32,11 +34,11 @@ function qs(sp: Record<string, string | undefined>) {
 export default async function AdminDownloadsPage({
   searchParams,
 }: {
-  searchParams?: Promise<SearchParams>;
+  searchParams?: SearchParams;
 }) {
   await requireAdminOrRedirect();
 
-  const sp = (searchParams && (await searchParams)) || ({} as SearchParams);
+  const sp = (searchParams || {}) as SearchParams;
 
   const page = spGetInt(sp, "page", 1);
   const pageSize = spGetInt(sp, "pageSize", 25);

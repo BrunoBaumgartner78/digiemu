@@ -20,11 +20,28 @@ jobs:
           node-version: 20
           cache: npm
 
+
+      - name: CI env fallback (DATABASE_URL)
+        shell: bash
+        run: |
+          if [ -z "${DATABASE_URL:-}" ]; then
+            echo "DATABASE_URL=postgresql://ci:ci@127.0.0.1:5432/ci?schema=public" >> "$GITHUB_ENV"
+          fi
+          if [ -z "${DIRECT_URL:-}" ]; then
+            echo "DIRECT_URL=postgresql://ci:ci@127.0.0.1:5432/ci?schema=public" >> "$GITHUB_ENV"
+          fi
+
+      - name: Prepare Prisma env (DIRECT_URL fallback)
+        shell: bash
+        run: |
+          chmod +x .github/scripts/ci-ensure-prisma-env.sh
+          .github/scripts/ci-ensure-prisma-env.sh
+
       - name: Install
-        run: npm ci
+        run: npm ci --include=dev
 
       - name: Prisma Generate
-        run: npx prisma generate
+        run: npm run prisma:generate
 
       - name: Build
         run: npm run build

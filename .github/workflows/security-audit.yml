@@ -11,30 +11,21 @@ jobs:
     timeout-minutes: 10
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: npm
+          node-version: "20"
+          cache: "npm"
 
-        - name: CI env fallback (DATABASE_URL)
-          shell: bash
-          run: |
-            if [ -z "${DATABASE_URL:-}" ]; then
-              echo "DATABASE_URL=postgresql://ci:ci@127.0.0.1:5432/ci?schema=public" >> "$GITHUB_ENV"
-            fi
-            if [ -z "${DIRECT_URL:-}" ]; then
-              echo "DIRECT_URL=postgresql://ci:ci@127.0.0.1:5432/ci?schema=public" >> "$GITHUB_ENV"
-            fi
+      - name: Prepare CI env (DATABASE_URL fallback)
+        shell: bash
+        run: |
+          set -euo pipefail
+          chmod +x .github/scripts/ci-prepare-env.sh
+          ./.github/scripts/ci-prepare-env.sh
 
-        - name: Prepare CI env (DATABASE_URL fallback)
-          shell: bash
-          run: |
-            chmod +x .github/scripts/ci-prepare-env.sh
-            ./.github/scripts/ci-prepare-env.sh
-
-        - run: npm ci --include=dev
-
-      - name: npm audit (non-blocking)
-        run: npm audit --audit-level=high || true
+      - name: Install deps
+        run: npm ci --include=dev

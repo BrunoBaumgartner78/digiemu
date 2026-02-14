@@ -4,6 +4,9 @@ import { requireSessionPage } from "@/lib/guards/authz";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function BecomeSellerPage() {
   const session = await requireSessionPage();
 
