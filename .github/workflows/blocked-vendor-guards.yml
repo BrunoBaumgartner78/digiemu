@@ -27,19 +27,12 @@ jobs:
           node-version: "20"
           cache: "npm"
 
-      - name: CI env fallback (DATABASE_URL)
-        shell: bash
-        run: |
-          if [ -z "${DATABASE_URL:-}" ]; then
-            echo "DATABASE_URL=postgresql://ci:ci@127.0.0.1:5432/ci?schema=public" >> "$GITHUB_ENV"
-          fi
-          if [ -z "${DIRECT_URL:-}" ]; then
-            echo "DIRECT_URL=postgresql://ci:ci@127.0.0.1:5432/ci?schema=public" >> "$GITHUB_ENV"
-          fi
-
+      # ✅ keep ONE place for env fallback; job env already sets DATABASE_URL,
+      # but this protects you if someone removes it later.
       - name: Prepare CI env (DATABASE_URL fallback)
         shell: bash
         run: |
+          set -euo pipefail
           chmod +x .github/scripts/ci-prepare-env.sh
           ./.github/scripts/ci-prepare-env.sh
 
