@@ -13,7 +13,8 @@ import styles from "./page.module.css";
 
 export const dynamic = "force-dynamic";
 
-type ProductPageProps = { params: { id: string } };
+// ✅ Next 16 guard: params MUST be Promise (no union)
+type ProductPageProps = { params: Promise<{ id: string }> };
 
 const SAFE_IMAGE_HOSTS = [
   "firebasestorage.googleapis.com",
@@ -34,11 +35,9 @@ function canUseNextImage(url: string | null | undefined): boolean {
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
-  const pid = String(params?.id ?? "").trim();
+  const { id } = await params; // ✅ IMPORTANT (guard expects this pattern)
+  const pid = String(id ?? "").trim();
   if (!pid) notFound();
-
-  // ✅ PUBLIC PAGE: no authOptions import, no hard session guard.
-  // If user is not logged in, BuyButton will redirect on 401.
 
   const p = await prisma.product.findFirst({
     where: { id: pid },
@@ -114,7 +113,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const likesCount = p._count?.likes ?? 0;
   const commentsCount = p._count?.comments ?? 0;
 
-  // ✅ Without server session we can't know initial "liked" reliably:
   const initialIsLiked = false;
 
   const sellerName =
@@ -173,7 +171,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
             <p className={styles.priceLine}>CHF {price.toFixed(2)}</p>
 
-            {/* ✅ Login happens at checkout (401 => redirect in BuyButtonClient) */}
             <BuyButtonClient productId={p.id} />
 
             <LikeButtonClient productId={p.id} initialLikesCount={likesCount} initialIsLiked={initialIsLiked} />
@@ -233,7 +230,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
 }
 
 export async function generateMetadata({ params }: ProductPageProps) {
-  const pid = String(params?.id ?? "").trim();
+  const { id } = await params; // ✅ IMPORTANT
+  const pid = String(id ?? "").trim();
   if (!pid) return {};
 
   const p = await prisma.product.findUnique({
