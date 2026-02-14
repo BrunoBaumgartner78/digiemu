@@ -86,9 +86,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Providers>
           <div className="min-h-screen flex flex-col">
             <MainHeader />
-
             <main className="flex-1">{children}</main>
-
             <AppFooter />
           </div>
 

@@ -1,4 +1,3 @@
-// src/app/product/[id]/page.tsx
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -14,8 +13,9 @@ import styles from "./page.module.css";
 
 export const dynamic = "force-dynamic";
 
-// ✅ params kann (je nach Next Version/Setup) Promise sein → await ist safe in beiden Fällen
-type ProductPageProps = { params: Promise<{ id: string }> | { id: string } };
+type ProductPageProps = {
+  params: Promise<{ id: string }>;
+};
 
 const SAFE_IMAGE_HOSTS = [
   "firebasestorage.googleapis.com",
@@ -35,8 +35,9 @@ function canUseNextImage(url: string | null | undefined): boolean {
   }
 }
 
-export default async function ProductPage({ params }: ProductPageProps) {
-  const { id } = await (params as any);
+export default async function ProductPage(props: ProductPageProps) {
+  const { id } = await props.params;
+
   const pid = String(id ?? "").trim();
   if (!pid) notFound();
 
@@ -84,7 +85,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
     },
   });
 
-  // ✅ harte Guards (CI grept nach ACTIVE guard strings)
+  // CI expects these exact strings (grep):
   if (!p || !p.isActive || p.status !== "ACTIVE") notFound();
   if (p.vendor?.isBlocked) notFound();
 
@@ -130,7 +131,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const initialIsLiked = !!userId && (p.likes?.length ?? 0) > 0;
 
   const sellerName =
-    vendorProfile?.displayName || vendorProfile?.user?.name || p.vendor?.name || "Verkäufer";
+    vendorProfile?.displayName ||
+    vendorProfile?.user?.name ||
+    p.vendor?.name ||
+    "Verkäufer";
 
   const sellerHref =
     vendorProfile?.isPublic === true && vendorProfile.userId
@@ -244,8 +248,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
   );
 }
 
-export async function generateMetadata({ params }: ProductPageProps) {
-  const { id } = await (params as any);
+export async function generateMetadata(props: ProductPageProps) {
+  const { id } = await props.params;
   const pid = String(id ?? "").trim();
   if (!pid) return {};
 
