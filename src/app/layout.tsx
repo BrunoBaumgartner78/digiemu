@@ -1,7 +1,6 @@
 import "./globals.css";
 import type { Metadata, Viewport } from "next";
-import ThemeProvider from "@/components/theme/ThemeProvider";
-import { ToastProvider } from "@/components/ui/use-toast";
+import Providers from "./providers";
 import CookieBanner from "@/components/legal/CookieBanner";
 import AnalyticsLoader from "@/components/analytics/AnalyticsLoader";
 import TraceRepeatClient from "@/components/TraceRepeatClient";
@@ -110,12 +109,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="de" suppressHydrationWarning>
       <body className="bg-[var(--page-bg)] text-[var(--text-main)]">
-        <ThemeProvider>
-          <ToastProvider>
-            {children}
-            <TraceRepeatClient />
-          </ToastProvider>
-        </ThemeProvider>
+                <Providers>
+                  {children}
+                  <TraceRepeatClient />
+                </Providers>
         <CookieBanner />
         <AnalyticsLoader />
       </body>

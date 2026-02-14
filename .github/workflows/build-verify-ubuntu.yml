@@ -2,7 +2,7 @@ name: Build Verify (Ubuntu)
 
 on:
   push:
-    branches: [ "main", "staging", "develop" ]
+    branches: ["main", "staging", "develop"]
   pull_request:
 
 jobs:
@@ -10,17 +10,28 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U ci -d ci"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
     env:
       NODE_ENV: production
-      # Prisma braucht DIRECT_URL wenn es im schema steht.
-      # Wenn du es nicht als Secret gesetzt hast: fallback auf DATABASE_URL.
-      DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/postgres?schema=public"
-      DIRECT_URL: ${{ secrets.DIRECT_URL != '' && secrets.DIRECT_URL || secrets.DATABASE_URL }}
+      CI_DATABASE_URL: postgresql://ci:ci@127.0.0.1:5432/ci?schema=public
 
       NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
       NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
 
-      # Falls Firebase Admin im Build referenced wird (manche Routes importen das):
       FIREBASE_ADMIN_PROJECT_ID: ${{ secrets.FIREBASE_ADMIN_PROJECT_ID }}
       FIREBASE_ADMIN_CLIENT_EMAIL: ${{ secrets.FIREBASE_ADMIN_CLIENT_EMAIL }}
       FIREBASE_ADMIN_PRIVATE_KEY: ${{ secrets.FIREBASE_ADMIN_PRIVATE_KEY }}
@@ -40,29 +51,36 @@ jobs:
           cache: npm
 
       - name: Install deps
-        run: npm ci
+        run: npm ci --include=dev
 
-      - name: Sanity check env (DIRECT_URL)
+      - name: Set Prisma URLs (secrets fallback -> CI DB)
+        shell: bash
         run: |
-          if [ -z "${DATABASE_URL}" ]; then
-            echo "DATABASE_URL is missing (secrets.DATABASE_URL). Build may still pass if Prisma not used."
-          else
-            echo "DATABASE_URL is set."
-          fi
+          set -euo pipefail
+          DB_URL="${{ secrets.DATABASE_URL }}"
+          DIRECT="${{ secrets.DIRECT_URL }}"
 
-          if [ -z "${DIRECT_URL}" ]; then
-            echo "DIRECT_URL is missing. Prisma schema expects it. Set secrets.DIRECT_URL or use fallback."
-            exit 1
-          else
-            echo "DIRECT_URL is set."
-          fi
+          if [ -z "${DB_URL:-}" ]; then DB_URL="${CI_DATABASE_URL}"; fi
+          if [ -z "${DIRECT:-}" ]; then DIRECT="${DB_URL}"; fi
+
+          echo "DATABASE_URL=$DB_URL" >> "$GITHUB_ENV"
+          echo "DIRECT_URL=$DIRECT" >> "$GITHUB_ENV"
+
+      - name: Wait for Postgres
+        shell: bash
+        run: |
+          set -euo pipefail
+          for i in {1..20}; do
+            pg_isready -h 127.0.0.1 -p 5432 -U ci -d ci && exit 0
+            sleep 1
+          done
+          echo "Postgres not ready" && exit 1
 
       - name: Prisma generate
-        run: npx prisma generate
+        run: npm run prisma:generate
 
-      - name: Prisma migrate deploy (only if DB configured)
-        if: ${{ env.DATABASE_URL != '' }}
-        run: npx prisma migrate deploy
+      - name: Prisma migrate deploy
+        run: npx --no-install prisma migrate deploy
 
       - name: Next build
-        run: npx next build
+        run: npm run build

@@ -1,17 +1,19 @@
 {
+  "timeout": "10s",
   "retryOn429": true,
   "retryCount": 2,
   "fallbackRetryDelay": "2s",
-  "aliveStatusCodes": [200, 206, 301, 302, 303, 307, 308, 403],
   "ignorePatterns": [
-    { "pattern": "^\\.?/app/etc/local\\.xml\\.template$" },
-    { "pattern": "^\\.?/src/app/etc/local\\.xml\\.template$" },
-    { "pattern": "^app/etc/local\\.xml\\.template$" },
-    { "pattern": "^src/app/etc/local\\.xml\\.template$" },
-
-    { "pattern": "^\\.?/app/etc/" },
-    { "pattern": "^\\.?/src/app/etc/" },
-
-    { "pattern": "^node_modules/" }
+    { "pattern": "^https://npm\\.im/" },
+    { "pattern": "^https://pris\\.ly/" }
+  ],
+  "replacementPatterns": [
+    { "pattern": "^/", "replacement": "http://localhost/" }
+  ],
+  "httpHeaders": [
+    {
+      "urls": ["^https?://github\\.com/"],
+      "headers": { "Accept": "text/html" }
+    }
   ]
 }
