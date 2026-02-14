@@ -5,9 +5,10 @@ import CookieBanner from "@/components/legal/CookieBanner";
 import AnalyticsLoader from "@/components/analytics/AnalyticsLoader";
 import TraceRepeatClient from "@/components/TraceRepeatClient";
 
-export const viewport: Viewport = {
-  themeColor: "#EAF1FF",
-};
+import { MainHeader } from "@/components/layout/MainHeader";
+import AppFooter from "@/components/layout/AppFooter";
+
+export const viewport: Viewport = { themeColor: "#EAF1FF" };
 
 const SITE_NAME = "Bellu";
 const SITE_TITLE = "Bellu – Digitaler Marktplatz";
@@ -109,12 +110,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="de" suppressHydrationWarning>
       <body className="bg-[var(--page-bg)] text-[var(--text-main)]">
-                <Providers>
-                  {children}
-                  <TraceRepeatClient />
-                </Providers>
-        <CookieBanner />
-        <AnalyticsLoader />
+        <Providers>
+          <MainHeader />
+
+          {children}
+
+          <AppFooter />
+          <TraceRepeatClient />
+
+          <CookieBanner />
+          <AnalyticsLoader />
+        </Providers>
       </body>
     </html>
   );

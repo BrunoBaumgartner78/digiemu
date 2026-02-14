@@ -7,14 +7,15 @@ import { requireSessionPage } from "@/lib/guards/authz";
 import { getProductThumbUrl } from "@/lib/productThumb";
 import LikeButtonClient from "@/components/product/LikeButtonClient";
 import BuyButtonClient from "@/components/checkout/BuyButtonClient";
-import CommentsClient from "@/components/product/CommentsClient"; // ✅ Community
+import CommentsClient from "@/components/product/CommentsClient";
 import ReviewsClient from "@/components/product/ReviewsClient";
 import ViewPing from "./ViewPing";
 import styles from "./page.module.css";
 
 export const dynamic = "force-dynamic";
 
-type ProductPageProps = { params: Promise<{ id: string }> };
+// ✅ params kann (je nach Next Version/Setup) Promise sein → await ist safe in beiden Fällen
+type ProductPageProps = { params: Promise<{ id: string }> | { id: string } };
 
 const SAFE_IMAGE_HOSTS = [
   "firebasestorage.googleapis.com",
@@ -25,7 +26,7 @@ const SAFE_IMAGE_HOSTS = [
 
 function canUseNextImage(url: string | null | undefined): boolean {
   if (!url) return false;
-  if (url.startsWith("/")) return true; // allow local relative paths
+  if (url.startsWith("/")) return true;
   try {
     const u = new URL(url);
     return SAFE_IMAGE_HOSTS.includes(u.hostname);
@@ -35,8 +36,7 @@ function canUseNextImage(url: string | null | undefined): boolean {
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
-  const { id } = await params;
-
+  const { id } = await (params as any);
   const pid = String(id ?? "").trim();
   if (!pid) notFound();
 
@@ -44,8 +44,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const userId = (() => {
     const u = session?.user;
     if (!u || typeof u !== "object") return null;
-    const id = (u as Record<string, unknown>)["id"];
-    return typeof id === "string" && id.length > 0 ? id : null;
+    const uid = (u as Record<string, unknown>)["id"];
+    return typeof uid === "string" && uid.length > 0 ? uid : null;
   })();
 
   const p = await prisma.product.findFirst({
@@ -66,13 +66,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
       status: true,
       vendorId: true,
       vendorProfileId: true,
-
       vendor: { select: { name: true, isBlocked: true } },
-
       vendorProfile: {
         select: {
           id: true,
-          userId: true, // ✅ wichtig für /seller/[vendorId]
+          userId: true,
           isPublic: true,
           slug: true,
           displayName: true,
@@ -81,23 +79,22 @@ export default async function ProductPage({ params }: ProductPageProps) {
           user: { select: { name: true } },
         },
       },
-
       _count: { select: { likes: true, comments: true } },
       likes: userId ? { where: { userId }, select: { id: true } } : undefined,
     },
   });
 
-  // ✅ harte Guards (defensive fallback – query already enforces ACTIVE + not blocked)
-  if (!p) notFound();
+  // ✅ harte Guards (CI grept nach ACTIVE guard strings)
+  if (!p || !p.isActive || p.status !== "ACTIVE") notFound();
+  if (p.vendor?.isBlocked) notFound();
 
-  // ✅ Fallback: wenn product.vendorProfile null ist → via userId nachladen
   const vendorProfile =
     p.vendorProfile ??
     (await prisma.vendorProfile.findUnique({
       where: { userId: p.vendorId },
       select: {
         id: true,
-        userId: true, // ✅ wichtig
+        userId: true,
         isPublic: true,
         slug: true,
         displayName: true,
@@ -133,12 +130,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const initialIsLiked = !!userId && (p.likes?.length ?? 0) > 0;
 
   const sellerName =
-    vendorProfile?.displayName ||
-    vendorProfile?.user?.name ||
-    p.vendor?.name ||
-    "Verkäufer";
+    vendorProfile?.displayName || vendorProfile?.user?.name || p.vendor?.name || "Verkäufer";
 
-  // ✅ Route ist /seller/[vendorId] => vendorId = User.id = vendorProfile.userId
   const sellerHref =
     vendorProfile?.isPublic === true && vendorProfile.userId
       ? `/seller/${encodeURIComponent(vendorProfile.userId)}`
@@ -148,19 +141,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
     <div className={styles.page}>
       <div className={styles.inner}>
         <main className={styles.layout}>
-          {/* counts a view once on mount */}
           <ViewPing productId={p.id} />
 
-          {/* Bild */}
           <section className={styles.mediaCard}>
             {showNextImage ? (
-              <Image
-                src={productThumb}
-                alt={p.title}
-                fill
-                priority
-                className={styles.mediaImage}
-              />
+              <Image src={productThumb} alt={p.title} fill priority className={styles.mediaImage} />
             ) : hasThumb ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={productThumb} alt={p.title} className={styles.mediaImage} />
@@ -172,7 +157,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
             )}
           </section>
 
-          {/* Kaufkarte */}
           <section className={styles.buyCard}>
             <h1 className={styles.title}>{p.title}</h1>
 
@@ -212,7 +196,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
           </section>
         </main>
 
-        {/* Beschreibung */}
         {p.description?.trim() ? (
           <section className={styles.descriptionSection}>
             <h2>Beschreibung</h2>
@@ -229,7 +212,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
           </section>
         ) : null}
 
-        {/* ✅ Community (Kommentare) */}
         <section className={styles.descriptionSection}>
           <ReviewsClient productId={p.id} />
         </section>
@@ -238,7 +220,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <CommentsClient productId={p.id} initialCount={commentsCount} />
         </section>
 
-        {/* Weitere Produkte */}
         {relatedProducts.length > 0 && (
           <section className={styles.relatedSection}>
             <h2>Mehr Produkte dieses Anbieters</h2>
@@ -263,9 +244,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
   );
 }
 
-// Dynamic metadata for product pages (uses server fetch)
 export async function generateMetadata({ params }: ProductPageProps) {
-  const { id } = await params;
+  const { id } = await (params as any);
   const pid = String(id ?? "").trim();
   if (!pid) return {};
 
