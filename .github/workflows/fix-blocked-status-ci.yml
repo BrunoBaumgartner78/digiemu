@@ -42,7 +42,7 @@ jobs:
           ./.github/scripts/ci-prepare-env.sh
 
       - name: Install
-        run: npm ci --include=dev
+        run: npm ci
 
       - name: Prisma Generate
         run: npx prisma generate
@@ -104,7 +104,7 @@ jobs:
           ./.github/scripts/ci-prepare-env.sh
 
       - name: Install
-        run: npm ci --include=dev
+        run: npm ci
 
       - name: Prisma Generate
         run: npx prisma generate
