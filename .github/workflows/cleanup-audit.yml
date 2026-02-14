@@ -9,6 +9,7 @@ on:
       - "src/**/*.js"
       - "src/**/*.jsx"
       - ".github/workflows/cleanup-audit.yml"
+      - ".github/scripts/check-dead-links.sh"
   workflow_dispatch:
 
 jobs:
@@ -18,35 +19,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Audit for forbidden links
+      - name: Run link audit
         shell: bash
         run: |
           set -euo pipefail
-
-          echo "🔎 searching for common dead links..."
-
-          MD_FILES="$(git ls-files '*.md' | grep -v '^node_modules/' || true)"
-          if [ -n "${MD_FILES}" ]; then
-            echo "MD files: $(echo "${MD_FILES}" | wc -l | tr -d ' ')"
-          else
-            echo "MD files: 0"
-          fi
-
-          PROFILE_REGEX='href[[:space:]]*=[[:space:]]*(\{[[:space:]]*)?["'"'"']/profile["'"'"']([[:space:]]*\})?'
-          DOWNLOADS_REGEX='href[[:space:]]*=[[:space:]]*(\{[[:space:]]*)?["'"'"']/downloads["'"'"']([[:space:]]*\})?'
-
-          # Source scan
-          if grep -RIn --include='*.ts' --include='*.tsx' --include='*.js' --include='*.jsx' -E "${PROFILE_REGEX}" src; then
-            echo "❌ Found /profile link. Use /account/profile instead."
-            exit 1
-          fi
-
-          if grep -RIn --include='*.ts' --include='*.tsx' --include='*.js' --include='*.jsx' -E "${DOWNLOADS_REGEX}" src; then
-            echo "❌ Found /downloads link. Use /account/downloads instead."
-            exit 1
-          fi
-
-          # Markdown scan (optional)
-          if [ -n "${MD_FILES}" ]; then
-            if echo "${MD_FILES}" | xargs -r grep -nE "${PROFILE_REGEX}" ; then
-              echo "❌ Found /profile link in ma
+          chmod +x .github/scripts/check-dead-links.sh
+          .github/scripts/check-dead-links.sh

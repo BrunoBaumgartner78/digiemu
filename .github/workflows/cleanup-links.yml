@@ -10,6 +10,7 @@ on:
       - "src/**/*.js"
       - "src/**/*.jsx"
       - ".github/workflows/cleanup-links.yml"
+      - ".github/scripts/check-dead-links.sh"
   workflow_dispatch:
 
 jobs:
@@ -19,39 +20,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Scan for common dead links
+      - name: Run link guard
         shell: bash
         run: |
           set -euo pipefail
-
-          echo "🔎 searching for common dead links..."
-
-          # markdown files (tracked)
-          MD_FILES="$(git ls-files '*.md' '*.mdx' | grep -v '^node_modules/' || true)"
-          if [ -n "${MD_FILES}" ]; then
-            echo "MD files: $(echo "${MD_FILES}" | wc -l | tr -d ' ')"
-          else
-            echo "MD files: 0"
-          fi
-
-          # NOTE: use '"'"' trick to safely include single quote inside single-quoted string.
-          PROFILE_REGEX='href[[:space:]]*=[[:space:]]*(\{[[:space:]]*)?["'"'"']/profile["'"'"']([[:space:]]*\})?'
-          DOWNLOADS_REGEX='href[[:space:]]*=[[:space:]]*(\{[[:space:]]*)?["'"'"']/downloads["'"'"']([[:space:]]*\})?'
-
-          # 1) fail if /profile appears in source (should be /account/profile)
-          if grep -RIn --include='*.ts' --include='*.tsx' --include='*.js' --include='*.jsx' -E "${PROFILE_REGEX}" src; then
-            echo "❌ Found /profile link. Use /account/profile instead."
-            exit 1
-          fi
-
-          # 2) fail if /downloads appears in source (should be /account/downloads)
-          if grep -RIn --include='*.ts' --include='*.tsx' --include='*.js' --include='*.jsx' -E "${DOWNLOADS_REGEX}" src; then
-            echo "❌ Found /downloads link. Use /account/downloads instead."
-            exit 1
-          fi
-
-          # Optional: check markdown too (only if there are MD files)
-          if [ -n "${MD_FILES}" ]; then
-            if echo "${MD_FILES}" | xargs -r grep -nE "${PROFILE_REGEX}" ; then
-              echo "❌ Found /profile link in markdown. Use /account/profile instead."
-              exit 1
+          chmod +x .github/scripts/check-dead-links.sh
+          .github/scripts/check-dead-links.sh
