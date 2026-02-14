@@ -84,7 +84,7 @@ export default function AppFooter() {
               <a className={styles.link} href="mailto:support@bellu.ch">
                 support@bellu.ch
               </a>
-              <div className={styles.chip}>DigiEmu v2.0.0  | softlaunch · Neumorph Neon</div>
+              <div className={styles.chip}>DigiEmu v2.0.1  | softlaunch · Neumorph Neon</div>
             </div>
           </div>
         </div>

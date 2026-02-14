@@ -1,40 +1,30 @@
 "use client";
 
-
 import Link from "next/link";
 import * as React from "react";
 
 type Props = {
   productId: string;
+  isAuthed?: boolean;
+  returnTo?: string; // z.B. `/product/${id}`
 };
 
 type UiError = { code: string; title: string; message: string; help?: boolean };
 
-export default function BuyButtonClient({ productId }: Props) {
+export default function BuyButtonClient({ productId, isAuthed, returnTo }: Props) {
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<UiError | null>(null);
 
-  // ✅ useRef = Lock (keine Rerenders nötig)
   const inFlightRef = React.useRef(false);
-
-  // ✅ Timeout / Abort sauber ohne extra State
   const abortRef = React.useRef<AbortController | null>(null);
   const timeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Error mapping
   function mapError(code: string): { title: string; message: string; help?: boolean } {
     switch (code) {
       case "PRODUCT_NOT_AVAILABLE":
-        return {
-          title: "Produkt nicht verfügbar",
-          message: "Dieses Produkt ist aktuell nicht verfügbar. Bitte später erneut versuchen.",
-        };
+        return { title: "Produkt nicht verfügbar", message: "Dieses Produkt ist aktuell nicht verfügbar. Bitte später erneut versuchen." };
       case "PRODUCT_FILE_MISSING":
-        return {
-          title: "Download nicht bereit",
-          message: "Für dieses Produkt ist noch keine Datei hinterlegt. Bitte kontaktiere den Support.",
-          help: true,
-        };
+        return { title: "Download nicht bereit", message: "Für dieses Produkt ist noch keine Datei hinterlegt. Bitte kontaktiere den Support.", help: true };
       case "FORBIDDEN":
         return { title: "Kein Zugriff", message: "Du hast keine Berechtigung für diesen Kauf." };
       case "RATE_LIMITED":
@@ -68,6 +58,14 @@ export default function BuyButtonClient({ productId }: Props) {
 
   async function onBuy() {
     if (loading || inFlightRef.current) return;
+
+    // ✅ Wenn nicht eingeloggt: sofort auf Login, ohne API call
+    if (isAuthed === false) {
+      const next = encodeURIComponent(returnTo || window.location.pathname);
+      window.location.href = `/login?next=${next}`;
+      return;
+    }
+
     if (!productId) {
       setError({ code: "GENERIC", ...mapError("GENERIC") });
       return;
@@ -77,12 +75,10 @@ export default function BuyButtonClient({ productId }: Props) {
     setError(null);
     inFlightRef.current = true;
 
-    // ✅ Abort + Timeout
     const controller = new AbortController();
     abortRef.current = controller;
 
     timeoutRef.current = setTimeout(() => {
-      // Abort fetch, UI wird im catch/finally sauber gesetzt
       try {
         controller.abort();
       } catch {}
@@ -96,23 +92,21 @@ export default function BuyButtonClient({ productId }: Props) {
         body: JSON.stringify({ productId }),
       });
 
-      // UNAUTHORIZED: redirect to login with callback
+      // UNAUTHORIZED fallback (falls isAuthed nicht übergeben wurde)
       if (res.status === 401) {
-        const cb = encodeURIComponent(window.location.pathname);
-        window.location.href = `/login?callbackUrl=${cb}`;
+        const next = encodeURIComponent(returnTo || window.location.pathname);
+        window.location.href = `/login?next=${next}`;
         return;
       }
 
       const data = await res.json().catch(() => ({} as unknown));
 
-      if (res.ok && data?.url) {
-        // redirect to Stripe
-        window.location.assign(String(data.url));
+      if (res.ok && (data as any)?.url) {
+        window.location.assign(String((data as any).url));
         return;
       }
 
-      // Map known errors
-      const code = String(data?.error || "GENERIC");
+      const code = String((data as any)?.error || "GENERIC");
       setError({ code, ...mapError(code) });
     } catch (e: unknown) {
       const getErrorName = (e: unknown): string | undefined => {

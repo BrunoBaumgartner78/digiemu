@@ -3,7 +3,6 @@ generator client {
   engineType = "node-api"
 }
 
-
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
@@ -52,8 +51,8 @@ model User {
   auditLogs      AuditLog[]      @relation("AuditActor")
   buyerProfile   BuyerProfile?
   comments       Comment[]
-  likes          Like[]
   commentLikes   CommentLike[]
+  likes          Like[]
   orders         Order[]
   passwordResets PasswordReset[]
   payouts        Payout[]
@@ -171,14 +170,14 @@ model Like {
 }
 
 model Comment {
-  id        String   @id @default(cuid())
+  id        String        @id @default(cuid())
   userId    String
   productId String
   content   String
-  createdAt DateTime @default(now())
-  isHidden  Boolean  @default(false)
-  product   Product  @relation(fields: [productId], references: [id])
-  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime      @default(now())
+  isHidden  Boolean       @default(false)
+  product   Product       @relation(fields: [productId], references: [id])
+  user      User          @relation(fields: [userId], references: [id])
   likes     CommentLike[]
 }
 
@@ -187,7 +186,6 @@ model CommentLike {
   commentId String
   userId    String
   createdAt DateTime @default(now())
-
   comment   Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -251,20 +249,31 @@ model Payout {
   status      PayoutStatus @default(PENDING)
   vendor      User         @relation(fields: [vendorId], references: [id])
 }
+
 model PasswordReset {
   id        String   @id @default(cuid())
   token     String   @unique
   userId    String
   expiresAt DateTime
   createdAt DateTime @default(now())
-
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([expiresAt])
 }
 
+model StripeWebhookError {
+  id        String   @id @default(cuid())
+  eventId   String?
+  type      String?
+  message   String
+  createdAt DateTime @default(now())
+  meta      Json?
 
+  @@index([eventId])
+  @@index([type])
+  @@index([createdAt])
+}
 
 enum VendorStatus {
   PENDING
@@ -288,17 +297,4 @@ enum PayoutStatus {
   PENDING
   PAID
   CANCELLED
-}
-
-model StripeWebhookError {
-  id        String   @id @default(cuid())
-  eventId   String?
-  type      String?
-  message   String
-  meta      Json?
-  createdAt DateTime @default(now())
-
-  @@index([eventId])
-  @@index([type])
-  @@index([createdAt])
 }
