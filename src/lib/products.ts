@@ -69,6 +69,17 @@ export async function getMarketplaceProducts(
   // base visibility clause from centralized helper
   const where: Prisma.ProductWhereInput = { AND: [marketplaceWhereClause()] };
 
+  // Ensure strict visibility filters at query-level so page + list match exactly
+  // (enforced on both count and findMany since they share `where`)
+  if (!Array.isArray(where.AND)) {
+    where.AND = where.AND ? [where.AND as Prisma.ProductWhereInput] : [];
+  }
+  (where.AND as Prisma.ProductWhereInput[]).push({
+    isActive: true,
+    status: "ACTIVE",
+    vendor: { isBlocked: false },
+  });
+
   // Optional: Kategorie
   if (category && category !== "all") {
     // ensure AND is an array before pushing (Prisma types allow single or array)

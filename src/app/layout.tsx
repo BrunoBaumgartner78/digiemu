@@ -23,14 +23,29 @@ export const metadata: Metadata = {
   title: { default: SITE_TITLE, template: `%s | ${SITE_NAME}` },
   description: SITE_DESCRIPTION,
   applicationName: SITE_NAME,
-  keywords: ["Bellu", "DigiEmu", "digitaler Marktplatz", "digitale Produkte", "Downloads", "Creator", "Vendor", "Schweiz"],
+  keywords: [
+    "Bellu",
+    "DigiEmu",
+    "digitaler Marktplatz",
+    "digitale Produkte",
+    "Downloads",
+    "Creator",
+    "Vendor",
+    "Schweiz",
+  ],
   authors: [{ name: "Bruno Baumgartner" }],
   creator: "Bruno Baumgartner",
   publisher: SITE_NAME,
   robots: {
     index: true,
     follow: true,
-    googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1, "max-video-preview": -1 },
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
   },
   alternates: { canonical: "/" },
   icons: {
@@ -55,7 +70,12 @@ export const metadata: Metadata = {
       { url: OG_IMAGE_1_1, width: 1200, height: 1200, alt: SITE_TITLE },
     ],
   },
-  twitter: { card: "summary_large_image", title: SITE_TITLE, description: SITE_DESCRIPTION, images: [OG_IMAGE_16_9] },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    images: [OG_IMAGE_16_9],
+  },
   ...(FB_APP_ID ? { other: { "fb:app_id": FB_APP_ID } } : {}),
 };
 
@@ -64,14 +84,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="de" suppressHydrationWarning>
       <body className="bg-[var(--page-bg)] text-[var(--text-main)]">
         <Providers>
-          <MainHeader />
-          <div className="min-h-screen">{children}</div>
-          <AppFooter />
-          <TraceRepeatClient />
-        </Providers>
+          <div className="min-h-screen flex flex-col">
+            <MainHeader />
+            <main className="flex-1">{children}</main>
+            <AppFooter />
+          </div>
 
-        <CookieBanner />
-        <AnalyticsLoader />
+          <TraceRepeatClient />
+          <CookieBanner />
+          <AnalyticsLoader />
+        </Providers>
       </body>
     </html>
   );

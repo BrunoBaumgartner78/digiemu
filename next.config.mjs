@@ -6,8 +6,15 @@ const nextConfig = {
         ? { exclude: ["error", "warn"] }
         : false,
   },
-
   images: {
+    // ✅ extra-sicher: domains + remotePatterns
+    domains: [
+      "firebasestorage.googleapis.com",
+      "storage.googleapis.com",
+      "lh3.googleusercontent.com",
+      "images.pexels.com",
+      "images.unsplash.com",
+    ],
     remotePatterns: [
       {
         protocol: "https",
@@ -19,6 +26,7 @@ const nextConfig = {
         hostname: "storage.googleapis.com",
         pathname: "/**",
       },
+      // Next remotePatterns kann Wildcards, aber wir lassen domains oben zusätzlich drin.
       {
         protocol: "https",
         hostname: "*.appspot.com",

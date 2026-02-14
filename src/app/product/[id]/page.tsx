@@ -1,4 +1,3 @@
-// src/app/product/[id]/page.tsx
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -7,14 +6,13 @@ import { requireSessionPage } from "@/lib/guards/authz";
 import { getProductThumbUrl } from "@/lib/productThumb";
 import LikeButtonClient from "@/components/product/LikeButtonClient";
 import BuyButtonClient from "@/components/checkout/BuyButtonClient";
-import CommentsClient from "@/components/product/CommentsClient"; // ✅ Community
+import CommentsClient from "@/components/product/CommentsClient";
 import ReviewsClient from "@/components/product/ReviewsClient";
 import ViewPing from "./ViewPing";
 import styles from "./page.module.css";
 
 export const dynamic = "force-dynamic";
 
-// ✅ FIX: params MUST NOT be Promise (Params-Guard workflow)
 type ProductPageProps = { params: { id: string } };
 
 const SAFE_IMAGE_HOSTS = [
@@ -26,7 +24,7 @@ const SAFE_IMAGE_HOSTS = [
 
 function canUseNextImage(url: string | null | undefined): boolean {
   if (!url) return false;
-  if (url.startsWith("/")) return true; // allow local relative paths
+  if (url.startsWith("/")) return true;
   try {
     const u = new URL(url);
     return SAFE_IMAGE_HOSTS.includes(u.hostname);
@@ -36,17 +34,15 @@ function canUseNextImage(url: string | null | undefined): boolean {
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
-  const { id } = params;
-
-  const pid = String(id ?? "").trim();
+  const pid = String(params?.id ?? "").trim();
   if (!pid) notFound();
 
   const session = await requireSessionPage();
   const userId = (() => {
     const u = session?.user;
     if (!u || typeof u !== "object") return null;
-    const id = (u as Record<string, unknown>)["id"];
-    return typeof id === "string" && id.length > 0 ? id : null;
+    const uid = (u as Record<string, unknown>)["id"];
+    return typeof uid === "string" && uid.length > 0 ? uid : null;
   })();
 
   const p = await prisma.product.findFirst({
@@ -67,13 +63,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
       status: true,
       vendorId: true,
       vendorProfileId: true,
-
       vendor: { select: { name: true, isBlocked: true } },
-
       vendorProfile: {
         select: {
           id: true,
-          userId: true, // ✅ wichtig für /seller/[vendorId]
+          userId: true,
           isPublic: true,
           slug: true,
           displayName: true,
@@ -82,7 +76,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
           user: { select: { name: true } },
         },
       },
-
       _count: { select: { likes: true, comments: true } },
       likes: userId ? { where: { userId }, select: { id: true } } : undefined,
     },
@@ -92,14 +85,13 @@ export default async function ProductPage({ params }: ProductPageProps) {
   if (!p || !p.isActive || p.status !== "ACTIVE") notFound();
   if (p.vendor?.isBlocked) notFound();
 
-  // ✅ Fallback: wenn product.vendorProfile null ist → via userId nachladen
   const vendorProfile =
     p.vendorProfile ??
     (await prisma.vendorProfile.findUnique({
       where: { userId: p.vendorId },
       select: {
         id: true,
-        userId: true, // ✅ wichtig
+        userId: true,
         isPublic: true,
         slug: true,
         displayName: true,
@@ -140,7 +132,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
     p.vendor?.name ||
     "Verkäufer";
 
-  // ✅ Route ist /seller/[vendorId] => vendorId = User.id = vendorProfile.userId
   const sellerHref =
     vendorProfile?.isPublic === true && vendorProfile.userId
       ? `/seller/${encodeURIComponent(vendorProfile.userId)}`
@@ -154,13 +145,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
           <section className={styles.mediaCard}>
             {showNextImage ? (
-              <Image
-                src={productThumb}
-                alt={p.title}
-                fill
-                priority
-                className={styles.mediaImage}
-              />
+              <Image src={productThumb} alt={p.title} fill priority className={styles.mediaImage} />
             ) : hasThumb ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={productThumb} alt={p.title} className={styles.mediaImage} />
@@ -259,7 +244,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
   );
 }
 
-// Dynamic metadata for product pages (uses server fetch)
 export async function generateMetadata({ params }: ProductPageProps) {
   const pid = String(params?.id ?? "").trim();
   if (!pid) return {};
@@ -290,3 +274,4 @@ export async function generateMetadata({ params }: ProductPageProps) {
     alternates: { canonical: `/product/${pid}` },
   } as unknown;
 }
+

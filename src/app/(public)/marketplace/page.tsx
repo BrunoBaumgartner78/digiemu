@@ -12,6 +12,25 @@ import SafeImg from "@/components/ui/SafeImg";
 
 export const revalidate = 60; // ISR: revalidate every 60s to reduce DB load
 
+const SAFE_IMAGE_HOSTS = [
+  "firebasestorage.googleapis.com",
+  "storage.googleapis.com",
+  "lh3.googleusercontent.com",
+  "images.pexels.com",
+  "images.unsplash.com",
+];
+
+function canUseNextImage(url?: string | null) {
+  if (!url) return false;
+  if (url.startsWith("/")) return true;
+  try {
+    const u = new URL(url);
+    return SAFE_IMAGE_HOSTS.includes(u.hostname);
+  } catch {
+    return false;
+  }
+}
+
 const CATEGORY_FILTERS = [
   { key: "all", label: "Alle" },
   { key: "ebook", label: "E-Books" },
@@ -274,10 +293,9 @@ export default async function MarketplacePage(props: MarketplacePageProps) {
 
                     const formattedPrice = typeof p.priceCents === "number" ? priceFormatter.format(p.priceCents / 100) : priceFormatter.format(0);
 
-                    const hasRealThumbnail =
-                      typeof p.thumbnail === "string" &&
-                      p.thumbnail.trim().length > 0 &&
-                      !p.thumbnail.includes("example.com");
+                    const thumb = typeof p.thumbnail === "string" ? p.thumbnail.trim() : "";
+                    const hasThumb = thumb.length > 0 && !thumb.includes("example.com");
+                    const useNext = hasThumb && canUseNextImage(thumb);
 
                     const vendorProfile = p.vendorProfile ?? null;
 
@@ -296,19 +314,24 @@ export default async function MarketplacePage(props: MarketplacePageProps) {
                   <article key={p.id} className={`${styles.card} neonCard glowSoft`}>
                     <Link href={`/product/${p.id}`} className={styles.cardBody}>
                           <div className={styles.cardImageWrapper} style={{ position: "relative", aspectRatio: "4/3" }}>
-                        {hasRealThumbnail ? (
-                          <Image
-                                src={p.thumbnail as string}
-                            alt={p.title}
-                            fill
-                            className={styles.cardImage}
-                            sizes="(min-width: 1024px) 280px, (min-width: 640px) 50vw, 100vw"
-                          />
+                        {hasThumb ? (
+                          useNext ? (
+                            <Image
+                              src={thumb}
+                              alt={p.title}
+                              fill
+                              className={styles.cardImage}
+                              sizes="(min-width: 1024px) 280px, (min-width: 640px) 50vw, 100vw"
+                            />
+                          ) : (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={thumb} alt={p.title} className={styles.cardImage} style={{ objectFit: "cover", width: "100%", height: "100%" }} />
+                          )
                         ) : (
-                              <div className={styles.cardImagePlaceholder} style={{ aspectRatio: "4/3", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                <div className={styles.cardImageIcon} aria-hidden="true" />
-                                <span className={styles.cardImageLabel}>Digitales Produkt</span>
-                              </div>
+                          <div className={styles.cardImagePlaceholder} style={{ aspectRatio: "4/3", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                            <div className={styles.cardImageIcon} aria-hidden="true" />
+                            <span className={styles.cardImageLabel}>Digitales Produkt</span>
+                          </div>
                         )}
                       </div>
 
