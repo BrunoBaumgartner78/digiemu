@@ -1,16 +1,14 @@
+// src/app/providers.tsx
 "use client";
 
-import React from "react";
+import type { ReactNode } from "react";
 import { SessionProvider } from "next-auth/react";
-import ThemeProvider from "@/components/theme/ThemeProvider";
-import { ToastProvider } from "@/components/ui/use-toast";
+import { ToastProvider } from "@/components/ui/toast/ToastProvider";
 
-export default function Providers({ children }: { children: React.ReactNode }) {
+export default function Providers({ children }: { children: ReactNode }) {
   return (
     <SessionProvider>
-      <ThemeProvider>
-        <ToastProvider>{children}</ToastProvider>
-      </ThemeProvider>
+      <ToastProvider>{children}</ToastProvider>
     </SessionProvider>
   );
 }
