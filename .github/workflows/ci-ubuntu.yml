@@ -8,40 +8,68 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+    timeout-minutes: 20
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U ci -d ci"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
     env:
-      DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/postgres?schema=public"
+      NODE_ENV: production
+      CI_DATABASE_URL: postgresql://ci:ci@127.0.0.1:5432/ci?schema=public
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
 
-
-      - name: CI env fallback (DATABASE_URL)
-        shell: bash
-        run: |
-          if [ -z "${DATABASE_URL:-}" ]; then
-            echo "DATABASE_URL=postgresql://ci:ci@127.0.0.1:5432/ci?schema=public" >> "$GITHUB_ENV"
-          fi
-          if [ -z "${DIRECT_URL:-}" ]; then
-            echo "DIRECT_URL=postgresql://ci:ci@127.0.0.1:5432/ci?schema=public" >> "$GITHUB_ENV"
-          fi
-
-      - name: Prepare Prisma env (DIRECT_URL fallback)
-        shell: bash
-        run: |
-          chmod +x .github/scripts/ci-ensure-prisma-env.sh
-          .github/scripts/ci-ensure-prisma-env.sh
-
-      - name: Install
+      - name: Install deps
         run: npm ci --include=dev
 
-      - name: Prisma Generate
-        run: npm run prisma:generate
+      - name: Wait for Postgres
+        shell: bash
+        run: |
+          set -euo pipefail
+          for i in {1..30}; do
+            pg_isready -h 127.0.0.1 -p 5432 -U ci -d ci && exit 0
+            sleep 1
+          done
+          echo "Postgres not ready" && exit 1
+
+      - name: Set Prisma URLs (secrets fallback -> CI DB)
+        shell: bash
+        run: |
+          set -euo pipefail
+          DB_URL="${{ secrets.DATABASE_URL }}"
+          DIRECT="${{ secrets.DIRECT_URL }}"
+
+          if [ -z "${DB_URL:-}" ]; then DB_URL="${CI_DATABASE_URL}"; fi
+          if [ -z "${DIRECT:-}" ]; then DIRECT="${DB_URL}"; fi
+
+          echo "DATABASE_URL=$DB_URL" >> "$GITHUB_ENV"
+          echo "DIRECT_URL=$DIRECT" >> "$GITHUB_ENV"
+
+      - name: Prisma generate
+        run: npx prisma generate
+
+      - name: Prisma migrate deploy
+        run: npx --no-install prisma migrate deploy
 
       - name: Build
         run: npm run build

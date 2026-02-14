@@ -8,6 +8,7 @@ on:
 jobs:
   ui-ux-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     services:
       postgres:
@@ -64,6 +65,12 @@ jobs:
           done
           echo "Postgres not ready" && exit 1
 
+      - name: Prisma generate
+        run: npm run prisma:generate
+
+      - name: Prisma migrate deploy
+        run: npx --no-install prisma migrate deploy
+
       - name: Run ESLint (code quality)
         run: npm run lint --if-present
 
@@ -76,8 +83,5 @@ jobs:
       - name: Run E2E tests
         run: npm run test:e2e --if-present
 
-      - name: Prisma generate
-        run: npm run prisma:generate
-
-      - name: Prisma migrate deploy
-        run:
+      - name: Build Next.js app (UI sanity check)
+        run: npm run build

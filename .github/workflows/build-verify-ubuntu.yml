@@ -53,6 +53,16 @@ jobs:
       - name: Install deps
         run: npm ci --include=dev
 
+      - name: Wait for Postgres
+        shell: bash
+        run: |
+          set -euo pipefail
+          for i in {1..30}; do
+            pg_isready -h 127.0.0.1 -p 5432 -U ci -d ci && exit 0
+            sleep 1
+          done
+          echo "Postgres not ready" && exit 1
+
       - name: Set Prisma URLs (secrets fallback -> CI DB)
         shell: bash
         run: |
@@ -66,18 +76,8 @@ jobs:
           echo "DATABASE_URL=$DB_URL" >> "$GITHUB_ENV"
           echo "DIRECT_URL=$DIRECT" >> "$GITHUB_ENV"
 
-      - name: Wait for Postgres
-        shell: bash
-        run: |
-          set -euo pipefail
-          for i in {1..20}; do
-            pg_isready -h 127.0.0.1 -p 5432 -U ci -d ci && exit 0
-            sleep 1
-          done
-          echo "Postgres not ready" && exit 1
-
       - name: Prisma generate
-        run: npm run prisma:generate
+        run: npx prisma generate
 
       - name: Prisma migrate deploy
         run: npx --no-install prisma migrate deploy

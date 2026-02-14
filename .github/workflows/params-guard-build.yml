@@ -2,7 +2,7 @@ name: Params Guard + Build (Ubuntu)
 
 on:
   push:
-    branches: [main, develop, staging]
+    branches: [ main, develop, staging ]
   pull_request:
 
 jobs:
@@ -52,6 +52,7 @@ jobs:
       - name: Install
         run: npm ci --include=dev
 
+      # ---------- GUARDS: params must not be Promise ----------
       - name: Guard - forbid Promise params typing in App Router pages
         shell: bash
         run: |
@@ -68,7 +69,7 @@ jobs:
             exit 1
           fi
 
-          echo "✅ Guard passed."
+          echo "✅ Guard passed: no Promise params patterns found."
 
       - name: Set Prisma URLs (secrets fallback -> CI DB)
         shell: bash
@@ -94,7 +95,7 @@ jobs:
           echo "Postgres not ready" && exit 1
 
       - name: Prisma generate
-        run: npm run prisma:generate
+        run: npx prisma generate
 
       - name: Prisma migrate deploy
         run: npx --no-install prisma migrate deploy
