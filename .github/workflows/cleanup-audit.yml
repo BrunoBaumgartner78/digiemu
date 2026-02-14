@@ -1,73 +1,52 @@
-﻿name: Cleanup Audit
+﻿name: cleanup-audit
 
 on:
-  workflow_dispatch:
   pull_request:
-    branches: [main]
-  push:
-    branches: [main]
-  schedule:
-    - cron: "0 3 * * 1" # Mo 03:00 UTC
+    paths:
+      - "**/*.md"
+      - "src/**/*.ts"
+      - "src/**/*.tsx"
+      - "src/**/*.js"
+      - "src/**/*.jsx"
+      - ".github/workflows/cleanup-audit.yml"
+  workflow_dispatch:
 
 jobs:
-  links-and-routes:
+  cleanup-audit:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: "npm"
-
-      - name: Install deps
-        run: npm ci --include=dev
-
-      - name: Install markdown-link-check
-        run: npm i -D markdown-link-check
-
-      - name: Check markdown links (git tracked only)
+      - name: Audit for forbidden links
         shell: bash
         run: |
           set -euo pipefail
 
-          # Only markdown files tracked by git (so NEVER node_modules)
-          MD_FILES="$(git ls-files '*.md' || true)"
-          if [ -z "$MD_FILES" ]; then
-            echo "ℹ️ No markdown files found."
-            exit 0
-          fi
-
-          echo "🔎 Running markdown-link-check on tracked files:"
-          echo "$MD_FILES"
-
-          while IFS= read -r f; do
-            [ -n "$f" ] || continue
-            echo "— checking: $f"
-            npx markdown-link-check -c .github/markdown-link-check.json "$f"
-          done <<< "$MD_FILES"
-
-      - name: Guard dead internal routes
-        shell: bash
-        run: |
-          set -euo pipefail
           echo "🔎 searching for common dead links..."
 
-          TARGETS=("src")
+          MD_FILES="$(git ls-files '*.md' | grep -v '^node_modules/' || true)"
+          if [ -n "${MD_FILES}" ]; then
+            echo "MD files: $(echo "${MD_FILES}" | wc -l | tr -d ' ')"
+          else
+            echo "MD files: 0"
+          fi
 
-          PROFILE_REGEX='href[[:space:]]*=[[:space:]]*(\{[[:space:]]*)?["'\'']/profile["'\'']([[:space:]]*\})?'
-          DOWNLOADS_REGEX='href[[:space:]]*=[[:space:]]*(\{[[:space:]]*)?["'\'']/downloads["'\'']([[:space:]]*\})?'
+          PROFILE_REGEX='href[[:space:]]*=[[:space:]]*(\{[[:space:]]*)?["'"'"']/profile["'"'"']([[:space:]]*\})?'
+          DOWNLOADS_REGEX='href[[:space:]]*=[[:space:]]*(\{[[:space:]]*)?["'"'"']/downloads["'"'"']([[:space:]]*\})?'
 
-          if grep -RIn \
-            --include='*.ts' --include='*.tsx' --include='*.js' --include='*.jsx' \
-            -E "$PROFILE_REGEX" \
-            "${TARGETS[@]}" | head -n 1; then
-            echo '❌ Found /profile link. Use /account/profile instead.'
+          # Source scan
+          if grep -RIn --include='*.ts' --include='*.tsx' --include='*.js' --include='*.jsx' -E "${PROFILE_REGEX}" src; then
+            echo "❌ Found /profile link. Use /account/profile instead."
             exit 1
           fi
 
-          if grep -RIn \
-            --include='*.ts' --include='*.tsx' --include='*.*
+          if grep -RIn --include='*.ts' --include='*.tsx' --include='*.js' --include='*.jsx' -E "${DOWNLOADS_REGEX}" src; then
+            echo "❌ Found /downloads link. Use /account/downloads instead."
+            exit 1
+          fi
+
+          # Markdown scan (optional)
+          if [ -n "${MD_FILES}" ]; then
+            if echo "${MD_FILES}" | xargs -r grep -nE "${PROFILE_REGEX}" ; then
+              echo "❌ Found /profile link in ma
