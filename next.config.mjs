@@ -6,27 +6,43 @@ const nextConfig = {
         ? { exclude: ["error", "warn"] }
         : false,
   },
+
   images: {
-    // ✅ extra-sicher: domains + remotePatterns
-    domains: [
-      "firebasestorage.googleapis.com",
-      "storage.googleapis.com",
-      "lh3.googleusercontent.com",
-      "images.pexels.com",
-      "images.unsplash.com",
-    ],
     remotePatterns: [
+      // Firebase Storage (download URLs)
       {
         protocol: "https",
         hostname: "firebasestorage.googleapis.com",
         pathname: "/v0/b/**",
       },
+
+      // Firebase / Google Cloud Storage direct bucket URLs
       {
         protocol: "https",
         hostname: "storage.googleapis.com",
         pathname: "/**",
       },
-      // Next remotePatterns kann Wildcards, aber wir lassen domains oben zusätzlich drin.
+
+      // Google user content (Avatare etc.)
+      {
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com",
+        pathname: "/**",
+      },
+
+      // Unsplash / Pexels
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "images.pexels.com",
+        pathname: "/**",
+      },
+
+      // Optional: falls du irgendwo appspot-bucket URLs hast
       {
         protocol: "https",
         hostname: "*.appspot.com",
