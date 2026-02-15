@@ -125,17 +125,31 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <ViewPing productId={p.id} />
 
           <section className={styles.mediaCard}>
-            {useNextImage ? (
-              <Image src={productThumb} alt={p.title} fill priority className={styles.mediaImage} />
-            ) : hasThumb ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={productThumb} alt={p.title} className={styles.mediaImage} />
-            ) : (
-              <div className={styles.mediaPlaceholder}>
-                <div className={styles.mediaIcon}>💾</div>
-                <div className={styles.mediaPlaceholderText}>Kein Vorschaubild</div>
+            <div className={styles.mediaClip}>
+              <div className={`${styles.coverBox} ${styles["coverBox--square"]}`}>
+              {useNextImage ? (
+                <Image
+                  src={productThumb}
+                  alt={p.title}
+                  fill
+                  priority
+                  className={styles.coverImg}
+                />
+              ) : hasThumb ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={productThumb}
+                  alt={p.title}
+                  className={styles.coverImg}
+                />
+              ) : (
+                <div className={styles.mediaPlaceholder}>
+                  <div className={styles.mediaIcon}>💾</div>
+                  <div className={styles.mediaPlaceholderText}>Kein Vorschaubild</div>
+                </div>
+              )}
               </div>
-            )}
+            </div>
           </section>
 
           <section className={styles.buyCard}>
