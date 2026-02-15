@@ -10,6 +10,12 @@
   padding: 2.5rem 1rem 3.25rem;
   background: var(--page-bg);
   color: var(--text-main, var(--txt, #0f172a));
+  /* ✅ letzte Sicherheit gegen horizontales “Bleeding” */
+  overflow-x: clip;
+}
+
+@supports not (overflow: clip) {
+  .page { overflow-x: hidden; }
 }
 
 .inner {
@@ -56,6 +62,7 @@
   content: "›";
   margin: 0 0.3rem 0 0.1rem;
   color: var(--text-muted, rgba(15, 23, 42, 0.68));
+
 }
 
 /* =========================
@@ -74,25 +81,52 @@
   }
 }
 
-/* =========================
-   MEDIA CARD (LEFT)
-   ========================= */
-.mediaCard {
-  position: relative;
+/* === HARD CLIP for cover area === */
+
+/* optional clip wrapper (if used elsewhere) - give children full-height */
+.mediaClip {
+  position: absolute;
+  inset: 0;
   border-radius: 32px;
   overflow: hidden;
-  background: radial-gradient(
-    circle at top left,
-    rgba(72, 118, 255, 0.20),
-    rgba(2, 6, 23, 0.92)
-  );
-  box-shadow:
-    20px 20px 50px rgba(15, 23, 42, 0.28),
-    -10px -10px 30px rgba(255, 255, 255, 0.06);
+  clip-path: inset(0 round 32px);
+  isolation: isolate;
+  display: flex;
+}
 
-  /* stabile Fläche für <Image fill> */
-  aspect-ratio: 4 / 3;
-  min-height: 420px;
+/* 1) Wrapper clips EVERYTHING */
+/* Wrapper clips the image and defines the rounding */
+.coverWrap {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  flex: 1;
+
+  border-radius: 18px;
+  overflow: hidden;
+  clip-path: inset(0 round 18px);
+  isolation: isolate;
+
+  background: rgba(0, 0, 0, 0.04);
+}
+
+/* Works for BOTH:
+   - Next/Image with fill (it renders an <img> absolutely positioned)
+   - plain <img> */
+.coverImg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+
+  object-fit: cover;
+  object-position: center;
+}
+
+/* extra safety (never overflow) */
+.coverWrap img {
+  max-width: 100%;
 }
 
 .mediaImage {
@@ -124,6 +158,123 @@
 .mediaPlaceholderText {
   font-size: 0.95rem;
   opacity: 0.9;
+}
+
+/* ---- Card is the clip boundary ---- */
+.mediaCard {
+  position: relative;
+  border-radius: 32px;
+  overflow: hidden;
+  clip-path: inset(0 round 32px);
+  isolation: isolate;
+
+  background: radial-gradient(circle at top left, rgba(72,118,255,.20), rgba(2,6,23,.92));
+  box-shadow: 20px 20px 50px rgba(15, 23, 42, 0.28),
+              -10px -10px 30px rgba(255, 255, 255, 0.06);
+
+  aspect-ratio: 4 / 3;
+  min-height: 420px;
+}
+
+/* =========================
+   MEDIA CARD (LEFT) — polish
+   ========================= */
+
+/* optional: leicht weichere Basis + saubere Transition */
+.mediaCard {
+  transition:
+    box-shadow 0.22s ease,
+    transform 0.22s ease,
+    filter 0.22s ease;
+  will-change: transform, box-shadow;
+}
+
+/* Hover-Glow nur auf der Card (subtil) */
+@media (hover: hover) and (pointer: fine) {
+  .mediaCard:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      20px 20px 54px rgba(15, 23, 42, 0.30),
+      -10px -10px 32px rgba(255, 255, 255, 0.07),
+      0 0 0 1px rgba(72, 118, 255, 0.16),
+      0 0 28px rgba(72, 118, 255, 0.18);
+    filter: brightness(1.01);
+  }
+
+  /* Zoom-on-hover: nur Bild, Wrapper clippt */
+  .mediaCard:hover .coverWrap img,
+  .mediaCard:hover .coverWrap :global(img),
+  .mediaCard:hover .coverWrap :global(span),
+  .mediaCard:hover .coverWrap :global(span) img {
+    transform: scale(1.03);
+  }
+}
+
+/* Zoom-Animation fürs Bild (funktioniert für <img> und Next/Image) */
+.coverWrap img,
+.coverWrap :global(img),
+.coverWrap :global(span),
+.coverWrap :global(span) img {
+  transition: transform 0.28s ease;
+  transform-origin: center;
+  will-change: transform;
+}
+
+/* Mobile: Schatten weniger hart + keine Hover-Spielereien */
+@media (max-width: 520px) {
+  .mediaCard {
+    box-shadow:
+      12px 12px 28px rgba(15, 23, 42, 0.18),
+      -6px -6px 18px rgba(255, 255, 255, 0.06);
+    transform: none;
+    filter: none;
+  }
+}
+
+/* Optional: Fokus (Keyboard) ähnlich wie Glow, aber dezenter */
+.mediaCard:focus-within {
+  box-shadow:
+    18px 18px 48px rgba(15, 23, 42, 0.26),
+    -9px -9px 26px rgba(255, 255, 255, 0.06),
+    0 0 0 2px rgba(72, 118, 255, 0.28);
+}
+
+/* ---- Inner image box defines the area for fill ---- */
+.coverBox {
+  position: relative;   /* ✅ critical: makes Image fill local */
+  width: 100%;
+  height: 100%;
+}
+
+.coverBox--square {
+  aspect-ratio: 1 / 1;
+  height: auto;         /* square uses ratio instead of full height */
+}
+
+/* ---- The actual image (Next/Image fill or <img>) ---- */
+.coverImg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* ✅ Safety: Next/Image wrapper span must not break layout */
+.mediaClip :global(span) {
+  position: absolute !important;
+  inset: 0 !important;
+  display: block !important;
+}
+
+/* Mobile: make the card square if you want it */
+@media (max-width: 520px) {
+  .mediaCard {
+    aspect-ratio: 1 / 1;
+    min-height: 320px;
+  }
 }
 
 /* Light theme: media card “soft” */
@@ -571,4 +722,9 @@ html[data-theme="dark"] .vendorName {
 
 html[data-theme="dark"] .eyebrow {
   color: rgba(156, 163, 175, 0.9);
+}
+
+/* 4) If the product card itself has rounding, clip there too (optional but helps) */
+.productCard {
+  overflow: hidden;
 }
