@@ -1,46 +1,136 @@
-﻿"use client";
-import React, { ImgHTMLAttributes, useState } from "react";
+﻿// src/components/ui/SafeImg.tsx
+"use client";
+
+import * as React from "react";
 import Image from "next/image";
 
-type SafeImgProps = Omit<ImgHTMLAttributes<HTMLImageElement>, "onError" | "src"> & {
+export type SafeImgProps = {
   src?: string | null;
-  fallbackSrc?: string | null;
+  alt?: string | null;
+  className?: string;
+  style?: React.CSSProperties;
+
+  /**
+   * React fallback node (preferred)
+   * e.g. <span>?</span> or <img .../>
+   */
   fallback?: React.ReactNode;
+
+  /**
+   * Legacy convenience prop:
+   * if provided and `fallback` is not set, we render an <img src={fallbackSrc} .../>
+   */
+  fallbackSrc?: string;
+
+  /** default: true -> uses next/image only for local "/..." */
+  preferNextImage?: boolean;
+
+  /** default: true */
+  fill?: boolean;
+
+  sizes?: string;
+  objectFit?: React.CSSProperties["objectFit"];
+  loading?: "lazy" | "eager";
 };
 
-export default function SafeImg({ src, fallbackSrc, fallback, alt, className, style }: SafeImgProps) {
-  const [currentSrc, setCurrentSrc] = useState<string | undefined>(src ?? undefined);
-  const [triedFallback, setTriedFallback] = useState(false);
-  const [failed, setFailed] = useState(false);
-
-  if (!currentSrc && !fallbackSrc) {
-    // no source at all -> render fallback node or empty span
-    return <>{fallback ?? <span aria-hidden="true" className={className} style={style} />}</>;
-  }
-
-  const handleError = () => {
-    if (fallbackSrc && !triedFallback) {
-      setTriedFallback(true);
-      setCurrentSrc(fallbackSrc ?? undefined);
-      return;
-    }
-    setFailed(true);
-  };
-
-  if (failed) return <>{fallback ?? <span aria-hidden="true" className={className} style={style} />}</>;
-
-  // Use next/image with `fill` to satisfy Next.js optimization and avoid `no-img-element` warnings
-  return (
-    <div className={className} style={{ position: "relative", display: "block", ...(style as React.CSSProperties) }}>
-      <Image
-        src={currentSrc as string}
-        alt={alt ?? ""}
-        fill
-        sizes="(min-width:1024px) 25vw, 50vw"
-        style={{ objectFit: (style as React.CSSProperties)?.objectFit ?? "cover" }}
-        onError={handleError as unknown as () => void}
-      />
-    </div>
-  );
+/**
+ * SafeImg (hard-safe):
+ * - Uses next/image ONLY for local paths ("/...").
+ * - Remote URLs ALWAYS fall back to <img> to avoid runtime crashes
+ *   when Next image host config isn't applied (preview/caches/etc).
+ * - Supports legacy `fallbackSrc` prop.
+ */
+function isLocalNextImageSrc(url?: string | null) {
+  if (!url) return false;
+  const s = String(url).trim();
+  return s.startsWith("/"); // only local
 }
 
+export default function SafeImg({
+  src,
+  alt,
+  className,
+  style,
+  fallback,
+  fallbackSrc,
+  preferNextImage = true,
+  fill = true,
+  sizes,
+  objectFit = "cover",
+  loading = "lazy",
+}: SafeImgProps) {
+  const finalSrc = (src ?? "").trim();
+  const finalAlt = alt ?? "";
+  const [broken, setBroken] = React.useState(false);
+
+  const hasSrc = finalSrc.length > 0;
+  const useNext = preferNextImage && !broken && isLocalNextImageSrc(finalSrc);
+
+  // wrapper must be relative for fill
+  const wrapperStyle: React.CSSProperties = {
+    position: "relative",
+    display: "block",
+    ...(style ?? {}),
+  };
+
+  const resolvedFallback =
+    fallback ??
+    (fallbackSrc ? (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={fallbackSrc}
+        alt={finalAlt}
+        loading={loading}
+        style={{
+          width: "100%",
+          height: "100%",
+          objectFit,
+          display: "block",
+        }}
+      />
+    ) : null);
+
+  if (!hasSrc || broken) {
+    return (
+      <span className={className} style={wrapperStyle}>
+        {resolvedFallback}
+      </span>
+    );
+  }
+
+  if (useNext) {
+    return (
+      <span className={className} style={wrapperStyle}>
+        <Image
+          src={finalSrc}
+          alt={finalAlt}
+          fill={fill}
+          sizes={sizes}
+          onError={() => setBroken(true)}
+          style={{ objectFit }}
+        />
+      </span>
+    );
+  }
+
+  // Remote: always <img> (never crashes because of next/image host rules)
+  return (
+    <span className={className} style={wrapperStyle}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={finalSrc}
+        alt={finalAlt}
+        loading={loading}
+        onError={() => setBroken(true)}
+        style={{
+          position: fill ? "absolute" : "relative",
+          inset: fill ? 0 : undefined,
+          width: "100%",
+          height: "100%",
+          objectFit,
+          display: "block",
+        }}
+      />
+    </span>
+  );
+}

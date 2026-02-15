@@ -1,3 +1,4 @@
+// next.config.mjs
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   compiler: {
@@ -6,37 +7,26 @@ const nextConfig = {
         ? { exclude: ["error", "warn"] }
         : false,
   },
+
   images: {
-    // ✅ extra-sicher: domains + remotePatterns
-    domains: [
-      "firebasestorage.googleapis.com",
-      "storage.googleapis.com",
-      "lh3.googleusercontent.com",
-      "images.pexels.com",
-      "images.unsplash.com",
-    ],
     remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "firebasestorage.googleapis.com",
-        pathname: "/v0/b/**",
-      },
-      {
-        protocol: "https",
-        hostname: "storage.googleapis.com",
-        pathname: "/**",
-      },
-      // Next remotePatterns kann Wildcards, aber wir lassen domains oben zusätzlich drin.
-      {
-        protocol: "https",
-        hostname: "*.appspot.com",
-        pathname: "/**",
-      },
+      { protocol: "https", hostname: "firebasestorage.googleapis.com", pathname: "/v0/b/**" },
+      { protocol: "https", hostname: "storage.googleapis.com", pathname: "/**" },
+      { protocol: "https", hostname: "lh3.googleusercontent.com", pathname: "/**" },
+      { protocol: "https", hostname: "images.pexels.com", pathname: "/**" },
+      { protocol: "https", hostname: "images.unsplash.com", pathname: "/**" },
     ],
   },
 
   async redirects() {
     return [
+      // ✅ Auth legacy routes -> actual pages
+      { source: "/auth/login", destination: "/login", permanent: true },
+      { source: "/auth/login/", destination: "/login", permanent: true },
+      { source: "/auth/register", destination: "/register", permanent: true },
+      { source: "/auth/register/", destination: "/register", permanent: true },
+
+      // existing redirects
       { source: "/preise", destination: "/pricing", permanent: true },
       { source: "/preise/", destination: "/pricing", permanent: true },
       { source: "/terms", destination: "/agb", permanent: true },
