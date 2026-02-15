@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { storage } from "@/lib/firebase";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import styles from "./EditProductForm.module.css";
-import Image from "next/image";
+// using plain <img> for thumbnails to avoid next/image runtime optimization issues for external URLs
 
 const CATEGORY_OPTIONS = [
   { value: "ebook", label: "E-Book" },
@@ -336,12 +336,13 @@ export default function EditProductForm(props: Props) {
 
           <div className={styles.thumbPreview}>
             <div style={{ position: "relative", width: "100%", height: 160 }}>
-              <Image
+              <img
                 src={thumbnailUrl || "/fallback-thumbnail.svg"}
                 alt="Thumbnail"
-                fill
-                sizes="(min-width:1024px) 25vw, 50vw"
-                style={{ objectFit: "cover" }}
+                className={styles.thumbImg}
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                loading="lazy"
+                decoding="async"
               />
             </div>
           </div>

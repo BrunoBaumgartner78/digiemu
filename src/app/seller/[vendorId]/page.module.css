@@ -37,8 +37,9 @@
 .bannerImgFallback {
   width: 100%;
   height: 240px;
-  object-fit: cover;
-  display: block;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .bannerPlaceholder {
@@ -76,6 +77,17 @@
   height: 84px;
   border-radius: 999px;
   object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.7);
+  box-shadow: var(--neo-shadow-soft);
+}
+
+.avatarImgFallback {
+  width: 84px;
+  height: 84px;
+  border-radius: 999px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   border: 2px solid rgba(255, 255, 255, 0.7);
   box-shadow: var(--neo-shadow-soft);
 }
@@ -182,35 +194,6 @@
 .thumbImgFallback {
   width: 100%;
   height: 170px;
-  object-fit: cover;
-  display: block;
-}
-
-/* ===========================
-   Fallback 'image' divs
-   (replaces <img> to satisfy @next/next/no-img-element)
-   =========================== */
-
-.bannerImgFallback{
-  width: 100%;
-  height: 100%;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-}
-
-.avatarImgFallback{
-  width: 84px;
-  height: 84px;
-  border-radius: 999px;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-}
-
-.thumbImgFallback{
-  width: 100%;
-  height: 100%;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;

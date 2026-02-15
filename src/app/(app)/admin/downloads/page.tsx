@@ -34,11 +34,10 @@ function qs(sp: Record<string, string | undefined>) {
 export default async function AdminDownloadsPage({
   searchParams,
 }: {
-  searchParams?: SearchParams;
+  searchParams: Promise<SearchParams>;
 }) {
+  const sp = await searchParams;
   await requireAdminOrRedirect();
-
-  const sp = (searchParams || {}) as SearchParams;
 
   const page = spGetInt(sp, "page", 1);
   const pageSize = spGetInt(sp, "pageSize", 25);

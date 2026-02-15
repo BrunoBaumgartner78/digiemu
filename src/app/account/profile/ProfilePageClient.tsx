@@ -96,6 +96,19 @@ export default function ProfilePageClient({
 
   async function onPickAvatar(file: File | null) {
     if (!file) return;
+
+    // quick client validation (better UX)
+    const maxMb = 3;
+    const maxBytes = maxMb * 1024 * 1024;
+    if (!file.type.startsWith("image/")) {
+      showToast("❌ Bitte nur Bilddateien (PNG/JPG/WebP).");
+      return;
+    }
+    if (file.size > maxBytes) {
+      showToast(`❌ Datei zu gross. Max ${maxMb}MB.`);
+      return;
+    }
+
     setUploadingAvatar(true);
     setAvatarProgress(0);
     try {
@@ -112,6 +125,19 @@ export default function ProfilePageClient({
 
   async function onPickBanner(file: File | null) {
     if (!file) return;
+
+    // quick client validation (better UX)
+    const maxMb = 6;
+    const maxBytes = maxMb * 1024 * 1024;
+    if (!file.type.startsWith("image/")) {
+      showToast("❌ Bitte nur Bilddateien (PNG/JPG/WebP).");
+      return;
+    }
+    if (file.size > maxBytes) {
+      showToast(`❌ Datei zu gross. Max ${maxMb}MB.`);
+      return;
+    }
+
     setUploadingBanner(true);
     setBannerProgress(0);
     try {
@@ -243,7 +269,17 @@ export default function ProfilePageClient({
                 className={styles.fileInput}
                 type="file"
                 accept="image/*"
-                onChange={(_e) => onPickBanner(_e.target.files?.[0] ?? null)}
+                onChange={async (_e) => {
+                  const file = _e.target.files?.[0] ?? null;
+                  // reset input so the same file can be selected again
+                  _e.target.value = "";
+                  if (!file) return;
+                  try {
+                    await onPickBanner(file);
+                  } catch {
+                    // errors are handled inside onPickBanner via showToast
+                  }
+                }}
               />
             </label>
 
@@ -268,13 +304,11 @@ export default function ProfilePageClient({
 
           {bannerUrl ? (
             <div className={styles.imageWrap} style={{ position: "relative" }}>
-              <Image
+              <img
                 src={bannerUrl}
                 alt="Banner preview"
-                fill
-                sizes="(min-width:1024px) 520px, 100vw"
-                style={{ objectFit: "cover" }}
                 className={styles.bannerImg}
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
               />
             </div>
           ) : null}
@@ -296,7 +330,17 @@ export default function ProfilePageClient({
                 className={styles.fileInput}
                 type="file"
                 accept="image/*"
-                onChange={(_e) => onPickAvatar(_e.target.files?.[0] ?? null)}
+                onChange={async (_e) => {
+                  const file = _e.target.files?.[0] ?? null;
+                  // reset input so the same file can be selected again
+                  _e.target.value = "";
+                  if (!file) return;
+                  try {
+                    await onPickAvatar(file);
+                  } catch {
+                    // errors are handled inside onPickAvatar via showToast
+                  }
+                }}
               />
             </label>
 
@@ -326,6 +370,7 @@ export default function ProfilePageClient({
                   src={avatarUrl}
                   alt="Avatar preview"
                   fill
+                  unoptimized
                   sizes="72px"
                   style={{ objectFit: "cover", borderRadius: "999px" }}
                   className={styles.avatarImg}
@@ -374,6 +419,7 @@ export default function ProfilePageClient({
                 src={bannerUrl}
                 alt="Banner Vorschau"
                 fill
+                unoptimized
                 sizes="(min-width:1024px) 520px, 100vw"
                 className={styles.previewBannerImg}
               />
@@ -392,6 +438,7 @@ export default function ProfilePageClient({
                       src={avatarUrl}
                       alt={safeName}
                       fill
+                      unoptimized
                       sizes="64px"
                       style={{ objectFit: "cover", borderRadius: "50%" }}
                       className={styles.previewAvatar}

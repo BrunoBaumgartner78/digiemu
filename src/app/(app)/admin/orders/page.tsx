@@ -34,11 +34,11 @@ type OrderRow = Prisma.OrderGetPayload<{
 export default async function AdminOrdersPage({
   searchParams,
 }: {
-  searchParams?: SearchParams;
+  searchParams?: Promise<SearchParams> | SearchParams;
 }) {
   await requireAdminOrRedirect();
 
-  const sp = searchParams ?? {};
+  const sp = await Promise.resolve(searchParams ?? {});
 
   const { q, status, page, pageSize, from, to, buildQueryString } =
     parseAdminListParams(sp, {
@@ -50,28 +50,40 @@ export default async function AdminOrdersPage({
       to: { key: "to", default: "" },
     }) as AdminListParsed;
 
+  const qStr = typeof q === "string" ? q.trim() : "";
+  const statusStr = typeof status === "string" ? status : "all";
+  const fromStr = typeof from === "string" ? from.trim() : "";
+  const toStr = typeof to === "string" ? to.trim() : "";
+
   const where: Prisma.OrderWhereInput = {};
 
-  if (q) {
+  if (qStr) {
     where.OR = [
-      { id: { contains: q, mode: "insensitive" } },
-      { stripeSessionId: { contains: q, mode: "insensitive" } },
-      { buyer: { email: { contains: q, mode: "insensitive" } } },
-      { product: { title: { contains: q, mode: "insensitive" } } },
-      { downloadLink: { id: { contains: q, mode: "insensitive" } } },
+      { id: { contains: qStr, mode: "insensitive" } },
+      { stripeSessionId: { contains: qStr, mode: "insensitive" } },
+      { buyer: { email: { contains: qStr, mode: "insensitive" } } },
+      { product: { title: { contains: qStr, mode: "insensitive" } } },
+      { downloadLink: { id: { contains: qStr, mode: "insensitive" } } },
     ];
   }
 
-  if (status !== "all") {
-    // If your enum differs, keep it as string cast to satisfy TS without `any`
-    where.status = status as unknown as Prisma.OrderWhereInput["status"];
+  if (statusStr !== "all") {
+    where.status = statusStr as unknown as Prisma.OrderWhereInput["status"];
   }
 
-  if (from || to) {
-    where.createdAt = {
-      ...(from ? { gte: new Date(from) } : {}),
-      ...(to ? { lte: new Date(to) } : {}),
-    };
+  if (fromStr || toStr) {
+    const fromDate = fromStr ? new Date(fromStr) : null;
+    const toDate = toStr ? new Date(toStr) : null;
+
+    const fromOk = fromDate && !Number.isNaN(fromDate.getTime());
+    const toOk = toDate && !Number.isNaN(toDate.getTime());
+
+    if (fromOk || toOk) {
+      where.createdAt = {
+        ...(fromOk ? { gte: fromDate as Date } : {}),
+        ...(toOk ? { lte: toDate as Date } : {}),
+      };
+    }
   }
 
   const skip = (page - 1) * pageSize;

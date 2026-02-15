@@ -34,6 +34,7 @@ export default function ProfilePreviewCard({
   src={bannerUrl}
   alt="Banner"
   fill
+  unoptimized
   sizes="(max-width: 768px) 100vw, 900px"
   style={{ objectFit: "cover" }}
 />
@@ -52,6 +53,7 @@ export default function ProfilePreviewCard({
   src={avatarUrl}
   alt="Avatar"
   fill
+  unoptimized
   sizes="64px"
   style={{ objectFit: "cover", borderRadius: "50%" }}
 />

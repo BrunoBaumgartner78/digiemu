@@ -44,19 +44,43 @@ export async function POST(_req: Request) {
     return NextResponse.json({ message: "Vendor nicht gefunden" }, { status: 404 });
   }
 
-  const totalEarnings = vendor.products
-    .flatMap((p) => p.orders.map((o) => o.vendorEarningsCents ?? 0))
-    .reduce((a, b) => a + b, 0);
+  // 4. Vendor-Earnings berechnen (nur bezahlte/abgeschlossene Orders)
+  const orders = await prisma.order.findMany({
+    where: { status: { in: ["PAID", "COMPLETED"] }, product: { vendorId: vendor.id } },
+    select: { amountCents: true, vendorEarningsCents: true, platformEarningsCents: true },
+  });
 
-  // Wichtig: alreadyPaid = PAID + optional PENDING? -> NEIN, nur PAID
+  const splitVendorFallback = (order: { amountCents?: number; vendorEarningsCents?: number | null; platformEarningsCents?: number | null }) => {
+    const amount = order.amountCents ?? 0;
+    const v = order.vendorEarningsCents ?? 0;
+    const p = order.platformEarningsCents ?? 0;
+    if (v === 0 && p === 0 && amount > 0) {
+      const platform = Math.round(amount * 0.2);
+      const vendorShare = amount - platform;
+      return vendorShare;
+    }
+    return v;
+  };
+
+  const totalEarnings = orders.reduce((sum, o) => sum + splitVendorFallback(o as any), 0);
+
+  // bereits ausgezahlt
   const alreadyPaid = vendor.payouts
     .filter((p) => p.status === PayoutStatus.PAID)
-    .reduce((sum, p) => sum + p.amountCents, 0);
+    .reduce((acc, p) => acc + p.amountCents, 0);
 
-  const pendingAmount = Math.max(totalEarnings - alreadyPaid, 0);
+  // bereits angefragt (PENDING reserviert Geld)
+  const pendingRequested = vendor.payouts
+    .filter((p) => p.status === PayoutStatus.PENDING)
+    .reduce((acc, p) => acc + p.amountCents, 0);
+
+  const pendingAmount = Math.max(totalEarnings - alreadyPaid - pendingRequested, 0);
 
   if (pendingAmount <= 0) {
-    return NextResponse.json({ message: "Kein ausstehender Betrag" }, { status: 400 });
+    return NextResponse.json(
+      { error: "No pending payout amount for this vendor." },
+      { status: 409 }
+    );
   }
 
   try {

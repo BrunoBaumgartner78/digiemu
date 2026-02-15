@@ -22,11 +22,11 @@ type AdminListParsed = {
 export default async function AdminUsersPage({
   searchParams,
 }: {
-  searchParams?: SearchParams;
+  searchParams?: Promise<SearchParams> | SearchParams;
 }) {
   await requireAdminOrRedirect();
 
-  const sp = searchParams ?? {};
+  const sp = await Promise.resolve(searchParams ?? {});
 
   const { q, status, page, pageSize, buildQueryString } = parseAdminListParams(sp, {
     q: { key: "q", default: "" },
@@ -35,20 +35,23 @@ export default async function AdminUsersPage({
     pageSize: { key: "pageSize", default: 25, min: 5, max: 200 },
   }) as AdminListParsed;
 
+  const qStr = typeof q === "string" ? q.trim() : "";
+  const statusStr = typeof status === "string" ? status : "all";
+
   const where: Prisma.UserWhereInput = {};
 
-  if (q) {
+  if (qStr) {
     where.OR = [
-      { id: { contains: q, mode: "insensitive" } },
-      { email: { contains: q, mode: "insensitive" } },
-      { name: { contains: q, mode: "insensitive" } },
+      { id: { contains: qStr, mode: "insensitive" } },
+      { email: { contains: qStr, mode: "insensitive" } },
+      { name: { contains: qStr, mode: "insensitive" } },
     ];
   }
 
-  if (status !== "all") {
-    if (status === "blocked") where.isBlocked = true;
-    else if (status === "unblocked") where.isBlocked = false;
-    else where.role = status as any; // ADMIN | VENDOR | BUYER
+  if (statusStr !== "all") {
+    if (statusStr === "blocked") where.isBlocked = true;
+    else if (statusStr === "unblocked") where.isBlocked = false;
+    else where.role = statusStr as any; // ADMIN | VENDOR | BUYER
   }
 
   const skip = (page - 1) * pageSize;

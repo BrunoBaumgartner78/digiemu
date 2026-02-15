@@ -49,15 +49,15 @@ export default async function PublicVendorProfilePage({ params }: Props) {
     <main className={styles["public-shell"]}>
       <div className={styles["public-wrap"]}>
         <section className={styles["public-hero"]}>
-          <div className={styles["public-bannerWrap"]}>
+            <div className={styles["public-bannerWrap"]}>
             <SafeImg
-              src={profile.bannerUrl}
+              src={profile.bannerUrl ?? "/fallback-banner.svg"}
               alt="Banner"
               className={styles["public-banner"]}
               // Banner: soll immer füllen, aber nie overflow erzeugen
               fallback={<div className={styles["public-bannerFallback"]} />}
               sizes="100vw"
-              objectFit="cover"
+              style={{ objectFit: "cover" }}
             />
           </div>
 
@@ -69,7 +69,7 @@ export default async function PublicVendorProfilePage({ params }: Props) {
                 className={styles["public-avatar"]}
                 fallback={<div className={styles["public-avatarFallback"]} />}
                 sizes="160px"
-                objectFit="cover"
+                style={{ objectFit: "cover" }}
               />
             </div>
 
