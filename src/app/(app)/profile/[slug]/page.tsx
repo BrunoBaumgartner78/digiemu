@@ -13,6 +13,14 @@ export default async function PublicVendorProfilePage({ params }: Props) {
   const { slug } = await params;
   const decodedSlug = decodeURIComponent(String(slug ?? "")).trim();
   if (!decodedSlug) notFound();
+type Params = { slug: string };
+type Props = { params: Params | Promise<Params> };
+
+export default async function PublicVendorProfilePage({ params }: Props) {
+  // Next 16: params may be sync or async depending on runtime
+  const resolvedParams = await Promise.resolve(params);
+  const slug = decodeURIComponent(resolvedParams?.slug || "").trim();
+  if (!slug) notFound();
 
   const profile = await prisma.vendorProfile.findFirst({
     where: { slug: decodedSlug, isPublic: true },
@@ -52,12 +60,16 @@ export default async function PublicVendorProfilePage({ params }: Props) {
             <div className={styles["public-bannerWrap"]}>
             <SafeImg
               src={profile.bannerUrl ?? "/fallback-banner.svg"}
+          <div className={styles["public-bannerWrap"]}>
+            <SafeImg
+              src={profile.bannerUrl}
               alt="Banner"
               className={styles["public-banner"]}
               // Banner: soll immer füllen, aber nie overflow erzeugen
               fallback={<div className={styles["public-bannerFallback"]} />}
               sizes="100vw"
               style={{ objectFit: "cover" }}
+              objectFit="cover"
             />
           </div>
 
@@ -70,6 +82,7 @@ export default async function PublicVendorProfilePage({ params }: Props) {
                 fallback={<div className={styles["public-avatarFallback"]} />}
                 sizes="160px"
                 style={{ objectFit: "cover" }}
+                objectFit="cover"
               />
             </div>
 
@@ -85,6 +98,7 @@ export default async function PublicVendorProfilePage({ params }: Props) {
                     target="_blank"
                     rel="noreferrer"
                   >
+                  <a className={styles["public-pill"]} href={profile.websiteUrl} target="_blank" rel="noreferrer">
                     Website
                   </a>
                 ) : null}
@@ -95,6 +109,7 @@ export default async function PublicVendorProfilePage({ params }: Props) {
                     target="_blank"
                     rel="noreferrer"
                   >
+                  <a className={styles["public-pill"]} href={profile.instagramUrl} target="_blank" rel="noreferrer">
                     Instagram
                   </a>
                 ) : null}
@@ -105,6 +120,7 @@ export default async function PublicVendorProfilePage({ params }: Props) {
                     target="_blank"
                     rel="noreferrer"
                   >
+                  <a className={styles["public-pill"]} href={profile.twitterUrl} target="_blank" rel="noreferrer">
                     X/Twitter
                   </a>
                 ) : null}
@@ -115,6 +131,7 @@ export default async function PublicVendorProfilePage({ params }: Props) {
                     target="_blank"
                     rel="noreferrer"
                   >
+                  <a className={styles["public-pill"]} href={profile.tiktokUrl} target="_blank" rel="noreferrer">
                     TikTok
                   </a>
                 ) : null}
@@ -125,6 +142,7 @@ export default async function PublicVendorProfilePage({ params }: Props) {
                     target="_blank"
                     rel="noreferrer"
                   >
+                  <a className={styles["public-pill"]} href={profile.facebookUrl} target="_blank" rel="noreferrer">
                     Facebook
                   </a>
                 ) : null}
