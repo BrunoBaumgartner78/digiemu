@@ -323,11 +323,19 @@ export default function NewProductPage() {
                   }}
                 >
                   <SafeImg
-                    src={thumbnailUrl || "/fallback-thumbnail.svg"}
-                    fallbackSrc="/fallback-thumbnail.svg"
-                    alt="Thumbnail-Vorschau"
-                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                  />
+  src={thumbnailUrl || "/fallback-thumbnail.svg"}
+  alt="Thumbnail-Vorschau"
+  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+  fallback={
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src="/fallback-thumbnail.svg"
+      alt="Thumbnail-Vorschau"
+      style={{ width: "100%", height: "100%", objectFit: "cover" }}
+    />
+  }
+/>
+
                 </div>
 
                 <p className={styles.priceHint} style={{ maxWidth: "220px" }}>

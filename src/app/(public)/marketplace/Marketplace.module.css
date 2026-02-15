@@ -349,6 +349,8 @@
   position: relative;
   z-index: 2;
 }
+.cardSeller { padding-left: 16px; }
+
 
 .cardFooter {
   margin-top: auto;

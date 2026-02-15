@@ -3,17 +3,16 @@
 import Link from "next/link";
 import Image from "next/image";
 import { getMarketplaceProducts, PAGE_SIZE } from "@/lib/products";
-// removed dev visibility debug import
 import styles from "./Marketplace.module.css";
 import SellerLink from "@/components/seller/SellerLink";
 import type { MarketplaceProduct } from "src/types/ui";
 import SafeImg from "@/components/ui/SafeImg";
 
-
 export const revalidate = 60; // ISR: revalidate every 60s to reduce DB load
 
 const SAFE_IMAGE_HOSTS = [
   "firebasestorage.googleapis.com",
+  "firebasestorage.app", // ✅ important (Firebase buckets can show this domain)
   "storage.googleapis.com",
   "lh3.googleusercontent.com",
   "images.pexels.com",
@@ -48,7 +47,7 @@ type SearchParams = {
 };
 
 type MarketplacePageProps = {
-  // Next 15/16: searchParams ist ein Promise
+  // Next 15/16: searchParams kann Promise sein
   searchParams?: Promise<SearchParams>;
 };
 
@@ -100,6 +99,7 @@ export default async function MarketplacePage(props: MarketplacePageProps) {
   const sort = allowedSorts.includes((resolvedSortParam ?? "") as any)
     ? (resolvedSortParam as "newest" | "price_asc" | "price_desc")
     : "newest";
+
   const minPrice = resolvedMinPriceParam ?? undefined;
   const maxPrice = resolvedMaxPriceParam ?? undefined;
 
@@ -275,45 +275,46 @@ export default async function MarketplacePage(props: MarketplacePageProps) {
 
         {/* Empty State */}
         {total === 0 && (
-          <div className={`${styles.emptyState} neonCard neonBorder glowSoft`}>Keine Produkte gefunden – passe deine Suche oder Kategorie an.</div>
+          <div className={`${styles.emptyState} neonCard neonBorder glowSoft`}>
+            Keine Produkte gefunden – passe deine Suche oder Kategorie an.
+          </div>
         )}
-
-        {/* DEV debug removed */}
 
         {/* Grid */}
         {items.length > 0 && (
           <section className={styles.gridSection}>
             <div className={styles.grid}>
-                  {items.map((p: MarketplaceProduct) => {
-                    const priceFormatter = new Intl.NumberFormat("de-CH", {
-                      style: "currency",
-                      currency: "CHF",
-                      maximumFractionDigits: 2,
-                    });
+              {items.map((p: MarketplaceProduct) => {
+                const priceFormatter = new Intl.NumberFormat("de-CH", {
+                  style: "currency",
+                  currency: "CHF",
+                  maximumFractionDigits: 2,
+                });
 
-                    const formattedPrice = typeof p.priceCents === "number" ? priceFormatter.format(p.priceCents / 100) : priceFormatter.format(0);
+                const formattedPrice =
+                  typeof p.priceCents === "number" ? priceFormatter.format(p.priceCents / 100) : priceFormatter.format(0);
 
-                    const thumb = typeof p.thumbnail === "string" ? p.thumbnail.trim() : "";
-                    const hasThumb = thumb.length > 0 && !thumb.includes("example.com");
-                    const useNext = hasThumb && canUseNextImage(thumb);
+                const thumb = typeof p.thumbnail === "string" ? p.thumbnail.trim() : "";
+                const hasThumb = thumb.length > 0 && !thumb.includes("example.com");
+                const useNext = hasThumb && canUseNextImage(thumb);
 
-                    const vendorProfile = p.vendorProfile ?? null;
+                const vendorProfile = p.vendorProfile ?? null;
 
-                    const rawSellerName =
-                      (vendorProfile?.displayName as string | undefined) ||
-                      (vendorProfile?.user?.name as string | undefined) ||
-                      "Verkäufer";
+                const rawSellerName =
+                  (vendorProfile?.displayName as string | undefined) ||
+                  (vendorProfile?.user?.name as string | undefined) ||
+                  "Verkäufer";
 
-                    const sellerName = (rawSellerName || "Verkäufer").trim() || "Verkäufer";
-                    const avatarUrl: string | undefined = vendorProfile?.avatarUrl ?? undefined;
+                const sellerName = (rawSellerName || "Verkäufer").trim() || "Verkäufer";
+                const avatarUrl: string | undefined = vendorProfile?.avatarUrl ?? undefined;
 
-                    const isPublic = vendorProfile?.isPublic === true;
-                    const vendorProfileId: string | null = vendorProfile?.id ?? null;
+                const isPublic = vendorProfile?.isPublic === true;
+                const vendorProfileId: string | null = vendorProfile?.id ?? null;
 
-                    return (
+                return (
                   <article key={p.id} className={`${styles.card} neonCard glowSoft`}>
                     <Link href={`/product/${p.id}`} className={styles.cardBody}>
-                          <div className={styles.cardImageWrapper} style={{ position: "relative", aspectRatio: "4/3" }}>
+                      <div className={styles.cardImageWrapper} style={{ position: "relative", aspectRatio: "4/3" }}>
                         {hasThumb ? (
                           useNext ? (
                             <Image
@@ -322,13 +323,24 @@ export default async function MarketplacePage(props: MarketplacePageProps) {
                               fill
                               className={styles.cardImage}
                               sizes="(min-width: 1024px) 280px, (min-width: 640px) 50vw, 100vw"
+                              // ✅ prevents runtime crash if host config isn’t picked up in some env/caches
+                              unoptimized
                             />
                           ) : (
                             // eslint-disable-next-line @next/next/no-img-element
-                            <img src={thumb} alt={p.title} className={styles.cardImage} style={{ objectFit: "cover", width: "100%", height: "100%" }} />
+                            <img
+                              src={thumb}
+                              alt={p.title}
+                              className={styles.cardImage}
+                              style={{ objectFit: "cover", width: "100%", height: "100%" }}
+                              loading="lazy"
+                            />
                           )
                         ) : (
-                          <div className={styles.cardImagePlaceholder} style={{ aspectRatio: "4/3", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                          <div
+                            className={styles.cardImagePlaceholder}
+                            style={{ aspectRatio: "4/3", display: "flex", alignItems: "center", justifyContent: "center" }}
+                          >
                             <div className={styles.cardImageIcon} aria-hidden="true" />
                             <span className={styles.cardImageLabel}>Digitales Produkt</span>
                           </div>
@@ -345,8 +357,7 @@ export default async function MarketplacePage(props: MarketplacePageProps) {
                     </Link>
 
                     {/* Seller Block */}
-                      <div className={styles.cardSeller}>
-
+                    <div className={styles.cardSeller}>
                       <span style={{ opacity: 0.7 }}>Verkauft von</span>
 
                       {/* Avatar/Initial */}
@@ -366,7 +377,6 @@ export default async function MarketplacePage(props: MarketplacePageProps) {
                         aria-hidden="true"
                       >
                         {avatarUrl ? (
-                          // Use client SafeImg to handle onError safely
                           <SafeImg
                             src={avatarUrl}
                             alt={sellerName}
@@ -395,8 +405,12 @@ export default async function MarketplacePage(props: MarketplacePageProps) {
                       )}
                     </div>
 
-                      <div className={styles.cardFooter}>
-                      <Link href={`/product/${p.id}`} className={styles.cardButton} aria-label={`Produkt kaufen: ${p.title}`}>
+                    <div className={styles.cardFooter}>
+                      <Link
+                        href={`/product/${p.id}`}
+                        className={styles.cardButton}
+                        aria-label={`Produkt kaufen: ${p.title}`}
+                      >
                         Kaufen
                       </Link>
                       <div className={styles.priceBlock}>

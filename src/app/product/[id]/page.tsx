@@ -13,29 +13,17 @@ import styles from "./page.module.css";
 
 export const dynamic = "force-dynamic";
 
-// ✅ Next 16 guard: params MUST be Promise (no union)
+// ✅ Next 16: params is Promise (NO union, sonst CI-Fehler)
 type ProductPageProps = { params: Promise<{ id: string }> };
 
-const SAFE_IMAGE_HOSTS = [
-  "firebasestorage.googleapis.com",
-  "lh3.googleusercontent.com",
-  "images.pexels.com",
-  "images.unsplash.com",
-];
-
-function canUseNextImage(url: string | null | undefined): boolean {
+// Only allow Next/Image for local files. Remote will use <img> to avoid config mismatch crashes.
+function isLocalImage(url?: string | null) {
   if (!url) return false;
-  if (url.startsWith("/")) return true;
-  try {
-    const u = new URL(url);
-    return SAFE_IMAGE_HOSTS.includes(u.hostname);
-  } catch {
-    return false;
-  }
+  return url.startsWith("/");
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
-  const { id } = await params; // ✅ IMPORTANT (guard expects this pattern)
+  const { id } = await params;
   const pid = String(id ?? "").trim();
   if (!pid) notFound();
 
@@ -69,7 +57,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
     },
   });
 
-  // ✅ REQUIRED by CI guard workflow (exact strings expected)
+  // ✅ PUBLIC PRODUCT RULES
   if (!p || !p.isActive || p.status !== "ACTIVE") notFound();
   if (p.vendor?.isBlocked) notFound();
 
@@ -94,7 +82,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
       id: { not: p.id },
       isActive: true,
       status: "ACTIVE",
-      vendor: { isBlocked: false }, // ✅ REQUIRED by CI guard workflow
+      vendor: { isBlocked: false },
       OR: [
         ...(p.vendorProfileId ? [{ vendorProfileId: p.vendorProfileId }] : []),
         { vendorId: p.vendorId },
@@ -106,13 +94,17 @@ export default async function ProductPage({ params }: ProductPageProps) {
   });
 
   const price = (p.priceCents ?? 0) / 100;
+
   const productThumb = getProductThumbUrl({ thumbnailUrl: p.thumbnail });
   const hasThumb = typeof productThumb === "string" && productThumb.trim().length > 0;
-  const showNextImage = hasThumb && canUseNextImage(productThumb);
+
+  // ✅ Important: only local uses Next/Image
+  const useNextImage = hasThumb && isLocalImage(productThumb);
 
   const likesCount = p._count?.likes ?? 0;
   const commentsCount = p._count?.comments ?? 0;
 
+  // Without server session we can't reliably know initial liked state
   const initialIsLiked = false;
 
   const sellerName =
@@ -133,7 +125,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <ViewPing productId={p.id} />
 
           <section className={styles.mediaCard}>
-            {showNextImage ? (
+            {useNextImage ? (
               <Image src={productThumb} alt={p.title} fill priority className={styles.mediaImage} />
             ) : hasThumb ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -171,9 +163,14 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
             <p className={styles.priceLine}>CHF {price.toFixed(2)}</p>
 
+            {/* Login happens at checkout (401 => redirect in BuyButtonClient) */}
             <BuyButtonClient productId={p.id} />
 
-            <LikeButtonClient productId={p.id} initialLikesCount={likesCount} initialIsLiked={initialIsLiked} />
+            <LikeButtonClient
+              productId={p.id}
+              initialLikesCount={likesCount}
+              initialIsLiked={initialIsLiked}
+            />
 
             <div style={{ marginLeft: 12, fontSize: 14, opacity: 0.85 }}>
               💬 {commentsCount} Kommentar(e)
@@ -230,7 +227,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
 }
 
 export async function generateMetadata({ params }: ProductPageProps) {
-  const { id } = await params; // ✅ IMPORTANT
+  const { id } = await params;
   const pid = String(id ?? "").trim();
   if (!pid) return {};
 
