@@ -307,3 +307,85 @@
     transform: none;
   }
 }
+
+/* NEW: wraps to guarantee no overflow */
+.public-bannerWrap{
+  width: 100%;
+  height: 220px;
+  overflow: hidden;
+}
+
+@media (min-width: 900px){
+  .public-bannerWrap{ height: 280px; }
+}
+
+/* SafeImg uses wrapper; ensure it takes full height */
+.public-banner{
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* fallback blocks */
+.public-bannerFallback{
+  width: 100%;
+  height: 100%;
+  background: rgba(255,255,255,.35);
+}
+
+/* avatar wrapper to control negative margin safely */
+.public-avatarWrap{
+  width: fit-content;
+}
+
+/* SafeImg class on avatar must have explicit size */
+.public-avatar{
+  width: 160px;
+  height: 160px;
+  border-radius: 999px;
+  overflow: hidden;
+  border: 8px solid rgba(255,255,255,.75);
+  background: rgba(255,255,255,.6);
+  box-shadow:
+    10px 10px 22px rgba(163,177,198,.45),
+    -10px -10px 22px rgba(255,255,255,.75);
+
+  /* keep your lift effect but clamp on tiny screens */
+  margin-top: clamp(-90px, -12vw, -60px);
+}
+
+@media (min-width: 900px){
+  .public-avatar{
+    width: 190px;
+    height: 190px;
+    margin-top: -120px;
+  }
+}
+
+.public-avatarFallback{
+  width: 160px;
+  height: 160px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.35);
+}
+
+@media (min-width: 900px){
+  .public-avatarFallback{
+    width: 190px;
+    height: 190px;
+  }
+}
+
+/* NEW: thumb wrapper for SafeImg */
+.product-thumbWrap{
+  width: 100%;
+  height: 170px;
+  overflow: hidden;
+}
+
+.product-thumb{
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+

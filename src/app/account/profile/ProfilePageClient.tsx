@@ -1,3 +1,4 @@
+// src/app/account/profile/ProfilePageClient.tsx
 "use client";
 
 import * as React from "react";
@@ -44,6 +45,9 @@ export default function ProfilePageClient({
   const nextGoal = initialProfile.nextGoal ?? 5;
   const progress = Math.min(products, nextGoal);
   const pct = Math.round((progress / Math.max(1, nextGoal)) * 100);
+
+  const safeName = displayName?.trim() || "Neuer Verkäufer";
+  const fallbackLetter = (safeName[0] ?? "N").toUpperCase();
 
   const showToast = (msg: string) => {
     setToast(msg);
@@ -98,7 +102,7 @@ export default function ProfilePageClient({
       const url = await uploadViaApi(file, "avatar", setAvatarProgress);
       setAvatarUrl(url);
       showToast("✅ Avatar hochgeladen");
-    } catch (e : unknown) {
+    } catch (e: unknown) {
       console.error(e);
       showToast(`❌ Avatar Upload: ${getErrorMessage(e, "fehlgeschlagen")}`);
     } finally {
@@ -114,7 +118,7 @@ export default function ProfilePageClient({
       const url = await uploadViaApi(file, "banner", setBannerProgress);
       setBannerUrl(url);
       showToast("✅ Banner hochgeladen");
-    } catch (e : unknown) {
+    } catch (e: unknown) {
       console.error(e);
       showToast(`❌ Banner Upload: ${getErrorMessage(e, "fehlgeschlagen")}`);
     } finally {
@@ -154,7 +158,7 @@ export default function ProfilePageClient({
       }
 
       showToast("✅ Profil gespeichert");
-    } catch (e : unknown) {
+    } catch (e: unknown) {
       console.error(e);
       showToast(`❌ Speichern: ${getErrorMessage(e, "fehlgeschlagen")}`);
     } finally {
@@ -268,7 +272,7 @@ export default function ProfilePageClient({
                 src={bannerUrl}
                 alt="Banner preview"
                 fill
-                sizes="(min-width:1024px) 25vw, 50vw"
+                sizes="(min-width:1024px) 520px, 100vw"
                 style={{ objectFit: "cover" }}
                 className={styles.bannerImg}
               />
@@ -322,8 +326,8 @@ export default function ProfilePageClient({
                   src={avatarUrl}
                   alt="Avatar preview"
                   fill
-                  sizes="(min-width:1024px) 25vw, 50vw"
-                  style={{ objectFit: "cover", borderRadius: "8px" }}
+                  sizes="72px"
+                  style={{ objectFit: "cover", borderRadius: "999px" }}
                   className={styles.avatarImg}
                 />
               </div>
@@ -364,40 +368,52 @@ export default function ProfilePageClient({
         <p className={styles.small}>So wirkt dein Profil im Marketplace.</p>
 
         <div className={styles.previewCard}>
-          <div
-            className={styles.previewBanner}
-            style={{ backgroundImage: bannerUrl ? `url(${bannerUrl})` : undefined }}
-          />
+          <div className={styles.previewBanner}>
+            {bannerUrl ? (
+              <Image
+                src={bannerUrl}
+                alt="Banner Vorschau"
+                fill
+                sizes="(min-width:1024px) 520px, 100vw"
+                className={styles.previewBannerImg}
+              />
+            ) : (
+              <div className={styles.previewBannerPlaceholder}>Banner (optional)</div>
+            )}
+            <div className={styles.previewGlow} />
+          </div>
+
           <div className={styles.previewInner}>
             <div className={styles.previewTop}>
               <div className={styles.previewAvatarWrap}>
-                { }
                 {avatarUrl ? (
                   <div style={{ position: "relative", width: 64, height: 64 }}>
                     <Image
                       src={avatarUrl}
-                      alt={displayName || "Avatar"}
+                      alt={safeName}
                       fill
-                      sizes="(min-width:1024px) 25vw, 50vw"
+                      sizes="64px"
                       style={{ objectFit: "cover", borderRadius: "50%" }}
                       className={styles.previewAvatar}
                     />
                   </div>
                 ) : (
-                  <div className={styles.previewAvatarFallback}>N</div>
+                  <div className={styles.previewAvatarFallback}>{fallbackLetter}</div>
                 )}
               </div>
 
               <div className={styles.previewMeta}>
-                <div className={styles.previewName}>{displayName || "—"}</div>
+                <div className={styles.previewName}>{safeName}</div>
                 <div className={styles.previewSub}>
                   {initialProfile.levelName} · {products} Produkte ·{" "}
-                  <span className={styles.badge}>{isPublic ? "ÖFFENTLICH" : "PRIVAT"}</span>
+                  <span className={isPublic ? styles.badgePublic : styles.badgePrivate}>
+                    {isPublic ? "ÖFFENTLICH" : "PRIVAT"}
+                  </span>
                 </div>
               </div>
             </div>
 
-            <div className={styles.previewBio}>{bio || "—"}</div>
+            <div className={styles.previewBio}>{bio?.trim() ? bio : "Noch keine Bio hinterlegt."}</div>
           </div>
         </div>
 

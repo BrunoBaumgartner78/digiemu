@@ -30,7 +30,13 @@ export default function ProfilePreviewCard({
       <div className={styles.previewBanner}>
         {bannerUrl ? (
           <div className={styles.previewBannerImg} style={{ position: "relative" }}>
-            <Image src={bannerUrl} alt="Banner" fill style={{ objectFit: "cover" }} />
+<Image
+  src={bannerUrl}
+  alt="Banner"
+  fill
+  sizes="(max-width: 768px) 100vw, 900px"
+  style={{ objectFit: "cover" }}
+/>
           </div>
         ) : (
           <div className={styles.previewBannerPlaceholder}>Banner (optional)</div>
@@ -42,7 +48,13 @@ export default function ProfilePreviewCard({
           <div className={styles.previewAvatar}>
             {avatarUrl ? (
               <div className={styles.previewAvatarImg} style={{ position: "relative" }}>
-                <Image src={avatarUrl} alt="Avatar" fill style={{ objectFit: "cover", borderRadius: "50%" }} />
+<Image
+  src={avatarUrl}
+  alt="Avatar"
+  fill
+  sizes="64px"
+  style={{ objectFit: "cover", borderRadius: "50%" }}
+/>
               </div>
             ) : (
               <div className={styles.previewAvatarFallback}>{safeName.slice(0, 1).toUpperCase()}</div>

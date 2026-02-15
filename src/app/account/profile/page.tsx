@@ -29,20 +29,17 @@ export default async function Page() {
     where: { userId },
   });
 
-  // Produktanzahl (passe Feldnamen ggf. an!)
-  // Häufig: Product.vendorId oder Product.userId oder Product.vendorProfileId
-  // Wir versuchen vendorId=userId (typisch) – wenn es bei dir anders ist, sag kurz Bescheid.
   const productCount = await prisma.product.count({
-    where: { vendorId: userId },
+    where: { vendorId: userId, isActive: true, status: "ACTIVE" },
   });
 
   const initialProfile = {
     displayName: vendorProfile?.displayName ?? (session?.user as any)?.name ?? "",
     bio: vendorProfile?.bio ?? "",
-    isPublic: vendorProfile?.isPublic ?? true,
+    isPublic: vendorProfile?.isPublic ?? false,
     avatarUrl: vendorProfile?.avatarUrl ?? "",
     bannerUrl: vendorProfile?.bannerUrl ?? "",
-    levelName: "Starter", // falls du Level in DB hast, hier mappen
+    levelName: "Starter",
     productCount,
     nextGoal: 5,
   };
