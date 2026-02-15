@@ -2,23 +2,10 @@ import { NextResponse } from "next/server";
 import type { Session } from "next-auth";
 import { requireVendorApi } from "@/lib/guards/authz";
 import { prisma } from "@/lib/prisma";
+import { splitVendorFallback } from "@/lib/payouts/splitVendorFallback";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-function splitVendorFallback(order: { amountCents: number; vendorEarningsCents: number | null; platformEarningsCents: number }) {
-  const amount = order.amountCents || 0;
-  const v = order.vendorEarningsCents ?? 0;
-  const p = order.platformEarningsCents ?? 0;
-
-  // If earnings not stored yet, compute 80/20 from amount
-  if ((v === 0 && p === 0) && amount > 0) {
-    const platform = Math.round(amount * 0.2);
-    const vendor = amount - platform;
-    return vendor;
-  }
-  return v;
-}
 
 export async function POST() {
   const sessionOrResp = await requireVendorApi();
@@ -28,7 +15,7 @@ export async function POST() {
 
   // 1) Sum vendor earnings of PAID orders for this vendor
   const orders = await prisma.order.findMany({
-    where: { status: "PAID", product: { vendorId } },
+    where: { status: { in: ["PAID", "COMPLETED"] }, product: { vendorId } },
     select: { amountCents: true, vendorEarningsCents: true, platformEarningsCents: true },
   });
 
@@ -51,7 +38,7 @@ export async function POST() {
   const available = Math.max(totalEarnings - alreadyPaid - pendingRequested, 0);
 
   if (available <= 0) {
-    return NextResponse.json({ error: "No payout available", availableCents: 0 }, { status: 400 });
+    return NextResponse.json({ error: "No payout available", availableCents: 0 }, { status: 409 });
   }
 
   // Optional: only one open request at a time

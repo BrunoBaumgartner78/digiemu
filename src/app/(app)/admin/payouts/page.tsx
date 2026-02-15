@@ -1,10 +1,10 @@
-﻿// src/app/(app)/admin/payouts/page.tsx
-import Link from "next/link";
+﻿import Link from "next/link";
 import styles from "../downloads/page.module.css";
 import { prisma } from "@/lib/prisma";
 import { requireAdminOrRedirect } from "@/lib/guards/admin";
 import AdminActionButton from "@/components/admin/AdminActionButton";
 import { parseAdminListParams, formatDateTime, formatMoneyFromCents } from "@/lib/admin/adminList";
+import type { Prisma } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
 
@@ -23,47 +23,64 @@ type AdminListParsed = {
 export default async function AdminPayoutsPage({
   searchParams,
 }: {
-  searchParams?: SearchParams;
+  searchParams?: Promise<SearchParams> | SearchParams;
 }) {
   await requireAdminOrRedirect();
 
-  const sp = searchParams ?? {};
+  const sp = await Promise.resolve(searchParams ?? {});
 
-  const { q, status, page, pageSize, from, to, buildQueryString } =
-    parseAdminListParams(sp, {
-      q: { key: "q", default: "" },
-      status: { key: "status", default: "all" },
-      page: { key: "page", default: 1 },
-      pageSize: { key: "pageSize", default: 25, min: 5, max: 200 },
-      from: { key: "from", default: "" },
-      to: { key: "to", default: "" },
-    }) as AdminListParsed;
+  const parsed = parseAdminListParams(sp, {
+    q: { key: "q", default: "" },
+    status: { key: "status", default: "all" },
+    page: { key: "page", default: 1 },
+    pageSize: { key: "pageSize", default: 25, min: 5, max: 200 },
+    from: { key: "from", default: "" },
+    to: { key: "to", default: "" },
+  }) as AdminListParsed;
 
-  const where: Record<string, unknown> = {};
+  const q = (parsed.q ?? "").trim();
+  const status = parsed.status ?? "all";
+  const page = Number(parsed.page) || 1;
+  const pageSize = Number(parsed.pageSize) || 25;
+  const from = (parsed.from ?? "").trim();
+  const to = (parsed.to ?? "").trim();
+  const buildQueryString = parsed.buildQueryString;
+
+  const where: Prisma.PayoutWhereInput = {};
 
   if (q) {
-    (where as any).OR = [
+    where.OR = [
       { vendor: { email: { contains: q, mode: "insensitive" } } },
       { vendor: { name: { contains: q, mode: "insensitive" } } },
       { id: { contains: q, mode: "insensitive" } },
     ];
   }
 
-  if (status !== "all") (where as any).status = status;
+  if (status !== "all") {
+    where.status = status as unknown as Prisma.PayoutWhereInput["status"];
+  }
 
   if (from || to) {
-    const createdAt: { gte?: Date; lte?: Date } = {};
-    if (from) createdAt.gte = new Date(from);
-    if (to) createdAt.lte = new Date(to);
-    (where as any).createdAt = createdAt;
+    const fromDate = from ? new Date(from) : null;
+    const toDate = to ? new Date(to) : null;
+
+    const fromOk = !!fromDate && !Number.isNaN(fromDate.getTime());
+    const toOk = !!toDate && !Number.isNaN(toDate.getTime());
+
+    if (fromOk || toOk) {
+      where.createdAt = {
+        ...(fromOk ? { gte: fromDate as Date } : {}),
+        ...(toOk ? { lte: toDate as Date } : {}),
+      };
+    }
   }
 
   const skip = (page - 1) * pageSize;
 
   const [total, rows] = await Promise.all([
-    prisma.payout.count({ where: where as any }),
+    prisma.payout.count({ where }),
     prisma.payout.findMany({
-      where: where as any,
+      where,
       orderBy: { createdAt: "desc" },
       skip,
       take: pageSize,
@@ -88,29 +105,19 @@ export default async function AdminPayoutsPage({
         <div className={styles.header}>
           <p className={styles.eyebrow}>ADMIN</p>
           <h1 className={styles.title}>Payouts</h1>
-          <p className={styles.subtitle}>
-            Payout-Liste, Filter, Status auf PAID setzen, Export.
-          </p>
+          <p className={styles.subtitle}>Payout-Liste, Filter, Status auf PAID setzen, Export.</p>
         </div>
 
         <div className={styles.actionsRow}>
-          <Link className={styles.pill} href="/admin/downloads">
-            Downloads
-          </Link>
-          <a className={styles.pill} href="/api/admin/payouts/export">
-            Export CSV
-          </a>
+          <Link className={styles.pill} href="/admin/downloads">Downloads</Link>
+          <a className={styles.pill} href="/api/admin/payouts/export">Export CSV</a>
         </div>
 
         <form className={styles.filtersCard} method="GET">
           <div className={styles.filtersGrid}>
             <label className={styles.field}>
               <span>Vendor/ID</span>
-              <input
-                name="q"
-                placeholder="Vendor E-Mail, Name, Payout-ID…"
-                defaultValue={q}
-              />
+              <input name="q" placeholder="Vendor E-Mail, Name, Payout-ID…" defaultValue={q} />
             </label>
 
             <label className={styles.field}>
@@ -125,27 +132,25 @@ export default async function AdminPayoutsPage({
 
             <label className={styles.field}>
               <span>From</span>
-              <input name="from" placeholder="YYYY-MM-DD" defaultValue={from} />
+              <input type="date" name="from" defaultValue={from} />
             </label>
+
             <label className={styles.field}>
               <span>To</span>
-              <input name="to" placeholder="YYYY-MM-DD" defaultValue={to} />
+              <input type="date" name="to" defaultValue={to} />
             </label>
 
             <label className={styles.field}>
               <span>Page size</span>
               <input name="pageSize" defaultValue={String(pageSize)} />
             </label>
+
             <input type="hidden" name="page" value="1" />
           </div>
 
           <div className={styles.filterButtons}>
-            <button className={styles.primaryBtn} type="submit">
-              Filter
-            </button>
-            <Link className={styles.secondaryBtn} href="/admin/payouts">
-              Reset
-            </Link>
+            <button className={styles.primaryBtn} type="submit">Filter</button>
+            <Link className={styles.secondaryBtn} href="/admin/payouts">Reset</Link>
           </div>
         </form>
 
@@ -161,76 +166,71 @@ export default async function AdminPayoutsPage({
           {rows.length === 0 ? (
             <div className={styles.emptyState}>Keine Payouts gefunden.</div>
           ) : (
-            rows.map((p) => {
-              const amountCents = Number(p.amountCents || 0);
-              return (
-                <div key={p.id} className={styles.tableRow}>
-                  <div className={styles.monoSmall}>{formatDateTime(p.createdAt)}</div>
+            rows.map((p) => (
+              <div key={p.id} className={styles.tableRow}>
+                <div className={styles.monoSmall}>{formatDateTime(p.createdAt)}</div>
 
-                  <div>
-                    <div className={styles.bold}>{p.vendor?.name || p.vendor?.email || "—"}</div>
-                    <div className={styles.mutedSmall}>
-                      {p.vendor?.email || "—"} •{" "}
-                      <span className={styles.monoSmall}>{p.id}</span>
-                    </div>
-                  </div>
-
-                  <div>
-                    <span className={styles.badge}>{p.status}</span>
-                  </div>
-
-                  <div className={styles.monoSmall}>
-                    {formatMoneyFromCents(amountCents, "CHF")}
-                    <div className={styles.mutedSmall}>
-                      {p.paidAt ? `Paid: ${formatDateTime(p.paidAt)}` : "Not paid"}
-                    </div>
-                  </div>
-
-                  <div className={styles.actionsCell}>
-                    {p.status === "PENDING" ? (
-                      <>
-                        <AdminActionButton
-                          href="/api/admin/payouts/mark-paid"
-                          method="POST"
-                          body={{ payoutId: p.id }}
-                          confirmText="Als bezahlt markieren?"
-                        >
-                          Mark PAID
-                        </AdminActionButton>
-                        <AdminActionButton
-                          href="/api/admin/payouts/cancel"
-                          method="POST"
-                          body={{ payoutId: p.id }}
-                          confirmText="Payout wirklich canceln?"
-                        >
-                          Cancel
-                        </AdminActionButton>
-                      </>
-                    ) : (
-                      <span className={styles.mutedSmall}>—</span>
-                    )}
+                <div>
+                  <div className={styles.bold}>{p.vendor?.name || p.vendor?.email || "—"}</div>
+                  <div className={styles.mutedSmall}>
+                    {p.vendor?.email || "—"} • <span className={styles.monoSmall}>{p.id}</span>
                   </div>
                 </div>
-              );
-            })
+
+                <div><span className={styles.badge}>{p.status}</span></div>
+
+                <div className={styles.monoSmall}>
+                  {formatMoneyFromCents(Number(p.amountCents || 0), "CHF")}
+                  <div className={styles.mutedSmall}>
+                    {p.paidAt ? `Paid: ${formatDateTime(p.paidAt)}` : "Not paid"}
+                  </div>
+                </div>
+
+                <div className={styles.actionsCell}>
+                  {p.status === "PENDING" ? (
+                    <>
+                      <AdminActionButton
+                        href="/api/admin/payouts/mark-paid"
+                        method="POST"
+                        body={{ payoutId: p.id }}
+                        confirmText="Als bezahlt markieren?"
+                        className={styles.pillSmall}
+                      >
+                        Mark PAID
+                      </AdminActionButton>
+
+                      <AdminActionButton
+                        href="/api/admin/payouts/cancel"
+                        method="POST"
+                        body={{ payoutId: p.id }}
+                        confirmText="Payout wirklich canceln?"
+                        className={styles.pillSmall}
+                      >
+                        Cancel
+                      </AdminActionButton>
+                    </>
+                  ) : (
+                    <span className={styles.mutedSmall}>—</span>
+                  )}
+                </div>
+              </div>
+            ))
           )}
 
           <div className={styles.pagination}>
             <div className={styles.mutedSmall}>
               Total: {total} • Seite {page}/{pageCount}
             </div>
+
             <div className={styles.paginationBtns}>
               {prevHref ? (
-                <Link className={styles.pillSmall} href={prevHref}>
-                  ← Prev
-                </Link>
+                <Link className={styles.pillSmall} href={prevHref}>← Prev</Link>
               ) : (
                 <span className={styles.pillSmallDisabled}>← Prev</span>
               )}
+
               {nextHref ? (
-                <Link className={styles.pillSmall} href={nextHref}>
-                  Next →
-                </Link>
+                <Link className={styles.pillSmall} href={nextHref}>Next →</Link>
               ) : (
                 <span className={styles.pillSmallDisabled}>Next →</span>
               )}

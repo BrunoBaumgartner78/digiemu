@@ -30,17 +30,24 @@ function formatCHF(n: number | null) {
 async function getPublicMetrics(): Promise<Metrics> {
   try {
     const usersPromise = prisma.user.count().catch(() => null);
-    const ordersPromise = prisma.order.count().catch(() => null);
+    // ✅ Only count real (paid) orders to avoid discrepancies from aborted checkouts
+    const ordersPromise = prisma.order
+      .count({
+        where: { status: { in: ["PAID", "COMPLETED"] } as any },
+      })
+      .catch(() => null);
 
     const revenuePromise = (async () => {
-      try {
-        const agg = await prisma.order.aggregate({
-          _sum: {
-            amountCents: true,
-            platformEarningsCents: true,
-            vendorEarningsCents: true,
-          },
-        });
+        try {
+          // ✅ Only include paid revenue; aborted/expired/canceled must not inflate KPIs
+          const agg = await prisma.order.aggregate({
+            where: { status: { in: ["PAID", "COMPLETED"] } as any },
+            _sum: {
+              amountCents: true,
+              platformEarningsCents: true,
+              vendorEarningsCents: true,
+            },
+          });
 
         const amountCents = agg?._sum?.amountCents;
         const platformCents = agg?._sum?.platformEarningsCents;

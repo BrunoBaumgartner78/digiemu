@@ -28,10 +28,20 @@ export default function RequestPayoutButton({
     setBusy(true);
     try {
       const res = await fetch("/api/payouts/request", { method: "POST" });
-      const data = await res.json().catch(() => ({}));
+      const txt = await res.text();
+      let data: any = null;
+      try {
+        data = txt ? JSON.parse(txt) : null;
+      } catch {}
 
       if (!res.ok) {
-        setMsg(data?.error ?? "Request fehlgeschlagen.");
+        console.error("PAYOUT ERROR:", data || txt);
+        const msg =
+          data?.error === "No payout available"
+            ? "Noch kein auszahlbares Guthaben verfügbar."
+            : data?.error || txt || "Payout request failed";
+        // showToast ist bei dir ggf. anders benannt – falls du setToast o.ä. nutzt, hier anpassen
+        alert(`❌ ${msg}`);
         return;
       }
 

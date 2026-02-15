@@ -1,34 +1,50 @@
-﻿import { NextResponse } from "next/server";
+﻿// src/app/api/admin/payouts/mark-paid/route.ts
+import { NextResponse } from "next/server";
+import type { Session } from "next-auth";
 import { requireAdminApi } from "@/lib/guards/authz";
 import { prisma } from "@/lib/prisma";
-import { ProductStatus, VendorStatus, PayoutStatus, Role } from "@prisma/client";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function POST(_req: Request) {
-  const maybe = await requireAdminApi();
-  if (maybe instanceof NextResponse) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  const _session = maybe;
-  const __userId = _session.user.id;
+  const sessionOrResp = await requireAdminApi();
+  if (sessionOrResp instanceof NextResponse) return sessionOrResp;
+  const session = sessionOrResp as Session;
 
-  const form = await _req.formData();
-  const payoutId = String(form.get("payoutId") ?? "").trim();
-  const returnTo = String(form.get("returnTo") ?? "").trim();
-
-  if (!payoutId) {
-    return NextResponse.json({ message: "payoutId fehlt" }, { status: 400 });
+  if (!session || session.user.role !== "ADMIN") {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
   }
 
-  const payout = await prisma.payout.update({
+  let payoutId = "";
+  let returnTo = "";
+
+  const ct = (_req.headers.get("content-type") || "").toLowerCase();
+
+  if (ct.includes("application/json")) {
+    const json = await _req.json().catch(() => null);
+    payoutId = String((json as any)?.payoutId ?? "").trim();
+    returnTo = String((json as any)?.returnTo ?? "").trim();
+  } else if (ct.includes("multipart/form-data") || ct.includes("application/x-www-form-urlencoded")) {
+    const form = await _req.formData().catch(() => null);
+    payoutId = String(form?.get("payoutId") ?? "").trim();
+    returnTo = String(form?.get("returnTo") ?? "").trim();
+  } else {
+    // Fallback: try json anyway (some fetch clients omit headers)
+    const json = await _req.json().catch(() => null);
+    payoutId = String((json as any)?.payoutId ?? "").trim();
+    returnTo = String((json as any)?.returnTo ?? "").trim();
+  }
+
+  if (!payoutId) {
+    return NextResponse.json({ error: "Missing payoutId" }, { status: 400 });
+  }
+
+  const updated = await prisma.payout.update({
     where: { id: payoutId },
-    data: { status: PayoutStatus.PAID },
+    data: { status: "PAID", paidAt: new Date() },
   });
 
-  // Fix: ensure correct precedence when computing redirect URL
-  const vendorId = payout.vendorId as string | undefined;
-  const redirectUrl = returnTo || (vendorId ? `/admin/payouts/vendor/${vendorId}` : "/admin/payouts");
-
-  return NextResponse.redirect(new URL(redirectUrl, _req.url));
+  // optional redirect hint (falls du später zurück navigieren willst)
+  return NextResponse.json({ ok: true, payout: updated, returnTo: returnTo || null });
 }
-

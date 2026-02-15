@@ -14,15 +14,28 @@ type Props = {
 const SAFE_IMAGE_HOSTS = [
   "firebasestorage.googleapis.com",
   "storage.googleapis.com",
+  "digiemu-49e69.firebasestorage.app", // ✅ FIX: Firebase "app" host
   "lh3.googleusercontent.com",
   "images.pexels.com",
   "images.unsplash.com",
 ];
 
+// Robust url(...) value for inline styles
+function toCssBg(url: string) {
+  // Trim + encode spaces etc. (does not break already-encoded URLs)
+  const safe = encodeURI(url.trim());
+  return `url("${safe}")`;
+}
+
 function canUseNextImage(url: string | null | undefined): boolean {
   if (!url) return false;
+  const s = url.trim();
+  if (!s) return false;
+  // local images are always ok
+  if (s.startsWith("/")) return true;
+
   try {
-    const u = new URL(url);
+    const u = new URL(s);
     return SAFE_IMAGE_HOSTS.includes(u.hostname);
   } catch {
     return false;
@@ -36,7 +49,7 @@ function formatCHF(cents: number) {
 
 export default async function SellerPage({ params }: Props) {
   const { vendorId } = await params;
-  const key = String(vendorId ?? "").trim();
+  const key = decodeURIComponent(String(vendorId ?? "")).trim();
   if (!key) notFound();
 
   // slug ODER vendorProfile.id ODER vendorProfile.userId
@@ -87,12 +100,13 @@ export default async function SellerPage({ params }: Props) {
         {bannerSrc ? (
           bannerUseNext ? (
             <div className={styles.bannerMedia}>
-              <Image
+              <img
                 src={bannerSrc}
                 alt={`${sellerName} Banner`}
-                fill
-                priority
                 className={styles.bannerImg}
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                loading="lazy"
+                decoding="async"
               />
             </div>
           ) : (
@@ -100,7 +114,7 @@ export default async function SellerPage({ params }: Props) {
               className={styles.bannerImgFallback}
               role="img"
               aria-label={`${sellerName} Banner`}
-              style={{ backgroundImage: `url(${JSON.stringify(bannerSrc)})` }}
+              style={{ backgroundImage: toCssBg(bannerSrc) }}
             />
           )
         ) : (
@@ -113,19 +127,19 @@ export default async function SellerPage({ params }: Props) {
         <div className={styles.avatarWrap}>
           {avatarSrc ? (
             avatarUseNext ? (
-              <Image
+              <img
                 src={avatarSrc}
                 alt={`${sellerName} Avatar`}
-                width={84}
-                height={84}
-                className={styles.avatarImg}
+                width="84"
+                height="84"
+                style={{ objectFit: "cover", borderRadius: "999px" }}
               />
             ) : (
               <div
                 className={styles.avatarImgFallback}
                 role="img"
                 aria-label={`${sellerName} Avatar`}
-                style={{ backgroundImage: `url(${JSON.stringify(avatarSrc)})` }}
+                style={{ backgroundImage: toCssBg(avatarSrc) }}
               />
             )
           ) : (
@@ -172,14 +186,21 @@ export default async function SellerPage({ params }: Props) {
                     {thumbSrc ? (
                       thumbUseNext ? (
                         <div className={styles.thumbMedia}>
-                          <Image src={thumbSrc} alt={p.title} fill className={styles.thumbImg} />
+                          <img
+                            src={thumbSrc}
+                            alt={p.title}
+                            className={styles.thumbImg}
+                            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                            loading="lazy"
+                            decoding="async"
+                          />
                         </div>
                       ) : (
                         <div
                           className={styles.thumbImgFallback}
                           role="img"
                           aria-label={p.title}
-                          style={{ backgroundImage: `url(${JSON.stringify(thumbSrc)})` }}
+                          style={{ backgroundImage: toCssBg(thumbSrc) }}
                         />
                       )
                     ) : (
@@ -191,7 +212,9 @@ export default async function SellerPage({ params }: Props) {
                     <h3 className={styles.cardTitle}>{p.title}</h3>
 
                     <div className={styles.meta}>
-                      <span className={styles.cat}>{p.category ? `Kategorie: ${p.category}` : "Kategorie: —"}</span>
+                      <span className={styles.cat}>
+                        {p.category ? `Kategorie: ${p.category}` : "Kategorie: —"}
+                      </span>
                       <span className={styles.price}>{formatCHF(p.priceCents)}</span>
                     </div>
                   </div>

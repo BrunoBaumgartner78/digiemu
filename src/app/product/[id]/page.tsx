@@ -2,8 +2,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
+
 import { prisma } from "@/lib/prisma";
 import { getProductThumbUrl } from "@/lib/productThumb";
+
 import LikeButtonClient from "@/components/product/LikeButtonClient";
 import BuyButtonClient from "@/components/checkout/BuyButtonClient";
 import CommentsClient from "@/components/product/CommentsClient";
@@ -13,7 +16,7 @@ import styles from "./page.module.css";
 
 export const dynamic = "force-dynamic";
 
-// ✅ Next 16: params is Promise (NO union, sonst CI-Fehler)
+// ✅ Next.js 16: params ist Promise-wrapped
 type ProductPageProps = { params: Promise<{ id: string }> };
 
 // Only allow Next/Image for local files. Remote will use <img> to avoid config mismatch crashes.
@@ -108,10 +111,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const initialIsLiked = false;
 
   const sellerName =
-    vendorProfile?.displayName ||
-    vendorProfile?.user?.name ||
-    p.vendor?.name ||
-    "Verkäufer";
+    vendorProfile?.displayName || vendorProfile?.user?.name || p.vendor?.name || "Verkäufer";
 
   const sellerHref =
     vendorProfile?.isPublic === true && vendorProfile.userId
@@ -226,7 +226,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   );
 }
 
-export async function generateMetadata({ params }: ProductPageProps) {
+export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
   const { id } = await params;
   const pid = String(id ?? "").trim();
   if (!pid) return {};
@@ -255,5 +255,5 @@ export async function generateMetadata({ params }: ProductPageProps) {
       images: productThumb ? [{ url: productThumb, alt: p.title }] : undefined,
     },
     alternates: { canonical: `/product/${pid}` },
-  } as unknown;
+  };
 }

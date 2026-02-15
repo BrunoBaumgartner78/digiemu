@@ -9,6 +9,8 @@ type FieldSpec = {
 
 type SpecMap = Record<string, FieldSpec>;
 
+import { buildQueryString as _buildQueryString } from "@/lib/buildQueryString";
+
 function spGet(sp: SearchParams, key: string): string | undefined {
   const v = sp[key];
   if (typeof v === "string") return v;
@@ -16,44 +18,54 @@ function spGet(sp: SearchParams, key: string): string | undefined {
   return undefined;
 }
 
-import { buildQueryString as _buildQueryString } from "@/lib/buildQueryString";
 
 export function parseAdminListParams(
   sp: SearchParams,
   spec: SpecMap
-): Record<string, unknown> & { buildQueryString: (overrides: Record<string, string | undefined>) => string } {
+): Record<string, unknown> & {
+  buildQueryString: (overrides: Record<string, string | undefined>) => string;
+} {
   const out: Record<string, unknown> = {};
+
   for (const [name, f] of Object.entries(spec)) {
     const raw = spGet(sp, f.key);
-    if (f.default !== undefined && typeof f.default === "number") {
+
+    // number fields
+    if (typeof f.default === "number") {
       let n = raw ? Number(raw) : Number.NaN;
       if (!Number.isFinite(n)) n = f.default;
       n = Math.floor(n);
       if (typeof f.min === "number") n = Math.max(f.min, n);
       if (typeof f.max === "number") n = Math.min(f.max, n);
       out[name] = n;
-    } else {
-      out[name] = raw ?? (f.default as any) ?? "";
+      continue;
     }
+
+    // string/other fields
+    out[name] = (raw ?? f.default ?? "") as unknown;
   }
 
   function buildQueryString(overrides: Record<string, string | undefined>) {
-    // Map current parsed values to their query param keys
     const base: Record<string, string> = {};
+
+    // map parsed values → query keys
     for (const [name, v] of Object.entries(out)) {
       const paramKey = spec[name]?.key ?? name;
-      if (v === undefined || v === null || v === "") continue;
-      base[paramKey] = String(v);
+      if (v === undefined || v === null) continue;
+
+      const s = String(v);
+      if (!s.trim()) continue;
+
+      base[paramKey] = s.trim();
     }
 
-    // Apply overrides (these overrides are expected to use the query param keys)
+    // apply overrides (overrides use query param keys)
     for (const [k, v] of Object.entries(overrides)) {
-      if (v === undefined || v === null || v === "") delete base[k];
-      else base[k] = v;
+      if (!v || !v.trim()) delete base[k];
+      else base[k] = v.trim();
     }
 
-    // Use shared buildQueryString util (returns string without leading '?')
-    return _buildQueryString(base);
+    return _buildQueryString(base); // returns string without leading '?'
   }
 
   return { ...out, buildQueryString };
@@ -68,14 +80,7 @@ export function formatDateTime(d: Date | string) {
   }
 }
 
-export function formatMoney(cents: number, currency = "CHF") {
-  const v = Number.isFinite(cents) ? cents : Number(cents || 0);
-  return `${(v / 100).toFixed(2)} ${currency}`;
-}
-
 export function formatMoneyFromCents(cents: number, currency: string = "CHF") {
   const v = Number.isFinite(cents) ? cents : Number(cents || 0);
   return `${(v / 100).toFixed(2)} ${currency}`;
 }
-
-// no default export
