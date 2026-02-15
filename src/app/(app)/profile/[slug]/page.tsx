@@ -6,17 +6,16 @@ import SafeImg from "@/components/ui/SafeImg";
 
 export const dynamic = "force-dynamic";
 
-type Params = { slug: string };
-type Props = { params: Params | Promise<Params> };
+// ✅ Next.js 16: params ist Promise-wrapped (kein Union!)
+type Props = { params: Promise<{ slug: string }> };
 
 export default async function PublicVendorProfilePage({ params }: Props) {
-  // Next 16: params may be sync or async depending on runtime
-  const resolvedParams = await Promise.resolve(params);
-  const slug = decodeURIComponent(resolvedParams?.slug || "").trim();
-  if (!slug) notFound();
+  const { slug } = await params;
+  const decodedSlug = decodeURIComponent(String(slug ?? "")).trim();
+  if (!decodedSlug) notFound();
 
   const profile = await prisma.vendorProfile.findFirst({
-    where: { slug, isPublic: true },
+    where: { slug: decodedSlug, isPublic: true },
     select: {
       displayName: true,
       bio: true,
@@ -80,27 +79,52 @@ export default async function PublicVendorProfilePage({ params }: Props) {
 
               <div className={styles["public-meta"]}>
                 {profile.websiteUrl ? (
-                  <a className={styles["public-pill"]} href={profile.websiteUrl} target="_blank" rel="noreferrer">
+                  <a
+                    className={styles["public-pill"]}
+                    href={profile.websiteUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
                     Website
                   </a>
                 ) : null}
                 {profile.instagramUrl ? (
-                  <a className={styles["public-pill"]} href={profile.instagramUrl} target="_blank" rel="noreferrer">
+                  <a
+                    className={styles["public-pill"]}
+                    href={profile.instagramUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
                     Instagram
                   </a>
                 ) : null}
                 {profile.twitterUrl ? (
-                  <a className={styles["public-pill"]} href={profile.twitterUrl} target="_blank" rel="noreferrer">
+                  <a
+                    className={styles["public-pill"]}
+                    href={profile.twitterUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
                     X/Twitter
                   </a>
                 ) : null}
                 {profile.tiktokUrl ? (
-                  <a className={styles["public-pill"]} href={profile.tiktokUrl} target="_blank" rel="noreferrer">
+                  <a
+                    className={styles["public-pill"]}
+                    href={profile.tiktokUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
                     TikTok
                   </a>
                 ) : null}
                 {profile.facebookUrl ? (
-                  <a className={styles["public-pill"]} href={profile.facebookUrl} target="_blank" rel="noreferrer">
+                  <a
+                    className={styles["public-pill"]}
+                    href={profile.facebookUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
                     Facebook
                   </a>
                 ) : null}
