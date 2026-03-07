@@ -38,7 +38,7 @@ export default function ProductGrid({ products, productBasePath = "/product" }: 
                   className={styles["product-thumb"]}
                   fallback={<div className={styles["product-thumb--fallback"]}>🎧</div>}
                   sizes="(max-width: 720px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  style={{ objectFit: "cover", width: "100%", height: "100%" }}
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
                 />
               </div>
 

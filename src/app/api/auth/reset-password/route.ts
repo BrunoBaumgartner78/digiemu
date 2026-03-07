@@ -11,26 +11,25 @@ function sha256(input: string) {
   return crypto.createHash("sha256").update(input).digest("hex");
 }
 
-// Wenn jemand die API-Route im Browser aufruft -> kein 500
-export async function GET(_req: Request) {
-  // Optional: auf forgot-password umleiten
-  const url = new URL("/forgot-password", _req.url);
-  return NextResponse.redirect(url);
-  // alternativ: return new NextResponse("Method Not Allowed", { status: 405 });
+export async function GET(req: Request) {
+  const url = new URL("/forgot-password", req.url);
+  return NextResponse.redirect(url, { status: 303 });
 }
 
-export async function POST(_req: Request) {
+export async function POST(req: Request) {
   try {
-    const form = await _req.formData();
+    const form = await req.formData();
 
     const rawToken = String(form.get("token") ?? "").trim();
     const password = String(form.get("password") ?? "");
     const password2 = String(form.get("password2") ?? "");
 
-    // UI-Redirects (damit du schöne UX hast)
     const fail = (code: string) => {
-      const url = new URL(`/reset-password/${encodeURIComponent(rawToken)}?error=${code}`, _req.url);
-      return NextResponse.redirect(url);
+      const url = new URL(
+        `/reset-password/${encodeURIComponent(rawToken)}?error=${code}`,
+        req.url
+      );
+      return NextResponse.redirect(url, { status: 303 });
     };
 
     if (!rawToken) return fail("missing_token");
@@ -46,26 +45,23 @@ export async function POST(_req: Request) {
     if (!reset) return fail("invalid_token");
     if (reset.expiresAt < new Date()) return fail("expired");
 
-    // Passwort hashen + user updaten
     const hashed = await bcrypt.hash(password, 12);
 
-    await prisma.user.update({
-      where: { id: reset.userId },
-      data: { password: hashed },
-    });
+    await prisma.$transaction([
+      prisma.user.update({
+        where: { id: reset.userId },
+        data: { password: hashed },
+      }),
+      prisma.passwordReset.deleteMany({
+        where: { userId: reset.userId },
+      }),
+    ]);
 
-    // Token verbrauchen
-    await prisma.passwordReset.deleteMany({
-      where: { userId: reset.userId },
-    });
-
-    // Erfolg -> Login
-    const okUrl = new URL("/login?reset=1", _req.url);
-    return NextResponse.redirect(okUrl);
+    const okUrl = new URL("/login?reset=1", req.url);
+    return NextResponse.redirect(okUrl, { status: 303 });
   } catch (err) {
     console.error("RESET_PASSWORD failed:", err);
-    // fallback: zurück zur forgot-password Seite
-    const url = new URL("/forgot-password?error=reset_failed", _req.url);
-    return NextResponse.redirect(url);
+    const url = new URL("/forgot-password?error=reset_failed", req.url);
+    return NextResponse.redirect(url, { status: 303 });
   }
 }

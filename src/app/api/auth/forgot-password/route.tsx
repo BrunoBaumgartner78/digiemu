@@ -16,55 +16,74 @@ function normEmail(v: unknown) {
   return typeof v === "string" ? v.trim().toLowerCase() : "";
 }
 
-export async function POST(_req: Request) {
-  const form = await _req.formData();
+function getBaseUrl(req: Request) {
+  const envUrl =
+    process.env.APP_URL ||
+    process.env.NEXT_PUBLIC_APP_URL ||
+    process.env.NEXTAUTH_URL ||
+    "";
+
+  const fallbackFromReq = new URL(req.url).origin;
+
+  const base = String(envUrl || fallbackFromReq).trim().replace(/\/$/, "");
+
+  if (!base.startsWith("http://") && !base.startsWith("https://")) {
+    return fallbackFromReq.replace(/\/$/, "");
+  }
+
+  return base;
+}
+
+export async function POST(req: Request) {
+  const form = await req.formData();
   const email = normEmail(form.get("email"));
 
-  // Immer neutral antworten (kein Account-Leak)
-  const redirectUrl = new URL("/forgot-password?sent=1", _req.url);
-  if (!email) return NextResponse.redirect(redirectUrl);
+  const redirectUrl = new URL("/forgot-password?sent=1", req.url);
+
+  if (!email) {
+    serverLog.warn?.("FORGOT_PASSWORD: missing email");
+    return NextResponse.redirect(redirectUrl, { headers: { "Cache-Control": "no-store" } });
+  }
 
   const user = await prisma.user.findUnique({ where: { email } });
-  if (!user) return NextResponse.redirect(redirectUrl);
 
-  // Alte Tokens entfernen (optional)
+  // Immer neutral bleiben
+  if (!user) {
+    serverLog.log(`FORGOT_PASSWORD: user not found for ${email}`);
+    return NextResponse.redirect(redirectUrl, { headers: { "Cache-Control": "no-store" } });
+  }
+
   await prisma.passwordReset.deleteMany({ where: { userId: user.id } });
 
-  // Raw token (für URL) + Hash (für DB)
   const rawToken = crypto.randomBytes(32).toString("hex");
   const tokenHash = sha256(rawToken);
+  const expiresAt = new Date(Date.now() + 1000 * 60 * 30);
 
   await prisma.passwordReset.create({
     data: {
       userId: user.id,
-      token: tokenHash, // <-- HASH speichern
-      expiresAt: new Date(Date.now() + 1000 * 60 * 30), // 30 min
+      token: tokenHash,
+      expiresAt,
     },
   });
 
-  // Reset-Link (RAW token)
-  const appUrl =
-    process.env.APP_URL ||
-    process.env.NEXT_PUBLIC_APP_URL ||
-    "http://localhost:3000";
+  const baseUrl = getBaseUrl(req);
+  const resetUrl = `${baseUrl}/reset-password/${rawToken}`;
 
-  const resetUrl = `${String(appUrl).replace(/\/$/, "")}/reset-password/${rawToken}`;
-
-  // SMTP ENV
-  const host = process.env.SMTP_HOST || "smtp.gmail.com";
-  const smtpUser = process.env.SMTP_USER || "";
-  const smtpPass = (process.env.SMTP_PASS || "").replace(/\s+/g, ""); // sicherheitshalber spaces raus
+  const host = (process.env.SMTP_HOST || "smtp.gmail.com").trim();
+  const smtpUser = (process.env.SMTP_USER || "").trim();
+  const smtpPass = (process.env.SMTP_PASS || "").trim();
   const port = Number(process.env.SMTP_PORT || "465");
   const secure = process.env.SMTP_SECURE === "true" || port === 465;
-  const from = process.env.MAIL_FROM || smtpUser;
+  const from = (process.env.MAIL_FROM || smtpUser).trim();
 
-  // Debug without sensitive details
-  serverLog.log("SMTP: configured");
+  serverLog.log(
+    `FORGOT_PASSWORD: route reached email=${email} userFound=${!!user} baseUrl=${baseUrl} host=${host} port=${port} secure=${secure} smtpUser=${!!smtpUser} smtpPass=${!!smtpPass} from=${!!from}`
+  );
 
-  // Wenn SMTP nicht konfiguriert: neutral redirect (kein Leak)
   if (!smtpUser || !smtpPass || !from) {
     console.warn("MAIL: missing SMTP env vars, skip sending.");
-    return NextResponse.redirect(redirectUrl);
+    return NextResponse.redirect(redirectUrl, { headers: { "Cache-Control": "no-store" } });
   }
 
   try {
@@ -72,17 +91,26 @@ export async function POST(_req: Request) {
       host,
       port,
       secure,
-      auth: { user: smtpUser, pass: smtpPass },
+      auth: {
+        user: smtpUser,
+        pass: smtpPass,
+      },
     });
 
-    // optional, hilft beim Debuggen:
     await transporter.verify();
+    serverLog.log("MAIL: transporter verify ok");
 
-    await transporter.sendMail({
+    const info = await transporter.sendMail({
       from,
       to: user.email,
       subject: "Passwort zurücksetzen – Bellu",
-      text: `Du hast ein neues Passwort angefordert.\n\nLink: ${resetUrl}\n\nDer Link ist 30 Minuten gültig.\n\nWenn du das nicht warst, ignoriere diese E-Mail.`,
+      text: `Du hast ein neues Passwort angefordert.
+
+Link: ${resetUrl}
+
+Der Link ist 30 Minuten gültig.
+
+Wenn du das nicht warst, ignoriere diese E-Mail.`,
       html: `
         <div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;line-height:1.5">
           <h2 style="margin:0 0 12px">Passwort zurücksetzen</h2>
@@ -93,19 +121,24 @@ export async function POST(_req: Request) {
             </a>
           </p>
           <p style="margin:0;color:#64748b;font-size:12px">Der Link ist 30 Minuten gültig.</p>
+          <p style="margin:12px 0 0;color:#64748b;font-size:12px;word-break:break-all">
+            Falls der Button nicht funktioniert, kopiere diesen Link:<br />
+            ${resetUrl}
+          </p>
         </div>
       `,
     });
 
-    serverLog.log("MAIL: sent reset link");
+    serverLog.log(
+      `MAIL: sent reset link messageId=${info.messageId ?? "n/a"} response=${info.response ?? "n/a"} accepted=${Array.isArray(info.accepted) ? info.accepted.join(",") : "n/a"} rejected=${Array.isArray(info.rejected) ? info.rejected.join(",") : "n/a"}`
+    );
   } catch (err: unknown) {
     if (err instanceof Error) {
-      console.error("MAIL: send failed", err.message, err);
+      console.error("MAIL: send failed", err.message, err.stack);
     } else {
       console.error("MAIL: send failed", String(err));
     }
-    // bewusst neutral bleiben
   }
 
-  return NextResponse.redirect(redirectUrl);
+  return NextResponse.redirect(redirectUrl, { headers: { "Cache-Control": "no-store" } });
 }
