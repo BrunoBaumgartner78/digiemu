@@ -19,16 +19,16 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    try {
-      const key = keyFromReq(req, "auth_reset");
-      const rl = rateLimitCheck(key, 10, 60_000);
-      if (!rl.allowed) {
-        const url = new URL("/forgot-password?error=rate_limited", req.url);
-        return NextResponse.redirect(url, { status: 303 });
-      }
-    } catch (_e) {
-      console.warn("rateLimit check failed", _e);
-    }
+   const rl = await rateLimitCheck(
+  `reset-password:${keyFromReq(req)}`,
+  10,
+  10 * 60_000
+);
+
+if (!rl.allowed) {
+  const url = new URL("/forgot-password?error=too_many_requests", req.url);
+  return NextResponse.redirect(url, { status: 303 });
+}
 
     const form = await req.formData();
 
@@ -62,8 +62,11 @@ export async function POST(req: Request) {
     await prisma.$transaction([
       prisma.user.update({
         where: { id: reset.userId },
-        data: { password: hashed, sessionVersion: { increment: 1 } as any },
-      }) as any,
+        data: {
+          password: hashed,
+          sessionVersion: { increment: 1 },
+        },
+      }),
       prisma.passwordReset.deleteMany({
         where: { userId: reset.userId },
       }),
