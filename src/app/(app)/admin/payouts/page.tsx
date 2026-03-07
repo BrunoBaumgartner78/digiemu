@@ -105,7 +105,7 @@ export default async function AdminPayoutsPage({
         <div className={styles.header}>
           <p className={styles.eyebrow}>ADMIN</p>
           <h1 className={styles.title}>Payouts</h1>
-          <p className={styles.subtitle}>Payout-Liste, Filter, Status auf PAID setzen, Export.</p>
+          <p className={styles.subtitle}>Payout-Liste, Filter, idempotentes Markieren auf PAID, Export.</p>
         </div>
 
         <div className={styles.actionsRow}>
@@ -126,7 +126,7 @@ export default async function AdminPayoutsPage({
                 <option value="all">(alle)</option>
                 <option value="PENDING">PENDING</option>
                 <option value="PAID">PAID</option>
-                <option value="CANCELED">CANCELED</option>
+                <option value="CANCELLED">CANCELLED</option>
               </select>
             </label>
 
@@ -166,55 +166,65 @@ export default async function AdminPayoutsPage({
           {rows.length === 0 ? (
             <div className={styles.emptyState}>Keine Payouts gefunden.</div>
           ) : (
-            rows.map((p) => (
-              <div key={p.id} className={styles.tableRow}>
-                <div className={styles.monoSmall}>{formatDateTime(p.createdAt)}</div>
+            rows.map((p) => {
+              const canMarkPaid = p.status === "PENDING" && p.paidAt === null;
+              const alreadyPaid = p.status === "PAID";
+              const isCancelled = p.status === "CANCELLED";
 
-                <div>
-                  <div className={styles.bold}>{p.vendor?.name || p.vendor?.email || "—"}</div>
-                  <div className={styles.mutedSmall}>
-                    {p.vendor?.email || "—"} • <span className={styles.monoSmall}>{p.id}</span>
+              return (
+                <div key={p.id} className={styles.tableRow}>
+                  <div className={styles.monoSmall}>{formatDateTime(p.createdAt)}</div>
+
+                  <div>
+                    <div className={styles.bold}>{p.vendor?.name || p.vendor?.email || "—"}</div>
+                    <div className={styles.mutedSmall}>
+                      {p.vendor?.email || "—"} • <span className={styles.monoSmall}>{p.id}</span>
+                    </div>
+                  </div>
+
+                  <div><span className={styles.badge}>{p.status}</span></div>
+
+                  <div className={styles.monoSmall}>
+                    {formatMoneyFromCents(Number(p.amountCents || 0), "CHF")}
+                    <div className={styles.mutedSmall}>
+                      {p.paidAt ? `Paid: ${formatDateTime(p.paidAt)}` : "Not paid"}
+                    </div>
+                  </div>
+
+                  <div className={styles.actionsCell}>
+                    {canMarkPaid ? (
+                      <>
+                        <AdminActionButton
+                          href="/api/admin/payouts/mark-paid"
+                          method="POST"
+                          body={{ payoutId: p.id }}
+                          confirmText="Als bezahlt markieren?"
+                          className={styles.pillSmall}
+                        >
+                          Mark PAID
+                        </AdminActionButton>
+
+                        <AdminActionButton
+                          href="/api/admin/payouts/cancel"
+                          method="POST"
+                          body={{ payoutId: p.id }}
+                          confirmText="Payout wirklich canceln?"
+                          className={styles.pillSmall}
+                        >
+                          Cancel
+                        </AdminActionButton>
+                      </>
+                    ) : alreadyPaid ? (
+                      <span className={styles.mutedSmall}>Bereits bezahlt, kein erneutes Überschreiben.</span>
+                    ) : isCancelled ? (
+                      <span className={styles.mutedSmall}>Storniert, kein Mark-PAID möglich.</span>
+                    ) : (
+                      <span className={styles.mutedSmall}>Kein aktiver Mark-PAID-Schritt für diesen Status.</span>
+                    )}
                   </div>
                 </div>
-
-                <div><span className={styles.badge}>{p.status}</span></div>
-
-                <div className={styles.monoSmall}>
-                  {formatMoneyFromCents(Number(p.amountCents || 0), "CHF")}
-                  <div className={styles.mutedSmall}>
-                    {p.paidAt ? `Paid: ${formatDateTime(p.paidAt)}` : "Not paid"}
-                  </div>
-                </div>
-
-                <div className={styles.actionsCell}>
-                  {p.status === "PENDING" ? (
-                    <>
-                      <AdminActionButton
-                        href="/api/admin/payouts/mark-paid"
-                        method="POST"
-                        body={{ payoutId: p.id }}
-                        confirmText="Als bezahlt markieren?"
-                        className={styles.pillSmall}
-                      >
-                        Mark PAID
-                      </AdminActionButton>
-
-                      <AdminActionButton
-                        href="/api/admin/payouts/cancel"
-                        method="POST"
-                        body={{ payoutId: p.id }}
-                        confirmText="Payout wirklich canceln?"
-                        className={styles.pillSmall}
-                      >
-                        Cancel
-                      </AdminActionButton>
-                    </>
-                  ) : (
-                    <span className={styles.mutedSmall}>—</span>
-                  )}
-                </div>
-              </div>
-            ))
+              );
+            })
           )}
 
           <div className={styles.pagination}>

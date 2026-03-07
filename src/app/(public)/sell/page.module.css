@@ -1,0 +1,453 @@
+.pageShell {
+	min-height: 100vh;
+	color: var(--text-main);
+	background:
+		radial-gradient(circle at top, rgba(74, 124, 255, 0.16), transparent 34%),
+		radial-gradient(circle at 85% 8%, rgba(255, 220, 163, 0.18), transparent 28%),
+		linear-gradient(180deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0));
+}
+
+.container {
+	max-width: 960px;
+	margin: 0 auto;
+	padding: 42px 20px 56px;
+}
+
+.heroCard {
+	border-radius: 28px;
+	border: 1px solid rgba(255, 255, 255, 0.55);
+	background:
+		linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(247, 250, 255, 0.72)),
+		radial-gradient(circle at top left, rgba(255, 255, 255, 0.72), transparent 48%);
+	box-shadow:
+		0 22px 60px rgba(15, 23, 42, 0.1),
+		0 8px 24px rgba(148, 163, 184, 0.1),
+		inset 0 1px 0 rgba(255, 255, 255, 0.82),
+		inset 0 -10px 22px rgba(226, 232, 240, 0.12);
+	backdrop-filter: blur(18px);
+	padding: 28px;
+}
+
+.heroTop {
+	display: flex;
+	flex-direction: column;
+	gap: 24px;
+}
+
+.eyebrow {
+	display: inline-flex;
+	width: fit-content;
+	align-items: center;
+	border-radius: 999px;
+	border: 1px solid rgba(74, 124, 255, 0.18);
+	background: rgba(74, 124, 255, 0.11);
+	padding: 8px 14px;
+	color: var(--accent-strong);
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.22em;
+	text-transform: uppercase;
+}
+
+.heroTitle {
+	max-width: 12ch;
+	margin: 18px 0 0;
+	font-size: clamp(2.2rem, 5vw, 3.15rem);
+	line-height: 1.01;
+	letter-spacing: -0.045em;
+	font-weight: 700;
+}
+
+.heroText {
+	max-width: 700px;
+	margin: 16px 0 0;
+	color: var(--text-muted);
+	font-size: 1.02rem;
+	line-height: 1.9;
+}
+
+.statusCard {
+	display: grid;
+	gap: 22px;
+	border-radius: 24px;
+	border: 1px solid rgba(255, 255, 255, 0.46);
+	box-shadow:
+		0 18px 42px rgba(15, 23, 42, 0.08),
+		0 6px 20px rgba(148, 163, 184, 0.08),
+		inset 0 1px 0 rgba(255, 255, 255, 0.78),
+		inset 0 -8px 18px rgba(226, 232, 240, 0.1);
+	padding: 23px;
+}
+
+.pendingCard {
+	grid-template-columns: minmax(0, 1.15fr) minmax(260px, 0.85fr);
+	background:
+		linear-gradient(180deg, rgba(255, 252, 245, 0.97), rgba(249, 241, 223, 0.92)),
+		radial-gradient(circle at top right, rgba(255, 245, 214, 0.72), transparent 42%);
+	border-color: rgba(231, 186, 110, 0.34);
+}
+
+.blockedCard {
+	background: linear-gradient(180deg, rgba(254, 245, 245, 0.96), rgba(253, 236, 236, 0.86));
+	border-color: rgba(239, 68, 68, 0.16);
+}
+
+.infoCard {
+	border-radius: 24px;
+	border: 1px solid rgba(255, 255, 255, 0.52);
+	background:
+		linear-gradient(180deg, rgba(255, 255, 255, 0.8), rgba(247, 250, 255, 0.64)),
+		radial-gradient(circle at top left, rgba(255, 255, 255, 0.7), transparent 50%);
+	box-shadow:
+		0 16px 36px rgba(15, 23, 42, 0.075),
+		0 5px 18px rgba(148, 163, 184, 0.07),
+		inset 0 1px 0 rgba(255, 255, 255, 0.8),
+		inset 0 -8px 18px rgba(226, 232, 240, 0.08);
+	padding: 23px;
+}
+
+.statusTop {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 10px;
+}
+
+.pendingBadge,
+.blockedBadge {
+	display: inline-flex;
+	align-items: center;
+	border-radius: 999px;
+	padding: 8px 14px;
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.18em;
+	text-transform: uppercase;
+}
+
+.pendingBadge {
+	border: 1px solid rgba(224, 188, 122, 0.34);
+	background: linear-gradient(180deg, rgba(255, 246, 223, 0.96), rgba(247, 230, 190, 0.85));
+	box-shadow:
+		inset 0 1px 0 rgba(255, 255, 255, 0.8),
+		0 6px 16px rgba(184, 148, 82, 0.12);
+	color: rgb(128, 78, 23);
+}
+
+.blockedBadge {
+	border: 1px solid rgba(239, 68, 68, 0.2);
+	background: rgba(239, 68, 68, 0.12);
+	color: rgb(153, 27, 27);
+}
+
+.statusMeta {
+	color: rgba(88, 102, 126, 0.78);
+	font-size: 0.92rem;
+	font-weight: 600;
+}
+
+.statusTitle {
+	margin: 16px 0 0;
+	color: var(--text-main);
+	font-size: 1.6rem;
+	line-height: 1.18;
+	letter-spacing: -0.028em;
+	font-weight: 700;
+}
+
+.statusText {
+	max-width: 60ch;
+	margin: 13px 0 0;
+	color: var(--text-muted);
+	font-size: 0.98rem;
+	line-height: 1.82;
+}
+
+.pendingCard .statusTitle,
+.pendingCard .statusText,
+.pendingCard .statusMeta {
+	color: rgba(103, 69, 28, 0.94);
+}
+
+.stepsCard {
+	border-radius: 20px;
+	border: 1px solid rgba(255, 255, 255, 0.58);
+	background:
+		linear-gradient(180deg, rgba(255, 255, 255, 0.74), rgba(253, 248, 239, 0.6)),
+		radial-gradient(circle at top, rgba(255, 255, 255, 0.55), transparent 52%);
+	box-shadow:
+		inset 0 1px 0 rgba(255, 255, 255, 0.78),
+		inset 0 -12px 22px rgba(246, 232, 202, 0.24),
+		0 10px 24px rgba(184, 148, 82, 0.08);
+	padding: 19px;
+}
+
+.stepsLabel {
+	margin: 0 0 16px;
+	color: rgba(128, 83, 28, 0.7);
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.18em;
+	text-transform: uppercase;
+}
+
+.stepsList {
+	display: grid;
+	gap: 16px;
+}
+
+.stepItem {
+	display: flex;
+	align-items: flex-start;
+	gap: 14px;
+	position: relative;
+}
+
+.stepItem:not(:last-child)::after {
+	content: "";
+	position: absolute;
+	left: 14px;
+	top: 34px;
+	bottom: -12px;
+	width: 1px;
+	background: linear-gradient(180deg, rgba(224, 188, 122, 0.28), rgba(203, 213, 225, 0));
+}
+
+.stepBullet {
+	display: inline-flex;
+	height: 32px;
+	width: 32px;
+	flex-shrink: 0;
+	align-items: center;
+	justify-content: center;
+	border-radius: 999px;
+	border: 1px solid rgba(255, 255, 255, 0.48);
+	box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+	font-size: 0.8rem;
+	font-weight: 700;
+}
+
+.stepBulletDone {
+	background: linear-gradient(180deg, rgba(252, 236, 198, 0.92), rgba(244, 215, 154, 0.85));
+	color: rgb(128, 78, 23);
+}
+
+.stepBulletTodo {
+	background: linear-gradient(180deg, rgba(244, 247, 251, 0.94), rgba(228, 235, 244, 0.82));
+	color: rgba(71, 85, 105, 0.86);
+}
+
+.stepTitle {
+	color: var(--text-main);
+	font-size: 0.99rem;
+	font-weight: 600;
+	line-height: 1.4;
+}
+
+.stepHint {
+	margin-top: 4px;
+	color: var(--text-muted);
+	font-size: 0.83rem;
+	line-height: 1.6;
+}
+
+.divider {
+	display: grid;
+	gap: 16px;
+	border-top: 1px solid rgba(148, 163, 184, 0.18);
+	padding-top: 24px;
+}
+
+.actionsRow {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 18px;
+}
+
+.actionsText {
+	max-width: 540px;
+	color: var(--text-muted);
+	font-size: 0.96rem;
+	line-height: 1.78;
+}
+
+.actionsButtons {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+}
+
+.primaryButton,
+.secondaryButton {
+	display: inline-flex;
+	min-width: 190px;
+	align-items: center;
+	justify-content: center;
+	border-radius: 999px;
+	padding: 14px 20px;
+	font-size: 0.95rem;
+	font-weight: 700;
+	text-decoration: none;
+	transition:
+		transform var(--transition),
+		box-shadow var(--transition),
+		background var(--transition),
+		border-color var(--transition),
+		color var(--transition);
+}
+
+.primaryButton {
+	border: 1px solid rgba(69, 112, 221, 0.18);
+	background:
+		linear-gradient(135deg, rgba(89, 132, 255, 1), rgba(37, 99, 235, 0.96)),
+		radial-gradient(circle at top, rgba(255, 255, 255, 0.26), transparent 52%);
+	color: #fff;
+	box-shadow:
+		0 18px 34px rgba(37, 99, 235, 0.22),
+		0 8px 18px rgba(74, 124, 255, 0.16),
+		inset 0 1px 0 rgba(255, 255, 255, 0.28),
+		inset 0 -10px 20px rgba(29, 78, 216, 0.18);
+	cursor: pointer;
+}
+
+.primaryButton:hover:not(:disabled) {
+	transform: translateY(-2px);
+	box-shadow:
+		0 24px 42px rgba(37, 99, 235, 0.24),
+		0 12px 24px rgba(74, 124, 255, 0.18),
+		inset 0 1px 0 rgba(255, 255, 255, 0.32),
+		inset 0 -10px 22px rgba(29, 78, 216, 0.16);
+}
+
+.primaryButton:active:not(:disabled) {
+	transform: translateY(0);
+	box-shadow:
+		0 10px 20px rgba(37, 99, 235, 0.2),
+		inset 0 2px 6px rgba(29, 78, 216, 0.18);
+}
+
+.primaryButton:disabled {
+	cursor: not-allowed;
+	opacity: 0.62;
+}
+
+.secondaryButton {
+	border: 1px solid rgba(255, 255, 255, 0.54);
+	background:
+		linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(242, 247, 255, 0.66)),
+		radial-gradient(circle at top, rgba(255, 255, 255, 0.44), transparent 55%);
+	color: var(--text-main);
+	box-shadow:
+		0 14px 28px rgba(15, 23, 42, 0.07),
+		0 5px 16px rgba(148, 163, 184, 0.08),
+		inset 0 1px 0 rgba(255, 255, 255, 0.82),
+		inset 0 -8px 18px rgba(226, 232, 240, 0.12);
+}
+
+.secondaryButton:hover {
+	transform: translateY(-1px);
+	border-color: rgba(190, 211, 255, 0.86);
+	background:
+		linear-gradient(180deg, rgba(245, 249, 255, 0.96), rgba(229, 238, 255, 0.78)),
+		radial-gradient(circle at top, rgba(255, 255, 255, 0.5), transparent 55%);
+	box-shadow:
+		0 16px 30px rgba(15, 23, 42, 0.08),
+		0 8px 20px rgba(74, 124, 255, 0.08),
+		inset 0 1px 0 rgba(255, 255, 255, 0.86);
+}
+
+.secondaryButton:active {
+	transform: translateY(0);
+	box-shadow:
+		0 8px 16px rgba(15, 23, 42, 0.06),
+		inset 0 2px 6px rgba(148, 163, 184, 0.12);
+}
+
+.backLink {
+	color: var(--accent-strong);
+	font-size: 0.95rem;
+	font-weight: 600;
+	text-decoration: none;
+}
+
+.backLink:hover {
+	text-decoration: underline;
+	text-underline-offset: 4px;
+}
+
+@media (max-width: 767px) {
+	.container {
+		padding: 24px 14px 34px;
+	}
+
+	.heroCard {
+		padding: 20px 16px;
+	}
+
+	.heroTop {
+		gap: 18px;
+	}
+
+	.heroTitle {
+		max-width: none;
+		font-size: 1.92rem;
+		line-height: 1.05;
+	}
+
+	.heroText {
+		font-size: 0.98rem;
+		line-height: 1.82;
+	}
+
+	.statusCard,
+	.infoCard {
+		padding: 18px 16px;
+	}
+
+	.pendingCard {
+		grid-template-columns: 1fr;
+		gap: 18px;
+	}
+
+	.stepsCard {
+		padding: 17px 15px;
+	}
+
+	.stepsList {
+		gap: 15px;
+	}
+
+	.actionsRow {
+		flex-direction: column;
+		align-items: stretch;
+		gap: 16px;
+	}
+
+	.actionsText {
+		max-width: none;
+	}
+
+	.actionsButtons {
+		width: 100%;
+		flex-direction: column;
+		gap: 10px;
+	}
+
+	.primaryButton,
+	.secondaryButton {
+		width: 100%;
+		min-width: 0;
+		padding: 13px 18px;
+	}
+
+	.pendingBadge,
+	.blockedBadge {
+		padding: 7px 13px;
+		font-size: 10px;
+	}
+
+	.statusMeta {
+		font-size: 0.88rem;
+	}
+}

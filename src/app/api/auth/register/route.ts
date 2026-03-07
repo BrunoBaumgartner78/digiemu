@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { rateLimitCheck, keyFromReq } from "@/lib/rateLimit";
 import { isRecord, getStringProp, getErrorMessage } from "@/lib/guards";
+import { hash } from "bcryptjs";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -16,20 +17,22 @@ type RegisterBody = {
 
 export async function POST(_req: Request) {
   try {
-    // Rate limit: registration attempts per IP (~10 per 60s)
     try {
       const key = keyFromReq(_req, "auth_register");
       const rl = rateLimitCheck(key, 10, 60_000);
       if (!rl.allowed) {
         return NextResponse.json(
-          { error: "TOO_MANY_REQUESTS", message: "Zu viele Anfragen. Bitte später erneut versuchen." },
+          {
+            error: "TOO_MANY_REQUESTS",
+            message: "Zu viele Anfragen. Bitte später erneut versuchen.",
+          },
           { status: 429, headers: { "Retry-After": String(rl.retryAfter ?? 60) } }
         );
       }
     } catch (_e) {
-      // don't block on rateLimit errors
       console.warn("rateLimit check failed", _e);
     }
+
     const bodyUnknown: unknown = await _req.json().catch(() => null);
 
     if (!isRecord(bodyUnknown)) {
@@ -54,13 +57,22 @@ export async function POST(_req: Request) {
       );
     }
 
+    if (password.length < 8) {
+      return NextResponse.json(
+        {
+          error: "WEAK_PASSWORD",
+          message: "Das Passwort muss mindestens 8 Zeichen lang sein.",
+        },
+        { status: 400 }
+      );
+    }
+
     const normalizedEmail = email.trim().toLowerCase();
 
-    // Rolle absichern (ADMIN darf nicht via Public-Register)
-    const safeRole: "BUYER" | "VENDOR" =
-      role === "VENDOR" ? "VENDOR" : "BUYER";
+    // For security: always register users as BUYER by default.
+    // Role escalation to VENDOR happens after an admin approves the vendorProfile.
+    const safeRole: "BUYER" | "VENDOR" = "BUYER";
 
-    // Existiert User bereits?
     const existing = await prisma.user.findUnique({
       where: { email: normalizedEmail },
       select: { id: true },
@@ -76,10 +88,12 @@ export async function POST(_req: Request) {
       );
     }
 
+    const hashedPassword = await hash(password, 12);
+
     const user = await prisma.user.create({
       data: {
         email: normalizedEmail,
-        password, // DEV/MVP: Klartext (wie bei dir vorgesehen)
+        password: hashedPassword,
         name: name?.trim() || null,
         role: safeRole,
       },

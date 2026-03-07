@@ -87,7 +87,9 @@ export default async function AdminVendorsPage({ searchParams }: { searchParams?
         <div>
           <p className={styles.eyebrow}>Admin</p>
           <h2 className={styles.h2}>Vendoren</h2>
-          <p className={styles.sub}>Freigabe: PENDING / APPROVED / BLOCKED + Moderation Note • Aktionen werden geloggt.</p>
+          <p className={styles.sub}>
+            Seller-Freigabe: PENDING / APPROVED / BLOCKED + Moderation Note. Account-Status bleibt separat auf der User-Seite.
+          </p>
         </div>
         <div className={styles.actions}>
           <Link className={styles.btn} href="/admin/products">Produkte</Link>
@@ -103,7 +105,7 @@ export default async function AdminVendorsPage({ searchParams }: { searchParams?
           </label>
 
           <label className={styles.field}>
-            <span>Status</span>
+            <span>Seller-Status</span>
             <select name="status" defaultValue={status}>
               <option value="">(alle)</option>
               {VENDOR_STATUSES.map((s) => (
@@ -132,15 +134,19 @@ export default async function AdminVendorsPage({ searchParams }: { searchParams?
                 <th>Datum</th>
                 <th>Vendor</th>
                 <th>User</th>
-                <th>Status</th>
+                <th>Seller-Status</th>
                 <th>Actions</th>
               </tr>
             </thead>
 
             <tbody>
               {(rows as Row[]).map((v) => {
+                // Users can be ACTIVE accounts without being approved sellers.
                 const statusClass =
                   v.status === "APPROVED" ? styles.badgeOk : v.status === "BLOCKED" ? styles.badgeBad : styles.badgeWarn;
+                const sellerStateLabel =
+                  v.status === "APPROVED" ? "approved • seller" : v.status === "BLOCKED" ? "blocked • seller" : "pending • seller";
+                const accountStateLabel = v.user?.isBlocked ? "account blocked" : "account active";
 
                 return (
                   <tr key={v.id}>
@@ -153,16 +159,18 @@ export default async function AdminVendorsPage({ searchParams }: { searchParams?
                     </td>
                     <td className={styles.mono}>
                       {v.user?.email ?? "—"} <span className={styles.miniMuted}>• {v.user?.role}</span>
-                      {v.user?.isBlocked ? <span className={styles.miniMuted}> • blocked</span> : null}
+                      <span className={styles.miniMuted}> • {accountStateLabel}</span>
                     </td>
                     <td>
                       <span className={`${styles.badge} ${statusClass}`}>{v.status}</span>
+                      <span className={styles.miniMuted}> • {sellerStateLabel}</span>
                       <span className={styles.miniMuted}>{v.isPublic ? " • public" : ""}</span>
                     </td>
                     <td>
                       <div className={styles.rowActions}>
+                        {/* Canonical moderation path: seller status and moderation note both run via /status. */}
                         <AdminActionButton
-                          href={`/api/admin/vendors/${v.userId}/set-status`}
+                          href={`/api/admin/vendors/${v.userId}/status`}
                           body={{ status: "PENDING" }}
                           className={`${styles.btn} ${styles.btnSmall}`}
                         >
@@ -170,7 +178,7 @@ export default async function AdminVendorsPage({ searchParams }: { searchParams?
                         </AdminActionButton>
 
                         <AdminActionButton
-                          href={`/api/admin/vendors/${v.userId}/set-status`}
+                          href={`/api/admin/vendors/${v.userId}/status`}
                           body={{ status: "APPROVED" }}
                           className={`${styles.btn} ${styles.btnSmall}`}
                         >
@@ -178,7 +186,7 @@ export default async function AdminVendorsPage({ searchParams }: { searchParams?
                         </AdminActionButton>
 
                         <AdminActionButton
-                          href={`/api/admin/vendors/${v.userId}/set-status`}
+                          href={`/api/admin/vendors/${v.userId}/status`}
                           body={{ status: "BLOCKED" }}
                           className={`${styles.btn} ${styles.btnSmall} ${styles.btnDanger}`}
                           confirmText={`Vendor wirklich blockieren?\n\n${v.user?.email ?? v.userId}`}
@@ -187,7 +195,7 @@ export default async function AdminVendorsPage({ searchParams }: { searchParams?
                         </AdminActionButton>
 
                         <ModerationNoteButton
-                          href={`/api/admin/vendors/${v.userId}/set-note`}
+                          href={`/api/admin/vendors/${v.userId}/status`}
                           current={v.moderationNote}
                           className={`${styles.btn} ${styles.btnSmall} ${styles.btnGhost}`}
                           buttonText="Note"

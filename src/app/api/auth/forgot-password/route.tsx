@@ -4,6 +4,7 @@ import crypto from "crypto";
 import nodemailer from "nodemailer";
 import { NextResponse } from "next/server";
 import { serverLog } from "@/lib/serverLog";
+import { rateLimitCheck, keyFromReq } from "@/lib/rateLimit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -35,6 +36,21 @@ function getBaseUrl(req: Request) {
 }
 
 export async function POST(req: Request) {
+  try {
+    try {
+      const key = keyFromReq(req, "auth_forgot");
+      const rl = rateLimitCheck(key, 6, 60_000);
+      if (!rl.allowed) {
+        const redirectUrl = new URL("/forgot-password?sent=1", req.url);
+        return NextResponse.redirect(redirectUrl, { headers: { "Cache-Control": "no-store" } });
+      }
+    } catch (e) {
+      console.warn("rateLimit check failed", e);
+    }
+  } catch (e) {
+    // noop - continue
+  }
+
   const form = await req.formData();
   const email = normEmail(form.get("email"));
 

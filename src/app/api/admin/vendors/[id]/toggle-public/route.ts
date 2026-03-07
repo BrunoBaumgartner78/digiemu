@@ -11,7 +11,6 @@ export async function POST(
 ) {
   const maybe = await requireAdminApi();
   if (maybe instanceof NextResponse) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  const session = maybe;
 
   const { id } = await context.params; // userId
   if (!id) return NextResponse.json({ message: "Missing id" }, { status: 400 });
