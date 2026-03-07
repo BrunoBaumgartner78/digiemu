@@ -1,16 +1,18 @@
-// src/app/(public)/page.tsx
 import Link from "next/link";
-import { requireSessionPage } from "@/lib/guards/authz";
+import { getServerSession } from "next-auth";
+import type { Session } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { ProductStatus, Role } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
 
 type Metrics = {
   users: number | null;
   orders: number | null;
-  gmvCHF: number | null; // amountCents
-  platformCHF: number | null; // platformEarningsCents
-  vendorCHF: number | null; // vendorEarningsCents
+  gmvCHF: number | null;
+  platformCHF: number | null;
+  vendorCHF: number | null;
   activeProducts: number | null;
 };
 
@@ -29,52 +31,73 @@ function formatCHF(n: number | null) {
 
 async function getPublicMetrics(): Promise<Metrics> {
   try {
-    const usersPromise = prisma.user.count().catch(() => null);
-    // ✅ Only count real (paid) orders to avoid discrepancies from aborted checkouts
+    const usersPromise = prisma.user.count().catch((error: unknown) => {
+      console.error("[home metrics] user.count failed:", error);
+      return null;
+    });
+
     const ordersPromise = prisma.order
       .count({
-        where: { status: { in: ["PAID", "COMPLETED"] } as any },
+        where: {
+          status: {
+            in: ["PAID", "COMPLETED"],
+          },
+        },
       })
-      .catch(() => null);
+      .catch((error: unknown) => {
+        console.error("[home metrics] order.count failed:", error);
+        return null;
+      });
 
-    const revenuePromise = (async () => {
-        try {
-          // ✅ Only include paid revenue; aborted/expired/canceled must not inflate KPIs
-          const agg = await prisma.order.aggregate({
-            where: { status: { in: ["PAID", "COMPLETED"] } as any },
-            _sum: {
-              amountCents: true,
-              platformEarningsCents: true,
-              vendorEarningsCents: true,
-            },
-          });
-
-        const amountCents = agg?._sum?.amountCents;
-        const platformCents = agg?._sum?.platformEarningsCents;
-        const vendorCents = agg?._sum?.vendorEarningsCents;
+    const revenuePromise = prisma.order
+      .aggregate({
+        where: {
+          status: {
+            in: ["PAID", "COMPLETED"],
+          },
+        },
+        _sum: {
+          amountCents: true,
+          platformEarningsCents: true,
+          vendorEarningsCents: true,
+        },
+      })
+      .then((agg) => {
+        const amountCents = agg._sum.amountCents;
+        const platformCents = agg._sum.platformEarningsCents;
+        const vendorCents = agg._sum.vendorEarningsCents;
 
         return {
           gmvCHF: typeof amountCents === "number" ? amountCents / 100 : null,
           platformCHF: typeof platformCents === "number" ? platformCents / 100 : null,
           vendorCHF: typeof vendorCents === "number" ? vendorCents / 100 : null,
         };
-      } catch (_e) {
-        console.error("[home metrics] order.aggregate failed:", _e);
-        return { gmvCHF: null, platformCHF: null, vendorCHF: null };
-      }
-    })();
+      })
+      .catch((error: unknown) => {
+        console.error("[home metrics] order.aggregate failed:", error);
+        return {
+          gmvCHF: null,
+          platformCHF: null,
+          vendorCHF: null,
+        };
+      });
 
-    const activeProductsPromise = (async () => {
-      try {
-        return await prisma.product.count({ where: { isActive: true, status: "ACTIVE" } });
-      } catch {
+    const activeProductsPromise = prisma.product
+      .count({
+        where: {
+          isActive: true,
+          status: ProductStatus.ACTIVE,
+        },
+      })
+      .catch(async (error: unknown) => {
+        console.error("[home metrics] product.count(active) failed:", error);
         try {
           return await prisma.product.count();
-        } catch {
+        } catch (fallbackError: unknown) {
+          console.error("[home metrics] product.count(fallback) failed:", fallbackError);
           return null;
         }
-      }
-    })();
+      });
 
     const [users, orders, revenue, activeProducts] = await Promise.all([
       usersPromise,
@@ -91,8 +114,8 @@ async function getPublicMetrics(): Promise<Metrics> {
       vendorCHF: revenue.vendorCHF,
       activeProducts,
     };
-  } catch (_e) {
-    console.error("[home metrics] failed:", _e);
+  } catch (error: unknown) {
+    console.error("[home metrics] failed:", error);
     return {
       users: null,
       orders: null,
@@ -108,19 +131,35 @@ function SectionTitle({ kicker, title }: { kicker?: string; title: string }) {
   return (
     <div style={{ marginBottom: 12 }}>
       {kicker ? (
-        <div style={{ fontSize: 12, opacity: 0.75, letterSpacing: 0.6, textTransform: "uppercase" }}>
+        <div
+          style={{
+            fontSize: 12,
+            opacity: 0.75,
+            letterSpacing: 0.6,
+            textTransform: "uppercase",
+          }}
+        >
           {kicker}
         </div>
       ) : null}
-      <h2 style={{ marginTop: 6, marginBottom: 0, fontSize: 24, fontWeight: 900 }}>{title}</h2>
+      <h2 style={{ marginTop: 6, marginBottom: 0, fontSize: 24, fontWeight: 900 }}>
+        {title}
+      </h2>
     </div>
   );
 }
 
 export default async function HomePage() {
-  const session = await requireSessionPage();
-  const isLoggedIn = !!session?.user?.id;
-  const role = (session?.user?.role as string | undefined) ?? undefined;
+  let session: Session | null = null;
+
+  try {
+    session = await getServerSession(authOptions);
+  } catch (error: unknown) {
+    console.error("[home] auth failed, rendering as logged-out:", error);
+  }
+
+  const isLoggedIn = Boolean(session?.user?.id);
+  const role = session?.user?.role as Role | undefined;
 
   const metrics = await getPublicMetrics();
 
@@ -132,7 +171,6 @@ export default async function HomePage() {
 
   return (
     <main className="page-shell" style={{ paddingTop: 10 }}>
-      {/* HERO */}
       <section className="neo-card neonCard neonBorder glowSoft" style={{ padding: 26 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
           <span
@@ -153,7 +191,7 @@ export default async function HomePage() {
             </span>
           ) : (
             <span style={{ fontSize: 12, opacity: 0.7 }}>
-              Kaufen & verkaufen – ohne Umwege
+              Kaufen &amp; verkaufen – ohne Umwege
             </span>
           )}
         </div>
@@ -187,7 +225,6 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* METRICS */}
       <section
         style={{
           marginTop: 16,
@@ -233,7 +270,6 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ABOUT */}
       <section className="neo-card neonCard neonBorder glowSoft" style={{ padding: 22, marginTop: 16 }}>
         <SectionTitle kicker="Über DigiEmu" title="Ein Marktplatz, der sofort funktioniert" />
         <p style={{ opacity: 0.85, lineHeight: 1.75, marginTop: 0, maxWidth: 980 }}>
@@ -248,7 +284,6 @@ export default async function HomePage() {
         </p>
       </section>
 
-      {/* HOW IT WORKS */}
       <section
         style={{
           marginTop: 16,
@@ -282,7 +317,6 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* FOR BUYERS / VENDORS */}
       <section
         style={{
           marginTop: 16,
@@ -319,7 +353,7 @@ export default async function HomePage() {
           <ul style={{ margin: 0, paddingLeft: 18, opacity: 0.88, lineHeight: 1.85 }}>
             <li>Produkt erstellen, Datei hochladen, Preis setzen</li>
             <li>Dashboard für Produkte, Einnahmen und Auszahlungen</li>
-            <li>Professioneller Kauf- & Download-Flow ohne Zusatztools</li>
+            <li>Professioneller Kauf- &amp; Download-Flow ohne Zusatztools</li>
           </ul>
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 14 }}>
             <Link href="/become-seller" className="neobtn">
@@ -338,7 +372,6 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ABOUT US */}
       <section className="neo-card neonCard neonBorder glowSoft" style={{ padding: 22, marginTop: 16 }}>
         <SectionTitle kicker="About us" title="Warum wir DigiEmu bauen" />
         <p style={{ opacity: 0.85, lineHeight: 1.75, marginTop: 0, maxWidth: 980 }}>
@@ -348,13 +381,15 @@ export default async function HomePage() {
           Umsätze erzielen.
         </p>
         <p style={{ opacity: 0.85, lineHeight: 1.75, marginTop: 10, maxWidth: 980 }}>
-          Unser Anspruch ist ein Marktplatz, der nicht „laut&quot; sein muss, um zu funktionieren: saubere
-          Performance, klare Navigation, und ein Design, das sich angenehm anfühlt.
+          Unser Anspruch ist ein Marktplatz, der nicht „laut“ sein muss, um zu funktionieren:
+          saubere Performance, klare Navigation und ein Design, das sich angenehm anfühlt.
         </p>
       </section>
 
-      {/* FAQ */}
-      <section className="neo-card neonCard neonBorder glowSoft" style={{ padding: 22, marginTop: 16, marginBottom: 18 }}>
+      <section
+        className="neo-card neonCard neonBorder glowSoft"
+        style={{ padding: 22, marginTop: 16, marginBottom: 18 }}
+      >
         <SectionTitle kicker="FAQ" title="Häufige Fragen" />
 
         <div style={{ display: "grid", gap: 12, marginTop: 10 }}>

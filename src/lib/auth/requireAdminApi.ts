@@ -1,25 +1,21 @@
 
 // src/lib/auth/requireAdminApi.ts
 import { NextRequest } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth"; // ggf. Pfad anpassen falls bei dir anders
+import { NextResponse } from "next/server";
+import { requireAdminApi as requireCentralAdminApi } from "@/lib/guards/authz";
 
 type AdminApiResult =
   | { ok: true; userId: string }
   | { ok: false; res: Response };
 
 export async function requireAdminApi(_req: NextRequest): Promise<AdminApiResult> {
-  const session = await getServerSession(authOptions);
-
-  const role = (session?.user as any)?.role as string | undefined;
-  const userId = (session?.user as any)?.id as string | undefined;
-
-  if (!session || role !== "ADMIN" || !userId) {
+  const sessionOrResponse = await requireCentralAdminApi();
+  if (sessionOrResponse instanceof NextResponse) {
     return {
       ok: false,
-      res: Response.json({ error: "Unauthorized" }, { status: 401 }),
+      res: sessionOrResponse,
     };
   }
 
-  return { ok: true, userId };
+  return { ok: true, userId: sessionOrResponse.user.id };
 }

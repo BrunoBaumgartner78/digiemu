@@ -11,6 +11,9 @@ export async function POST(
   const maybe = await requireAdminApi();
   if (maybe instanceof NextResponse) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const session = maybe;
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Invalid session" }, { status: 401 });
+  }
 
   try {
     // Vorherige Daten für Logging holen

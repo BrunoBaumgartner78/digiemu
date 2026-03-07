@@ -6,16 +6,11 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
+  // PENDING seller remains BUYER until approved.
   const session = await getOptionalSessionApi();
 
-  // keep legacy semantics: unauthenticated -> special payload
   if (!session?.user?.id) {
-    return NextResponse.json({ status: "UNAUTHENTICATED" }, { status: 401 });
-  }
-
-  const role = session.user.role;
-  if (role !== "VENDOR" && role !== "ADMIN") {
-    return NextResponse.json({ status: "FORBIDDEN" }, { status: 403 });
+    return NextResponse.json({ error: "UNAUTHENTICATED" }, { status: 401 });
   }
 
   const vp = await prisma.vendorProfile.findUnique({
@@ -24,7 +19,10 @@ export async function GET() {
   });
 
   return NextResponse.json({
-    status: vp?.status ?? "PENDING",
+    hasVendorProfile: Boolean(vp),
+    status: vp?.status ?? null,
     isPublic: vp?.isPublic ?? false,
+    role: session.user.role ?? null,
+    isBlocked: session.user.isBlocked ?? false,
   });
 }

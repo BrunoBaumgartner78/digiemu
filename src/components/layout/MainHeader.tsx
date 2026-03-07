@@ -29,7 +29,7 @@ export function MainHeader() {
   const isAuthLoading = status === "loading";
   const isLoggedIn = status === "authenticated";
 
-  const role: Role = session?.user?.role;
+  const role: Role = (session?.user?.role as Role | null | undefined) ?? undefined;
   const isAdmin = role === "ADMIN";
   const isVendor = role === "VENDOR" || role === "ADMIN";
   const isBuyer = role === "BUYER";

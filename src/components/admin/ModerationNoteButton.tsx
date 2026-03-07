@@ -5,7 +5,7 @@ import { toErrorMessage } from "@/lib/errors";
 import { useRouter } from "next/navigation";
 
 type Props = {
-  href: string;                 // API endpoint, expected to accept JSON { note: string | null }
+  href: string;                 // API endpoint, expected to accept JSON { moderationNote: string | null }
   current?: string | null;      // current note (optional)
   className?: string;
   confirmText?: string;
@@ -45,7 +45,7 @@ export default function ModerationNoteButton({
       const res = await fetch(href, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ note: next }),
+        body: JSON.stringify({ moderationNote: next }),
         cache: "no-store",
       });
 

@@ -1,7 +1,6 @@
 // src/app/api/admin/payouts/create/route.ts
 
 import { NextResponse } from "next/server";
-import type { Session } from "next-auth";
 import { requireAdminApi } from "@/lib/guards/authz";
 import { prisma } from "@/lib/prisma";
 
@@ -9,15 +8,6 @@ import { prisma } from "@/lib/prisma";
 export async function POST(_req: Request) {
   const sessionOrResp = await requireAdminApi();
   if (sessionOrResp instanceof NextResponse) return sessionOrResp;
-  const session = sessionOrResp as Session;
-
-  // 1. Nur Admins dürfen Payouts erstellen
-  if (!session || session.user.role !== "ADMIN") {
-    return NextResponse.json(
-      { error: "Unauthorized – Admin privileges required." },
-      { status: 403 }
-    );
-  }
 
   // 2. VendorId aus dem FormData/JSON extrahieren
   let vendorId: string | undefined;
@@ -41,8 +31,13 @@ export async function POST(_req: Request) {
 
   // 3. Vendor existiert?
   const vendor = await prisma.user.findUnique({
-    where: { id: vendorId, role: "VENDOR" },
+    where: { id: vendorId },
     include: {
+      vendorProfile: {
+        select: {
+          status: true,
+        },
+      },
       products: {
         select: {
           orders: {
@@ -54,9 +49,10 @@ export async function POST(_req: Request) {
     }
   });
 
-  if (!vendor) {
+  // A seller is only active when role=VENDOR and vendorProfile.status=APPROVED.
+  if (!vendor || vendor.role !== "VENDOR" || vendor.vendorProfile?.status !== "APPROVED") {
     return NextResponse.json(
-      { error: "Vendor not found" },
+      { error: "Approved vendor not found" },
       { status: 404 }
     );
   }

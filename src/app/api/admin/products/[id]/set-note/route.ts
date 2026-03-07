@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdminContext } from "@/lib/admin/adminRequestContext";
-import { adminAudit } from "@/lib/admin/adminAudit";
+import { auditAdminMutation } from "@/lib/admin/audit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
-  const { actorId, ipAddress, userAgent } = await requireAdminContext();
+  const { actorId } = await requireAdminContext();
   const { id } = await ctx.params;
 
   let body: unknown = null;
@@ -17,25 +17,39 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     body = null;
   }
 
-  const noteRaw = (body as Record<string, unknown>)?.note;
-  const note =
-    noteRaw === null ? null : typeof noteRaw === "string" ? noteRaw.trim().slice(0, 500) || null : null;
+  const moderationNoteRaw = (body as Record<string, unknown>)?.moderationNote;
+  const moderationNote =
+    moderationNoteRaw === null
+      ? null
+      : typeof moderationNoteRaw === "string"
+        ? moderationNoteRaw.trim().slice(0, 500) || null
+        : null;
+
+  const current = await prisma.product.findUnique({
+    where: { id },
+    select: { moderationNote: true },
+  });
+
+  if (!current) {
+    return NextResponse.json({ ok: false, error: "Product not found" }, { status: 404 });
+  }
 
   const updated = await prisma.product.update({
     where: { id },
-    data: { moderationNote: note },
-    select: { id: true, moderationNote: true, title: true },
+    data: { moderationNote },
+    select: { id: true, moderationNote: true },
   });
 
-  await adminAudit({
-    actorId,
+  await auditAdminMutation({
+    adminUserId: actorId,
     action: "ADMIN_PRODUCT_SET_NOTE",
-    targetType: "Product",
-    targetId: id,
-    meta: { notePresent: !!note, noteLen: note?.length ?? 0 },
-    ipAddress,
-    userAgent,
+    entityType: "Product",
+    entityId: id,
+    before: { moderationNote: current.moderationNote },
+    after: { moderationNote: updated.moderationNote },
+    note: updated.moderationNote,
+    request: req,
   });
 
-  return NextResponse.json({ ok: true, product: updated });
+  return NextResponse.json({ ok: true, productId: updated.id, moderationNote: updated.moderationNote });
 }

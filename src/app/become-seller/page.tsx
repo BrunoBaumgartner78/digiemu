@@ -22,6 +22,7 @@ export default async function BecomeSellerPage() {
   });
 
   if (!vendorProfile) {
+    // PENDING seller remains BUYER until approved.
     vendorProfile = await prisma.vendorProfile.create({
       data: {
         userId,
@@ -30,17 +31,15 @@ export default async function BecomeSellerPage() {
         status: "PENDING",
       },
     });
-
-    // User-Rolle auf VENDOR setzen (falls dein Schema das so vorsieht)
-    await prisma.user.update({
-      where: { id: userId },
-      data: { role: "VENDOR" },
-    });
+    // Vendor role is granted only after admin approval.
   }
 
-  // Direkt ins Vendor-Dashboard
+  // Do not redirect BUYER+PENDING users into vendor-only areas.
+  if (vendorProfile.status === "BLOCKED") {
+    redirect("/sell?status=blocked");
+  }
   if (vendorProfile.status !== "APPROVED") {
-    redirect("/dashboard/vendor?status=pending");
+    redirect("/sell?status=pending");
   }
   redirect("/dashboard/vendor");
 }

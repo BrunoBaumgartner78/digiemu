@@ -156,7 +156,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
                     <td>
                       <div className={styles.rowActions}>
                         <AdminActionButton
-                          href={`/api/admin/products/${p.id}/set-status`}
+                          href={`/api/admin/products/${p.id}/status`}
                           body={{ status: "DRAFT" }}
                           className={`${styles.btn} ${styles.btnSmall}`}
                         >
@@ -164,7 +164,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
                         </AdminActionButton>
 
                         <AdminActionButton
-                          href={`/api/admin/products/${p.id}/set-status`}
+                          href={`/api/admin/products/${p.id}/status`}
                           body={{ status: "ACTIVE" }}
                           className={`${styles.btn} ${styles.btnSmall}`}
                         >
@@ -172,7 +172,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
                         </AdminActionButton>
 
                         <AdminActionButton
-                          href={`/api/admin/products/${p.id}/set-status`}
+                          href={`/api/admin/products/${p.id}/status`}
                           body={{ status: "BLOCKED" }}
                           className={`${styles.btn} ${styles.btnSmall} ${styles.btnDanger}`}
                           confirmText={`Produkt wirklich blockieren?\n\n${p.title}`}
