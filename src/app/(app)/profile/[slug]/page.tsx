@@ -1,160 +1,122 @@
+// src/app/(app)/profile/[slug]/page.tsx
+import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
+
 import { prisma } from "@/lib/prisma";
-import styles from "./publicProfile.module.css";
 import ProductGrid from "./ProductGrid";
-import SafeImg from "@/components/ui/SafeImg";
+import styles from "./publicProfile.module.css";
 
 export const dynamic = "force-dynamic";
 
-// ✅ Next.js 16: params ist Promise-wrapped (kein Union!)
-type Props = { params: Promise<{ slug: string }> };
+type Props = {
+  params: Promise<{ slug: string }>;
+};
 
 export default async function PublicVendorProfilePage({ params }: Props) {
   const { slug } = await params;
   const decodedSlug = decodeURIComponent(String(slug ?? "")).trim();
   if (!decodedSlug) notFound();
-type Params = { slug: string };
-type Props = { params: Params | Promise<Params> };
-
-export default async function PublicVendorProfilePage({ params }: Props) {
-  // Next 16: params may be sync or async depending on runtime
-  const resolvedParams = await Promise.resolve(params);
-  const slug = decodeURIComponent(resolvedParams?.slug || "").trim();
-  if (!slug) notFound();
 
   const profile = await prisma.vendorProfile.findFirst({
-    where: { slug: decodedSlug, isPublic: true },
+    where: {
+      OR: [{ slug: decodedSlug }, { userId: decodedSlug }],
+      isPublic: true,
+    },
     select: {
+      id: true,
+      slug: true,
       displayName: true,
       bio: true,
       avatarUrl: true,
       bannerUrl: true,
-      websiteUrl: true,
-      twitterUrl: true,
-      instagramUrl: true,
-      tiktokUrl: true,
-      facebookUrl: true,
-      slug: true,
       userId: true,
+      user: {
+        select: {
+          name: true,
+        },
+      },
+      products: {
+        where: {
+          isActive: true,
+          status: "ACTIVE",
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+        select: {
+          id: true,
+          title: true,
+          priceCents: true,
+          thumbnail: true,
+        },
+      },
     },
   });
 
   if (!profile) notFound();
 
-  const products = await prisma.product.findMany({
-    where: { vendorId: profile.userId, isActive: true, status: "ACTIVE" },
-    orderBy: { createdAt: "desc" },
-    take: 24,
-    select: {
-      id: true,
-      title: true,
-      priceCents: true,
-      thumbnail: true,
-    },
-  });
+  const safeName =
+    profile.displayName?.trim() ||
+    profile.user?.name?.trim() ||
+    "Verkäufer";
 
   return (
-    <main className={styles["public-shell"]}>
-      <div className={styles["public-wrap"]}>
-        <section className={styles["public-hero"]}>
-            <div className={styles["public-bannerWrap"]}>
-            <SafeImg
-              src={profile.bannerUrl ?? "/fallback-banner.svg"}
-          <div className={styles["public-bannerWrap"]}>
-            <SafeImg
+    <div className={styles["public-profile"]}>
+      <section className={styles["public-hero"]}>
+        <div className={styles["public-bannerWrap"]}>
+          {profile.bannerUrl ? (
+            <Image
               src={profile.bannerUrl}
-              alt="Banner"
-              className={styles["public-banner"]}
-              // Banner: soll immer füllen, aber nie overflow erzeugen
-              fallback={<div className={styles["public-bannerFallback"]} />}
+              alt={`${safeName} Banner`}
+              fill
+              unoptimized
               sizes="100vw"
+              className={styles["public-bannerImg"]}
               style={{ objectFit: "cover" }}
-              objectFit="cover"
             />
-          </div>
+          ) : (
+            <div className={styles["public-bannerFallback"]} />
+          )}
+        </div>
 
-          <div className={styles["public-header"]}>
-            <div className={styles["public-avatarWrap"]}>
-              <SafeImg
+        <div className={styles["public-heroInner"]}>
+          <div className={styles["public-avatarWrap"]}>
+            {profile.avatarUrl ? (
+              <Image
                 src={profile.avatarUrl}
-                alt={profile.displayName || "Avatar"}
-                className={styles["public-avatar"]}
-                fallback={<div className={styles["public-avatarFallback"]} />}
-                sizes="160px"
-                style={{ objectFit: "cover" }}
-                objectFit="cover"
+                alt={safeName}
+                fill
+                unoptimized
+                sizes="96px"
+                className={styles["public-avatarImg"]}
+                style={{ objectFit: "cover", borderRadius: "50%" }}
               />
-            </div>
-
-            <div>
-              <h1 className={styles["public-name"]}>{profile.displayName || "Verkäufer"}</h1>
-              {profile.bio ? <p className={styles["public-bio"]}>{profile.bio}</p> : null}
-
-              <div className={styles["public-meta"]}>
-                {profile.websiteUrl ? (
-                  <a
-                    className={styles["public-pill"]}
-                    href={profile.websiteUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                  <a className={styles["public-pill"]} href={profile.websiteUrl} target="_blank" rel="noreferrer">
-                    Website
-                  </a>
-                ) : null}
-                {profile.instagramUrl ? (
-                  <a
-                    className={styles["public-pill"]}
-                    href={profile.instagramUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                  <a className={styles["public-pill"]} href={profile.instagramUrl} target="_blank" rel="noreferrer">
-                    Instagram
-                  </a>
-                ) : null}
-                {profile.twitterUrl ? (
-                  <a
-                    className={styles["public-pill"]}
-                    href={profile.twitterUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                  <a className={styles["public-pill"]} href={profile.twitterUrl} target="_blank" rel="noreferrer">
-                    X/Twitter
-                  </a>
-                ) : null}
-                {profile.tiktokUrl ? (
-                  <a
-                    className={styles["public-pill"]}
-                    href={profile.tiktokUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                  <a className={styles["public-pill"]} href={profile.tiktokUrl} target="_blank" rel="noreferrer">
-                    TikTok
-                  </a>
-                ) : null}
-                {profile.facebookUrl ? (
-                  <a
-                    className={styles["public-pill"]}
-                    href={profile.facebookUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                  <a className={styles["public-pill"]} href={profile.facebookUrl} target="_blank" rel="noreferrer">
-                    Facebook
-                  </a>
-                ) : null}
+            ) : (
+              <div className={styles["public-avatarFallback"]}>
+                {safeName.charAt(0).toUpperCase()}
               </div>
+            )}
+          </div>
+
+          <div className={styles["public-meta"]}>
+            <h1 className={styles["public-title"]}>{safeName}</h1>
+            {profile.bio ? (
+              <p className={styles["public-bio"]}>{profile.bio}</p>
+            ) : null}
+
+            <div className={styles["public-actions"]}>
+              <Link href="/marketplace" className="neobtn">
+                Zum Marketplace
+              </Link>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        <section>
-          <ProductGrid products={products} />
-        </section>
-      </div>
-    </main>
+      <section className={styles["public-section"]}>
+        <ProductGrid products={profile.products} />
+      </section>
+    </div>
   );
 }
