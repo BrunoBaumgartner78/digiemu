@@ -15,9 +15,10 @@ type Props = {
 
 export default function AdminPayoutList({ payouts }: Props) {
   async function markPaid(id: string) {
-    await fetch("/api/admin/payouts/markPaid", {
+    await fetch("/api/admin/payouts/mark-paid", {
       method: "POST",
-      body: JSON.stringify({ id })
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ payoutId: id })
     });
     location.reload();
   }

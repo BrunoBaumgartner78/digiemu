@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import { NextResponse } from "next/server";
+import { rateLimitCheck, keyFromReq } from "@/lib/rateLimit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -18,6 +19,17 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
+   const rl = await rateLimitCheck(
+  `reset-password:${keyFromReq(req)}`,
+  10,
+  10 * 60_000
+);
+
+if (!rl.allowed) {
+  const url = new URL("/forgot-password?error=too_many_requests", req.url);
+  return NextResponse.redirect(url, { status: 303 });
+}
+
     const form = await req.formData();
 
     const rawToken = String(form.get("token") ?? "").trim();
@@ -50,7 +62,10 @@ export async function POST(req: Request) {
     await prisma.$transaction([
       prisma.user.update({
         where: { id: reset.userId },
-        data: { password: hashed },
+        data: {
+          password: hashed,
+          sessionVersion: { increment: 1 },
+        },
       }),
       prisma.passwordReset.deleteMany({
         where: { userId: reset.userId },

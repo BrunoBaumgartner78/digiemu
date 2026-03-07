@@ -1,13 +1,10 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { requireAdminApi } from "@/lib/guards/authz";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(req: Request, ctx: { params: Promise<{ commentId: string }> }) {
-  const session = await getServerSession(authOptions).catch(() => null);
-  const userId = typeof (session?.user as any)?.id === "string" ? ((session?.user as any).id as string) : null;
-  const role = (session?.user as any)?.role ?? null;
-  if (!userId || role !== "ADMIN") return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const auth = await requireAdminApi();
+  if (auth instanceof NextResponse) return auth;
 
   const { commentId } = await ctx.params;
   const id = String(commentId ?? "").trim();

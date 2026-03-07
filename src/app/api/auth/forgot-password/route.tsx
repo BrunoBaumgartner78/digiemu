@@ -4,6 +4,7 @@ import crypto from "crypto";
 import nodemailer from "nodemailer";
 import { NextResponse } from "next/server";
 import { serverLog } from "@/lib/serverLog";
+import { rateLimitCheck, keyFromReq } from "@/lib/rateLimit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -35,7 +36,7 @@ function getBaseUrl(req: Request) {
 }
 
 export async function POST(req: Request) {
-  const form = await req.formData();
+const form = await req.formData();
   const email = normEmail(form.get("email"));
 
   const redirectUrl = new URL("/forgot-password?sent=1", req.url);

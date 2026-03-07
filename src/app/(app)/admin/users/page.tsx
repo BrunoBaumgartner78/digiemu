@@ -50,7 +50,7 @@ export default async function AdminUsersPage({
 
   if (statusStr !== "all") {
     if (statusStr === "blocked") where.isBlocked = true;
-    else if (statusStr === "unblocked") where.isBlocked = false;
+    else if (statusStr === "active") where.isBlocked = false;
     else where.role = statusStr as any; // ADMIN | VENDOR | BUYER
   }
 
@@ -70,6 +70,11 @@ export default async function AdminUsersPage({
         role: true,
         isBlocked: true,
         createdAt: true,
+        vendorProfile: {
+          select: {
+            status: true,
+          },
+        },
       },
     }),
   ]);
@@ -83,9 +88,9 @@ export default async function AdminUsersPage({
       <div className={styles.inner}>
         <div className={styles.header}>
           <p className={styles.eyebrow}>ADMIN</p>
-          <h1 className={styles.title}>User</h1>
+          <h1 className={styles.title}>User Accounts</h1>
           <p className={styles.subtitle}>
-            User-Liste, Rollen, Sperren/Entsperren. (AuditLog als nächster Schritt.)
+            Account-Status und Rollen. Seller-Freigabe ist davon getrennt und läuft ausschließlich über den Vendor-Admin.
           </p>
         </div>
 
@@ -109,14 +114,14 @@ export default async function AdminUsersPage({
             </label>
 
             <label className={styles.field}>
-              <span>Filter</span>
+              <span>Account / Rolle</span>
               <select name="status" defaultValue={status}>
                 <option value="all">(alle)</option>
+                <option value="active">ACTIVE</option>
+                <option value="blocked">BLOCKED</option>
                 <option value="ADMIN">ADMIN</option>
                 <option value="VENDOR">VENDOR</option>
                 <option value="BUYER">BUYER</option>
-                <option value="blocked">blocked</option>
-                <option value="unblocked">unblocked</option>
               </select>
             </label>
 
@@ -143,46 +148,55 @@ export default async function AdminUsersPage({
             <div>DATUM</div>
             <div>USER</div>
             <div>ROLE</div>
-            <div>STATUS</div>
+            <div>ACCOUNT</div>
+            <div>SELLER</div>
             <div>ACTIONS</div>
           </div>
 
           {rows.length === 0 ? (
             <div className={styles.emptyState}>Keine User gefunden.</div>
           ) : (
-            rows.map((u) => (
-              <div key={u.id} className={styles.tableRow}>
-                <div className={styles.monoSmall}>{formatDateTime(u.createdAt)}</div>
+            rows.map((u) => {
+              // Account status is separate from seller approval.
+              const accountStatus = u.isBlocked ? "BLOCKED" : "ACTIVE";
+              const sellerStatus = (u.vendorProfile?.status ?? "none").toString().toLowerCase();
 
-                <div>
-                  <div className={styles.bold}>{u.name || u.email}</div>
-                  <div className={styles.mutedSmall}>
-                    {u.email} • <span className={styles.monoSmall}>{u.id}</span>
+              return (
+                <div key={u.id} className={styles.tableRow}>
+                  <div className={styles.monoSmall}>{formatDateTime(u.createdAt)}</div>
+
+                  <div>
+                    <div className={styles.bold}>{u.name || u.email}</div>
+                    <div className={styles.mutedSmall}>
+                      {u.email} • <span className={styles.monoSmall}>{u.id}</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <span className={styles.badge}>{u.role}</span>
+                  </div>
+
+                  <div>
+                    <span className={u.isBlocked ? styles.badgeDanger : styles.badgeOk}>{accountStatus}</span>
+                  </div>
+
+                  <div>
+                    <span className={styles.mutedSmall}>Seller: {sellerStatus}</span>
+                  </div>
+
+                  <div className={styles.actionsCell}>
+                    <AdminActionButton
+                      href="/api/admin/users/toggle-block"
+                      method="POST"
+                      body={{ userId: u.id }}
+                      confirmText={u.isBlocked ? null : "User wirklich sperren?"}
+                    >
+                      {u.isBlocked ? "Unblock" : "Block"}
+                    </AdminActionButton>
                   </div>
                 </div>
-
-                <div>
-                  <span className={styles.badge}>{u.role}</span>
-                </div>
-
-                <div>
-                  <span className={u.isBlocked ? styles.badgeDanger : styles.badgeOk}>
-                    {u.isBlocked ? "BLOCKED" : "ACTIVE"}
-                  </span>
-                </div>
-
-                <div className={styles.actionsCell}>
-                  <AdminActionButton
-                    href="/api/admin/users/toggle-block"
-                    method="POST"
-                    body={{ userId: u.id }}
-                    confirmText={u.isBlocked ? null : "User wirklich sperren?"}
-                  >
-                    {u.isBlocked ? "Unblock" : "Block"}
-                  </AdminActionButton>
-                </div>
-              </div>
-            ))
+              );
+            })
           )}
 
           <div className={styles.pagination}>

@@ -3,23 +3,25 @@ import { NextResponse } from "next/server";
 import { requireSessionApi } from "../../../../lib/guards/authz";
 import { prisma } from "@/lib/prisma";
 
+// Legacy compatibility route.
+// Vendor role is granted only after admin approval.
 export async function POST() {
   const maybe = await requireSessionApi();
   if (maybe instanceof NextResponse) return maybe;
   const session = maybe;
 
-  const email = session.user.email;
+  const userId = session.user.id;
 
-  if (!email) {
+  if (!userId) {
     return NextResponse.json(
-      { ok: false, error: "Missing email in session" },
+      { ok: false, error: "Missing user id in session" },
       { status: 400 }
     );
   }
 
-  // User aus DB holen, um die ID zu bekommen
   const dbUser = await prisma.user.findUnique({
-    where: { email },
+    where: { id: userId },
+    select: { id: true, name: true, email: true },
   });
 
   if (!dbUser) {
@@ -29,9 +31,7 @@ export async function POST() {
     );
   }
 
-  const userId = dbUser.id;
-
-  // VendorProfile suchen oder anlegen
+  // PENDING seller remains BUYER until approved.
   let vendorProfile = await prisma.vendorProfile.findUnique({
     where: { userId },
   });
@@ -44,15 +44,15 @@ export async function POST() {
                 status: "PENDING",
       },
     });
+          } else if (vendorProfile.status !== "BLOCKED" && vendorProfile.status !== "APPROVED") {
+            vendorProfile = await prisma.vendorProfile.update({
+              where: { userId },
+              data: {
+                status: "PENDING",
+                displayName: vendorProfile.displayName ?? dbUser.name ?? dbUser.email ?? "Vendor",
+              },
+            });
   }
 
-  // Rolle auf VENDOR hochstufen, falls nicht schon ADMIN/VENDOR
-  if (dbUser.role !== "ADMIN" && dbUser.role !== "VENDOR") {
-    await prisma.user.update({
-      where: { id: userId },
-      data: { role: "VENDOR" },
-    });
-  }
-
-  return NextResponse.json({ ok: true, vendorProfile });
+          return NextResponse.json({ ok: true, vendorProfile, nextUrl: "/sell?status=pending" });
 }
